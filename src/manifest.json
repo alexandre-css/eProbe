@@ -1,15 +1,16 @@
 {
-  "manifest_version": 3,
-  "name": "Eproc Extension",
-  "version": "1.0",
-  "permissions": ["activeTab"],
-  "background": {
-    "service_worker": "background.js"
-  },
-  "content_scripts": [
-    {
-      "matches": ["*://*/*"],
-      "js": ["content.js"]
+    "manifest_version": 3,
+    "name": "Colocar Lembrete",
+    "version": "1.0",
+    "description": "Extensão para adicionar lembretes automaticamente.",
+    "permissions": ["activeTab", "scripting"],
+    "host_permissions": ["*://*/*"],
+    "background": {
+        "service_worker": "src/background.js"
+    },
+    "action": {
+        "default_title": "Adicionar Lembrete",
+        "default_icon": "icon.png",
+        "default_popup": "src/popup.html"
     }
-  ]
 }

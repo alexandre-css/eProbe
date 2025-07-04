@@ -1,1 +1,6 @@
-// This file is intentionally left blank.
+chrome.action.onClicked.addListener((tab) => {
+    chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ["colocarLembrete.js"],
+    });
+});
