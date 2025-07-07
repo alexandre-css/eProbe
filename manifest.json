@@ -3,14 +3,17 @@
     "name": "Colocar Lembrete",
     "version": "1.0",
     "description": "Extensão para adicionar lembretes automaticamente.",
-    "permissions": ["activeTab", "scripting"],
+    "permissions": ["activeTab", "scripting", "host_permissions"],
     "host_permissions": ["*://*/*"],
     "background": {
         "service_worker": "src/background.js"
     },
     "action": {
         "default_title": "Adicionar Lembrete",
-        "default_icon": "icon.png",
+        "default_icon": "src/icon.png",
         "default_popup": "src/popup.html"
+    },
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
     }
 }
