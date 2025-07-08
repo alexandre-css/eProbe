@@ -1,19 +1,46 @@
 {
     "manifest_version": 3,
-    "name": "Colocar Lembrete",
-    "version": "1.0",
-    "description": "Extensão para adicionar lembretes automaticamente.",
-    "permissions": ["activeTab", "scripting", "host_permissions"],
-    "host_permissions": ["*://*/*"],
-    "background": {
-        "service_worker": "src/background.js"
-    },
+    "name": "eProbe - Automação ePROC",
+    "version": "2.0.0",
+    "description": "Automação completa: detecta, abre, extrai e envia SENT1 para ChatGPT automaticamente",
+
+    "permissions": ["activeTab", "storage", "tabs", "clipboardWrite"],
+
+    "host_permissions": [
+        "https://eproc1g.tjsc.jus.br/*",
+        "https://eproc2g.tjsc.jus.br/*",
+        "https://chatgpt.com/*"
+    ],
+
+    "content_scripts": [
+        {
+            "matches": [
+                "https://eproc1g.tjsc.jus.br/*",
+                "https://eproc2g.tjsc.jus.br/*"
+            ],
+            "js": ["src/main.js"],
+            "run_at": "document_end"
+        }
+    ],
+
     "action": {
-        "default_title": "Adicionar Lembrete",
-        "default_icon": "src/icon.png",
-        "default_popup": "src/popup.html"
+        "default_popup": "src/popup.html",
+        "default_title": "eProbe - automação"
     },
-    "content_security_policy": {
-        "extension_pages": "script-src 'self'; object-src 'self'"
-    }
+
+    "icons": {
+        "16": "src/icon16.png",
+        "48": "src/icon48.png",
+        "128": "src/icon128.png"
+    },
+
+    "web_accessible_resources": [
+        {
+            "resources": ["src/*"],
+            "matches": [
+                "https://eproc1g.tjsc.jus.br/*",
+                "https://eproc2g.tjsc.jus.br/*"
+            ]
+        }
+    ]
 }

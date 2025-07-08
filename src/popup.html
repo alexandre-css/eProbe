@@ -1,33 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <title>Colocar Lembrete</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 10px;
-        }
-        button {
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        input {
-            margin-bottom: 10px;
-            padding: 5px;
-            width: 100%;
-        }
-    </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eProc SENT1 - Automação Completa</title>
+    <link rel="stylesheet" href="popup-automatizado.css">
 </head>
 <body>
-    <h1>Colocar Lembrete</h1>
-    <input type="text" id="lembrete-texto" placeholder="Digite o texto do lembrete">
-    <button id="execute-script">Executar Script</button>
-    <script src="popup.js"></script>
+    <div class="header">
+        <h1>🤖 Automação SENT1</h1>
+        <p>Extração e envio automático para ChatGPT</p>
+    </div>
+    
+    <div class="automation-steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div>Detecta SENT1 na página</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div>Abre documento automaticamente</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div>Extrai texto da sentença</div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div>Copia para clipboard</div>
+        </div>
+        <div class="step">
+            <div class="step-number">5</div>
+            <div>Abre ChatGPT para colar</div>
+        </div>
+    </div>
+    
+    <div class="buttons">
+        <button id="runAutomation" class="btn">
+            🚀 Executar Automação Completa
+        </button>
+        
+        <button id="openSENT1" class="btn btn-secondary">
+            📄 Apenas Abrir SENT1
+        </button>
+        
+        <button id="extractOnly" class="btn btn-secondary">
+            📋 Apenas Extrair Texto
+        </button>
+        
+        <button id="help" class="btn btn-secondary">
+            ❓ Como Usar
+        </button>
+    </div>
+    
+    <div id="status" class="status info hidden">
+        Aguardando ação...
+    </div>
+    
+    <script src="popup-automatizado.js"></script>
 </body>
 </html>
