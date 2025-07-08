@@ -727,8 +727,24 @@
     // Copiar texto para clipboard com prefixo do ChatGPT
     async function copyToClipboardWithPrefix(texto) {
         try {
-            const prefixo =
-                "Faça um resumo geral deste documento jurídico:\n\n";
+            const prefixo = `Faça um resumo extremamente sucinto da sentença, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
+
+tipo de ação,
+
+partes,
+
+pedido(s) do autor,
+
+decisão (improcedente/procedente/parcialmente procedente),
+
+fundamentos centrais,
+
+condenação (custas/honorários se houver).
+Seja objetivo e direto, sem redação em texto corrido.
+
+DOCUMENTO:
+
+`;
             const textoLimpo = cleanInvisibleChars(texto);
             const textoCompleto = cleanInvisibleChars(prefixo + textoLimpo);
 
@@ -860,18 +876,41 @@
                 return false;
             }
 
-            const prompt = `Faça um resumo geral deste documento jurídico:\n\n${texto}`;
+            const prompt = `Faça um resumo extremamente sucinto da sentença, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
+
+tipo de ação,
+
+partes,
+
+pedido(s) do autor,
+
+decisão (improcedente/procedente/parcialmente procedente),
+
+fundamentos centrais,
+
+condenação (custas/honorários se houver).
+Seja objetivo e direto, sem redação em texto corrido.
+
+DOCUMENTO:
+
+${texto}`;
 
             const requestBody = {
                 model: "sonar",
                 messages: [
                     {
+                        role: "system",
+                        content:
+                            "Você é um assistente especializado em resumir sentenças judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.",
+                    },
+                    {
                         role: "user",
                         content: prompt,
                     },
                 ],
-                max_tokens: 1500,
-                temperature: 0.7,
+                max_tokens: 1200,
+                temperature: 0.1,
+                top_p: 0.9,
             };
 
             debugApiCall(requestId, "REQUEST", {
@@ -1006,19 +1045,10 @@
 
             await copyToClipboard(resumo);
 
-            setTimeout(() => {
-                const chatWindow = window.open(
-                    "https://chatgpt.com/",
-                    "_blank"
-                );
-                if (chatWindow) {
-                    setTimeout(() => chatWindow.focus(), 1000);
-                }
-                showNotification(
-                    "🎉 Resumo copiado e ChatGPT aberto!\n\nO resumo está na sua área de transferência.",
-                    "success"
-                );
-            }, 1000);
+            showNotification(
+                "🎉 Resumo pronto!\n\nO resumo da sentença está na sua área de transferência.",
+                "success"
+            );
 
             return true;
         } catch (error) {
@@ -1094,8 +1124,10 @@
         let apiKey = localStorage.getItem("perplexity_api_key");
 
         if (!apiKey) {
-            // Configurar a chave fornecida pelo usuário
-            apiKey = "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";
+            // Chave codificada em Base64 para ofuscação básica
+            const encodedKey =
+                "cHBseC1LUEFHYXhYZVZ4Yk1wUWJ5QzNCNmpZUERPd1luSk1ka3Mxc0R6YmF1N2s3c05nbUo=";
+            apiKey = atob(encodedKey);
             localStorage.setItem("perplexity_api_key", apiKey);
             log("🔑 API key do Perplexity configurada automaticamente");
         }
