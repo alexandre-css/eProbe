@@ -21,9 +21,10 @@
         }
     }
 
-    // Detectar tipo de página
+    // Detectar tipo de página e formato de documento
     function detectPageType() {
         const url = window.location.href;
+        log("🔍 Detectando tipo de página. URL:", url);
 
         if (url.includes("processo_selecionar")) {
             return "lista_documentos";
@@ -31,7 +32,109 @@
             url.includes("acessar_documento") ||
             url.includes("processo_consultar_externo_documento")
         ) {
-            return "documento_especifico";
+            // Detectar se é documento HTML (sentença) ou PDF (petição inicial)
+            const sectionSentenca = document.querySelector(
+                'section[data-nome="sentenca"]'
+            );
+
+            // Buscar PDFs com múltiplos seletores
+            const pdfSelectors = [
+                'embed[type="application/pdf"]',
+                'iframe[src*=".pdf"]',
+                'object[type="application/pdf"]',
+                'iframe[title*="PDF"]',
+                'embed[src*=".pdf"]',
+                'object[data*=".pdf"]',
+                'iframe[src*="pdf"]',
+                'embed[src*="pdf"]',
+                ".pdf-viewer",
+                "#pdf-viewer",
+                '[class*="pdf"]',
+                '[id*="pdf"]',
+            ];
+
+            let pdfViewer = null;
+
+            // Testar cada seletor
+            for (const selector of pdfSelectors) {
+                pdfViewer = document.querySelector(selector);
+                if (pdfViewer) {
+                    log(
+                        `📄 PDF encontrado com seletor: ${selector}`,
+                        pdfViewer
+                    );
+                    break;
+                }
+            }
+
+            // Debug: listar todos os iframes e embeds
+            const allIframes = document.querySelectorAll("iframe");
+            const allEmbeds = document.querySelectorAll("embed");
+            const allObjects = document.querySelectorAll("object");
+
+            log("🔍 Debug - Total de elementos encontrados:", {
+                iframes: allIframes.length,
+                embeds: allEmbeds.length,
+                objects: allObjects.length,
+            });
+
+            // Verificar se algum iframe/embed tem características de PDF
+            [...allIframes, ...allEmbeds, ...allObjects].forEach(
+                (element, index) => {
+                    const src = element.src || element.data || "";
+                    const type = element.type || "";
+                    const title = element.title || "";
+
+                    log(`🔍 Elemento ${index + 1}: ${element.tagName}`, {
+                        src: src.substring(0, 100),
+                        type: type,
+                        title: title,
+                        className: element.className,
+                        id: element.id,
+                    });
+
+                    // Se contém características de PDF
+                    if (
+                        src.toLowerCase().includes("pdf") ||
+                        type.toLowerCase().includes("pdf") ||
+                        title.toLowerCase().includes("pdf")
+                    ) {
+                        pdfViewer = element;
+                        log("📄 PDF detectado por características:", element);
+                    }
+                }
+            );
+
+            if (sectionSentenca) {
+                log("📄 Documento HTML detectado (sentença)");
+                return "documento_html";
+            } else if (pdfViewer) {
+                log("📄 Documento PDF detectado");
+                return "documento_pdf";
+            } else {
+                log(
+                    "📄 Documento específico (tipo indefinido) - verificando conteúdo..."
+                );
+
+                // Verificar se há conteúdo típico de documento
+                const hasDocumentContent =
+                    document.querySelector(".documento") ||
+                    document.querySelector(".conteudo") ||
+                    document.querySelector(".texto") ||
+                    document.querySelector("main") ||
+                    document.querySelector("article") ||
+                    document.body.textContent.length > 1000;
+
+                if (hasDocumentContent) {
+                    log(
+                        "📄 Conteúdo de documento detectado - assumindo documento específico"
+                    );
+                    return "documento_especifico";
+                } else {
+                    log("❌ Nenhum conteúdo de documento detectado");
+                    return "desconhecida";
+                }
+            }
         }
 
         return "desconhecida";
@@ -630,7 +733,13 @@
         const pageType = detectPageType();
         log("📄 Tipo de página:", pageType);
 
-        if (pageType !== "documento_especifico") {
+        if (
+            ![
+                "documento_html",
+                "documento_pdf",
+                "documento_especifico",
+            ].includes(pageType)
+        ) {
             log("⚠️ Não está na página do documento específico");
             showNotification(
                 "❌ Execute na página do documento, não na lista",
@@ -642,22 +751,40 @@
         // Aguardar documento carregar completamente
         await waitForDocumentLoad();
 
-        // Verificar se há seção do documento
-        const sectionDocumento = document.querySelector(
-            'section[data-nome="sentenca"]'
-        );
-        if (!sectionDocumento) {
-            log("❌ Section do documento não encontrada");
+        // Estratégia baseada no tipo de documento
+        if (pageType === "documento_html") {
+            return await extractTextFromHTML();
+        } else if (pageType === "documento_pdf") {
+            return await extractTextFromPDF();
+        } else {
+            // Fallback: tentar HTML primeiro, depois PDF
+            const htmlText = await extractTextFromHTML();
+            if (htmlText) return htmlText;
+
+            const pdfText = await extractTextFromPDF();
+            if (pdfText) return pdfText;
+
             showNotification(
-                "❌ Conteúdo do documento não encontrado",
+                "❌ Não foi possível detectar o tipo de documento",
                 "error"
             );
             return null;
         }
+    }
 
-        // VERIFICAÇÃO REMOVIDA - estava rejeitando páginas válidas de documento
-        // Os indicadores como "processo:", "SENT1", etc. aparecem legitimamente nas páginas de sentença
-        log("✅ Página do documento válida, prosseguindo com extração...");
+    // Extrair texto de documento HTML (sentenças)
+    async function extractTextFromHTML() {
+        log("📄 Extraindo texto de documento HTML...");
+
+        const sectionDocumento = document.querySelector(
+            'section[data-nome="sentenca"]'
+        );
+        if (!sectionDocumento) {
+            log("❌ Section do documento HTML não encontrada");
+            return null;
+        }
+
+        log("✅ Página do documento HTML válida, prosseguindo com extração...");
 
         // Extrair usando classes específicas do eProc
         const seletorParagrafos = [
@@ -761,6 +888,141 @@
             "success"
         );
         return texto.trim();
+    }
+
+    // Extrair texto de documento PDF (petições iniciais)
+    async function extractTextFromPDF() {
+        log("📄 Tentando extrair texto de documento PDF...");
+
+        // Buscar elementos PDF na página com seletores mais abrangentes
+        const pdfSelectors = [
+            'embed[type="application/pdf"]',
+            'iframe[src*=".pdf"]',
+            'object[type="application/pdf"]',
+            'iframe[title*="PDF"]',
+            'embed[src*=".pdf"]',
+            'object[data*=".pdf"]',
+            'iframe[src*="pdf"]',
+            'embed[src*="pdf"]',
+            ".pdf-viewer",
+            "#pdf-viewer",
+            '[class*="pdf"]',
+            '[id*="pdf"]',
+        ];
+
+        let pdfElements = [];
+
+        // Testar cada seletor
+        for (const selector of pdfSelectors) {
+            const elements = document.querySelectorAll(selector);
+            if (elements.length > 0) {
+                log(
+                    `📄 Encontrados ${elements.length} elemento(s) PDF com seletor: ${selector}`
+                );
+                pdfElements.push(...elements);
+            }
+        }
+
+        // Se não encontrou com seletores específicos, buscar por características
+        if (pdfElements.length === 0) {
+            log("🔍 Buscando PDFs por características...");
+
+            const allElements = [
+                ...document.querySelectorAll("iframe"),
+                ...document.querySelectorAll("embed"),
+                ...document.querySelectorAll("object"),
+            ];
+
+            allElements.forEach((element) => {
+                const src = element.src || element.data || "";
+                const type = element.type || "";
+                const title = element.title || "";
+
+                if (
+                    src.toLowerCase().includes("pdf") ||
+                    type.toLowerCase().includes("pdf") ||
+                    title.toLowerCase().includes("pdf")
+                ) {
+                    pdfElements.push(element);
+                }
+            });
+        }
+
+        if (pdfElements.length === 0) {
+            log("❌ Nenhum elemento PDF encontrado na página");
+            log("🔍 Tentando fallback para extração genérica...");
+
+            // Fallback: se a URL sugere PDF, ainda tentar processo manual
+            const url = window.location.href;
+            if (
+                url.toLowerCase().includes("pdf") ||
+                url.includes("acessar_documento") ||
+                url.includes("processo_consultar_externo_documento")
+            ) {
+                log("🔄 URL sugere documento - tentando processo manual");
+            } else {
+                showNotification("❌ Documento PDF não detectado", "error");
+                return null;
+            }
+        } else {
+            log(`📄 ${pdfElements.length} elemento(s) PDF encontrado(s)`);
+        }
+
+        // Para PDFs incorporados, não é possível extrair texto automaticamente
+        // Orientar o usuário para processo manual
+        const confirmAction = confirm(
+            "🔍 DOCUMENTO PDF DETECTADO\n\n" +
+                "Para documentos PDF, você precisa:\n\n" +
+                "1. Selecionar todo o texto do PDF (Ctrl+A)\n" +
+                "2. Copiar o texto selecionado (Ctrl+C)\n" +
+                "3. Clicar 'OK' para processar o texto copiado\n\n" +
+                "Continuar?"
+        );
+
+        if (!confirmAction) {
+            log("❌ Usuário cancelou o processo manual");
+            return null;
+        }
+
+        // Aguardar um momento para o usuário copiar
+        showNotification(
+            "⏳ Aguardando... Copie o texto do PDF agora!\n\nSelecione todo o texto (Ctrl+A) e copie (Ctrl+C)",
+            "info"
+        );
+
+        // Aguardar 5 segundos para dar mais tempo ao usuário
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        try {
+            // Tentar ler do clipboard
+            const clipboardText = await navigator.clipboard.readText();
+
+            if (!clipboardText || clipboardText.trim().length < 50) {
+                throw new Error("Texto insuficiente no clipboard");
+            }
+
+            log(
+                `✅ Texto obtido do clipboard: ${clipboardText.length} caracteres`
+            );
+            showNotification(
+                `✅ Texto PDF processado: ${clipboardText.length} caracteres`,
+                "success"
+            );
+
+            return clipboardText.trim();
+        } catch (error) {
+            log("❌ Erro ao ler clipboard:", error);
+            showNotification(
+                "❌ Não foi possível ler o texto copiado.\n\n" +
+                    "Certifique-se de:\n" +
+                    "• Selecionar todo o texto do PDF (Ctrl+A)\n" +
+                    "• Copiar o texto selecionado (Ctrl+C)\n" +
+                    "• Permitir acesso ao clipboard quando solicitado\n\n" +
+                    "Tente novamente!",
+                "error"
+            );
+            return null;
+        }
     }
 
     // Aguardar documento carregar completamente
@@ -1487,6 +1749,266 @@ ${texto}`;
         });
     }
 
+    // Opções de processamento quando há múltiplos documentos
+    function showDocumentProcessingOptions() {
+        const documentosRelevantes = findDocumentosRelevantes();
+
+        if (documentosRelevantes.length === 0) {
+            showNotification(
+                "❌ Nenhum documento relevante encontrado",
+                "error"
+            );
+            return;
+        }
+
+        const existing = document.getElementById(
+            "documento-relevante-selection-modal"
+        );
+        if (existing) {
+            existing.remove();
+        }
+
+        const overlay = document.createElement("div");
+        overlay.id = "documento-relevante-selection-modal";
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: system-ui, -apple-system, sans-serif;
+        `;
+
+        const modal = document.createElement("div");
+        modal.style.cssText = `
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border: 1px solid #334155;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            color: #f8fafc;
+        `;
+
+        const title = document.createElement("h2");
+        title.style.cssText = `
+            margin: 0 0 20px 0;
+            color: #3b82f6;
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+        title.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                <polyline points="14,2 14,8 20,8"/>
+            </svg>
+            Escolher Documento (${documentosRelevantes.length} encontrados)
+        `;
+
+        const subtitle = document.createElement("p");
+        subtitle.style.cssText = `
+            margin: 0 0 20px 0;
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.5;
+        `;
+        subtitle.textContent = "Selecione o documento que deseja processar:";
+
+        const list = document.createElement("div");
+        list.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        `;
+
+        documentosRelevantes.forEach((doc, index) => {
+            const item = document.createElement("div");
+            item.style.cssText = `
+                border: 1px solid #475569;
+                border-radius: 8px;
+                padding: 16px;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                background: #334155;
+            `;
+
+            item.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="color: ${doc.tipo.cor}; font-size: 18px;">
+                        ${doc.tipo.icone}
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #f8fafc; margin-bottom: 4px;">
+                            ${doc.tipo.descricao}
+                        </div>
+                        <div style="font-size: 12px; color: #94a3b8;">
+                            ${doc.nome}
+                        </div>
+                    </div>
+                    <div style="color: #3b82f6;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9,18 15,12 9,6"/>
+                        </svg>
+                    </div>
+                </div>
+            `;
+
+            item.addEventListener("mouseenter", () => {
+                item.style.backgroundColor = "#475569";
+                item.style.borderColor = "#3b82f6";
+            });
+
+            item.addEventListener("mouseleave", () => {
+                item.style.backgroundColor = "#334155";
+                item.style.borderColor = "#475569";
+            });
+
+            item.addEventListener("click", () => {
+                overlay.remove();
+                autoOpenSpecificDocument(doc);
+            });
+
+            list.appendChild(item);
+        });
+
+        const buttons = document.createElement("div");
+        buttons.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+        `;
+
+        const cancelBtn = document.createElement("button");
+        cancelBtn.style.cssText = `
+            background: #6b7280;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        `;
+        cancelBtn.textContent = "Cancelar";
+        cancelBtn.addEventListener("mouseenter", () => {
+            cancelBtn.style.backgroundColor = "#4b5563";
+        });
+        cancelBtn.addEventListener("mouseleave", () => {
+            cancelBtn.style.backgroundColor = "#6b7280";
+        });
+        cancelBtn.addEventListener("click", () => {
+            overlay.remove();
+        });
+
+        const processAllBtn = document.createElement("button");
+        processAllBtn.style.cssText = `
+            background: #059669;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        `;
+        processAllBtn.textContent = "Processar Primeiro";
+        processAllBtn.addEventListener("mouseenter", () => {
+            processAllBtn.style.backgroundColor = "#047857";
+        });
+        processAllBtn.addEventListener("mouseleave", () => {
+            processAllBtn.style.backgroundColor = "#059669";
+        });
+        processAllBtn.addEventListener("click", () => {
+            overlay.remove();
+            autoOpenSpecificDocument(documentosRelevantes[0]);
+        });
+
+        buttons.appendChild(cancelBtn);
+        buttons.appendChild(processAllBtn);
+
+        modal.appendChild(title);
+        modal.appendChild(subtitle);
+        modal.appendChild(list);
+        modal.appendChild(buttons);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) {
+                overlay.remove();
+            }
+        });
+    }
+
+    // Abrir documento específico
+    async function autoOpenSpecificDocument(documento) {
+        log("🔗 Abrindo documento específico:", documento);
+
+        try {
+            showNotification("📄 Abrindo documento...", "info");
+
+            const link = documento.elemento.querySelector("a");
+            if (!link) {
+                log("❌ Link não encontrado no documento");
+                showNotification(
+                    "❌ Erro: Link do documento não encontrado",
+                    "error"
+                );
+                return false;
+            }
+
+            const url = link.href;
+            if (!url) {
+                log("❌ URL não encontrada no link");
+                showNotification(
+                    "❌ Erro: URL do documento não encontrada",
+                    "error"
+                );
+                return false;
+            }
+
+            log("🌐 URL do documento:", url);
+
+            const newTab = window.open(url, "_blank");
+            if (newTab) {
+                log("✅ Documento aberto em nova aba");
+                showNotification(
+                    "✅ Documento aberto! Execute a extensão novamente na nova aba",
+                    "success"
+                );
+                return true;
+            } else {
+                log("❌ Falha ao abrir nova aba - popup bloqueado?");
+                showNotification(
+                    "❌ Não foi possível abrir o documento. Verifique se popups estão bloqueados.",
+                    "error"
+                );
+                return false;
+            }
+        } catch (error) {
+            log("❌ Erro ao abrir documento específico:", error);
+            showNotification(
+                "❌ Erro ao abrir documento: " + error.message,
+                "error"
+            );
+            return false;
+        }
+    }
+
     // Automação completa
     async function runFullAutomation() {
         if (isAutomationActive) {
@@ -1640,7 +2162,7 @@ ${texto}`;
                 <path d="M9 21a6 6 0 0 0-6-6"/>
                 <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
             </svg>
-            Resumir Sentença
+            Resumir Documento
         `;
         button.className = "infraButton btn-primary";
 
@@ -1680,7 +2202,7 @@ ${texto}`;
             e.stopPropagation();
 
             log("🔧 Botão integrado clicado!");
-            console.log("🔧 Debug: Botão RESUMIR SENTENÇA clicado");
+            console.log("🔧 Debug: Botão RESUMIR DOCUMENTO clicado");
 
             // Adicionar feedback visual
             button.style.transform = "scale(0.95)";
@@ -2211,7 +2733,7 @@ ${texto}`;
                 <path d="M9 21a6 6 0 0 0-6-6"/>
                 <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
             </svg>
-            Resumir Sentença
+            Resumir Documento
         `;
 
         // Usar estilo customizado próprio para o botão flutuante
@@ -2264,7 +2786,7 @@ ${texto}`;
             e.stopPropagation();
 
             log("🔧 Botão flutuante clicado!");
-            console.log("🔧 Debug: Botão RESUMIR SENTENÇA clicado");
+            console.log("🔧 Debug: Botão RESUMIR DOCUMENTO clicado");
 
             const pageType = detectPageType();
             log("📄 Tipo de página detectado:", pageType);
@@ -2289,7 +2811,7 @@ ${texto}`;
         setTimeout(() => {
             const button = document.getElementById("sent1-auto-button");
             if (button) {
-                console.log("✅ Botão RESUMIR SENTENÇA encontrado:", button);
+                console.log("✅ Botão RESUMIR DOCUMENTO encontrado:", button);
                 const isFloating = button.style.position === "fixed";
                 console.log(
                     "📍 Tipo de botão:",
@@ -2313,7 +2835,7 @@ ${texto}`;
                     });
                 }
             } else {
-                console.log("❌ Botão RESUMIR SENTENÇA NÃO encontrado!");
+                console.log("❌ Botão RESUMIR DOCUMENTO NÃO encontrado!");
             }
         }, 2000);
     }
@@ -2704,12 +3226,27 @@ ${texto}`;
             // Evento do botão cancelar
             modal
                 .querySelector("#cancel-selection")
+                .addEventListener("mouseover", () => {
+                    modal.querySelector(
+                        "#cancel-selection"
+                    ).style.backgroundColor = "rgb(153, 40, 0)";
+                });
+
+            modal
+                .querySelector("#cancel-selection")
+                .addEventListener("mouseout", () => {
+                    modal.querySelector(
+                        "#cancel-selection"
+                    ).style.backgroundColor = "rgb(32, 39, 51)";
+                });
+
+            modal
+                .querySelector("#cancel-selection")
                 .addEventListener("click", () => {
                     modal.remove();
                     resolve(null);
                 });
 
-            // Fechar ao clicar fora (no fundo do modal)
             modal.addEventListener("click", (e) => {
                 if (e.target === modal) {
                     modal.remove();
@@ -3529,7 +4066,7 @@ ${texto}`;
     // Inicialização
     function init() {
         log("🚀 Iniciando content script automatizado");
-        console.log("🚀 RESUMIR SENTENÇA: Script iniciado");
+        console.log("🚀 RESUMIR DOCUMENTO: Script iniciado");
 
         // Configurar observador de página
         setupPageObserver();
