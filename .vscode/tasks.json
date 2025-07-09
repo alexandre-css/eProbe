@@ -1,0 +1,11 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Testar Extensão eProbe",
+			"type": "shell",
+			"command": "echo 'Para testar a extensão, siga estes passos:' && echo '' && echo '1. Abra o Chrome' && echo '2. Vá para chrome://extensions/' && echo '3. Ative o \"Modo do desenvolvedor\"' && echo '4. Clique em \"Carregar sem compactação\"' && echo '5. Selecione a pasta c:\\eProbe' && echo '6. Navegue para uma página do eProc' && echo '7. Verifique se o botão \"AUTOMAÇÃO SENT1\" aparece integrado na página' && echo '' && echo 'O botão agora tenta se integrar na estrutura da página do eProc.' && echo 'Se não encontrar um container adequado, usa posição fixa como fallback.'",
+			"group": "test"
+		}
+	]
+}

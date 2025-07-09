@@ -6,10 +6,26 @@ document.addEventListener("DOMContentLoaded", function () {
     const helpBtn = document.getElementById("help");
     const statusDiv = document.getElementById("status");
 
-    function showStatus(message, type = "info") {
-        statusDiv.textContent = message;
+    function showStatus(message, type = "info", showSpinner = false) {
+        const statusText = statusDiv.querySelector(".status-text");
+        const spinner = statusDiv.querySelector(".loading-spinner");
+
+        if (statusText) {
+            statusText.textContent = message;
+        } else {
+            statusDiv.textContent = message;
+        }
+
         statusDiv.className = `status ${type}`;
         statusDiv.classList.remove("hidden");
+
+        if (spinner) {
+            if (showSpinner) {
+                spinner.classList.remove("hidden");
+            } else {
+                spinner.classList.add("hidden");
+            }
+        }
     }
 
     async function executeInActiveTab(functionName, ...args) {
@@ -37,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Automação completa
     runAutomationBtn.addEventListener("click", async function () {
-        showStatus("🚀 Iniciando automação completa...", "info");
+        showStatus("Iniciando automação completa...", "info", true);
 
         try {
             const [tab] = await chrome.tabs.query({
@@ -69,7 +85,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Apenas abrir SENT1
     openSENT1Btn.addEventListener("click", async function () {
-        showStatus("📄 Procurando e abrindo SENT1...", "info");
+        showStatus("Procurando e abrindo SENT1...", "info", true);
 
         try {
             const [tab] = await chrome.tabs.query({
@@ -97,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Apenas extrair texto
     extractOnlyBtn.addEventListener("click", async function () {
-        showStatus("📋 Extraindo texto...", "info");
+        showStatus("Extraindo texto...", "info", true);
 
         try {
             const [tab] = await chrome.tabs.query({

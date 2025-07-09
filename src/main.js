@@ -7,7 +7,7 @@
 
     function log(message, ...args) {
         if (debugMode) {
-            console.log("🤖 AUTOMAÇÃO SENT1:", message, ...args);
+            console.log("🤖 RESUMIR SENTENÇA:", message, ...args);
         }
     }
 
@@ -25,6 +25,67 @@
         }
 
         return "desconhecida";
+    }
+
+    function isValidPageForButton() {
+        const pageType = detectPageType();
+
+        if (
+            pageType === "lista_documentos" ||
+            pageType === "documento_especifico"
+        ) {
+            return true;
+        }
+
+        const url = window.location.href;
+
+        if (
+            url.includes("controlador.php") &&
+            (url.includes("processo") || url.includes("documento"))
+        ) {
+            const hasProcessContent =
+                document.querySelector('[href*="SENT"]') ||
+                document.querySelector(".infraEventoDescricao") ||
+                (document.querySelector("#divInfraBarraComandosSuperior") &&
+                    document.querySelector("table")) ||
+                document.querySelector(".infraBarraComandos");
+
+            if (hasProcessContent) {
+                console.log(
+                    "✅ Página válida detectada: contém elementos específicos do processo"
+                );
+                return true;
+            }
+        }
+
+        if (
+            url.includes("eproc.jf") ||
+            url.includes("pje.") ||
+            url.includes("esaj.")
+        ) {
+            const hasDocumentList =
+                document.querySelector('[href*="SENT"]') ||
+                (document.querySelector("table") &&
+                    (document.querySelector('td[class*="evento"]') ||
+                        document.querySelector('td[class*="Evento"]') ||
+                        document.querySelector('label[class*="evento"]')));
+
+            if (hasDocumentList) {
+                console.log(
+                    "✅ Página válida detectada: sistema judiciário com documentos"
+                );
+                return true;
+            }
+        }
+
+        console.log("❌ Página não é válida para o botão:", {
+            url: url,
+            pageType: pageType,
+            hasTable: !!document.querySelector("table"),
+            hasSENT: !!document.querySelector('[href*="SENT"]'),
+            hasEventDesc: !!document.querySelector(".infraEventoDescricao"),
+        });
+        return false;
     }
 
     // Função aprimorada para encontrar descrição do evento
@@ -523,10 +584,6 @@
             log(
                 `📄 ${sent1Links.length} sentenças encontradas, solicitando seleção do usuário`
             );
-            showNotification(
-                `📄 ${sent1Links.length} sentenças encontradas. Selecione qual processar.`,
-                "info"
-            );
 
             log(
                 "🔍 DEBUG: sent1Links antes do modal:",
@@ -540,13 +597,12 @@
 
             if (!selectedSent1) {
                 log("❌ Usuário cancelou a seleção");
-                showNotification("❌ Seleção cancelada", "warning");
                 return false;
             }
         }
 
         log("🚀 Abrindo sentença selecionada:", selectedSent1.href);
-        showNotification("🚀 Abrindo sentença selecionada...", "info");
+        showNotification("Abrindo sentença selecionada...", "info");
 
         // Abrir em uma nova aba
         window.open(selectedSent1.href, "_blank");
@@ -1163,19 +1219,42 @@ ${texto}`;
             return;
         }
 
-        const menu = document.createElement("div");
+        // Calcular posição para evitar sair da tela
+        const menuWidth = 200;
+        const menuHeight = 400; // Estimativa
+        const screenWidth = window.innerWidth;
+        const screenHeight = window.innerHeight;
+
+        // Ajustar X se o menu sair da tela pela direita
+        if (x + menuWidth > screenWidth) {
+            x = screenWidth - menuWidth - 20;
+        }
+
+        // Ajustar Y se o menu sair da tela por baixo
+        if (y + menuHeight > screenHeight) {
+            y = screenHeight - menuHeight - 20;
+        }
+
+        // Garantir que não saia pela esquerda ou topo
+        x = Math.max(10, x);
+        y = Math.max(10, y);
+
+        const menu = document.createElement("ul");
         menu.id = "sent1-options-menu";
+        menu.setAttribute("role", "menu");
         menu.style.cssText = `
             position: fixed;
             left: ${x}px;
-            top: ${y + 10}px;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            top: ${y}px;
             z-index: 10001;
-            padding: 10px;
-            min-width: 200px;
+            min-width: ${menuWidth}px;
+            overflow: auto;
+            border-radius: 8px;
+            border: 1px solid rgb(59 130 246);
+            background: #134377;
+            padding: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+            font-family: system-ui, -apple-system, sans-serif;
         `;
 
         const pageType = detectPageType();
@@ -1185,75 +1264,127 @@ ${texto}`;
             const sent1Links = findSENT1Links();
             const sentenceCount = sent1Links.length;
 
-            let menuTitle = "🚀 Processar Sentenças";
-            let buttonText = "📄 Processar Sentenças";
-            let buttonBg = "#007bff";
+            let menuTitle = "Processar Sentenças";
+            let buttonColor = "#3b82f6";
+            let titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21 12,12"/></svg>`;
 
             if (sentenceCount === 0) {
-                menuTitle = "❌ Nenhuma Sentença";
-                buttonText = "❌ Nenhuma SENT1 encontrada";
-                buttonBg = "#dc3545";
+                menuTitle = "Nenhuma Sentença";
+                buttonColor = "#ef4444";
+                titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>`;
             } else if (sentenceCount === 1) {
-                menuTitle = "📄 1 Sentença Encontrada";
-                buttonText = `📄 Processar SENT1`;
+                menuTitle = "1 Sentença Encontrada";
             } else {
-                menuTitle = `📄 ${sentenceCount} Sentenças Encontradas`;
-                buttonText = `📄 Escolher entre ${sentenceCount} sentenças`;
-                buttonBg = "#28a745";
+                menuTitle = `${sentenceCount} Sentenças Encontradas`;
+                buttonColor = "#10b981";
             }
 
             menu.innerHTML = `
-                <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; font-weight: bold; color: #333;">
+                <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+                    ${titleIcon}
                     ${menuTitle}
-                </div>
-                <button id="open-sent1-btn" style="width: 100%; padding: 10px; border: none; background: ${buttonBg}; color: white; border-radius: 5px; cursor: pointer; margin-bottom: 5px;" ${
-                sentenceCount === 0 ? "disabled" : ""
-            }>
-                    ${buttonText}
-                </button>
-                ${
-                    sentenceCount > 1
-                        ? `
-                <div style="padding: 5px; font-size: 11px; color: #666; text-align: center; border-top: 1px solid #eee; margin-top: 5px;">
-                    💡 Sistema detectou múltiplas sentenças
-                </div>
-                `
-                        : ""
-                }
+                </li>
+                <li id="open-sent1-btn" role="menuitem" style="cursor: ${
+                    sentenceCount === 0 ? "not-allowed" : "pointer"
+                }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
+                sentenceCount === 0 ? "opacity: 0.5;" : ""
+            }" ${sentenceCount === 0 ? 'data-disabled="true"' : ""}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                    ${
+                        sentenceCount === 0
+                            ? "Nenhuma SENT1 encontrada"
+                            : sentenceCount === 1
+                            ? "Processar SENT1"
+                            : `Escolher entre ${sentenceCount} sentenças`
+                    }
+                </li>
             `;
 
-            menu.querySelector("#open-sent1-btn").addEventListener(
-                "click",
-                () => {
+            const openBtn = menu.querySelector("#open-sent1-btn");
+            if (sentenceCount > 0) {
+                openBtn.addEventListener("mouseenter", () => {
+                    openBtn.style.backgroundColor = "rgba(148, 163, 184, 0.1)";
+                });
+                openBtn.addEventListener("mouseleave", () => {
+                    openBtn.style.backgroundColor = "transparent";
+                });
+                openBtn.addEventListener("click", () => {
                     menu.remove();
                     if (sentenceCount > 1) {
                         showSentenceProcessingOptions();
                     } else {
                         runFullAutomation();
                     }
-                }
-            );
+                });
+            }
         } else if (pageType === "documento_especifico") {
             menu.innerHTML = `
-                <div style="padding: 10px; border-bottom: 1px solid #eee; margin-bottom: 10px; font-weight: bold; color: #333;">
-                    🤖 Processar SENT1
-                </div>
-                <button id="api-btn" style="width: 100%; padding: 10px; border: none; background: #28a745; color: white; border-radius: 5px; cursor: pointer; margin-bottom: 5px;">
-                    🚀 API Perplexity (Recomendado)
-                </button>
-                <button id="manual-btn" style="width: 100%; padding: 10px; border: none; background: #6c757d; color: white; border-radius: 5px; cursor: pointer; margin-bottom: 5px;">
-                    📋 Método Manual
-                </button>
-                <button id="config-btn" style="width: 100%; padding: 10px; border: none; background: #ffc107; color: black; border-radius: 5px; cursor: pointer; margin-bottom: 5px;">
-                    ⚙️ Configurar API
-                </button>
-                <button id="test-btn" style="width: 100%; padding: 10px; border: none; background: #17a2b8; color: white; border-radius: 5px; cursor: pointer; margin-bottom: 5px;">
-                    🔍 Testar API Key
-                </button>
-                <button id="logs-btn" style="width: 100%; padding: 10px; border: none; background: #6f42c1; color: white; border-radius: 5px; cursor: pointer;">
-                    📋 Ver Logs de Erro
-                </button>
+                <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 8V4H8"/>
+                        <rect width="16" height="12" x="4" y="8" rx="2"/>
+                        <path d="M2 14h2"/>
+                        <path d="M20 14h2"/>
+                        <path d="M15 13v2"/>
+                        <path d="M9 13v2"/>
+                    </svg>
+                    Processar SENT1
+                </li>
+                <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="5,3 19,12 5,21 12,12"/>
+                    </svg>
+                    API Perplexity (Recomendado)
+                </li>
+                <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    </svg>
+                    Método Manual
+                </li>
+                <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    Configurar API
+                </li>
+                <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    Testar API Key
+                </li>
+                <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        <line x1="9" y1="9" x2="15" y2="9"/>
+                        <line x1="9" y1="13" x2="15" y2="13"/>
+                        <line x1="9" y1="17" x2="13" y2="17"/>
+                    </svg>
+                    Ver Logs de Erro
+                </li>
             `;
+
+            // Adicionar eventos de hover e click para todos os botões
+            const menuItems = menu.querySelectorAll("li[id]");
+            menuItems.forEach((item) => {
+                item.addEventListener("mouseenter", () => {
+                    item.style.backgroundColor = "rgba(148, 163, 184, 0.1)";
+                });
+                item.addEventListener("mouseleave", () => {
+                    item.style.backgroundColor = "transparent";
+                });
+            });
 
             menu.querySelector("#api-btn").addEventListener(
                 "click",
@@ -1272,7 +1403,6 @@ ${texto}`;
                     menu.remove();
                     const texto = await autoExtractText();
                     if (texto) {
-                        // Perguntar se quer preview ou cópia direta
                         const usePreview = confirm(
                             "Deseja ver o preview do texto antes de copiar?\n\nClique 'OK' para preview ou 'Cancelar' para copiar diretamente."
                         );
@@ -1282,7 +1412,6 @@ ${texto}`;
                             showTextPreview(texto);
                         } else {
                             log("⚡ Usuário escolheu cópia direta");
-                            // Cópia direta
                             const copied = await copyToClipboardWithPrefix(
                                 texto
                             );
@@ -1443,9 +1572,9 @@ ${texto}`;
         }, 5000);
     }
 
-    // Criar botão de automação
+    // Criar botão de automação integrado na página
     function createAutomationButton() {
-        console.log("🔧 Tentando criar botão...");
+        console.log("🔧 Tentando criar botão integrado...");
 
         // Verificar se já existe
         if (document.getElementById("sent1-auto-button")) {
@@ -1453,43 +1582,666 @@ ${texto}`;
             return;
         }
 
-        console.log("✅ Criando novo botão...");
+        // Verificar se a página é válida para mostrar o botão
+        if (!isValidPageForButton()) {
+            console.log(
+                "⚠️ Página não é válida para o botão, cancelando criação"
+            );
+            return;
+        }
+
+        // Buscar container principal para integração
+        const targetInfo = findTargetContainer();
+
+        if (!targetInfo) {
+            console.log(
+                "⚠️ Container alvo não encontrado, usando posição fixa como fallback"
+            );
+            createFloatingButton();
+            return;
+        }
+
+        // Extrair informações do container
+        const targetContainer = targetInfo.container || targetInfo;
+        const insertMethod = targetInfo.insertMethod || "append";
+        const referenceElement = targetInfo.referenceElement;
+
+        console.log("✅ Container encontrado, criando botão integrado...");
         const button = document.createElement("button");
         button.id = "sent1-auto-button";
-        button.innerHTML = "🤖 AUTOMAÇÃO SENT1";
-        button.style.cssText = `
-            position: fixed !important;
-            top: 80px !important;
-            right: 20px !important;
-            background: linear-gradient(45deg, #007bff, #0056b3) !important;
-            color: white !important;
-            border: none !important;
-            padding: 15px 20px !important;
-            border-radius: 8px !important;
-            font-weight: bold !important;
-            font-size: 14px !important;
-            cursor: pointer !important;
-            z-index: 99999 !important;
-            box-shadow: 0 4px 12px rgba(0,123,255,0.3) !important;
-            transition: all 0.3s ease !important;
+        button.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+                <path d="M16.5 7.5 19 5"/>
+                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+                <path d="M9 21a6 6 0 0 0-6-6"/>
+                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+            </svg>
+            Resumir Sentença
         `;
+        button.className = "infraButton btn-primary";
 
-        button.addEventListener("mouseover", () => {
-            button.style.transform = "scale(1.05)";
-            button.style.boxShadow = "0 6px 16px rgba(0,123,255,0.4)";
+        // Aplicar apenas a cor azul personalizada
+        button.style.backgroundColor = "#134377";
+        button.style.borderColor = "#134377";
+
+        // Adicionar eventos para hover e focus
+        button.addEventListener("mouseenter", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
         });
 
-        button.addEventListener("mouseout", () => {
-            button.style.transform = "scale(1)";
-            button.style.boxShadow = "0 4px 12px rgba(0,123,255,0.3)";
+        button.addEventListener("mouseleave", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        button.addEventListener("focus", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("blur", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        // Adicionar espaçamento quando posicionado ao lado do PDPJ
+        if (insertMethod === "beforePDPJ") {
+            button.style.marginRight = "15px";
+        }
+
+        // Adicionar evento de click
+        button.addEventListener("click", async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            log("🔧 Botão integrado clicado!");
+            console.log("🔧 Debug: Botão RESUMIR SENTENÇA clicado");
+
+            // Adicionar feedback visual
+            button.style.transform = "scale(0.95)";
+            setTimeout(() => {
+                button.style.transform = "";
+            }, 150);
+
+            const pageType = detectPageType();
+            log("📄 Tipo de página detectado:", pageType);
+
+            if (pageType === "lista_documentos") {
+                showNotification("🚀 Abrindo SENT1...", "info");
+                await runFullAutomation();
+            } else if (pageType === "documento_especifico") {
+                const rect = button.getBoundingClientRect();
+                showOptionsMenu(rect.left, rect.bottom);
+            } else {
+                showNotification("❌ Página não reconhecida", "error");
+            }
+        });
+
+        // Inserir no container usando o método apropriado
+        if (insertMethod === "beforeDownload" && referenceElement) {
+            try {
+                console.log(
+                    "🎯 Inserindo botão antes do Download Completo na barra de comandos..."
+                );
+                console.log(
+                    "🎯 Reference element (Download button):",
+                    referenceElement
+                );
+                console.log("🎯 Container (form):", targetContainer);
+
+                // Criar um wrapper para melhor alinhamento na barra de comandos
+                const buttonWrapper = document.createElement("span");
+                buttonWrapper.style.cssText =
+                    "margin-right: 8px; display: inline-block;";
+                buttonWrapper.appendChild(button);
+
+                // Inserir o wrapper antes do botão Download Completo
+                referenceElement.insertAdjacentElement(
+                    "beforebegin",
+                    buttonWrapper
+                );
+
+                console.log(
+                    "✅ Botão inserido com sucesso antes do Download Completo"
+                );
+                console.log(
+                    "✅ Posição final do botão:",
+                    button.parentElement.parentElement
+                );
+            } catch (error) {
+                console.log(
+                    "⚠️ Erro ao inserir antes do Download Completo, usando fallback:",
+                    error
+                );
+                // Fallback: inserir no início do container
+                targetContainer.insertBefore(
+                    button,
+                    targetContainer.firstChild
+                );
+                console.log(
+                    "✅ Botão inserido no início do container (fallback)"
+                );
+            }
+        } else if (insertMethod === "prepend") {
+            // Inserir no início do container
+            const firstChild = targetContainer.firstChild;
+            if (firstChild) {
+                targetContainer.insertBefore(button, firstChild);
+            } else {
+                targetContainer.appendChild(button);
+            }
+            console.log("✅ Botão inserido no início do container");
+        } else if (insertMethod === "beforePDPJ" && referenceElement) {
+            try {
+                // Estratégia 1: Inserir diretamente ao lado esquerdo da imagem usando insertAdjacentElement
+                console.log(
+                    "🎯 Tentando posicionar ao lado esquerdo da imagem PDPJ..."
+                );
+                console.log("🎯 Reference element:", referenceElement);
+                console.log(
+                    "🎯 Reference element tagName:",
+                    referenceElement.tagName
+                );
+                console.log(
+                    "🎯 Reference element parent:",
+                    referenceElement.parentElement
+                );
+
+                // Usar insertAdjacentElement para posicionar exatamente ao lado esquerdo
+                referenceElement.insertAdjacentElement("beforebegin", button);
+
+                // Verificação final: garantir que o botão não está dentro de um link
+                const buttonParent = button.parentElement;
+                const isInsideLink = button.closest("a") !== null;
+
+                if (isInsideLink) {
+                    console.log(
+                        "⚠️ PROBLEMA: Botão foi inserido dentro de um link!"
+                    );
+                    console.log("⚠️ Tentando mover para fora do link...");
+
+                    // Encontrar o link pai
+                    const linkElement = button.closest("a");
+                    const linkContainer = linkElement.parentElement;
+
+                    // Remover botão do local atual
+                    button.remove();
+
+                    // Inserir antes do link
+                    linkContainer.insertBefore(button, linkElement);
+                    console.log("✅ Botão movido para fora do link");
+                }
+
+                console.log(
+                    "✅ Botão inserido ao lado esquerdo da imagem PDPJ"
+                );
+                console.log("✅ Posição final do botão:", button.parentElement);
+                console.log(
+                    "✅ Botão está dentro de link?",
+                    button.closest("a") !== null ? "SIM" : "NÃO"
+                );
+            } catch (error) {
+                console.log(
+                    "⚠️ Erro ao inserir ao lado da imagem PDPJ, tentando estratégias alternativas:",
+                    error
+                );
+
+                try {
+                    // Estratégia 2: Verificar se a imagem é realmente filha direta do container
+                    if (
+                        Array.from(targetContainer.children).includes(
+                            referenceElement
+                        )
+                    ) {
+                        // Inserir antes da imagem PDPJ (ao lado esquerdo)
+                        targetContainer.insertBefore(button, referenceElement);
+                        console.log("✅ Botão inserido antes da imagem PDPJ");
+                    } else {
+                        // Estratégia 3: A imagem não é filha direta, usar o pai direto da imagem
+                        const directParent = referenceElement.parentElement;
+                        if (
+                            directParent &&
+                            Array.from(directParent.children).includes(
+                                referenceElement
+                            )
+                        ) {
+                            directParent.insertBefore(button, referenceElement);
+                            console.log(
+                                "✅ Botão inserido antes da imagem PDPJ (no pai direto)"
+                            );
+                        } else {
+                            // Estratégia 4: Fallback - adicionar no final do container encontrado
+                            targetContainer.appendChild(button);
+                            console.log(
+                                "✅ Botão adicionado ao container (fallback)"
+                            );
+                        }
+                    }
+                } catch (secondError) {
+                    console.log(
+                        "⚠️ Erro na segunda tentativa, usando fallback final:",
+                        secondError
+                    );
+                    // Fallback final: adicionar no final do container
+                    targetContainer.appendChild(button);
+                    console.log(
+                        "✅ Botão adicionado ao container (fallback final)"
+                    );
+                }
+            }
+        } else {
+            // Método padrão - adicionar ao final do container
+            targetContainer.appendChild(button);
+            console.log(
+                "✅ Botão integrado adicionado ao container:",
+                targetContainer
+            );
+        }
+    }
+
+    // Função para encontrar o container alvo na página
+    function findTargetContainer() {
+        // Prioridade 1: Buscar o botão "Download Completo" na barra de comandos superior do eProc
+        const commandBar = document.getElementById(
+            "divInfraBarraComandosSuperior"
+        );
+        if (commandBar) {
+            console.log(
+                "✅ Barra de comandos superior encontrada:",
+                commandBar
+            );
+
+            // Procurar pelo formulário que contém o botão "Download Completo"
+            const processForm = commandBar.querySelector("#frmProcessoLista");
+            if (processForm) {
+                console.log(
+                    "✅ Formulário do processo encontrado:",
+                    processForm
+                );
+
+                // Buscar o botão "Download Completo" por diferentes estratégias
+                const downloadSelectors = [
+                    'button[id*="btnDownloadCompleto"]',
+                    'input[id*="btnDownloadCompleto"]',
+                    'button[aria-label*="Download Completo"]',
+                    'input[aria-label*="Download Completo"]',
+                    'button[value*="Download Completo"]',
+                    'input[value*="Download Completo"]',
+                    'button[title*="Download Completo"]',
+                    'input[title*="Download Completo"]',
+                    'button:contains("Download Completo")',
+                    '*[onclick*="download_completo"]',
+                    '*[onclick*="downloadCompleto"]',
+                    '*[onclick*="download"]',
+                ];
+
+                let downloadButton = null;
+
+                // Primeiro tentar seletores diretos
+                for (const selector of downloadSelectors) {
+                    if (selector.includes(":contains(")) continue; // Pular seletores que não funcionam com querySelector
+                    downloadButton = processForm.querySelector(selector);
+                    if (downloadButton) {
+                        console.log(
+                            `✅ Botão Download Completo encontrado com seletor: ${selector}`,
+                            downloadButton
+                        );
+                        break;
+                    }
+                }
+
+                // Se não encontrou, buscar por texto nos botões
+                if (!downloadButton) {
+                    console.log(
+                        "🔍 Buscando botão Download Completo por texto..."
+                    );
+                    const allButtons = processForm.querySelectorAll(
+                        'button, input[type="submit"], input[type="button"]'
+                    );
+                    for (const btn of allButtons) {
+                        const text =
+                            btn.textContent ||
+                            btn.value ||
+                            btn.getAttribute("aria-label") ||
+                            "";
+                        if (
+                            text.toLowerCase().includes("download") &&
+                            text.toLowerCase().includes("completo")
+                        ) {
+                            downloadButton = btn;
+                            console.log(
+                                "✅ Botão Download Completo encontrado por texto:",
+                                downloadButton
+                            );
+                            break;
+                        }
+                    }
+                }
+
+                if (downloadButton) {
+                    console.log(
+                        "✅ Inserindo antes do botão Download Completo na barra de comandos"
+                    );
+                    return {
+                        container: processForm,
+                        insertMethod: "beforeDownload",
+                        referenceElement: downloadButton,
+                    };
+                } else {
+                    // Se não encontrou o botão Download, inserir no início do formulário
+                    console.log(
+                        "⚠️ Botão Download Completo não encontrado, inserindo no início do formulário"
+                    );
+                    return {
+                        container: processForm,
+                        insertMethod: "prepend",
+                    };
+                }
+            } else {
+                // Se não encontrou o formulário, buscar diretamente na barra de comandos
+                console.log(
+                    "⚠️ Formulário não encontrado, buscando Download Completo diretamente na barra..."
+                );
+
+                const downloadSelectors = [
+                    'button[id*="btnDownloadCompleto"]',
+                    'input[id*="btnDownloadCompleto"]',
+                    'button[aria-label*="Download Completo"]',
+                    'input[aria-label*="Download Completo"]',
+                    'button[value*="Download Completo"]',
+                    'input[value*="Download Completo"]',
+                ];
+
+                let downloadButton = null;
+                for (const selector of downloadSelectors) {
+                    downloadButton = commandBar.querySelector(selector);
+                    if (downloadButton) {
+                        console.log(
+                            `✅ Botão Download encontrado na barra: ${selector}`,
+                            downloadButton
+                        );
+                        return {
+                            container: commandBar,
+                            insertMethod: "beforeDownload",
+                            referenceElement: downloadButton,
+                        };
+                    }
+                }
+
+                // Buscar por texto nos botões da barra
+                const allButtons = commandBar.querySelectorAll(
+                    'button, input[type="submit"], input[type="button"]'
+                );
+                for (const btn of allButtons) {
+                    const text =
+                        btn.textContent ||
+                        btn.value ||
+                        btn.getAttribute("aria-label") ||
+                        "";
+                    if (
+                        text.toLowerCase().includes("download") &&
+                        text.toLowerCase().includes("completo")
+                    ) {
+                        console.log(
+                            "✅ Botão Download encontrado por texto na barra:",
+                            btn
+                        );
+                        return {
+                            container: commandBar,
+                            insertMethod: "beforeDownload",
+                            referenceElement: btn,
+                        };
+                    }
+                }
+
+                // Se não encontrou nada, inserir na barra de comandos
+                console.log(
+                    "⚠️ Botão Download não encontrado, inserindo na barra de comandos"
+                );
+                return {
+                    container: commandBar,
+                    insertMethod: "prepend",
+                };
+            }
+        }
+
+        // Prioridade 2: Buscar pela imagem PDPJ e posicionar ao lado esquerdo (fallback)
+        const pdpjImage = document.querySelector(
+            'img[src*="pdpj-logotipo_3.png"], img[src*="pdpj-logotipo"]'
+        );
+        if (pdpjImage) {
+            console.log(
+                "✅ Imagem PDPJ encontrada, buscando container pai adequado"
+            );
+
+            // Verificar se a imagem está dentro de um link <a>
+            const linkParent = pdpjImage.closest("a");
+            if (linkParent) {
+                console.log(
+                    "🔗 Imagem PDPJ está dentro de um link:",
+                    linkParent
+                );
+                console.log(
+                    "🔗 Link src/href:",
+                    linkParent.href || linkParent.getAttribute("href")
+                );
+                const linkContainer = linkParent.parentElement;
+                if (linkContainer) {
+                    console.log("🔗 Container do link:", linkContainer);
+                    return {
+                        container: linkContainer,
+                        insertMethod: "beforePDPJ",
+                        referenceElement: linkParent, // Usar o link como referência, não a imagem
+                    };
+                }
+            }
+
+            // Primeiro tentar o pai direto da imagem se não estiver em um link
+            const directParent = pdpjImage.parentElement;
+            if (directParent) {
+                console.log(
+                    "✅ Usando pai direto da imagem PDPJ:",
+                    directParent
+                );
+                return {
+                    container: directParent,
+                    insertMethod: "beforePDPJ",
+                    referenceElement: pdpjImage,
+                };
+            }
+
+            // Buscar o container pai que permite inserir o botão ao lado esquerdo
+            let parent = pdpjImage.parentElement;
+            while (parent && parent !== document.body) {
+                const styles = window.getComputedStyle(parent);
+
+                // Verificar se é um container flexível ou que permita posicionamento
+                if (
+                    styles.display === "flex" ||
+                    parent.classList.contains("navbar") ||
+                    parent.classList.contains("header") ||
+                    parent.classList.contains("d-flex") ||
+                    parent.tagName === "NAV" ||
+                    parent.tagName === "HEADER"
+                ) {
+                    console.log(
+                        "✅ Container da navbar/header encontrado para PDPJ:",
+                        parent
+                    );
+
+                    // Retornar um objeto especial indicando posicionamento próximo à imagem PDPJ
+                    return {
+                        container: parent,
+                        insertMethod: "beforePDPJ",
+                        referenceElement: pdpjImage,
+                    };
+                }
+                parent = parent.parentElement;
+            }
+
+            // Se não encontrou container flex, usar o pai direto da imagem como fallback
+            console.log("✅ Usando container pai direto da imagem PDPJ");
+            return {
+                container: pdpjImage.parentElement,
+                insertMethod: "beforePDPJ",
+                referenceElement: pdpjImage,
+            };
+        }
+
+        // Prioridade 2: Buscar containers da navbar/header
+        const navbarSelectors = [
+            ".navbar",
+            ".nav",
+            ".header",
+            ".top-bar",
+            '[class*="navbar"]',
+            '[class*="header"]',
+            '[class*="top-bar"]',
+        ];
+
+        for (const selector of navbarSelectors) {
+            const container = document.querySelector(selector);
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                // Verificar se está na parte superior da página
+                if (rect.top < 100 && rect.width > 300) {
+                    console.log(
+                        `✅ Container navbar encontrado com seletor: ${selector}`
+                    );
+                    return { container: container, insertMethod: "append" };
+                }
+            }
+        }
+
+        // Prioridade 3: Lista atualizada de seletores com foco no eProc
+        const containerSelectors = [
+            "#divInfraBarraComandosSuperior", // Barra de comandos superior do eProc
+            ".infraBarraComandos", // Barra de comandos geral do eProc
+            "#frmProcessoLista", // Formulário da lista de processos
+            ".d-flex.w-100.justify-content-between",
+            ".d-flex.justify-content-between",
+            ".d-flex.w-100",
+            '[class*="d-flex"][class*="justify-content-between"]',
+            ".toolbar",
+            ".action-bar",
+            ".header-actions",
+            ".page-header .d-flex",
+            ".container-fluid .d-flex",
+            "#barraComandos",
+            ".infra-barra-comandos",
+        ];
+
+        for (const selector of containerSelectors) {
+            const container = document.querySelector(selector);
+            if (container) {
+                console.log(`✅ Container encontrado com seletor: ${selector}`);
+                return { container: container, insertMethod: "append" };
+            }
+        }
+
+        // Fallback: buscar containers que possam ser adequados
+        const fallbackSelectors = [
+            'div[class*="d-flex"]',
+            'div[class*="toolbar"]',
+            'div[class*="header"]',
+            'div[class*="action"]',
+        ];
+
+        for (const selector of fallbackSelectors) {
+            const containers = document.querySelectorAll(selector);
+            for (const container of containers) {
+                // Verificar se o container está visível e tem tamanho adequado
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 200 && rect.height > 20 && rect.top < 300) {
+                    console.log(
+                        `✅ Container fallback encontrado: ${selector}`
+                    );
+                    return { container: container, insertMethod: "append" };
+                }
+            }
+        }
+
+        console.log("❌ Nenhum container adequado encontrado");
+        return null;
+    }
+
+    // Função de fallback para criar botão flutuante (caso container não seja encontrado)
+    function createFloatingButton() {
+        // Verificar se a página é válida para mostrar o botão
+        if (!isValidPageForButton()) {
+            console.log(
+                "⚠️ Página não é válida para o botão flutuante, cancelando criação"
+            );
+            return;
+        }
+
+        console.log("✅ Criando botão flutuante como fallback...");
+        const button = document.createElement("button");
+        button.id = "sent1-auto-button";
+        button.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+                <path d="M16.5 7.5 19 5"/>
+                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+                <path d="M9 21a6 6 0 0 0-6-6"/>
+                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+            </svg>
+            Resumir Sentença
+        `;
+
+        // Usar estilo customizado próprio para o botão flutuante
+        button.style.cssText = `
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 99999;
+            background-color: #134377;
+            border: 1px solid #134377;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            white-space: nowrap;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease;
+        `;
+
+        // Adicionar eventos para hover e focus
+        button.addEventListener("mouseenter", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("mouseleave", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        button.addEventListener("focus", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("blur", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
         });
 
         button.addEventListener("click", async (e) => {
             e.preventDefault();
             e.stopPropagation();
 
-            log("🔧 Botão clicado!");
-            console.log("🔧 Debug: Botão AUTOMAÇÃO SENT1 clicado");
+            log("🔧 Botão flutuante clicado!");
+            console.log("🔧 Debug: Botão RESUMIR SENTENÇA clicado");
 
             const pageType = detectPageType();
             log("📄 Tipo de página detectado:", pageType);
@@ -1506,20 +2258,7 @@ ${texto}`;
         });
 
         document.body.appendChild(button);
-        console.log("✅ Botão adicionado ao DOM");
-
-        const pageType = detectPageType();
-        if (pageType === "lista_documentos") {
-            showNotification(
-                "🤖 Automação SENT1 carregada! Clique no botão para começar",
-                "info"
-            );
-        } else if (pageType === "documento_especifico") {
-            showNotification(
-                "🤖 Automação SENT1 carregada! Clique para extrair e enviar ao ChatGPT",
-                "info"
-            );
-        }
+        console.log("✅ Botão flutuante adicionado ao DOM");
     }
 
     // Debug: verificar se o botão foi criado
@@ -1527,16 +2266,31 @@ ${texto}`;
         setTimeout(() => {
             const button = document.getElementById("sent1-auto-button");
             if (button) {
-                console.log("✅ Botão AUTOMAÇÃO SENT1 encontrado:", button);
-                console.log("📍 Posição do botão:", {
-                    top: button.style.top,
-                    right: button.style.right,
-                    zIndex: button.style.zIndex,
-                    display: getComputedStyle(button).display,
-                    visibility: getComputedStyle(button).visibility,
-                });
+                console.log("✅ Botão RESUMIR SENTENÇA encontrado:", button);
+                const isFloating = button.style.position === "fixed";
+                console.log(
+                    "📍 Tipo de botão:",
+                    isFloating ? "Flutuante" : "Integrado"
+                );
+
+                if (isFloating) {
+                    console.log("📍 Posição do botão flutuante:", {
+                        top: button.style.top,
+                        right: button.style.right,
+                        zIndex: button.style.zIndex,
+                        display: getComputedStyle(button).display,
+                        visibility: getComputedStyle(button).visibility,
+                    });
+                } else {
+                    console.log("📍 Informações do botão integrado:", {
+                        parentElement: button.parentElement?.tagName,
+                        parentClass: button.parentElement?.className,
+                        display: getComputedStyle(button).display,
+                        visibility: getComputedStyle(button).visibility,
+                    });
+                }
             } else {
-                console.log("❌ Botão AUTOMAÇÃO SENT1 NÃO encontrado!");
+                console.log("❌ Botão RESUMIR SENTENÇA NÃO encontrado!");
             }
         }, 2000);
     }
@@ -1777,11 +2531,12 @@ ${texto}`;
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0,0,0,0.7);
+                background: rgba(0,0,0,0.8);
                 z-index: 100010;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                backdrop-filter: blur(4px);
             `;
 
             let sentenceOptions = "";
@@ -1802,40 +2557,71 @@ ${texto}`;
                 });
 
                 sentenceOptions += `
-                    <div style="margin-bottom: 15px; padding: 15px; border: 2px solid #ddd; border-radius: 8px; background: #f8f9fa; cursor: pointer; transition: all 0.3s;" 
+                    <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
                          class="sentence-option" data-index="${index}">
-                        <div style="font-weight: bold; color: #333; margin-bottom: 8px;">
-                            📄 ${tipoInfo} - ${seqEvento}
+                        <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(101, 171, 255);">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                            ${tipoInfo} - ${seqEvento}
                         </div>
-                        <div style="font-size: 13px; color: #007bff; margin-bottom: 5px; font-weight: 500;">
-                            📋 ${eventoDesc}
+                        <div style="font-size: 13px; color: rgb(101, 171, 255); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            </svg>
+                            ${eventoDesc}
                         </div>
-                        <div style="font-size: 12px; color: #666;">
-                            🗂️ Documento: SENT${sent1.index}${tamanhoInfo}
+                        <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                            </svg>
+                            Documento: SENT${sent1.index}${tamanhoInfo}
                         </div>
-                        <div style="font-size: 11px; color: #888; margin-top: 5px;">
-                            🔗 ID: ${sent1.eventoId.substring(0, 20)}...
+                        <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.8; display: flex; align-items: center; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+                            </svg>
+                            ID: ${sent1.eventoId.substring(0, 20)}...
                         </div>
                     </div>
                 `;
             });
 
             modal.innerHTML = `
-                <div style="background: white; border-radius: 12px; padding: 25px; max-width: 600px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
-                    <div style="margin-bottom: 20px; text-align: center;">
-                        <h2 style="margin: 0; color: #333; font-size: 20px;">📄 Múltiplas Sentenças Encontradas</h2>
-                        <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
+                <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+                    <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+                        <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                            Múltiplas Sentenças Encontradas
+                        </h2>
+                        <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
                             Foram encontradas ${sent1Links.length} sentenças neste processo. Selecione qual deseja processar:
                         </p>
                     </div>
                     
-                    <div id="sentence-options">
+                    <div id="sentence-options" style="margin-bottom: 20px;">
                         ${sentenceOptions}
                     </div>
 
-                    <div style="text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
-                        <button id="cancel-selection" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                            ❌ Cancelar
+                    <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                        <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m18 6-12 12"/>
+                                <path d="m6 6 12 12"/>
+                            </svg>
+                            Cancelar
                         </button>
                     </div>
                 </div>
@@ -1848,16 +2634,16 @@ ${texto}`;
                 .querySelectorAll(".sentence-option")
                 .forEach((option, index) => {
                     option.addEventListener("mouseover", () => {
-                        option.style.borderColor = "#007bff";
-                        option.style.background = "#e3f2fd";
-                        option.style.transform = "translateY(-2px)";
+                        option.style.borderColor = "rgba(101, 171, 255, 0.6)";
+                        option.style.background = "rgb(47, 52, 61)";
+                        option.style.transform = "translateY(-1px)";
                         option.style.boxShadow =
-                            "0 4px 12px rgba(0,123,255,0.3)";
+                            "0 4px 12px rgba(101, 171, 255, 0.25)";
                     });
 
                     option.addEventListener("mouseout", () => {
-                        option.style.borderColor = "#ddd";
-                        option.style.background = "#f8f9fa";
+                        option.style.borderColor = "rgba(82, 82, 82, 0.3)";
+                        option.style.background = "rgb(32, 39, 51)";
                         option.style.transform = "translateY(0)";
                         option.style.boxShadow = "none";
                     });
@@ -1917,47 +2703,71 @@ ${texto}`;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.8);
             z-index: 100001;
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         `;
 
         modal.innerHTML = `
-            <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                <div style="margin-bottom: 20px; text-align: center;">
-                    <h2 style="margin: 0; color: #333; font-size: 20px;">🔑 Configurar API Key do Perplexity</h2>
+            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 520px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
+                            <circle cx="12" cy="16" r="1"/>
+                            <rect x="3" y="10" width="18" height="12" rx="2"/>
+                            <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
+                        </svg>
+                        Configurar API Key do Perplexity
+                    </h2>
                 </div>
                 
-                <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 5px; font-size: 14px; line-height: 1.5;">
-                    <strong>Como obter sua API Key do Perplexity:</strong><br>
-                    1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #007bff;">www.perplexity.ai/settings/api</a><br>
+                <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; font-size: 13px; line-height: 1.5; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.3);">
+                    <strong style="color: rgb(101, 171, 255);">Como obter sua API Key do Perplexity:</strong><br>
+                    1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(101, 171, 255); text-decoration: none;">www.perplexity.ai/settings/api</a><br>
                     2. Faça login na sua conta Perplexity<br>
                     3. Clique em "Generate" para criar uma nova chave<br>
                     4. Copie a chave e cole abaixo
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">API Key:</label>
-                    <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-family: monospace;" value="${
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: rgb(243, 246, 249); font-size: 13px;">API Key:</label>
+                    <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 10px 12px; border: 1px solid rgba(82, 82, 82, 0.5); border-radius: 8px; font-family: monospace; background: rgb(32, 39, 51); color: rgb(243, 246, 249); font-size: 14px; transition: all 0.2s ease;" value="${
                         currentKey || ""
                     }" />
                 </div>
 
-                <div style="margin-bottom: 20px; padding: 10px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; font-size: 12px;">
-                    ⚠️ Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.
+                <div style="margin-bottom: 20px; padding: 12px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; color: rgb(251, 191, 36);">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                        <path d="M12 9v4"/>
+                        <path d="m12 17 .01 0"/>
+                    </svg>
+                    <span>Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
                 </div>
 
-                <div style="text-align: center;">
-                    <button id="save-key" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
-                        ✅ Salvar e Testar
+                <div style="text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+                    <button id="save-key" style="background: rgb(34, 197, 94); color: white; border: 1px solid rgb(34, 197, 94); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20,6 9,17 4,12"/>
+                        </svg>
+                        Salvar e Testar
                     </button>
-                    <button id="remove-key" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
-                        🗑️ Remover
+                    <button id="remove-key" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                        </svg>
+                        Remover
                     </button>
-                    <button id="cancel-config" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                        ❌ Cancelar
+                    <button id="cancel-config" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m18 6-12 12"/>
+                            <path d="m6 6 12 12"/>
+                        </svg>
+                        Cancelar
                     </button>
                 </div>
             </div>
@@ -1969,6 +2779,17 @@ ${texto}`;
         const saveBtn = modal.querySelector("#save-key");
         const removeBtn = modal.querySelector("#remove-key");
         const cancelBtn = modal.querySelector("#cancel-config");
+
+        // Adicionar eventos de focus/blur para o input
+        input.addEventListener("focus", () => {
+            input.style.borderColor = "rgb(101, 171, 255)";
+            input.style.boxShadow = "0 0 0 3px rgba(101, 171, 255, 0.1)";
+        });
+
+        input.addEventListener("blur", () => {
+            input.style.borderColor = "rgba(82, 82, 82, 0.5)";
+            input.style.boxShadow = "none";
+        });
 
         input.focus();
 
@@ -2041,7 +2862,7 @@ ${texto}`;
         );
 
         if (logs.length === 0) {
-            showNotification("📋 Nenhum log de erro encontrado", "info");
+            showNotification("Nenhum log de erro encontrado", "info");
             return;
         }
 
@@ -2052,31 +2873,48 @@ ${texto}`;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             z-index: 100002;
             display: flex;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         `;
 
         modal.innerHTML = `
-            <div style="background: white; border-radius: 10px; padding: 20px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                <div style="margin-bottom: 20px; text-align: center;">
-                    <h2 style="margin: 0; color: #333;">🔍 Logs de Erro da API</h2>
-                    <button id="clear-logs" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-top: 10px;">
-                        🗑️ Limpar Logs
+            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
+                            <circle cx="11" cy="11" r="8"/>
+                            <path d="m21 21-4.35-4.35"/>
+                        </svg>
+                        Logs de Erro da API
+                    </h2>
+                    <button id="clear-logs" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3,6 5,6 21,6"/>
+                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+                        </svg>
+                        Limpar Logs
                     </button>
                 </div>
-                <div style="font-family: monospace; font-size: 12px; line-height: 1.4;">
+                <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
                     ${logs
                         .map(
                             (log, i) => `
-                        <div style="margin-bottom: 15px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f8f9fa;">
-                            <strong>Log ${i + 1} - ${log.timestamp}</strong><br>
-                            <strong>Request ID:</strong> ${log.requestId}<br>
-                            <strong>Phase:</strong> ${log.phase}<br>
-                            <strong>Data:</strong><br>
-                            <pre style="background: #e9ecef; padding: 10px; border-radius: 3px; overflow-x: auto; white-space: pre-wrap;">${JSON.stringify(
+                        <div style="margin-bottom: 16px; padding: 12px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
+                            <strong style="color: rgb(101, 171, 255);">Log ${
+                                i + 1
+                            } - ${log.timestamp}</strong><br>
+                            <strong style="color: rgb(136, 152, 181);">Request ID:</strong> <span style="color: rgb(243, 246, 249);">${
+                                log.requestId
+                            }</span><br>
+                            <strong style="color: rgb(136, 152, 181);">Phase:</strong> <span style="color: rgb(243, 246, 249);">${
+                                log.phase
+                            }</span><br>
+                            <strong style="color: rgb(136, 152, 181);">Data:</strong><br>
+                            <pre style="background: rgb(18, 26, 39); padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.2); margin-top: 8px;">${JSON.stringify(
                                 log.data,
                                 null,
                                 2
@@ -2086,9 +2924,13 @@ ${texto}`;
                         )
                         .join("")}
                 </div>
-                <div style="text-align: center; margin-top: 20px;">
-                    <button id="close-logs" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-                        ❌ Fechar
+                <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                    <button id="close-logs" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m18 6-12 12"/>
+                            <path d="m6 6 12 12"/>
+                        </svg>
+                        Fechar
                     </button>
                 </div>
             </div>
@@ -2103,7 +2945,7 @@ ${texto}`;
         modal.querySelector("#clear-logs").addEventListener("click", () => {
             localStorage.removeItem("eprobe_error_logs");
             modal.remove();
-            showNotification("🗑️ Logs de erro limpos", "info");
+            showNotification("Logs de erro limpos", "info");
         });
 
         modal.addEventListener("click", (e) => {
@@ -2583,10 +3425,78 @@ ${texto}`;
         return "";
     }
 
+    // Observador de mudanças na página para detectar navegação SPA
+    function setupPageObserver() {
+        let lastUrl = window.location.href;
+
+        // Observar mudanças no DOM
+        const observer = new MutationObserver((mutations) => {
+            const currentUrl = window.location.href;
+
+            // Verificar se a URL mudou (navegação SPA)
+            if (currentUrl !== lastUrl) {
+                console.log("🔄 Navegação detectada:", currentUrl);
+                lastUrl = currentUrl;
+
+                // Recriar botão após navegação apenas em páginas válidas
+                setTimeout(() => {
+                    if (
+                        !document.getElementById("sent1-auto-button") &&
+                        isValidPageForButton()
+                    ) {
+                        console.log("🔄 Recriando botão após navegação...");
+                        createAutomationButton();
+                    } else if (!isValidPageForButton()) {
+                        console.log("🔄 Nova página não é válida para o botão");
+                    }
+                }, 1500);
+            }
+
+            // Verificar se o botão ainda existe no DOM
+            const buttonExists = document.getElementById("sent1-auto-button");
+            if (!buttonExists) {
+                // Verificar se a página é válida antes de recriar o botão
+                if (isValidPageForButton()) {
+                    console.log("🔄 Botão removido do DOM, recriando...");
+                    setTimeout(createAutomationButton, 500);
+                } else {
+                    console.log(
+                        "🔄 Página não é válida para o botão, não recriando"
+                    );
+                }
+            }
+        });
+
+        // Configurar observador
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: false,
+        });
+
+        // Observar mudanças de URL via popstate
+        window.addEventListener("popstate", () => {
+            setTimeout(() => {
+                console.log("🔄 Popstate detectado, verificando botão...");
+                if (
+                    !document.getElementById("sent1-auto-button") &&
+                    isValidPageForButton()
+                ) {
+                    createAutomationButton();
+                } else if (!isValidPageForButton()) {
+                    console.log("🔄 Página atual não é válida para o botão");
+                }
+            }, 1000);
+        });
+    }
+
     // Inicialização
     function init() {
         log("🚀 Iniciando content script automatizado");
-        console.log("🚀 AUTOMAÇÃO SENT1: Script iniciado");
+        console.log("🚀 RESUMIR SENTENÇA: Script iniciado");
+
+        // Configurar observador de página
+        setupPageObserver();
 
         // Criar botão após a página carregar
         if (document.readyState === "loading") {
@@ -2600,6 +3510,14 @@ ${texto}`;
 
         // Criar botão também após um delay para garantir
         setTimeout(createAutomationButton, 1000);
+
+        // Tentar novamente após mais tempo para SPAs
+        setTimeout(() => {
+            if (!document.getElementById("sent1-auto-button")) {
+                console.log("🔄 Segunda tentativa de criação do botão...");
+                createAutomationButton();
+            }
+        }, 3000);
 
         // Debug do botão
         debugButtonStatus();
@@ -2617,6 +3535,7 @@ ${texto}`;
         sendToChatGPT,
         autoOpenChatGPT,
         detectPageType,
+        isValidPageForButton,
         findSENT1Links,
         showSentenceSelectionModal,
         showSentenceProcessingOptions,
