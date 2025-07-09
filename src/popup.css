@@ -26,7 +26,7 @@
     --color-primary-200: 40 47 101; /* #282f65 */
     --color-primary-300: 40 65 165; /* #2841a5 */
     --color-primary-400: 58 88 196; /* #3a58c4 */
-    --color-primary-500: 101 171 255; /* #65abff */
+    --color-primary-500: 19 67 119; /* #134377 */
     --color-primary-600: 133 190 255; /* #85beff */
     --color-primary-700: 158 204 255; /* #9eccff */
     --color-primary-800: 183 218 255; /* #b7daff */
@@ -51,17 +51,18 @@
     --color-text-dark: 38 38 38; /* #262626 */
 
     /* Sistema de cores semânticas */
-    --color-success-100: 22 101 52; /* #166534 */
-    --color-success-200: 34 197 94; /* #22c55e */
-    --color-success-300: 74 222 128; /* #4ade80 */
-    --color-success-600: 134 239 172; /* #86efac */
-    --color-success-700: 187 247 208; /* #bbf7d0 */
+    /* Cores de status condizentes com o tema azul escuro */
+    --color-success-100: 26 39 78; /* #1a274e - baseado no primary-100 */
+    --color-success-200: 40 65 165; /* #2841a5 - baseado no primary-300 */
+    --color-success-300: 19 67 119; /* #134377 - baseado no primary-500 */
+    --color-success-600: 133 190 255; /* #85beff - baseado no primary-600 */
+    --color-success-700: 158 204 255; /* #9eccff - baseado no primary-700 */
 
-    --color-danger-100: 153 27 27; /* #991b1b */
-    --color-danger-200: 220 38 38; /* #dc2626 */
-    --color-danger-300: 248 113 113; /* #f87171 */
-    --color-danger-600: 252 165 165; /* #fca5a5 */
-    --color-danger-700: 254 202 202; /* #fecaca */
+    --color-danger-100: 32 39 51; /* #202733 - baseado no background-alt2 */
+    --color-danger-200: 47 52 61; /* #2f343d - baseado no background-alt3 */
+    --color-danger-300: 136 152 181; /* #8898b5 - baseado no text-muted */
+    --color-danger-600: 163 163 163; /* #a3a3a3 - baseado no neutral-400 */
+    --color-danger-700: 212 212 212; /* #d4d4d4 - baseado no neutral-300 */
 
     --color-warning-100: 146 64 14; /* #92400e */
     --color-warning-200: 217 119 6; /* #d97706 */
@@ -69,11 +70,12 @@
     --color-warning-600: 253 230 138; /* #fde68a */
     --color-warning-700: 254 243 199; /* #fef3c7 */
 
-    --color-info-100: 30 58 138; /* #1e3a8a */
-    --color-info-200: 37 99 235; /* #2563eb */
-    --color-info-300: 96 165 250; /* #60a5fa */
-    --color-info-600: 147 197 253; /* #93c5fd */
-    --color-info-700: 191 219 254; /* #bfdbfe */
+    /* Cores de informação integradas com a paleta principal */
+    --color-info-100: 19 67 119; /* #134377 - background principal */
+    --color-info-200: 40 47 101; /* #282f65 - primary-200 */
+    --color-info-300: 58 88 196; /* #3a58c4 - primary-400 */
+    --color-info-600: 133 190 255; /* #85beff - primary-600 */
+    --color-info-700: 183 218 255; /* #b7daff - primary-800 */
 
     /* Configurações gerais */
     --color-shadow: 0 0 0;
@@ -124,6 +126,14 @@ body {
     width: 20px;
     height: 20px;
     margin-right: 8px;
+}
+
+/* Ícone principal com círculo branco fino */
+.header h1 img.icon {
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    padding: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Ícones nos botões */
@@ -534,6 +544,23 @@ body {
     margin-top: 20px;
 }
 
+/* Área de placeholder para futuras funcionalidades */
+.placeholder-area {
+    padding: 24px 16px;
+    text-align: center;
+    background: rgb(var(--color-background-alt2) / 0.5);
+    border: 2px dashed rgb(var(--color-neutral-600) / 0.3);
+    border-radius: var(--border-radius);
+    margin-bottom: 12px;
+}
+
+.placeholder-text {
+    color: rgb(var(--color-text-muted));
+    font-size: 14px;
+    font-style: italic;
+    margin: 0;
+}
+
 /* Status messages - Modo Escuro */
 .status {
     margin-top: 16px;
@@ -663,5 +690,134 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+/* Modal de ajuda personalizado */
+.help-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.help-modal {
+    background: rgb(var(--color-background-alt2));
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideInScale 0.3s ease-out;
+}
+
+.help-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    background: rgb(var(--color-background-alt3));
+    border-bottom: 1px solid rgb(var(--color-background-alt4));
+}
+
+.help-modal-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(var(--color-text-main));
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.help-close-btn {
+    background: none;
+    border: none;
+    color: rgb(var(--color-text-muted));
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.help-close-btn:hover {
+    background: rgb(var(--color-background-alt4));
+    color: rgb(var(--color-text-main));
+}
+
+.help-modal-content {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.help-section {
+    margin-bottom: 20px;
+}
+
+.help-section:last-child {
+    margin-bottom: 0;
+}
+
+.help-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgb(var(--color-primary-500));
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+
+.help-section ul {
+    list-style: none;
+    margin-left: 20px;
+}
+
+.help-section li {
+    color: rgb(var(--color-text-main));
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 6px;
+    position: relative;
+    padding-left: 16px;
+}
+
+.help-section li:before {
+    content: "•";
+    color: rgb(var(--color-primary-500));
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
