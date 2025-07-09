@@ -1,13 +1,23 @@
-// Content script automatizado para SENT1
+// Content script automatizado para DocumentosRelevantes
 (function () {
     "use strict";
 
     let debugMode = true;
     let isAutomationActive = false;
 
+    // Configuração dos tipos de documentos relevantes
+    const TIPOS_DOCUMENTO_RELEVANTE = {
+        SENT1: { nome: "SENT1", descricao: "Sentença", dataNome: "SENT" },
+        INIC1: {
+            nome: "INIC1",
+            descricao: "Petição Inicial",
+            dataNome: "INIC",
+        },
+    };
+
     function log(message, ...args) {
         if (debugMode) {
-            console.log("🤖 RESUMIR SENTENÇA:", message, ...args);
+            console.log("🤖 PROCESSAR DOCUMENTO:", message, ...args);
         }
     }
 
@@ -26,63 +36,44 @@
 
         return "desconhecida";
     }
-
     function isValidPageForButton() {
-        const pageType = detectPageType();
+        // Verificar se está na página do processo (formulário frmProcessoLista + título específico)
+        const formProcessoLista = document.querySelector("#frmProcessoLista");
+        const tituloConsultaProcessual = document.querySelector("h1");
 
-        if (
-            pageType === "lista_documentos" ||
-            pageType === "documento_especifico"
-        ) {
+        const hasTituloCorreto =
+            tituloConsultaProcessual &&
+            tituloConsultaProcessual.textContent.includes(
+                "Consulta Processual - Detalhes do Processo"
+            );
+
+        if (formProcessoLista && hasTituloCorreto) {
+            console.log(
+                "✅ Página válida detectada: formulário #frmProcessoLista E título 'Consulta Processual - Detalhes do Processo' encontrados (página do processo)"
+            );
+            return true;
+        }
+
+        // Para compatibilidade com documento específico (página de visualização do documento)
+        const pageType = detectPageType();
+        if (pageType === "documento_especifico") {
+            console.log("✅ Página válida detectada: documento específico");
             return true;
         }
 
         const url = window.location.href;
-
-        if (
-            url.includes("controlador.php") &&
-            (url.includes("processo") || url.includes("documento"))
-        ) {
-            const hasProcessContent =
-                document.querySelector('[href*="SENT"]') ||
-                document.querySelector(".infraEventoDescricao") ||
-                (document.querySelector("#divInfraBarraComandosSuperior") &&
-                    document.querySelector("table")) ||
-                document.querySelector(".infraBarraComandos");
-
-            if (hasProcessContent) {
-                console.log(
-                    "✅ Página válida detectada: contém elementos específicos do processo"
-                );
-                return true;
-            }
-        }
-
-        if (
-            url.includes("eproc.jf") ||
-            url.includes("pje.") ||
-            url.includes("esaj.")
-        ) {
-            const hasDocumentList =
-                document.querySelector('[href*="SENT"]') ||
-                (document.querySelector("table") &&
-                    (document.querySelector('td[class*="evento"]') ||
-                        document.querySelector('td[class*="Evento"]') ||
-                        document.querySelector('label[class*="evento"]')));
-
-            if (hasDocumentList) {
-                console.log(
-                    "✅ Página válida detectada: sistema judiciário com documentos"
-                );
-                return true;
-            }
-        }
-
         console.log("❌ Página não é válida para o botão:", {
             url: url,
             pageType: pageType,
+            hasFormProcessoLista: !!formProcessoLista,
+            hasTituloCorreto: hasTituloCorreto,
+            tituloAtual: tituloConsultaProcessual
+                ? tituloConsultaProcessual.textContent
+                : "não encontrado",
             hasTable: !!document.querySelector("table"),
-            hasSENT: !!document.querySelector('[href*="SENT"]'),
+            hasDocumentoRelevante:
+                !!document.querySelector('[href*="SENT"]') ||
+                !!document.querySelector('[href*="INIC"]'),
             hasEventDesc: !!document.querySelector(".infraEventoDescricao"),
         });
         return false;
@@ -332,24 +323,31 @@
         }
 
         return "";
-    } // Encontrar links SENT1 com informações detalhadas
-    function findSENT1Links() {
+    } // Encontrar documentos relevantes com informações detalhadas
+    function findDocumentosRelevantes() {
         const pageType = detectPageType();
         log(`📍 Tipo de página detectado: ${pageType}`);
 
-        const links = document.querySelectorAll(
-            'a.infraLinkDocumento[data-nome="SENT"], a[data-nome="SENT"]'
-        );
-        log("📄 Links SENT encontrados:", links.length);
+        // Construir seletor dinamicamente baseado nos tipos configurados
+        const selectors = Object.values(TIPOS_DOCUMENTO_RELEVANTE)
+            .map((tipo) => [
+                `a.infraLinkDocumento[data-nome="${tipo.dataNome}"]`,
+                `a[data-nome="${tipo.dataNome}"]`,
+            ])
+            .flat()
+            .join(", ");
 
-        const sent1LinksData = [];
+        const links = document.querySelectorAll(selectors);
+        log("📄 Links de documentos relevantes encontrados:", links.length);
 
-        // PRIMEIRA ETAPA: Coletar informações básicas dos links SENT1
+        const documentosData = [];
+
+        // PRIMEIRA ETAPA: Coletar informações básicas dos links
         links.forEach((link, i) => {
             const texto = link.textContent.trim();
             const href = link.getAttribute("href");
 
-            log(`📋 SENT ${i + 1}:`, {
+            log(`📋 DOC ${i + 1}:`, {
                 texto: texto,
                 href: href,
                 dataId: link.getAttribute("data-id"),
@@ -357,7 +355,12 @@
                 element: link,
             });
 
-            if (texto === "SENT1" || texto.includes("SENT1")) {
+            // Verificar se é um dos tipos configurados
+            const tipoEncontrado = Object.values(
+                TIPOS_DOCUMENTO_RELEVANTE
+            ).find((tipo) => texto === tipo.nome || texto.includes(tipo.nome));
+
+            if (tipoEncontrado) {
                 // Extrair informações do tooltip para diferenciar as sentenças
                 const onmouseover = link.getAttribute("onmouseover") || "";
                 const dadosIconLink =
@@ -405,41 +408,45 @@
                 }
 
                 // Armazenar dados básicos do link
-                sent1LinksData.push({
+                documentosData.push({
                     element: link,
                     href: href,
                     texto: texto,
+                    tipo: tipoEncontrado,
                     eventoId: eventoMatch?.[1] || "",
                     docId: docMatch?.[1] || "",
                     seqEvento: seqEvento || seqEventoMatch?.[1] || "",
-                    tipoDocumento: tipoDocumento || "SENTENÇA",
+                    tipoDocumento: tipoDocumento || tipoEncontrado.descricao,
                     tamanho: tamanho || "",
                     index: i + 1,
                 });
 
-                log("🎯 SENT1 encontrado!", {
-                    index: i + 1,
-                    url: href,
-                    eventoId: eventoMatch?.[1],
-                    seqEvento: seqEvento,
-                    tipoDocumento: tipoDocumento,
-                    tamanho: tamanho,
-                });
+                log(
+                    `🎯 Documento encontrado: ${texto} (${tipoEncontrado.descricao})!`,
+                    {
+                        index: i + 1,
+                        url: href,
+                        eventoId: eventoMatch?.[1],
+                        seqEvento: seqEvento,
+                        tipoDocumento: tipoDocumento,
+                        tamanho: tamanho,
+                    }
+                );
             }
         });
 
         // SEGUNDA ETAPA: Se estivermos na página da lista de documentos, buscar as descrições dos eventos
-        if (pageType === "lista_documentos" && sent1LinksData.length > 0) {
+        if (pageType === "lista_documentos" && documentosData.length > 0) {
             log(
                 "🔍 Página da lista de documentos detectada - buscando descrições dos eventos..."
             );
 
-            // Para cada link SENT1, encontrar a descrição na mesma linha (tr)
-            sent1LinksData.forEach((linkData, index) => {
-                log(`🔍 Buscando descrição para SENT1 #${index + 1}...`);
+            // Para cada documento relevante, encontrar a descrição na mesma linha (tr)
+            documentosData.forEach((linkData, index) => {
+                log(`🔍 Buscando descrição para documento #${index + 1}...`);
 
                 let eventoDescricao = "";
-                const linkElement = linkData.element; // Encontrar a linha (tr) do evento que contém o link SENT1
+                const linkElement = linkData.element; // Encontrar a linha (tr) do evento que contém o link
                 // O link está em uma tabela aninhada, então precisamos buscar o tr principal
                 const eventRow =
                     linkElement.closest("tr[id^='trEvento']") ||
@@ -499,7 +506,7 @@
                     }
                 } else {
                     log(
-                        "❌ Não foi possível encontrar a linha (tr) do evento que contém o link SENT1"
+                        "❌ Não foi possível encontrar a linha (tr) do evento que contém o link do documento"
                     );
 
                     // Debug: verificar estrutura ao redor do link
@@ -518,28 +525,30 @@
                 }
 
                 // Adicionar a descrição encontrada ao objeto do link
-                linkData.eventoDescricao = eventoDescricao || "Sentença";
+                linkData.eventoDescricao =
+                    eventoDescricao || linkData.tipo.descricao;
                 log(
-                    `📋 Descrição final para SENT1 #${index + 1}: "${
+                    `📋 Descrição final para documento #${index + 1}: "${
                         linkData.eventoDescricao
                     }"`
                 );
             });
         } else {
             log(
-                "⚠️ Não é página de lista de documentos ou não há links SENT1 - descrições não serão buscadas"
+                "⚠️ Não é página de lista de documentos ou não há documentos relevantes - descrições não serão buscadas"
             );
-            // Se não estivermos na lista de documentos, usar descrição padrão
-            sent1LinksData.forEach((linkData) => {
-                linkData.eventoDescricao = "Sentença";
+            // Se não estivermos na lista de documentos, usar descrição padrão do tipo
+            documentosData.forEach((linkData) => {
+                linkData.eventoDescricao = linkData.tipo.descricao;
             });
         }
 
         // Converter dados coletados para o formato final
-        const sent1Links = sent1LinksData.map((linkData) => ({
+        const documentosRelevantes = documentosData.map((linkData) => ({
             element: linkData.element,
             href: linkData.href,
             texto: linkData.texto,
+            tipo: linkData.tipo,
             eventoId: linkData.eventoId,
             docId: linkData.docId,
             seqEvento: linkData.seqEvento,
@@ -549,11 +558,11 @@
             index: linkData.index,
         }));
 
-        return sent1Links;
+        return documentosRelevantes;
     }
 
-    // Abrir SENT1 automaticamente (com suporte a múltiplas sentenças)
-    async function autoOpenSENT1() {
+    // Abrir documento relevante automaticamente (com suporte a múltiplos documentos)
+    async function autoOpenDocumentoRelevante() {
         const pageType = detectPageType();
         log("📄 Tipo de página:", pageType);
 
@@ -562,50 +571,56 @@
             return false;
         }
 
-        const sent1Links = findSENT1Links();
+        const documentosRelevantes = findDocumentosRelevantes();
 
-        if (sent1Links.length === 0) {
-            log("❌ Nenhum SENT1 encontrado");
+        if (documentosRelevantes.length === 0) {
+            log("❌ Nenhum documento relevante encontrado");
             showNotification(
-                "❌ Nenhum SENT1 encontrado nesta página",
+                "❌ Nenhum documento relevante encontrado nesta página",
                 "error"
             );
             return false;
         }
 
-        let selectedSent1;
+        let selectedDocument;
 
-        if (sent1Links.length === 1) {
-            // Apenas uma sentença encontrada
-            selectedSent1 = sent1Links[0];
-            log("� Uma sentença encontrada, selecionando automaticamente");
+        if (documentosRelevantes.length === 1) {
+            // Apenas um documento encontrado
+            selectedDocument = documentosRelevantes[0];
+            log("📄 Um documento encontrado, selecionando automaticamente");
         } else {
-            // Múltiplas sentenças encontradas
+            // Múltiplos documentos encontrados
             log(
-                `📄 ${sent1Links.length} sentenças encontradas, solicitando seleção do usuário`
+                `📄 ${documentosRelevantes.length} documentos encontrados, solicitando seleção do usuário`
             );
 
             log(
-                "🔍 DEBUG: sent1Links antes do modal:",
-                sent1Links.map((s) => ({
-                    index: s.index,
-                    eventoDescricao: s.eventoDescricao,
-                    seqEvento: s.seqEvento,
+                "🔍 DEBUG: documentosRelevantes antes do modal:",
+                documentosRelevantes.map((doc) => ({
+                    index: doc.index,
+                    tipo: doc.tipo.descricao,
+                    eventoDescricao: doc.eventoDescricao,
+                    seqEvento: doc.seqEvento,
                 }))
             );
-            selectedSent1 = await showSentenceSelectionModal(sent1Links);
+            selectedDocument = await showDocumentSelectionModal(
+                documentosRelevantes
+            );
 
-            if (!selectedSent1) {
+            if (!selectedDocument) {
                 log("❌ Usuário cancelou a seleção");
                 return false;
             }
         }
 
-        log("🚀 Abrindo sentença selecionada:", selectedSent1.href);
-        showNotification("Abrindo sentença selecionada...", "info");
+        log("🚀 Abrindo documento selecionado:", selectedDocument.href);
+        showNotification(
+            `Abrindo ${selectedDocument.tipo.descricao} selecionada...`,
+            "info"
+        );
 
         // Abrir em uma nova aba
-        window.open(selectedSent1.href, "_blank");
+        window.open(selectedDocument.href, "_blank");
 
         return true;
     }
@@ -618,7 +633,7 @@
         if (pageType !== "documento_especifico") {
             log("⚠️ Não está na página do documento específico");
             showNotification(
-                "❌ Execute na página do documento SENT1, não na lista",
+                "❌ Execute na página do documento, não na lista",
                 "error"
             );
             return null;
@@ -627,13 +642,16 @@
         // Aguardar documento carregar completamente
         await waitForDocumentLoad();
 
-        // Verificar se há seção da sentença
-        const sectionSentenca = document.querySelector(
+        // Verificar se há seção do documento
+        const sectionDocumento = document.querySelector(
             'section[data-nome="sentenca"]'
         );
-        if (!sectionSentenca) {
-            log("❌ Section da sentença não encontrada");
-            showNotification("❌ Conteúdo da sentença não encontrado", "error");
+        if (!sectionDocumento) {
+            log("❌ Section do documento não encontrada");
+            showNotification(
+                "❌ Conteúdo do documento não encontrado",
+                "error"
+            );
             return null;
         }
 
@@ -657,7 +675,7 @@
         ].join(", ");
 
         const paragrafosTexto =
-            sectionSentenca.querySelectorAll(seletorParagrafos);
+            sectionDocumento.querySelectorAll(seletorParagrafos);
         log(
             `📝 Encontrados ${paragrafosTexto.length} parágrafos com classes específicas`
         );
@@ -683,7 +701,7 @@
             log("🔍 Tentando extração da seção completa...");
 
             // Fallback: extrair texto completo da seção (limpo)
-            const elementoLimpo = sectionSentenca.cloneNode(true);
+            const elementoLimpo = sectionDocumento.cloneNode(true);
 
             // Remover elementos indesejados
             const elementosParaRemover = elementoLimpo.querySelectorAll(
@@ -783,7 +801,7 @@
     // Copiar texto para clipboard com prefixo do ChatGPT
     async function copyToClipboardWithPrefix(texto) {
         try {
-            const prefixo = `Faça um resumo extremamente sucinto da sentença, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
+            const prefixo = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
 
 tipo de ação,
 
@@ -932,7 +950,7 @@ DOCUMENTO:
                 return false;
             }
 
-            const prompt = `Faça um resumo extremamente sucinto da sentença, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
+            const prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
 
 tipo de ação,
 
@@ -957,7 +975,7 @@ ${texto}`;
                     {
                         role: "system",
                         content:
-                            "Você é um assistente especializado em resumir sentenças judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.",
+                            "Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.",
                     },
                     {
                         role: "user",
@@ -1102,7 +1120,7 @@ ${texto}`;
             await copyToClipboard(resumo);
 
             showNotification(
-                "🎉 Resumo pronto!\n\nO resumo da sentença está na sua área de transferência.",
+                "🎉 Resumo pronto!\n\nO resumo do documento está na sua área de transferência.",
                 "success"
             );
 
@@ -1213,7 +1231,9 @@ ${texto}`;
 
     // Menu de opções
     function showOptionsMenu(x, y) {
-        const existing = document.getElementById("sent1-options-menu");
+        const existing = document.getElementById(
+            "documento-relevante-options-menu"
+        );
         if (existing) {
             existing.remove();
             return;
@@ -1240,7 +1260,7 @@ ${texto}`;
         y = Math.max(10, y);
 
         const menu = document.createElement("ul");
-        menu.id = "sent1-options-menu";
+        menu.id = "documento-relevante-options-menu";
         menu.setAttribute("role", "menu");
         menu.style.cssText = `
             position: fixed;
@@ -1260,22 +1280,23 @@ ${texto}`;
         const pageType = detectPageType();
 
         if (pageType === "lista_documentos") {
-            // Verificar quantas sentenças existem para customizar o menu
-            const sent1Links = findSENT1Links();
-            const sentenceCount = sent1Links.length;
+            // Verificar quantos documentos existem para customizar o menu
+            const documentosRelevantes = findDocumentosRelevantes();
+            const documentCount = documentosRelevantes.length;
 
-            let menuTitle = "Processar Sentenças";
+            let menuTitle = "Processar Documentos";
             let buttonColor = "#3b82f6";
             let titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21 12,12"/></svg>`;
 
-            if (sentenceCount === 0) {
-                menuTitle = "Nenhuma Sentença";
+            if (documentCount === 0) {
+                menuTitle = "Nenhum Documento";
                 buttonColor = "#ef4444";
                 titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg>`;
-            } else if (sentenceCount === 1) {
-                menuTitle = "1 Sentença Encontrada";
+            } else if (documentCount === 1) {
+                const doc = documentosRelevantes[0];
+                menuTitle = `1 ${doc.tipo.descricao} Encontrada`;
             } else {
-                menuTitle = `${sentenceCount} Sentenças Encontradas`;
+                menuTitle = `${documentCount} Documentos Encontrados`;
                 buttonColor = "#10b981";
             }
 
@@ -1284,11 +1305,11 @@ ${texto}`;
                     ${titleIcon}
                     ${menuTitle}
                 </li>
-                <li id="open-sent1-btn" role="menuitem" style="cursor: ${
-                    sentenceCount === 0 ? "not-allowed" : "pointer"
+                <li id="open-documento-btn" role="menuitem" style="cursor: ${
+                    documentCount === 0 ? "not-allowed" : "pointer"
                 }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
-                sentenceCount === 0 ? "opacity: 0.5;" : ""
-            }" ${sentenceCount === 0 ? 'data-disabled="true"' : ""}>
+                documentCount === 0 ? "opacity: 0.5;" : ""
+            }" ${documentCount === 0 ? 'data-disabled="true"' : ""}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
                         <polyline points="14,2 14,8 20,8"/>
@@ -1297,17 +1318,17 @@ ${texto}`;
                         <polyline points="10,9 9,9 8,9"/>
                     </svg>
                     ${
-                        sentenceCount === 0
-                            ? "Nenhuma SENT1 encontrada"
-                            : sentenceCount === 1
-                            ? "Processar SENT1"
-                            : `Escolher entre ${sentenceCount} sentenças`
+                        documentCount === 0
+                            ? "Nenhum documento encontrado"
+                            : documentCount === 1
+                            ? `Processar ${documentosRelevantes[0].tipo.descricao}`
+                            : `Escolher entre ${documentCount} documentos`
                     }
                 </li>
             `;
 
-            const openBtn = menu.querySelector("#open-sent1-btn");
-            if (sentenceCount > 0) {
+            const openBtn = menu.querySelector("#open-documento-btn");
+            if (documentCount > 0) {
                 openBtn.addEventListener("mouseenter", () => {
                     openBtn.style.backgroundColor = "rgba(148, 163, 184, 0.1)";
                 });
@@ -1316,8 +1337,8 @@ ${texto}`;
                 });
                 openBtn.addEventListener("click", () => {
                     menu.remove();
-                    if (sentenceCount > 1) {
-                        showSentenceProcessingOptions();
+                    if (documentCount > 1) {
+                        showDocumentProcessingOptions();
                     } else {
                         runFullAutomation();
                     }
@@ -1334,7 +1355,7 @@ ${texto}`;
                         <path d="M15 13v2"/>
                         <path d="M9 13v2"/>
                     </svg>
-                    Processar SENT1
+                    Processar Documento
                 </li>
                 <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1480,10 +1501,10 @@ ${texto}`;
             const pageType = detectPageType();
 
             if (pageType === "lista_documentos") {
-                const opened = await autoOpenSENT1();
+                const opened = await autoOpenDocumentoRelevante();
                 if (opened) {
                     showNotification(
-                        "✅ SENT1 aberto! Aguarde carregar e execute novamente na nova aba",
+                        "✅ Documento aberto! Aguarde carregar e execute novamente na nova aba",
                         "success"
                     );
                 }
@@ -1515,7 +1536,7 @@ ${texto}`;
                 }
             } else {
                 showNotification(
-                    "❌ Página não reconhecida. Use na página do processo ou documento SENT1",
+                    "❌ Página não reconhecida. Use na página do processo ou documento",
                     "error"
                 );
             }
@@ -1530,13 +1551,15 @@ ${texto}`;
     // Sistema de notificações
     function showNotification(message, type = "info") {
         // Remover notificação anterior se existir
-        const existing = document.getElementById("sent1-notification");
+        const existing = document.getElementById(
+            "documento-relevante-notification"
+        );
         if (existing) {
             existing.remove();
         }
 
         const notification = document.createElement("div");
-        notification.id = "sent1-notification";
+        notification.id = "documento-relevante-notification";
         notification.style.cssText = `
             position: fixed;
             top: 20px;
@@ -1577,7 +1600,7 @@ ${texto}`;
         console.log("🔧 Tentando criar botão integrado...");
 
         // Verificar se já existe
-        if (document.getElementById("sent1-auto-button")) {
+        if (document.getElementById("documento-relevante-auto-button")) {
             console.log("⚠️ Botão já existe, pulando criação");
             return;
         }
@@ -1608,7 +1631,7 @@ ${texto}`;
 
         console.log("✅ Container encontrado, criando botão integrado...");
         const button = document.createElement("button");
-        button.id = "sent1-auto-button";
+        button.id = "documento-relevante-auto-button";
         button.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
                 <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
@@ -1669,7 +1692,7 @@ ${texto}`;
             log("📄 Tipo de página detectado:", pageType);
 
             if (pageType === "lista_documentos") {
-                showNotification("🚀 Abrindo SENT1...", "info");
+                showNotification("🚀 Abrindo documento...", "info");
                 await runFullAutomation();
             } else if (pageType === "documento_especifico") {
                 const rect = button.getBoundingClientRect();
@@ -2247,7 +2270,7 @@ ${texto}`;
             log("📄 Tipo de página detectado:", pageType);
 
             if (pageType === "lista_documentos") {
-                showNotification("🚀 Abrindo SENT1...", "info");
+                showNotification("🚀 Abrindo documento...", "info");
                 await runFullAutomation();
             } else if (pageType === "documento_especifico") {
                 const rect = button.getBoundingClientRect();
@@ -2502,29 +2525,32 @@ ${texto}`;
         }
     }
 
-    // Mostrar modal para seleção de múltiplas sentenças
-    function showSentenceSelectionModal(sent1Links) {
-        log("🔍 DEBUG MODAL: Recebido sent1Links:", sent1Links);
-        log("🔍 DEBUG MODAL: Detalhes de cada link:");
-        sent1Links.forEach((link, i) => {
-            log(`  SENT${i + 1}:`, {
-                eventoDescricao: link.eventoDescricao,
-                seqEvento: link.seqEvento,
-                tipoDocumento: link.tipoDocumento,
+    // Mostrar modal para seleção de múltiplos documentos relevantes
+    function showDocumentSelectionModal(documentosRelevantes) {
+        log(
+            "🔍 DEBUG MODAL: Recebido documentosRelevantes:",
+            documentosRelevantes
+        );
+        log("🔍 DEBUG MODAL: Detalhes de cada documento:");
+        documentosRelevantes.forEach((doc, i) => {
+            log(`  DOC${i + 1}:`, {
+                eventoDescricao: doc.eventoDescricao,
+                seqEvento: doc.seqEvento,
+                tipoDocumento: doc.tipoDocumento,
             });
         });
 
         return new Promise((resolve) => {
             // Remover modal anterior se existir
             const existing = document.getElementById(
-                "sentence-selection-modal"
+                "document-selection-modal"
             );
             if (existing) {
                 existing.remove();
             }
 
             const modal = document.createElement("div");
-            modal.id = "sentence-selection-modal";
+            modal.id = "document-selection-modal";
             modal.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -2539,26 +2565,31 @@ ${texto}`;
                 backdrop-filter: blur(4px);
             `;
 
-            let sentenceOptions = "";
-            sent1Links.forEach((sent1, index) => {
-                const seqEvento = sent1.seqEvento
-                    ? `Evento ${sent1.seqEvento}`
-                    : `Sentença ${index + 1}`;
-                const tamanhoInfo = sent1.tamanho ? ` (${sent1.tamanho})` : "";
-                const tipoInfo = sent1.tipoDocumento || "SENTENÇA";
-                const eventoDesc = sent1.eventoDescricao || "Sentença";
+            let documentOptions = "";
+            documentosRelevantes.forEach((documento, index) => {
+                const seqEvento = documento.seqEvento
+                    ? `Evento ${documento.seqEvento}`
+                    : `Documento ${index + 1}`;
+                const tamanhoInfo = documento.tamanho
+                    ? ` (${documento.tamanho})`
+                    : "";
+                const tipoInfo =
+                    documento.tipoDocumento ||
+                    TIPOS_DOCUMENTO_RELEVANTE[documento.tipo]?.descricao ||
+                    "DOCUMENTO";
+                const eventoDesc = documento.eventoDescricao || "Documento";
 
                 log(`🔍 DEBUG OPTION ${index + 1}:`, {
                     seqEvento,
                     tipoInfo,
                     eventoDesc,
                     tamanhoInfo,
-                    original_eventoDescricao: sent1.eventoDescricao,
+                    original_eventoDescricao: documento.eventoDescricao,
                 });
 
-                sentenceOptions += `
+                documentOptions += `
                     <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
-                         class="sentence-option" data-index="${index}">
+                         class="document-option" data-index="${index}">
                         <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(101, 171, 255);">
                                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
@@ -2580,14 +2611,16 @@ ${texto}`;
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                             </svg>
-                            Documento: SENT${sent1.index}${tamanhoInfo}
+                            Documento: ${documento.tipo}${
+                    documento.index
+                }${tamanhoInfo}
                         </div>
                         <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.8; display: flex; align-items: center; gap: 8px;">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                 <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
                                 <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                             </svg>
-                            ID: ${sent1.eventoId.substring(0, 20)}...
+                            ID: ${documento.eventoId.substring(0, 20)}...
                         </div>
                     </div>
                 `;
@@ -2604,15 +2637,15 @@ ${texto}`;
                                 <line x1="16" y1="17" x2="8" y2="17"/>
                                 <polyline points="10,9 9,9 8,9"/>
                             </svg>
-                            Múltiplas Sentenças Encontradas
+                            Múltiplos Documentos Encontrados
                         </h2>
                         <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
-                            Foram encontradas ${sent1Links.length} sentenças neste processo. Selecione qual deseja processar:
+                            Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
                         </p>
                     </div>
                     
-                    <div id="sentence-options" style="margin-bottom: 20px;">
-                        ${sentenceOptions}
+                    <div id="document-options" style="margin-bottom: 20px;">
+                        ${documentOptions}
                     </div>
 
                     <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
@@ -2631,7 +2664,7 @@ ${texto}`;
 
             // Adicionar eventos de clique nas opções
             modal
-                .querySelectorAll(".sentence-option")
+                .querySelectorAll(".document-option")
                 .forEach((option, index) => {
                     option.addEventListener("mouseover", () => {
                         option.style.borderColor = "rgba(101, 171, 255, 0.6)";
@@ -2652,18 +2685,19 @@ ${texto}`;
                         const selectedIndex = parseInt(
                             option.getAttribute("data-index")
                         );
-                        const selectedSent1 = sent1Links[selectedIndex];
+                        const selectedDocument =
+                            documentosRelevantes[selectedIndex];
 
                         log(
-                            `✅ Sentença selecionada: ${selectedSent1.eventoDescricao} - Evento ${selectedSent1.seqEvento}`
+                            `✅ Documento selecionado: ${selectedDocument.eventoDescricao} - Evento ${selectedDocument.seqEvento}`
                         );
                         showNotification(
-                            `✅ Sentença selecionada: ${selectedSent1.eventoDescricao}`,
+                            `✅ Documento selecionado: ${selectedDocument.eventoDescricao}`,
                             "success"
                         );
 
                         modal.remove();
-                        resolve(selectedSent1);
+                        resolve(selectedDocument);
                     });
                 });
 
@@ -3046,31 +3080,33 @@ ${texto}`;
         }
 
         // Múltiplas sentenças, mostrar opções
-        const selectedSent1 = await showSentenceSelectionModal(sent1Links);
+        const selectedDocument = await showDocumentSelectionModal(
+            documentosRelevantes
+        );
 
-        if (!selectedSent1) {
+        if (!selectedDocument) {
             return; // Usuário cancelou
         }
 
-        // Perguntar o que fazer com a sentença selecionada
+        // Perguntar o que fazer com o documento selecionado
         const processChoice = confirm(
-            "Como deseja processar a sentença selecionada?\n\n" +
-                "✅ OK = Abrir sentença para processamento manual\n" +
+            "Como deseja processar o documento selecionado?\n\n" +
+                "✅ OK = Abrir documento para processamento manual\n" +
                 "❌ Cancelar = Processar diretamente via API (experimental)"
         );
 
         if (processChoice) {
-            // Abrir a sentença selecionada
-            log("🚀 Abrindo sentença selecionada:", selectedSent1.href);
-            showNotification("🚀 Abrindo sentença selecionada...", "info");
-            window.open(selectedSent1.href, "_blank");
+            // Abrir o documento selecionado
+            log("🚀 Abrindo documento selecionado:", selectedDocument.href);
+            showNotification("🚀 Abrindo documento selecionado...", "info");
+            window.open(selectedDocument.href, "_blank");
         } else {
             // Processar diretamente via API (funcionalidade experimental)
             showNotification(
-                "🔬 Processamento direto via API ainda não implementado. Abrindo sentença...",
+                "🔬 Processamento direto via API ainda não implementado. Abrindo documento...",
                 "warning"
             );
-            window.open(selectedSent1.href, "_blank");
+            window.open(selectedDocument.href, "_blank");
         }
     }
 
@@ -3537,7 +3573,7 @@ ${texto}`;
         detectPageType,
         isValidPageForButton,
         findSENT1Links,
-        showSentenceSelectionModal,
+        showDocumentSelectionModal,
         showSentenceProcessingOptions,
         getStoredApiKey,
         storeApiKey,
