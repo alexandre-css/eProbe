@@ -1,8 +1,5 @@
-// Popup script para automação completa
+// Popup script simplificado - funcionalidades removidas
 document.addEventListener("DOMContentLoaded", function () {
-    const runAutomationBtn = document.getElementById("runAutomation");
-    const openSENT1Btn = document.getElementById("openSENT1");
-    const extractOnlyBtn = document.getElementById("extractOnly");
     const helpBtn = document.getElementById("help");
     const statusDiv = document.getElementById("status");
 
@@ -28,165 +25,102 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    async function executeInActiveTab(functionName, ...args) {
-        try {
-            const [tab] = await chrome.tabs.query({
-                active: true,
-                currentWindow: true,
-            });
-
-            const result = await chrome.tabs.sendMessage(tab.id, {
-                action: functionName,
-                args: args,
-            });
-
-            return result;
-        } catch (error) {
-            console.error("Erro ao executar no tab ativo:", error);
-            showStatus(
-                "Erro: Certifique-se de estar na página do eProc",
-                "error"
-            );
-            return null;
-        }
-    }
-
-    // Automação completa
-    runAutomationBtn.addEventListener("click", async function () {
-        showStatus("Iniciando automação completa...", "info", true);
-
-        try {
-            const [tab] = await chrome.tabs.query({
-                active: true,
-                currentWindow: true,
-            });
-
-            await chrome.tabs.sendMessage(tab.id, {
-                action: "runFullAutomation",
-            });
-
-            showStatus(
-                "✅ Automação iniciada! Verifique as notificações na página",
-                "success"
-            );
-
-            // Fechar popup após 2 segundos
-            setTimeout(() => {
-                window.close();
-            }, 2000);
-        } catch (error) {
-            console.error("Erro na automação:", error);
-            showStatus(
-                "❌ Erro: Certifique-se de estar numa página do eProc",
-                "error"
-            );
-        }
-    });
-
-    // Apenas abrir SENT1
-    openSENT1Btn.addEventListener("click", async function () {
-        showStatus("Procurando e abrindo SENT1...", "info", true);
-
-        try {
-            const [tab] = await chrome.tabs.query({
-                active: true,
-                currentWindow: true,
-            });
-
-            const result = await chrome.tabs.sendMessage(tab.id, {
-                action: "autoOpenSENT1",
-            });
-
-            if (result && result.success) {
-                showStatus("✅ SENT1 aberto em nova aba!", "success");
-            } else {
-                showStatus("❌ SENT1 não encontrado nesta página", "error");
-            }
-        } catch (error) {
-            console.error("Erro ao abrir SENT1:", error);
-            showStatus(
-                "❌ Erro: Certifique-se de estar na página do processo",
-                "error"
-            );
-        }
-    });
-
-    // Apenas extrair texto
-    extractOnlyBtn.addEventListener("click", async function () {
-        showStatus("Extraindo texto...", "info", true);
-
-        try {
-            const [tab] = await chrome.tabs.query({
-                active: true,
-                currentWindow: true,
-            });
-
-            const result = await chrome.tabs.sendMessage(tab.id, {
-                action: "autoExtractText",
-            });
-
-            if (result && result.success && result.text) {
-                // Copiar para clipboard
-                await navigator.clipboard.writeText(result.text);
-                showStatus(
-                    `✅ Texto extraído e copiado! (${result.text.length} chars)`,
-                    "success"
-                );
-            } else {
-                showStatus("❌ Não foi possível extrair o texto", "error");
-            }
-        } catch (error) {
-            console.error("Erro na extração:", error);
-            showStatus(
-                "❌ Erro: Certifique-se de estar na página do documento",
-                "error"
-            );
-        }
-    });
-
     // Ajuda
     helpBtn.addEventListener("click", function () {
-        const helpText = `
-🤖 COMO USAR A AUTOMAÇÃO SENT1:
-
-📍 PASSO 1: Na página do processo
-• Acesse a página de detalhes do processo no eProc
-• Clique em "🚀 Executar Automação Completa"
-• A extensão abrirá o SENT1 automaticamente
-
-📍 PASSO 2: Na página do documento
-• Aguarde o documento SENT1 carregar
-• Execute a automação novamente
-• O texto será extraído e copiado automaticamente
-• O ChatGPT será aberto para colar o texto
-
-🔧 AÇÕES INDIVIDUAIS:
-• "📄 Apenas Abrir SENT1" - Só abre o documento
-• "📋 Apenas Extrair Texto" - Só extrai e copia
-
-💡 DICAS:
-• Sempre execute na página correta do eProc
-• Aguarde as notificações na tela
-• Use Ctrl+V para colar no ChatGPT
+        // Criar modal customizado ao invés de alert
+        const helpModal = document.createElement("div");
+        helpModal.className = "help-modal-overlay";
+        helpModal.innerHTML = `
+            <div class="help-modal">
+                <div class="help-modal-header">
+                    <h2>
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                            <path d="m12 17 .01 0" />
+                        </svg>
+                        Sobre a Extensão eProbe
+                    </h2>
+                    <button class="help-close-btn">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m18 6-12 12" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="help-modal-content">
+                    <div class="help-section">
+                        <h3>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M12 1v6m0 6v6" />
+                                <path d="m21 12-6 0m-6 0-6 0" />
+                            </svg>
+                            STATUS ATUAL
+                        </h3>
+                        <ul>
+                            <li><strong>Em desenvolvimento:</strong> A extensão está sendo reestruturada</li>
+                            <li><strong>Funcionalidades removidas:</strong> Botões de automação foram temporariamente desabilitados</li>
+                            <li><strong>Próximas atualizações:</strong> Novas funcionalidades serão implementadas em breve</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 8V4H8" />
+                                <rect width="16" height="12" x="4" y="8" rx="2" />
+                                <path d="M2 14h2" />
+                                <path d="M20 14h2" />
+                                <path d="M15 13v2" />
+                                <path d="M9 13v2" />
+                            </svg>
+                            OBJETIVO DA EXTENSÃO
+                        </h3>
+                        <ul>
+                            <li>Automatizar tarefas repetitivas no eProc</li>
+                            <li>Extrair texto de documentos SENT1</li>
+                            <li>Integrar com ferramentas de IA para análise</li>
+                            <li>Melhorar produtividade de advogados e servidores</li>
+                        </ul>
+                    </div>
+                    <div class="help-section">
+                        <h3>
+                            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 16v-4" />
+                                <path d="m12 8 .01 0" />
+                            </svg>
+                            INFORMAÇÕES IMPORTANTES
+                        </h3>
+                        <ul>
+                            <li><strong>Suporte:</strong> Entre em contato para dúvidas ou sugestões</li>
+                            <li><strong>Atualizações:</strong> Verifique periodicamente por novas versões</li>
+                            <li><strong>Uso responsável:</strong> Use apenas em páginas oficiais do eProc</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         `;
 
-        alert(helpText);
+        document.body.appendChild(helpModal);
+
+        // Fechar modal
+        const closeBtn = helpModal.querySelector(".help-close-btn");
+        const overlay = helpModal;
+
+        const closeModal = () => {
+            document.body.removeChild(helpModal);
+        };
+
+        closeBtn.addEventListener("click", closeModal);
+        overlay.addEventListener("click", (e) => {
+            if (e.target === overlay) closeModal();
+        });
     });
 
-    // Verificar estado inicial
-    chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-        const tab = tabs[0];
-
-        if (tab.url.includes("eproc")) {
-            if (tab.url.includes("processo_selecionar")) {
-                showStatus("📋 Página de processo detectada", "info");
-            } else if (tab.url.includes("acessar_documento")) {
-                showStatus("📄 Página de documento detectada", "info");
-            } else {
-                showStatus("⚠️ Navegue até a página do processo", "info");
-            }
-        } else {
-            showStatus("⚠️ Acesse uma página do eProc primeiro", "error");
-        }
-    });
+    // Verificar estado inicial - removido por enquanto
+    showStatus(
+        "Extensão carregada. Use o botão 'Como Usar' para instruções.",
+        "info"
+    );
 });

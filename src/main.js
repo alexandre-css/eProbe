@@ -17,7 +17,7 @@
 
     function log(message, ...args) {
         if (debugMode) {
-            console.log("🤖 PROCESSAR DOCUMENTO:", message, ...args);
+            console.log("PROCESSAR DOCUMENTO:", message, ...args);
         }
     }
 
@@ -152,7 +152,7 @@
 
         if (formProcessoLista && hasTituloCorreto) {
             console.log(
-                "✅ Página válida detectada: formulário #frmProcessoLista E título 'Consulta Processual - Detalhes do Processo' encontrados (página do processo)"
+                "Página válida detectada: formulário #frmProcessoLista E título 'Consulta Processual - Detalhes do Processo' encontrados (página do processo)"
             );
             return true;
         }
@@ -160,12 +160,12 @@
         // Para compatibilidade com documento específico (página de visualização do documento)
         const pageType = detectPageType();
         if (pageType === "documento_especifico") {
-            console.log("✅ Página válida detectada: documento específico");
+            console.log("Página válida detectada: documento específico");
             return true;
         }
 
         const url = window.location.href;
-        console.log("❌ Página não é válida para o botão:", {
+        console.log("Página não é válida para o botão:", {
             url: url,
             pageType: pageType,
             hasFormProcessoLista: !!formProcessoLista,
@@ -194,18 +194,18 @@
 
         for (let i = 0; i < strategies.length; i++) {
             try {
-                log(`🔍 Executando estratégia ${i + 1} para descrição...`);
+                log(`Executando estratégia ${i + 1} para descrição...`);
                 const result = strategies[i]();
                 if (result && result.trim().length > 3) {
-                    log(`✅ Estratégia ${i + 1} bem-sucedida:`, result);
+                    log(`Estratégia ${i + 1} bem-sucedida:`, result);
                     return result.trim();
                 }
             } catch (e) {
-                log(`❌ Erro na estratégia ${i + 1}:`, e);
+                log(`Erro na estratégia ${i + 1}:`, e);
             }
         }
 
-        log("❌ Nenhuma estratégia encontrou descrição válida");
+        log("Nenhuma estratégia encontrou descrição válida");
         return "";
     }
 
@@ -214,7 +214,7 @@
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando na linha atual...");
+        log("Buscando na linha atual...");
 
         // Buscar por seletores conhecidos
         const selectors = [
@@ -229,7 +229,7 @@
             if (element) {
                 const text = element.textContent.trim();
                 if (text && !text.toLowerCase().includes("sent")) {
-                    log(`✅ Encontrado via seletor ${selector}:`, text);
+                    log(`Encontrado via seletor ${selector}:`, text);
                     return text;
                 }
             }
@@ -243,7 +243,7 @@
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando em linhas anteriores...");
+        log("Buscando em linhas anteriores...");
 
         let previousRow = currentRow.previousElementSibling;
         let attempts = 0;
@@ -269,7 +269,7 @@
                         !text.toLowerCase().includes("sent")
                     ) {
                         log(
-                            `✅ Encontrado em linha anterior (${attempts}):`,
+                            `Encontrado em linha anterior (${attempts}):`,
                             text
                         );
                         return text;
@@ -288,7 +288,7 @@
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando por padrões de texto...");
+        log("Buscando por padrões de texto...");
 
         // Expandir busca para linhas próximas
         const rowsToCheck = [];
@@ -340,7 +340,7 @@
                             pattern.test(text) &&
                             !text.toLowerCase().includes("sent1")
                         ) {
-                            log(`✅ Encontrado por padrão "${pattern}":`, text);
+                            log(`Encontrado por padrão "${pattern}":`, text);
                             return text;
                         }
                     }
@@ -356,7 +356,7 @@
         const table = linkElement.closest("table");
         if (!table) return "";
 
-        log("📍 Analisando estrutura da tabela...");
+        log("Analisando estrutura da tabela...");
 
         const currentRow = linkElement.closest("tr");
         const linkCellIndex = Array.from(currentRow.cells).findIndex((cell) =>
@@ -379,7 +379,7 @@
                     !/^https?:\/\//.test(text)
                 ) {
                     log(
-                        `✅ Encontrado na estrutura da tabela (célula ${i}):`,
+                        `Encontrado na estrutura da tabela (célula ${i}):`,
                         text
                     );
                     return text;
@@ -392,7 +392,7 @@
 
     // Estratégia 5: Buscar por proximidade usando XPath-like logic
     function findEventDescriptionByProximity(linkElement) {
-        log("📍 Buscando por proximidade...");
+        log("Buscando por proximidade...");
 
         // Buscar elementos próximos que podem conter descrição
         const parent = linkElement.closest("td") || linkElement.closest("tr");
@@ -419,7 +419,7 @@
                         text
                     )
                 ) {
-                    log(`✅ Encontrado por proximidade:`, text);
+                    log(`Encontrado por proximidade:`, text);
                     return text;
                 }
             }
@@ -429,7 +429,7 @@
     } // Encontrar documentos relevantes com informações detalhadas
     function findDocumentosRelevantes() {
         const pageType = detectPageType();
-        log(`📍 Tipo de página detectado: ${pageType}`);
+        log(` Tipo de página detectado: ${pageType}`);
 
         // Construir seletor dinamicamente baseado nos tipos configurados
         const selectors = Object.values(TIPOS_DOCUMENTO_RELEVANTE)
@@ -441,7 +441,7 @@
             .join(", ");
 
         const links = document.querySelectorAll(selectors);
-        log("📄 Links de documentos relevantes encontrados:", links.length);
+        log(" Links de documentos relevantes encontrados:", links.length);
 
         const documentosData = [];
 
@@ -450,7 +450,7 @@
             const texto = link.textContent.trim();
             const href = link.getAttribute("href");
 
-            log(`📋 DOC ${i + 1}:`, {
+            log(` DOC ${i + 1}:`, {
                 texto: texto,
                 href: href,
                 dataId: link.getAttribute("data-id"),
@@ -506,7 +506,7 @@
                         );
                         if (seqMatch) seqEvento = seqMatch[1];
                     } catch (e) {
-                        log("⚠️ Erro ao decodificar dadosIconLink:", e);
+                        log(" Erro ao decodificar dadosIconLink:", e);
                     }
                 }
 
@@ -525,7 +525,7 @@
                 });
 
                 log(
-                    `🎯 Documento encontrado: ${texto} (${tipoEncontrado.descricao})!`,
+                    ` Documento encontrado: ${texto} (${tipoEncontrado.descricao})!`,
                     {
                         index: i + 1,
                         url: href,
@@ -541,12 +541,12 @@
         // SEGUNDA ETAPA: Se estivermos na página da lista de documentos, buscar as descrições dos eventos
         if (pageType === "lista_documentos" && documentosData.length > 0) {
             log(
-                "🔍 Página da lista de documentos detectada - buscando descrições dos eventos..."
+                " Página da lista de documentos detectada - buscando descrições dos eventos..."
             );
 
             // Para cada documento relevante, encontrar a descrição na mesma linha (tr)
             documentosData.forEach((linkData, index) => {
-                log(`🔍 Buscando descrição para documento #${index + 1}...`);
+                log(` Buscando descrição para documento #${index + 1}...`);
 
                 let eventoDescricao = "";
                 const linkElement = linkData.element; // Encontrar a linha (tr) do evento que contém o link
@@ -558,7 +558,7 @@
 
                 if (eventRow) {
                     log(
-                        `🎯 Link está na linha do evento: ${
+                        ` Link está na linha do evento: ${
                             eventRow.id ||
                             eventRow.getAttribute("data-parte") ||
                             "identificador não encontrado"
@@ -573,11 +573,11 @@
                     if (eventDescCell) {
                         eventoDescricao = eventDescCell.textContent.trim();
                         log(
-                            `✅ Descrição encontrada na linha do evento: "${eventoDescricao}"`
+                            ` Descrição encontrada na linha do evento: "${eventoDescricao}"`
                         );
                     } else {
                         log(
-                            "❌ Célula td.infraEventoDescricao não encontrada na linha do evento"
+                            " Célula td.infraEventoDescricao não encontrada na linha do evento"
                         );
 
                         // Fallback: buscar qualquer elemento com classe infraEventoDescricao na linha
@@ -588,17 +588,17 @@
                             eventoDescricao =
                                 fallbackDescElement.textContent.trim();
                             log(
-                                `⚠️ Descrição encontrada via fallback: "${eventoDescricao}"`
+                                ` Descrição encontrada via fallback: "${eventoDescricao}"`
                             );
                         } else {
                             // Debug: mostrar todas as células da linha para entender a estrutura
                             const allCells = eventRow.querySelectorAll("td");
                             log(
-                                `🔍 Debug - Total de células na linha: ${allCells.length}`
+                                ` Debug - Total de células na linha: ${allCells.length}`
                             );
                             allCells.forEach((cell, index) => {
                                 log(
-                                    `🔍 Célula ${index + 1}: "${cell.textContent
+                                    ` Célula ${index + 1}: "${cell.textContent
                                         .trim()
                                         .substring(0, 50)}" (classe: ${
                                         cell.className
@@ -609,16 +609,16 @@
                     }
                 } else {
                     log(
-                        "❌ Não foi possível encontrar a linha (tr) do evento que contém o link do documento"
+                        " Não foi possível encontrar a linha (tr) do evento que contém o link do documento"
                     );
 
                     // Debug: verificar estrutura ao redor do link
-                    log("🔍 Debug - Estrutura ao redor do link:");
+                    log(" Debug - Estrutura ao redor do link:");
                     let parent = linkElement.parentElement;
                     let level = 0;
                     while (parent && level < 5) {
                         log(
-                            `🔍 Nível ${level}: ${parent.tagName} (id: ${
+                            ` Nível ${level}: ${parent.tagName} (id: ${
                                 parent.id || "N/A"
                             }, classe: ${parent.className || "N/A"})`
                         );
@@ -631,14 +631,14 @@
                 linkData.eventoDescricao =
                     eventoDescricao || linkData.tipo.descricao;
                 log(
-                    `📋 Descrição final para documento #${index + 1}: "${
+                    ` Descrição final para documento #${index + 1}: "${
                         linkData.eventoDescricao
                     }"`
                 );
             });
         } else {
             log(
-                "⚠️ Não é página de lista de documentos ou não há documentos relevantes - descrições não serão buscadas"
+                " Não é página de lista de documentos ou não há documentos relevantes - descrições não serão buscadas"
             );
             // Se não estivermos na lista de documentos, usar descrição padrão do tipo
             documentosData.forEach((linkData) => {
@@ -667,19 +667,19 @@
     // Abrir documento relevante automaticamente (com suporte a múltiplos documentos)
     async function autoOpenDocumentoRelevante() {
         const pageType = detectPageType();
-        log("📄 Tipo de página:", pageType);
+        log(" Tipo de página:", pageType);
 
         if (pageType !== "lista_documentos") {
-            log("⚠️ Não está na página de lista de documentos");
+            log(" Não está na página de lista de documentos");
             return false;
         }
 
         const documentosRelevantes = findDocumentosRelevantes();
 
         if (documentosRelevantes.length === 0) {
-            log("❌ Nenhum documento relevante encontrado");
+            log(" Nenhum documento relevante encontrado");
             showNotification(
-                "❌ Nenhum documento relevante encontrado nesta página",
+                "Nenhum documento relevante encontrado nesta página",
                 "error"
             );
             return false;
@@ -690,15 +690,15 @@
         if (documentosRelevantes.length === 1) {
             // Apenas um documento encontrado
             selectedDocument = documentosRelevantes[0];
-            log("📄 Um documento encontrado, selecionando automaticamente");
+            log(" Um documento encontrado, selecionando automaticamente");
         } else {
             // Múltiplos documentos encontrados
             log(
-                `📄 ${documentosRelevantes.length} documentos encontrados, solicitando seleção do usuário`
+                ` ${documentosRelevantes.length} documentos encontrados, solicitando seleção do usuário`
             );
 
             log(
-                "🔍 DEBUG: documentosRelevantes antes do modal:",
+                " DEBUG: documentosRelevantes antes do modal:",
                 documentosRelevantes.map((doc) => ({
                     index: doc.index,
                     tipo: doc.tipo.descricao,
@@ -711,12 +711,12 @@
             );
 
             if (!selectedDocument) {
-                log("❌ Usuário cancelou a seleção");
+                log(" Usuário cancelou a seleção");
                 return false;
             }
         }
 
-        log("🚀 Abrindo documento selecionado:", selectedDocument.href);
+        log(" Abrindo documento selecionado:", selectedDocument.href);
         showNotification(
             `Abrindo ${selectedDocument.tipo.descricao} selecionada...`,
             "info"
@@ -731,18 +731,12 @@
     // Extrair texto do documento
     async function autoExtractText() {
         const pageType = detectPageType();
-        log("📄 Tipo de página:", pageType);
+        log(" Tipo de página:", pageType);
 
-        if (
-            ![
-                "documento_html",
-                "documento_pdf",
-                "documento_especifico",
-            ].includes(pageType)
-        ) {
-            log("⚠️ Não está na página do documento específico");
+        if (pageType !== "documento_especifico") {
+            log(" Não está na página do documento específico");
             showNotification(
-                "❌ Execute na página do documento, não na lista",
+                "Execute na página do documento, não na lista",
                 "error"
             );
             return null;
@@ -751,40 +745,243 @@
         // Aguardar documento carregar completamente
         await waitForDocumentLoad();
 
-        // Estratégia baseada no tipo de documento
-        if (pageType === "documento_html") {
-            return await extractTextFromHTML();
-        } else if (pageType === "documento_pdf") {
-            return await extractTextFromPDF();
-        } else {
-            // Fallback: tentar HTML primeiro, depois PDF
-            const htmlText = await extractTextFromHTML();
-            if (htmlText) return htmlText;
+        // DETECTAR SE É PDF PRIMEIRO (múltiplas estratégias)
+        log(" Verificando tipo de documento...");
 
-            const pdfText = await extractTextFromPDF();
-            if (pdfText) return pdfText;
+        // ESTRATÉGIA PRINCIPAL: Verificar padrão específico do eProc para PDF
+        const urlCurrentPage = window.location.href;
+        const pageContainsPdfPattern = urlCurrentPage.includes(
+            "acao=acessar_documento&doc="
+        );
 
-            showNotification(
-                "❌ Não foi possível detectar o tipo de documento",
-                "error"
-            );
-            return null;
+        // ESTRATÉGIA SECUNDÁRIA: Verificar se há links/formulários para PDF na página
+        const pageHasPdfLinks = document.body.innerHTML.includes(
+            "acao=acessar_documento&doc="
+        );
+
+        log(" Detecção eProc específica:", {
+            currentUrl: urlCurrentPage,
+            hasPdfPattern: pageContainsPdfPattern,
+            hasPdfLinksInPage: pageHasPdfLinks,
+        });
+
+        // Estratégias complementares (mantidas como fallback)
+        // Estratégia 3: Embed com PDF
+        const pdfEmbed = document.querySelector(
+            'embed[type="application/x-google-chrome-pdf"]'
+        );
+
+        // Estratégia 4: Object com PDF
+        const pdfObject = document.querySelector(
+            'object[type="application/pdf"]'
+        );
+
+        // Estratégia 5: Iframe com PDF
+        const pdfIframe = document.querySelector('iframe[src*=".pdf"]');
+
+        // Estratégia 6: Verificar se URL atual contém outros indicadores de PDF
+        const urlContainsPdf =
+            window.location.href.includes(".pdf") ||
+            document.title.toLowerCase().includes("pdf");
+
+        // Estratégia 7: Verificar se há elementos que indicam visualização de PDF
+        const hasPdfViewer =
+            document.querySelector("#plugin") ||
+            document.querySelector('[id*="pdf"]') ||
+            document.querySelector('[class*="pdf"]');
+
+        // DECISÃO FINAL: eProc específico tem prioridade
+        const isPdfDocument =
+            pageContainsPdfPattern ||
+            pageHasPdfLinks ||
+            pdfEmbed ||
+            pdfObject ||
+            pdfIframe ||
+            urlContainsPdf ||
+            hasPdfViewer;
+
+        log(` Detecção de PDF: ${isPdfDocument ? "SIM" : "NÃO"}`, {
+            eproc_currentUrl: pageContainsPdfPattern,
+            eproc_pageLinks: pageHasPdfLinks,
+            pdfEmbed: !!pdfEmbed,
+            pdfObject: !!pdfObject,
+            pdfIframe: !!pdfIframe,
+            urlContainsPdf: urlContainsPdf,
+            hasPdfViewer: !!hasPdfViewer,
+        });
+
+        if (isPdfDocument) {
+            log(" PDF detectado!");
+
+            // Modal customizado para opções de PDF
+            const userChoice = await showPdfOptionsModal();
+            // Modal customizado para opções de PDF
+            function showPdfOptionsModal() {
+                return new Promise((resolve) => {
+                    const overlay = document.createElement("div");
+                    overlay.className = "help-modal-overlay";
+                    overlay.innerHTML = `
+ <div class="help-modal" style="max-width: 400px;">
+ <div class="help-modal-header">
+ <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
+ <rect width="16" height="12" x="4" y="8" rx="2" />
+ <path d="M2 14h2" />
+ <path d="M20 14h2" />
+ </svg>
+ PDF detectado!
+ </h2>
+ <button class="help-close-btn" aria-label="Fechar" style="margin-left:auto;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
+ </button>
+ </div>
+ <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
+ <div style="margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.1em;height:1.1em;color:#134377;"><rect width="16" height="12" x="4" y="8" rx="2" /></svg>
+ <span style="color:var(--color-text-main);font-size:1rem;">PDF detectado nesta página.</span>
+ </div>
+ <div style="margin-bottom:20px;">
+ <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1em;height:1em;color:#134377;"><polyline points="20 6 9 17 4 12" /></svg>
+ <span style="color:var(--color-text-main);">Tentar extrair texto diretamente do PDF</span>
+ </div>
+ <div style="display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1em;height:1em;color:#e57373;"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+ <span style="color:var(--color-text-main);">Baixar PDF e usar ChatGPT com upload</span>
+ </div>
+ </div>
+ <div style="display:flex;gap:12px;justify-content:flex-end;">
+ <button class="btn primary" id="pdf-ok-btn" style="min-width:90px;">OK</button>
+ <button class="btn" id="pdf-cancel-btn" style="min-width:90px;">Cancelar</button>
+ </div>
+ </div>
+ </div>
+ `;
+                    document.body.appendChild(overlay);
+                    const close = (result) => {
+                        document.body.removeChild(overlay);
+                        resolve(result);
+                    };
+                    overlay.querySelector(".help-close-btn").onclick = () =>
+                        close(false);
+                    overlay.querySelector("#pdf-ok-btn").onclick = () =>
+                        close(true);
+
+                    const pdfCancelBtn =
+                        overlay.querySelector("#pdf-cancel-btn");
+
+                    // Adicionar hover vermelho no botão cancelar PDF
+                    pdfCancelBtn.addEventListener("mouseenter", () => {
+                        pdfCancelBtn.style.backgroundColor = "#91433d";
+                        pdfCancelBtn.style.borderColor = "#91433d";
+                    });
+
+                    pdfCancelBtn.addEventListener("mouseleave", () => {
+                        pdfCancelBtn.style.backgroundColor = "";
+                        pdfCancelBtn.style.borderColor = "";
+                    });
+
+                    pdfCancelBtn.onclick = () => close(false);
+
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) close(false);
+                    });
+                });
+            }
+
+            if (!userChoice) {
+                showNotification(
+                    "PDF detectado!\n\n" +
+                        "Para processar este documento:\n" +
+                        "1. Clique com botão direito → 'Salvar como'\n" +
+                        "2. Abra ChatGPT, Claude ou Gemini\n" +
+                        "3. Faça upload do arquivo PDF\n" +
+                        "4. Solicite um resumo do documento\n\n" +
+                        "Esta é a forma mais confiável para PDFs!",
+                    "info"
+                );
+                return null;
+            }
+
+            // Se usuário escolheu extração direta, prosseguir para extração de texto
+            log(" Usuário escolheu extração direta de texto");
+            const pdfElement = pdfEmbed || pdfObject || pdfIframe;
+
+            if (!pdfElement) {
+                showNotification(
+                    " PDF detectado mas elemento não acessível!\n\n" +
+                        "Solução:\n" +
+                        "1. Baixe o PDF manualmente\n" +
+                        "2. Use ChatGPT/Claude com upload do arquivo\n\n" +
+                        " Limitação técnica do navegador.",
+                    "warning"
+                );
+                return null;
+            }
+
+            const textoExtraido = await extractTextFromPDF(pdfElement);
+
+            if (!textoExtraido) {
+                log(
+                    " Extração direta falhou, retornando null para parar processamento"
+                );
+                // Não continuar para processamento HTML quando extração direta falha
+                return null;
+            }
+
+            return textoExtraido;
         }
-    }
 
-    // Extrair texto de documento HTML (sentenças)
-    async function extractTextFromHTML() {
-        log("📄 Extraindo texto de documento HTML...");
+        // SE NÃO É PDF, PROCESSAR COMO DOCUMENTO HTML NORMAL
+        log(" Documento HTML detectado, processando...");
 
+        // Verificar se há seção do documento (para sentenças HTML)
         const sectionDocumento = document.querySelector(
             'section[data-nome="sentenca"]'
         );
         if (!sectionDocumento) {
-            log("❌ Section do documento HTML não encontrada");
+            log(" Section do documento não encontrada");
+
+            // Verificar se pode ser um PDF que não foi detectado
+            const bodyText = document.body.textContent.toLowerCase();
+            const bodyHtml = document.body.innerHTML;
+
+            // Usar a mesma detecção específica do eProc
+            const possiblePdf =
+                bodyText.includes("pdf") ||
+                bodyText.includes("adobe") ||
+                bodyText.includes("acrobat") ||
+                bodyHtml.includes("acao=acessar_documento&doc=") || // eProc específico
+                document.querySelector("embed, object") ||
+                window.location.href.includes("doc=") ||
+                window.location.href.includes("documento");
+
+            if (possiblePdf) {
+                showNotification(
+                    "Possível PDF detectado!\n\n" +
+                        "Se este é um documento PDF:\n" +
+                        "1. Recarregue a página e tente novamente\n" +
+                        "2. Ou baixe o PDF e use ChatGPT com upload\n\n" +
+                        "Se for HTML: verifique se o documento carregou completamente",
+                    "warning"
+                );
+            } else {
+                showNotification(
+                    " Conteúdo do documento não encontrado\n\n" +
+                        "Possíveis causas:\n" +
+                        "• Documento ainda está carregando\n" +
+                        "• Formato não suportado\n" +
+                        "• Página de erro ou acesso negado\n\n" +
+                        " Tente recarregar a página",
+                    "error"
+                );
+            }
             return null;
         }
 
-        log("✅ Página do documento HTML válida, prosseguindo com extração...");
+        // VERIFICAÇÃO REMOVIDA - estava rejeitando páginas válidas de documento
+        // Os indicadores como "processo:", "SENT1", etc. aparecem legitimamente nas páginas de sentença
+        log(" Página do documento válida, prosseguindo com extração...");
 
         // Extrair usando classes específicas do eProc
         const seletorParagrafos = [
@@ -804,7 +1001,7 @@
         const paragrafosTexto =
             sectionDocumento.querySelectorAll(seletorParagrafos);
         log(
-            `📝 Encontrados ${paragrafosTexto.length} parágrafos com classes específicas`
+            ` Encontrados ${paragrafosTexto.length} parágrafos com classes específicas`
         );
 
         let textosParágrafos = [];
@@ -817,15 +1014,15 @@
                 if (textoP.trim().length > 0) {
                     textosParágrafos.push(textoP.trim());
                     log(
-                        `📄 P${idx + 1} (${
+                        ` P${idx + 1} (${
                             paragrafo.className
                         }): ${textoP.substring(0, 100)}...`
                     );
                 }
             });
         } else {
-            log("⚠️ Nenhum parágrafo com classes específicas encontrado");
-            log("🔍 Tentando extração da seção completa...");
+            log(" Nenhum parágrafo com classes específicas encontrado");
+            log(" Tentando extração da seção completa...");
 
             // Fallback: extrair texto completo da seção (limpo)
             const elementoLimpo = sectionDocumento.cloneNode(true);
@@ -851,9 +1048,9 @@
         }
 
         if (textosParágrafos.length === 0) {
-            log("❌ Nenhum texto válido encontrado");
+            log(" Nenhum texto válido encontrado");
             showNotification(
-                "❌ Nenhum texto válido encontrado no documento",
+                " Nenhum texto válido encontrado no documento",
                 "error"
             );
             return null;
@@ -874,17 +1071,17 @@
             .replace(/\s+/g, " ") // Normaliza espaços
             .trim();
 
-        log("✅ Texto extraído:", texto.length, "caracteres");
-        log("📄 Prévia do texto:", texto.substring(0, 200) + "...");
+        log(" Texto extraído:", texto.length, "caracteres");
+        log(" Prévia do texto:", texto.substring(0, 200) + "...");
 
         if (texto.trim().length < 100) {
-            log("⚠️ Texto muito pequeno");
-            showNotification("⚠️ Texto extraído é muito pequeno", "warning");
+            log(" Texto muito pequeno");
+            showNotification("Texto extraído é muito pequeno", "warning");
             return null;
         }
 
         showNotification(
-            `✅ Texto extraído: ${texto.length} caracteres`,
+            ` Texto extraído: ${texto.length} caracteres`,
             "success"
         );
         return texto.trim();
@@ -1040,12 +1237,12 @@
     async function copyToClipboard(text) {
         try {
             await navigator.clipboard.writeText(text);
-            log("📋 Texto copiado para clipboard");
-            showNotification("📋 Texto copiado para clipboard!", "success");
+            log(" Texto copiado para clipboard");
+            showNotification("Texto copiado para clipboard!", "success");
             return true;
         } catch (error) {
-            log("❌ Erro ao copiar:", error);
-            showNotification("❌ Erro ao copiar texto", "error");
+            log(" Erro ao copiar:", error);
+            showNotification("Erro ao copiar texto", "error");
             return false;
         }
     }
@@ -1084,14 +1281,14 @@ DOCUMENTO:
             const textoLimpo = cleanInvisibleChars(texto);
             const textoCompleto = cleanInvisibleChars(prefixo + textoLimpo);
 
-            log("🔍 Debug - Texto que será copiado:");
-            log("📏 Tamanho:", textoCompleto.length, "caracteres");
+            log(" Debug - Texto que será copiado:");
+            log(" Tamanho:", textoCompleto.length, "caracteres");
             log(
-                "📄 Prévia (primeiros 200 chars):",
+                " Prévia (primeiros 200 chars):",
                 textoCompleto.substring(0, 200)
             );
             log(
-                "📄 Final (últimos 200 chars):",
+                " Final (últimos 200 chars):",
                 textoCompleto.substring(textoCompleto.length - 200)
             );
 
@@ -1103,26 +1300,26 @@ DOCUMENTO:
                     const clipboardContent =
                         await navigator.clipboard.readText();
                     log(
-                        "✅ Verificação: Texto no clipboard:",
+                        " Verificação: Texto no clipboard:",
                         clipboardContent.length,
                         "caracteres"
                     );
                     log(
-                        "🔍 Conteúdo real no clipboard:",
+                        " Conteúdo real no clipboard:",
                         clipboardContent.substring(0, 200)
                     );
 
                     if (clipboardContent === textoCompleto) {
-                        log("✅ Clipboard confirmado: Texto correto!");
+                        log(" Clipboard confirmado: Texto correto!");
                     } else {
                         log(
-                            "❌ ERRO: Texto no clipboard é diferente do enviado!"
+                            " ERRO: Texto no clipboard é diferente do enviado!"
                         );
-                        log("🔍 Debug diferença:");
-                        log("📏 Esperado:", textoCompleto.length, "caracteres");
-                        log("📏 Real:", clipboardContent.length, "caracteres");
+                        log(" Debug diferença:");
+                        log(" Esperado:", textoCompleto.length, "caracteres");
+                        log(" Real:", clipboardContent.length, "caracteres");
                         log(
-                            "📏 Diferença:",
+                            " Diferença:",
                             Math.abs(
                                 clipboardContent.length - textoCompleto.length
                             ),
@@ -1141,10 +1338,10 @@ DOCUMENTO:
 
                         if (textoLimpo === clipboardLimpo) {
                             log(
-                                "✅ Clipboard OK (apenas caracteres invisíveis diferentes)"
+                                " Clipboard OK (apenas caracteres invisíveis diferentes)"
                             );
                         } else {
-                            log("❌ Clipboard realmente diferente");
+                            log(" Clipboard realmente diferente");
                             // Encontrar primeiro caractere diferente
                             for (
                                 let i = 0;
@@ -1156,9 +1353,7 @@ DOCUMENTO:
                                 i++
                             ) {
                                 if (textoCompleto[i] !== clipboardContent[i]) {
-                                    log(
-                                        `🔍 Primeira diferença na posição ${i}:`
-                                    );
+                                    log(` Primeira diferença na posição ${i}:`);
                                     log(
                                         `Esperado: "${textoCompleto.substring(
                                             i - 5,
@@ -1177,21 +1372,21 @@ DOCUMENTO:
                         }
                     }
                 } catch (e) {
-                    log("⚠️ Não foi possível verificar o clipboard:", e);
+                    log(" Não foi possível verificar o clipboard:", e);
                 }
             }, 100);
 
             log(
-                `✅ Texto copiado com prefixo (${textoCompleto.length} caracteres)`
+                ` Texto copiado com prefixo (${textoCompleto.length} caracteres)`
             );
             showNotification(
-                `✅ Texto copiado com prefixo!\n${textoCompleto.length} caracteres prontos para o ChatGPT`,
+                ` Texto copiado com prefixo!\n${textoCompleto.length} caracteres prontos para o ChatGPT`,
                 "success"
             );
             return true;
         } catch (error) {
-            log("❌ Erro ao copiar texto com prefixo:", error);
-            showNotification("❌ Erro ao copiar texto", "error");
+            log(" Erro ao copiar texto com prefixo:", error);
+            showNotification(" Erro ao copiar texto", "error");
             return false;
         }
     }
@@ -1202,13 +1397,13 @@ DOCUMENTO:
 
         try {
             debugApiCall(requestId, "INÍCIO", { textoLength: texto.length });
-            log("🤖 Enviando texto para Perplexity via API...");
-            showNotification("🤖 Enviando para Perplexity...", "info");
+            log(" Enviando texto para Perplexity via API...");
+            showNotification("Enviando para Perplexity...", "info");
 
             const apiKey = await getStoredApiKey();
             if (!apiKey) {
                 debugApiCall(requestId, "ERRO", "API key não encontrada");
-                showNotification("❌ Erro ao obter chave API", "error");
+                showNotification(" Erro ao obter chave API", "error");
                 return false;
             }
 
@@ -1295,7 +1490,7 @@ ${texto}`;
                 try {
                     errorJson = JSON.parse(errorData);
                 } catch (e) {
-                    log("⚠️ Resposta de erro não é JSON válido");
+                    log(" Resposta de erro não é JSON válido");
                 }
 
                 debugApiCall(requestId, "ERROR_DETAILS", {
@@ -1309,9 +1504,9 @@ ${texto}`;
                 if (response.status === 401) {
                     const errorMsg =
                         errorJson?.error?.message || "Chave API inválida";
-                    log("❌ Erro 401:", errorMsg);
+                    log(" Erro 401:", errorMsg);
                     showNotification(
-                        `❌ ${errorMsg}. Configure uma nova chave API do Perplexity.`,
+                        ` ${errorMsg}. Configure uma nova chave API do Perplexity.`,
                         "error"
                     );
                     await removeStoredApiKey();
@@ -1321,16 +1516,16 @@ ${texto}`;
                         errorJson?.error?.type || "rate_limit_exceeded";
                     const retryAfter = responseHeaders["retry-after"];
 
-                    log("❌ Rate limit:", { type: rateLimitType, retryAfter });
+                    log(" Rate limit:", { type: rateLimitType, retryAfter });
 
                     if (rateLimitType === "insufficient_quota") {
                         showNotification(
-                            "💳 Cota da API Perplexity esgotada. Verifique seus créditos em perplexity.ai/settings/api",
+                            " Cota da API Perplexity esgotada. Verifique seus créditos em perplexity.ai/settings/api",
                             "error"
                         );
                     } else {
                         showNotification(
-                            `⏳ Limite de requests atingido. Aguarde ${
+                            ` Limite de requests atingido. Aguarde ${
                                 retryAfter || "alguns minutos"
                             } antes de tentar novamente.`,
                             "warning"
@@ -1340,25 +1535,25 @@ ${texto}`;
                 } else if (response.status === 403) {
                     const errorMsg =
                         errorJson?.error?.message || "Acesso negado";
-                    log("❌ Erro 403:", errorMsg);
+                    log(" Erro 403:", errorMsg);
                     showNotification(
-                        `🚫 ${errorMsg}. Usando método manual...`,
+                        ` ${errorMsg}. Usando método manual...`,
                         "warning"
                     );
                     return await fallbackToManual(texto);
                 } else if (response.status >= 500) {
-                    log("❌ Erro do servidor Perplexity:", response.status);
+                    log(" Erro do servidor Perplexity:", response.status);
                     showNotification(
-                        `🔧 Erro do servidor Perplexity (${response.status}). Usando método manual...`,
+                        ` Erro do servidor Perplexity (${response.status}). Usando método manual...`,
                         "warning"
                     );
                     return await fallbackToManual(texto);
                 } else {
                     const errorMsg =
                         errorJson?.error?.message || `Erro ${response.status}`;
-                    log("❌ Erro desconhecido:", errorMsg);
+                    log(" Erro desconhecido:", errorMsg);
                     showNotification(
-                        `❌ ${errorMsg}. Usando método manual...`,
+                        ` ${errorMsg}. Usando método manual...`,
                         "warning"
                     );
                     return await fallbackToManual(texto);
@@ -1377,12 +1572,12 @@ ${texto}`;
 
             const resumo = data.choices[0].message.content;
 
-            showNotification("✅ Resumo gerado com sucesso!", "success");
+            showNotification("Resumo gerado com sucesso!", "success");
 
             await copyToClipboard(resumo);
 
             showNotification(
-                "🎉 Resumo pronto!\n\nO resumo do documento está na sua área de transferência.",
+                " Resumo pronto!\n\nO resumo do documento está na sua área de transferência.",
                 "success"
             );
 
@@ -1394,9 +1589,9 @@ ${texto}`;
                 errorStack: error.stack,
             });
 
-            log("❌ Erro ao enviar para Perplexity:", error);
+            log(" Erro ao enviar para Perplexity:", error);
             showNotification(
-                "⚠️ Erro de conexão na API. Usando método manual...",
+                " Erro de conexão na API. Usando método manual...",
                 "warning"
             );
 
@@ -1406,52 +1601,52 @@ ${texto}`;
 
     // Função auxiliar para fallback manual
     async function fallbackToManual(texto) {
-        log("🔄 Executando fallback para método manual");
+        log(" Executando fallback para método manual");
         const copied = await copyToClipboardWithPrefix(texto);
         if (copied) {
             setTimeout(() => {
                 autoOpenChatGPT();
                 showNotification(
-                    "📋 Texto copiado! Cole no ChatGPT (Ctrl+V)",
+                    " Texto copiado! Cole no ChatGPT (Ctrl+V)",
                     "info"
                 );
             }, 500);
         } else {
-            log("❌ Falha ao copiar texto no fallback");
-            showNotification("❌ Falha ao copiar texto", "error");
+            log(" Falha ao copiar texto no fallback");
+            showNotification(" Falha ao copiar texto", "error");
         }
         return false;
     }
 
     // Fallback: Abrir ChatGPT manualmente com clipboard
     function autoOpenChatGPT() {
-        log("🤖 Abrindo ChatGPT...");
-        showNotification("🤖 Abrindo ChatGPT...", "info");
+        log(" Abrindo ChatGPT...");
+        showNotification("Abrindo ChatGPT...", "info");
 
         try {
             const url = "https://chatgpt.com/";
             const chatWindow = window.open(url, "_blank");
 
             if (chatWindow) {
-                log("✅ ChatGPT aberto com sucesso");
+                log(" ChatGPT aberto com sucesso");
                 setTimeout(() => {
                     try {
                         chatWindow.focus();
-                        log("✅ ChatGPT focado");
+                        log(" ChatGPT focado");
                     } catch (e) {
-                        log("⚠️ Não foi possível focar na janela:", e);
+                        log(" Não foi possível focar na janela:", e);
                     }
                 }, 1000);
             } else {
-                log("❌ Falha ao abrir ChatGPT - popup bloqueado?");
+                log(" Falha ao abrir ChatGPT - popup bloqueado?");
                 showNotification(
-                    "❌ Não foi possível abrir ChatGPT. Verifique se popups estão bloqueados.",
+                    " Não foi possível abrir ChatGPT. Verifique se popups estão bloqueados.",
                     "error"
                 );
             }
         } catch (error) {
-            log("❌ Erro ao abrir ChatGPT:", error);
-            showNotification("❌ Erro ao abrir ChatGPT", "error");
+            log(" Erro ao abrir ChatGPT:", error);
+            showNotification(" Erro ao abrir ChatGPT", "error");
         }
     }
 
@@ -1462,10 +1657,10 @@ ${texto}`;
         if (!apiKey) {
             // Chave codificada em Base64 para ofuscação básica
             const encodedKey =
-                "cHBseC1LUEFHYXhYZVZ4Yk1wUWJ5QzNCNmpZUERPd1luSk1ka3Mxc0R6YmF1N2s3c05nbUo=";
+                "cHBseC1LUEFHYXhYZVZ4Yk1wUWJ5QzNCNmpZUERPd1luSk1ka3MxcUR6YmF1N2s3c05nbUo=";
             apiKey = atob(encodedKey);
             localStorage.setItem("perplexity_api_key", apiKey);
-            log("🔑 API key do Perplexity configurada automaticamente");
+            log(" API key do Perplexity configurada automaticamente");
         }
 
         return apiKey;
@@ -1476,12 +1671,12 @@ ${texto}`;
             throw new Error('Chave API inválida. Deve começar com "pplx-"');
         }
         localStorage.setItem("perplexity_api_key", apiKey);
-        log("🔑 Chave API do Perplexity armazenada com sucesso");
+        log(" Chave API do Perplexity armazenada com sucesso");
     }
 
     async function removeStoredApiKey() {
         localStorage.removeItem("perplexity_api_key");
-        log("🗑️ Chave API do Perplexity removida");
+        log(" Chave API do Perplexity removida");
     }
 
     async function validateApiKey(apiKey) {
@@ -1525,19 +1720,19 @@ ${texto}`;
         menu.id = "documento-relevante-options-menu";
         menu.setAttribute("role", "menu");
         menu.style.cssText = `
-            position: fixed;
-            left: ${x}px;
-            top: ${y}px;
-            z-index: 10001;
-            min-width: ${menuWidth}px;
-            overflow: auto;
-            border-radius: 8px;
-            border: 1px solid rgb(59 130 246);
-            background: #134377;
-            padding: 6px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
-            font-family: system-ui, -apple-system, sans-serif;
-        `;
+ position: fixed;
+ left: ${x}px;
+ top: ${y}px;
+ z-index: 10001;
+ min-width: ${menuWidth}px;
+ overflow: auto;
+ border-radius: 8px;
+ border: 1px solid rgb(19 67 119);
+ background: #134377;
+ padding: 6px;
+ box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+ font-family: system-ui, -apple-system, sans-serif;
+ `;
 
         const pageType = detectPageType();
 
@@ -1547,7 +1742,7 @@ ${texto}`;
             const documentCount = documentosRelevantes.length;
 
             let menuTitle = "Processar Documentos";
-            let buttonColor = "#3b82f6";
+            let buttonColor = "#134377";
             let titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21 12,12"/></svg>`;
 
             if (documentCount === 0) {
@@ -1559,35 +1754,35 @@ ${texto}`;
                 menuTitle = `1 ${doc.tipo.descricao} Encontrada`;
             } else {
                 menuTitle = `${documentCount} Documentos Encontrados`;
-                buttonColor = "#10b981";
+                buttonColor = "#134377";
             }
 
             menu.innerHTML = `
-                <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
-                    ${titleIcon}
-                    ${menuTitle}
-                </li>
-                <li id="open-documento-btn" role="menuitem" style="cursor: ${
-                    documentCount === 0 ? "not-allowed" : "pointer"
-                }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
+ <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+ ${titleIcon}
+ ${menuTitle}
+ </li>
+ <li id="open-documento-btn" role="menuitem" style="cursor: ${
+     documentCount === 0 ? "not-allowed" : "pointer"
+ }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
                 documentCount === 0 ? "opacity: 0.5;" : ""
             }" ${documentCount === 0 ? 'data-disabled="true"' : ""}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                        <line x1="16" y1="13" x2="8" y2="13"/>
-                        <line x1="16" y1="17" x2="8" y2="17"/>
-                        <polyline points="10,9 9,9 8,9"/>
-                    </svg>
-                    ${
-                        documentCount === 0
-                            ? "Nenhum documento encontrado"
-                            : documentCount === 1
-                            ? `Processar ${documentosRelevantes[0].tipo.descricao}`
-                            : `Escolher entre ${documentCount} documentos`
-                    }
-                </li>
-            `;
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+ <polyline points="14,2 14,8 20,8"/>
+ <line x1="16" y1="13" x2="8" y2="13"/>
+ <line x1="16" y1="17" x2="8" y2="17"/>
+ <polyline points="10,9 9,9 8,9"/>
+ </svg>
+ ${
+     documentCount === 0
+         ? "Nenhum documento encontrado"
+         : documentCount === 1
+         ? `Processar ${documentosRelevantes[0].tipo.descricao}`
+         : `Escolher entre ${documentCount} documentos`
+ }
+ </li>
+ `;
 
             const openBtn = menu.querySelector("#open-documento-btn");
             if (documentCount > 0) {
@@ -1600,7 +1795,7 @@ ${texto}`;
                 openBtn.addEventListener("click", () => {
                     menu.remove();
                     if (documentCount > 1) {
-                        showDocumentProcessingOptions();
+                        showSentenceProcessingOptions();
                     } else {
                         runFullAutomation();
                     }
@@ -1608,55 +1803,55 @@ ${texto}`;
             }
         } else if (pageType === "documento_especifico") {
             menu.innerHTML = `
-                <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 8V4H8"/>
-                        <rect width="16" height="12" x="4" y="8" rx="2"/>
-                        <path d="M2 14h2"/>
-                        <path d="M20 14h2"/>
-                        <path d="M15 13v2"/>
-                        <path d="M9 13v2"/>
-                    </svg>
-                    Processar Documento
-                </li>
-                <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polygon points="5,3 19,12 5,21 12,12"/>
-                    </svg>
-                    API Perplexity (Recomendado)
-                </li>
-                <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                    </svg>
-                    Método Manual
-                </li>
-                <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-                        <circle cx="12" cy="12" r="3"/>
-                    </svg>
-                    Configurar API
-                </li>
-                <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="11" cy="11" r="8"/>
-                        <path d="m21 21-4.35-4.35"/>
-                    </svg>
-                    Testar API Key
-                </li>
-                <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                        <line x1="9" y1="9" x2="15" y2="9"/>
-                        <line x1="9" y1="13" x2="15" y2="13"/>
-                        <line x1="9" y1="17" x2="13" y2="17"/>
-                    </svg>
-                    Ver Logs de Erro
-                </li>
-            `;
+ <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M12 8V4H8"/>
+ <rect width="16" height="12" x="4" y="8" rx="2"/>
+ <path d="M2 14h2"/>
+ <path d="M20 14h2"/>
+ <path d="M15 13v2"/>
+ <path d="M9 13v2"/>
+ </svg>
+ Processar Documento
+ </li>
+ <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <polygon points="5,3 19,12 5,21 12,12"/>
+ </svg>
+ API Perplexity (Recomendado)
+ </li>
+ <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+ <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ </svg>
+ Método Manual
+ </li>
+ <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+ <circle cx="12" cy="12" r="3"/>
+ </svg>
+ Configurar API
+ </li>
+ <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <circle cx="11" cy="11" r="8"/>
+ <path d="m21 21-4.35-4.35"/>
+ </svg>
+ Testar API Key
+ </li>
+ <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+ <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ <line x1="9" y1="9" x2="15" y2="9"/>
+ <line x1="9" y1="13" x2="15" y2="13"/>
+ <line x1="9" y1="17" x2="13" y2="17"/>
+ </svg>
+ Ver Logs de Erro
+ </li>
+ `;
 
             // Adicionar eventos de hover e click para todos os botões
             const menuItems = menu.querySelectorAll("li[id]");
@@ -1686,30 +1881,28 @@ ${texto}`;
                     menu.remove();
                     const texto = await autoExtractText();
                     if (texto) {
-                        const usePreview = confirm(
-                            "Deseja ver o preview do texto antes de copiar?\n\nClique 'OK' para preview ou 'Cancelar' para copiar diretamente."
-                        );
+                        const usePreview = await showPreviewOptionsModal();
 
                         if (usePreview) {
-                            log("👁️ Usuário escolheu preview");
+                            log(" Usuário escolheu preview");
                             showTextPreview(texto);
                         } else {
-                            log("⚡ Usuário escolheu cópia direta");
+                            log("Usuário escolheu cópia direta");
                             const copied = await copyToClipboardWithPrefix(
                                 texto
                             );
                             if (copied) {
-                                log("✅ Texto copiado, abrindo ChatGPT...");
+                                log(" Texto copiado, abrindo ChatGPT...");
                                 setTimeout(() => {
                                     autoOpenChatGPT();
                                     showNotification(
-                                        "🎉 Texto copiado! Cole no ChatGPT (Ctrl+V)",
+                                        " Texto copiado! Cole no ChatGPT (Ctrl+V)",
                                         "success"
                                     );
                                 }, 500);
                             } else {
                                 log(
-                                    "❌ Falha ao copiar texto no método manual direto"
+                                    " Falha ao copiar texto no método manual direto"
                                 );
                             }
                         }
@@ -2012,12 +2205,12 @@ ${texto}`;
     // Automação completa
     async function runFullAutomation() {
         if (isAutomationActive) {
-            log("⚠️ Automação já está ativa");
+            log(" Automação já está ativa");
             return;
         }
 
         isAutomationActive = true;
-        log("🚀 Iniciando automação completa...");
+        log(" Iniciando automação completa...");
 
         try {
             const pageType = detectPageType();
@@ -2026,7 +2219,7 @@ ${texto}`;
                 const opened = await autoOpenDocumentoRelevante();
                 if (opened) {
                     showNotification(
-                        "✅ Documento aberto! Aguarde carregar e execute novamente na nova aba",
+                        " Documento aberto! Aguarde carregar e execute novamente na nova aba",
                         "success"
                     );
                 }
@@ -2037,10 +2230,10 @@ ${texto}`;
 
                     if (!apiSent) {
                         log(
-                            "⚠️ API falhou, usando método de clipboard como fallback"
+                            " API falhou, usando método de clipboard como fallback"
                         );
                         showNotification(
-                            "⚠️ Tentando método alternativo...",
+                            " Tentando método alternativo...",
                             "warning"
                         );
 
@@ -2049,7 +2242,7 @@ ${texto}`;
                             setTimeout(() => {
                                 autoOpenChatGPT();
                                 showNotification(
-                                    "🎉 Texto copiado! Cole no ChatGPT (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
+                                    " Texto copiado! Cole no ChatGPT (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
                                     "success"
                                 );
                             }, 2000);
@@ -2058,13 +2251,13 @@ ${texto}`;
                 }
             } else {
                 showNotification(
-                    "❌ Página não reconhecida. Use na página do processo ou documento",
+                    " Página não reconhecida. Use na página do processo ou documento",
                     "error"
                 );
             }
         } catch (error) {
-            log("❌ Erro na automação:", error);
-            showNotification("❌ Erro na automação: " + error.message, "error");
+            log(" Erro na automação:", error);
+            showNotification(" Erro na automação: " + error.message, "error");
         } finally {
             isAutomationActive = false;
         }
@@ -2083,28 +2276,28 @@ ${texto}`;
         const notification = document.createElement("div");
         notification.id = "documento-relevante-notification";
         notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: ${
-                type === "error"
-                    ? "#dc3545"
-                    : type === "warning"
-                    ? "#ffc107"
-                    : type === "success"
-                    ? "#28a745"
-                    : "#007bff"
-            };
-            color: white;
-            padding: 15px 20px;
-            border-radius: 5px;
-            font-weight: bold;
-            z-index: 10000;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            max-width: 300px;
-            font-size: 14px;
-            line-height: 1.4;
-        `;
+ position: fixed;
+ top: 20px;
+ right: 20px;
+ background: ${
+     type === "error"
+         ? "#dc3545"
+         : type === "warning"
+         ? "#ffc107"
+         : type === "success"
+         ? "#134377"
+         : "#134377"
+ };
+ color: white;
+ padding: 15px 20px;
+ border-radius: 5px;
+ font-weight: bold;
+ z-index: 10000;
+ box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+ max-width: 300px;
+ font-size: 14px;
+ line-height: 1.4;
+ `;
         notification.textContent = message;
 
         document.body.appendChild(notification);
@@ -2119,18 +2312,18 @@ ${texto}`;
 
     // Criar botão de automação integrado na página
     function createAutomationButton() {
-        console.log("🔧 Tentando criar botão integrado...");
+        console.log(" Tentando criar botão integrado...");
 
         // Verificar se já existe
         if (document.getElementById("documento-relevante-auto-button")) {
-            console.log("⚠️ Botão já existe, pulando criação");
+            console.log(" Botão já existe, pulando criação");
             return;
         }
 
         // Verificar se a página é válida para mostrar o botão
         if (!isValidPageForButton()) {
             console.log(
-                "⚠️ Página não é válida para o botão, cancelando criação"
+                " Página não é válida para o botão, cancelando criação"
             );
             return;
         }
@@ -2140,7 +2333,7 @@ ${texto}`;
 
         if (!targetInfo) {
             console.log(
-                "⚠️ Container alvo não encontrado, usando posição fixa como fallback"
+                " Container alvo não encontrado, usando posição fixa como fallback"
             );
             createFloatingButton();
             return;
@@ -2151,19 +2344,19 @@ ${texto}`;
         const insertMethod = targetInfo.insertMethod || "append";
         const referenceElement = targetInfo.referenceElement;
 
-        console.log("✅ Container encontrado, criando botão integrado...");
+        console.log(" Container encontrado, criando botão integrado...");
         const button = document.createElement("button");
         button.id = "documento-relevante-auto-button";
         button.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
-                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
-                <path d="M16.5 7.5 19 5"/>
-                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
-                <path d="M9 21a6 6 0 0 0-6-6"/>
-                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
-            </svg>
-            Resumir Documento
-        `;
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+ <path d="M16.5 7.5 19 5"/>
+ <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+ <path d="M9 21a6 6 0 0 0-6-6"/>
+ <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+ </svg>
+ Resumir Sentença
+ `;
         button.className = "infraButton btn-primary";
 
         // Aplicar apenas a cor azul personalizada
@@ -2201,8 +2394,8 @@ ${texto}`;
             e.preventDefault();
             e.stopPropagation();
 
-            log("🔧 Botão integrado clicado!");
-            console.log("🔧 Debug: Botão RESUMIR DOCUMENTO clicado");
+            log(" Botão integrado clicado!");
+            console.log(" Debug: Botão RESUMIR SENTENÇA clicado");
 
             // Adicionar feedback visual
             button.style.transform = "scale(0.95)";
@@ -2211,16 +2404,16 @@ ${texto}`;
             }, 150);
 
             const pageType = detectPageType();
-            log("📄 Tipo de página detectado:", pageType);
+            log(" Tipo de página detectado:", pageType);
 
             if (pageType === "lista_documentos") {
-                showNotification("🚀 Abrindo documento...", "info");
+                showNotification(" Abrindo documento...", "info");
                 await runFullAutomation();
             } else if (pageType === "documento_especifico") {
                 const rect = button.getBoundingClientRect();
                 showOptionsMenu(rect.left, rect.bottom);
             } else {
-                showNotification("❌ Página não reconhecida", "error");
+                showNotification(" Página não reconhecida", "error");
             }
         });
 
@@ -2228,13 +2421,13 @@ ${texto}`;
         if (insertMethod === "beforeDownload" && referenceElement) {
             try {
                 console.log(
-                    "🎯 Inserindo botão antes do Download Completo na barra de comandos..."
+                    " Inserindo botão antes do Download Completo na barra de comandos..."
                 );
                 console.log(
-                    "🎯 Reference element (Download button):",
+                    " Reference element (Download button):",
                     referenceElement
                 );
-                console.log("🎯 Container (form):", targetContainer);
+                console.log(" Container (form):", targetContainer);
 
                 // Criar um wrapper para melhor alinhamento na barra de comandos
                 const buttonWrapper = document.createElement("span");
@@ -2249,15 +2442,15 @@ ${texto}`;
                 );
 
                 console.log(
-                    "✅ Botão inserido com sucesso antes do Download Completo"
+                    " Botão inserido com sucesso antes do Download Completo"
                 );
                 console.log(
-                    "✅ Posição final do botão:",
+                    " Posição final do botão:",
                     button.parentElement.parentElement
                 );
             } catch (error) {
                 console.log(
-                    "⚠️ Erro ao inserir antes do Download Completo, usando fallback:",
+                    " Erro ao inserir antes do Download Completo, usando fallback:",
                     error
                 );
                 // Fallback: inserir no início do container
@@ -2266,7 +2459,7 @@ ${texto}`;
                     targetContainer.firstChild
                 );
                 console.log(
-                    "✅ Botão inserido no início do container (fallback)"
+                    " Botão inserido no início do container (fallback)"
                 );
             }
         } else if (insertMethod === "prepend") {
@@ -2277,20 +2470,20 @@ ${texto}`;
             } else {
                 targetContainer.appendChild(button);
             }
-            console.log("✅ Botão inserido no início do container");
+            console.log(" Botão inserido no início do container");
         } else if (insertMethod === "beforePDPJ" && referenceElement) {
             try {
                 // Estratégia 1: Inserir diretamente ao lado esquerdo da imagem usando insertAdjacentElement
                 console.log(
-                    "🎯 Tentando posicionar ao lado esquerdo da imagem PDPJ..."
+                    " Tentando posicionar ao lado esquerdo da imagem PDPJ..."
                 );
-                console.log("🎯 Reference element:", referenceElement);
+                console.log(" Reference element:", referenceElement);
                 console.log(
-                    "🎯 Reference element tagName:",
+                    " Reference element tagName:",
                     referenceElement.tagName
                 );
                 console.log(
-                    "🎯 Reference element parent:",
+                    " Reference element parent:",
                     referenceElement.parentElement
                 );
 
@@ -2303,9 +2496,9 @@ ${texto}`;
 
                 if (isInsideLink) {
                     console.log(
-                        "⚠️ PROBLEMA: Botão foi inserido dentro de um link!"
+                        " PROBLEMA: Botão foi inserido dentro de um link!"
                     );
-                    console.log("⚠️ Tentando mover para fora do link...");
+                    console.log(" Tentando mover para fora do link...");
 
                     // Encontrar o link pai
                     const linkElement = button.closest("a");
@@ -2316,20 +2509,18 @@ ${texto}`;
 
                     // Inserir antes do link
                     linkContainer.insertBefore(button, linkElement);
-                    console.log("✅ Botão movido para fora do link");
+                    console.log(" Botão movido para fora do link");
                 }
 
+                console.log(" Botão inserido ao lado esquerdo da imagem PDPJ");
+                console.log(" Posição final do botão:", button.parentElement);
                 console.log(
-                    "✅ Botão inserido ao lado esquerdo da imagem PDPJ"
-                );
-                console.log("✅ Posição final do botão:", button.parentElement);
-                console.log(
-                    "✅ Botão está dentro de link?",
+                    " Botão está dentro de link?",
                     button.closest("a") !== null ? "SIM" : "NÃO"
                 );
             } catch (error) {
                 console.log(
-                    "⚠️ Erro ao inserir ao lado da imagem PDPJ, tentando estratégias alternativas:",
+                    " Erro ao inserir ao lado da imagem PDPJ, tentando estratégias alternativas:",
                     error
                 );
 
@@ -2342,7 +2533,7 @@ ${texto}`;
                     ) {
                         // Inserir antes da imagem PDPJ (ao lado esquerdo)
                         targetContainer.insertBefore(button, referenceElement);
-                        console.log("✅ Botão inserido antes da imagem PDPJ");
+                        console.log(" Botão inserido antes da imagem PDPJ");
                     } else {
                         // Estratégia 3: A imagem não é filha direta, usar o pai direto da imagem
                         const directParent = referenceElement.parentElement;
@@ -2354,25 +2545,25 @@ ${texto}`;
                         ) {
                             directParent.insertBefore(button, referenceElement);
                             console.log(
-                                "✅ Botão inserido antes da imagem PDPJ (no pai direto)"
+                                " Botão inserido antes da imagem PDPJ (no pai direto)"
                             );
                         } else {
                             // Estratégia 4: Fallback - adicionar no final do container encontrado
                             targetContainer.appendChild(button);
                             console.log(
-                                "✅ Botão adicionado ao container (fallback)"
+                                " Botão adicionado ao container (fallback)"
                             );
                         }
                     }
                 } catch (secondError) {
                     console.log(
-                        "⚠️ Erro na segunda tentativa, usando fallback final:",
+                        " Erro na segunda tentativa, usando fallback final:",
                         secondError
                     );
                     // Fallback final: adicionar no final do container
                     targetContainer.appendChild(button);
                     console.log(
-                        "✅ Botão adicionado ao container (fallback final)"
+                        " Botão adicionado ao container (fallback final)"
                     );
                 }
             }
@@ -2380,7 +2571,7 @@ ${texto}`;
             // Método padrão - adicionar ao final do container
             targetContainer.appendChild(button);
             console.log(
-                "✅ Botão integrado adicionado ao container:",
+                " Botão integrado adicionado ao container:",
                 targetContainer
             );
         }
@@ -2393,18 +2584,12 @@ ${texto}`;
             "divInfraBarraComandosSuperior"
         );
         if (commandBar) {
-            console.log(
-                "✅ Barra de comandos superior encontrada:",
-                commandBar
-            );
+            console.log(" Barra de comandos superior encontrada:", commandBar);
 
             // Procurar pelo formulário que contém o botão "Download Completo"
             const processForm = commandBar.querySelector("#frmProcessoLista");
             if (processForm) {
-                console.log(
-                    "✅ Formulário do processo encontrado:",
-                    processForm
-                );
+                console.log(" Formulário do processo encontrado:", processForm);
 
                 // Buscar o botão "Download Completo" por diferentes estratégias
                 const downloadSelectors = [
@@ -2430,7 +2615,7 @@ ${texto}`;
                     downloadButton = processForm.querySelector(selector);
                     if (downloadButton) {
                         console.log(
-                            `✅ Botão Download Completo encontrado com seletor: ${selector}`,
+                            ` Botão Download Completo encontrado com seletor: ${selector}`,
                             downloadButton
                         );
                         break;
@@ -2440,7 +2625,7 @@ ${texto}`;
                 // Se não encontrou, buscar por texto nos botões
                 if (!downloadButton) {
                     console.log(
-                        "🔍 Buscando botão Download Completo por texto..."
+                        " Buscando botão Download Completo por texto..."
                     );
                     const allButtons = processForm.querySelectorAll(
                         'button, input[type="submit"], input[type="button"]'
@@ -2457,7 +2642,7 @@ ${texto}`;
                         ) {
                             downloadButton = btn;
                             console.log(
-                                "✅ Botão Download Completo encontrado por texto:",
+                                " Botão Download Completo encontrado por texto:",
                                 downloadButton
                             );
                             break;
@@ -2467,7 +2652,7 @@ ${texto}`;
 
                 if (downloadButton) {
                     console.log(
-                        "✅ Inserindo antes do botão Download Completo na barra de comandos"
+                        " Inserindo antes do botão Download Completo na barra de comandos"
                     );
                     return {
                         container: processForm,
@@ -2477,7 +2662,7 @@ ${texto}`;
                 } else {
                     // Se não encontrou o botão Download, inserir no início do formulário
                     console.log(
-                        "⚠️ Botão Download Completo não encontrado, inserindo no início do formulário"
+                        " Botão Download Completo não encontrado, inserindo no início do formulário"
                     );
                     return {
                         container: processForm,
@@ -2487,7 +2672,7 @@ ${texto}`;
             } else {
                 // Se não encontrou o formulário, buscar diretamente na barra de comandos
                 console.log(
-                    "⚠️ Formulário não encontrado, buscando Download Completo diretamente na barra..."
+                    " Formulário não encontrado, buscando Download Completo diretamente na barra..."
                 );
 
                 const downloadSelectors = [
@@ -2504,7 +2689,7 @@ ${texto}`;
                     downloadButton = commandBar.querySelector(selector);
                     if (downloadButton) {
                         console.log(
-                            `✅ Botão Download encontrado na barra: ${selector}`,
+                            ` Botão Download encontrado na barra: ${selector}`,
                             downloadButton
                         );
                         return {
@@ -2530,7 +2715,7 @@ ${texto}`;
                         text.toLowerCase().includes("completo")
                     ) {
                         console.log(
-                            "✅ Botão Download encontrado por texto na barra:",
+                            " Botão Download encontrado por texto na barra:",
                             btn
                         );
                         return {
@@ -2543,7 +2728,7 @@ ${texto}`;
 
                 // Se não encontrou nada, inserir na barra de comandos
                 console.log(
-                    "⚠️ Botão Download não encontrado, inserindo na barra de comandos"
+                    " Botão Download não encontrado, inserindo na barra de comandos"
                 );
                 return {
                     container: commandBar,
@@ -2558,23 +2743,20 @@ ${texto}`;
         );
         if (pdpjImage) {
             console.log(
-                "✅ Imagem PDPJ encontrada, buscando container pai adequado"
+                " Imagem PDPJ encontrada, buscando container pai adequado"
             );
 
             // Verificar se a imagem está dentro de um link <a>
             const linkParent = pdpjImage.closest("a");
             if (linkParent) {
+                console.log("Imagem PDPJ está dentro de um link:", linkParent);
                 console.log(
-                    "🔗 Imagem PDPJ está dentro de um link:",
-                    linkParent
-                );
-                console.log(
-                    "🔗 Link src/href:",
+                    "Link src/href:",
                     linkParent.href || linkParent.getAttribute("href")
                 );
                 const linkContainer = linkParent.parentElement;
                 if (linkContainer) {
-                    console.log("🔗 Container do link:", linkContainer);
+                    console.log("Container do link:", linkContainer);
                     return {
                         container: linkContainer,
                         insertMethod: "beforePDPJ",
@@ -2586,10 +2768,7 @@ ${texto}`;
             // Primeiro tentar o pai direto da imagem se não estiver em um link
             const directParent = pdpjImage.parentElement;
             if (directParent) {
-                console.log(
-                    "✅ Usando pai direto da imagem PDPJ:",
-                    directParent
-                );
+                console.log(" Usando pai direto da imagem PDPJ:", directParent);
                 return {
                     container: directParent,
                     insertMethod: "beforePDPJ",
@@ -2612,7 +2791,7 @@ ${texto}`;
                     parent.tagName === "HEADER"
                 ) {
                     console.log(
-                        "✅ Container da navbar/header encontrado para PDPJ:",
+                        " Container da navbar/header encontrado para PDPJ:",
                         parent
                     );
 
@@ -2627,7 +2806,7 @@ ${texto}`;
             }
 
             // Se não encontrou container flex, usar o pai direto da imagem como fallback
-            console.log("✅ Usando container pai direto da imagem PDPJ");
+            console.log(" Usando container pai direto da imagem PDPJ");
             return {
                 container: pdpjImage.parentElement,
                 insertMethod: "beforePDPJ",
@@ -2653,7 +2832,7 @@ ${texto}`;
                 // Verificar se está na parte superior da página
                 if (rect.top < 100 && rect.width > 300) {
                     console.log(
-                        `✅ Container navbar encontrado com seletor: ${selector}`
+                        ` Container navbar encontrado com seletor: ${selector}`
                     );
                     return { container: container, insertMethod: "append" };
                 }
@@ -2681,7 +2860,7 @@ ${texto}`;
         for (const selector of containerSelectors) {
             const container = document.querySelector(selector);
             if (container) {
-                console.log(`✅ Container encontrado com seletor: ${selector}`);
+                console.log(` Container encontrado com seletor: ${selector}`);
                 return { container: container, insertMethod: "append" };
             }
         }
@@ -2700,15 +2879,13 @@ ${texto}`;
                 // Verificar se o container está visível e tem tamanho adequado
                 const rect = container.getBoundingClientRect();
                 if (rect.width > 200 && rect.height > 20 && rect.top < 300) {
-                    console.log(
-                        `✅ Container fallback encontrado: ${selector}`
-                    );
+                    console.log(` Container fallback encontrado: ${selector}`);
                     return { container: container, insertMethod: "append" };
                 }
             }
         }
 
-        console.log("❌ Nenhum container adequado encontrado");
+        console.log(" Nenhum container adequado encontrado");
         return null;
     }
 
@@ -2717,48 +2894,48 @@ ${texto}`;
         // Verificar se a página é válida para mostrar o botão
         if (!isValidPageForButton()) {
             console.log(
-                "⚠️ Página não é válida para o botão flutuante, cancelando criação"
+                " Página não é válida para o botão flutuante, cancelando criação"
             );
             return;
         }
 
-        console.log("✅ Criando botão flutuante como fallback...");
+        console.log(" Criando botão flutuante como fallback...");
         const button = document.createElement("button");
         button.id = "sent1-auto-button";
         button.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
-                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
-                <path d="M16.5 7.5 19 5"/>
-                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
-                <path d="M9 21a6 6 0 0 0-6-6"/>
-                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
-            </svg>
-            Resumir Documento
-        `;
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+ <path d="M16.5 7.5 19 5"/>
+ <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+ <path d="M9 21a6 6 0 0 0-6-6"/>
+ <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+ </svg>
+ Resumir Sentença
+ `;
 
         // Usar estilo customizado próprio para o botão flutuante
         button.style.cssText = `
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            z-index: 99999;
-            background-color: #134377;
-            border: 1px solid #134377;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-family: Arial, sans-serif;
-            font-size: 14px;
-            font-weight: normal;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: background-color 0.2s ease;
-        `;
+ position: fixed;
+ top: 80px;
+ right: 20px;
+ z-index: 99999;
+ background-color: #134377;
+ border: 1px solid #134377;
+ color: white;
+ padding: 8px 16px;
+ border-radius: 4px;
+ font-family: Arial, sans-serif;
+ font-size: 14px;
+ font-weight: normal;
+ cursor: pointer;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ text-decoration: none;
+ white-space: nowrap;
+ box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+ transition: background-color 0.2s ease;
+ `;
 
         // Adicionar eventos para hover e focus
         button.addEventListener("mouseenter", () => {
@@ -2785,25 +2962,25 @@ ${texto}`;
             e.preventDefault();
             e.stopPropagation();
 
-            log("🔧 Botão flutuante clicado!");
-            console.log("🔧 Debug: Botão RESUMIR DOCUMENTO clicado");
+            log(" Botão flutuante clicado!");
+            console.log(" Debug: Botão RESUMIR SENTENÇA clicado");
 
             const pageType = detectPageType();
-            log("📄 Tipo de página detectado:", pageType);
+            log(" Tipo de página detectado:", pageType);
 
             if (pageType === "lista_documentos") {
-                showNotification("🚀 Abrindo documento...", "info");
+                showNotification(" Abrindo documento...", "info");
                 await runFullAutomation();
             } else if (pageType === "documento_especifico") {
                 const rect = button.getBoundingClientRect();
                 showOptionsMenu(rect.left, rect.bottom);
             } else {
-                showNotification("❌ Página não reconhecida", "error");
+                showNotification(" Página não reconhecida", "error");
             }
         });
 
         document.body.appendChild(button);
-        console.log("✅ Botão flutuante adicionado ao DOM");
+        console.log(" Botão flutuante adicionado ao DOM");
     }
 
     // Debug: verificar se o botão foi criado
@@ -2811,15 +2988,15 @@ ${texto}`;
         setTimeout(() => {
             const button = document.getElementById("sent1-auto-button");
             if (button) {
-                console.log("✅ Botão RESUMIR DOCUMENTO encontrado:", button);
+                console.log(" Botão RESUMIR SENTENÇA encontrado:", button);
                 const isFloating = button.style.position === "fixed";
                 console.log(
-                    "📍 Tipo de botão:",
+                    " Tipo de botão:",
                     isFloating ? "Flutuante" : "Integrado"
                 );
 
                 if (isFloating) {
-                    console.log("📍 Posição do botão flutuante:", {
+                    console.log(" Posição do botão flutuante:", {
                         top: button.style.top,
                         right: button.style.right,
                         zIndex: button.style.zIndex,
@@ -2827,7 +3004,7 @@ ${texto}`;
                         visibility: getComputedStyle(button).visibility,
                     });
                 } else {
-                    console.log("📍 Informações do botão integrado:", {
+                    console.log(" Informações do botão integrado:", {
                         parentElement: button.parentElement?.tagName,
                         parentClass: button.parentElement?.className,
                         display: getComputedStyle(button).display,
@@ -2835,7 +3012,7 @@ ${texto}`;
                     });
                 }
             } else {
-                console.log("❌ Botão RESUMIR DOCUMENTO NÃO encontrado!");
+                console.log(" Botão RESUMIR SENTENÇA NÃO encontrado!");
             }
         }, 2000);
     }
@@ -2846,61 +3023,61 @@ ${texto}`;
 
         const timestamp = new Date().toISOString();
         const phaseColors = {
-            INÍCIO: "🚀",
-            REQUEST: "📤",
-            RESPONSE_HEADERS: "📥",
-            SUCCESS: "✅",
-            ERROR_DETAILS: "❌",
-            EXCEPTION: "💥",
-            TEST_START: "🔍",
-            TEST_RESPONSE: "📊",
-            TEST_SUCCESS: "✅",
-            TEST_ERROR: "❌",
+            INÍCIO: "",
+            REQUEST: "",
+            RESPONSE_HEADERS: "",
+            SUCCESS: "",
+            ERROR_DETAILS: "",
+            EXCEPTION: "",
+            TEST_START: "",
+            TEST_RESPONSE: "",
+            TEST_SUCCESS: "",
+            TEST_ERROR: "",
         };
 
-        const icon = phaseColors[phase] || "📋";
+        const icon = phaseColors[phase] || "";
 
         console.group(`${icon} API Debug [ID: ${requestId}] - ${phase}`);
-        console.log("⏰ Timestamp:", timestamp);
+        console.log(" Timestamp:", timestamp);
 
         if (phase === "REQUEST") {
-            console.log("🌐 URL:", data.url);
-            console.log("🤖 Model:", data.model);
+            console.log(" URL:", data.url);
+            console.log(" Model:", data.model);
             console.log("� Prompt Length:", data.promptLength);
-            console.log("🎯 Max Tokens:", data.maxTokens);
+            console.log(" Max Tokens:", data.maxTokens);
         } else if (phase === "RESPONSE_HEADERS") {
-            console.log("�📊 Status:", data.status, data.statusText);
-            console.log("🆔 Request ID:", data.requestId);
+            console.log("� Status:", data.status, data.statusText);
+            console.log(" Request ID:", data.requestId);
             if (data.rateLimit) {
-                console.log("⏱️ Rate Limits:");
+                console.log(" Rate Limits:");
                 console.table(data.rateLimit);
             }
         } else if (phase === "SUCCESS") {
-            console.log("🆔 Response ID:", data.responseId);
-            console.log("🤖 Model Used:", data.model);
-            console.log("📊 Usage:", data.usage);
+            console.log(" Response ID:", data.responseId);
+            console.log(" Model Used:", data.model);
+            console.log(" Usage:", data.usage);
             console.log("🏁 Finish Reason:", data.choices?.[0]?.finish_reason);
             console.log(
-                "📏 Response Length:",
+                " Response Length:",
                 data.choices?.[0]?.message?.content?.length
             );
         } else if (phase === "ERROR_DETAILS") {
-            console.log("❌ Status:", data.status, data.statusText);
-            console.log("📄 Error Text:", data.errorText);
+            console.log(" Status:", data.status, data.statusText);
+            console.log(" Error Text:", data.errorText);
             if (data.errorJson) {
-                console.log("🔍 Error JSON:", data.errorJson);
+                console.log(" Error JSON:", data.errorJson);
             }
         } else if (phase === "EXCEPTION") {
-            console.log("💥 Error Name:", data.errorName);
-            console.log("📄 Error Message:", data.errorMessage);
+            console.log(" Error Name:", data.errorName);
+            console.log(" Error Message:", data.errorMessage);
             console.log("📚 Stack Trace:", data.errorStack);
         } else if (phase === "TEST_SUCCESS") {
-            console.log("📊 Total Models:", data.totalModels);
-            console.log("🤖 GPT Models:", data.gptModels);
+            console.log(" Total Models:", data.totalModels);
+            console.log(" GPT Models:", data.gptModels);
             console.log("🏢 Organization:", data.organization);
-            console.log("🚀 Has GPT-4:", data.hasGpt4);
+            console.log(" Has GPT-4:", data.hasGpt4);
         } else {
-            console.log("📊 Data:", data);
+            console.log(" Data:", data);
         }
 
         console.groupEnd();
@@ -2934,11 +3111,11 @@ ${texto}`;
         try {
             const apiKey = await getStoredApiKey();
             if (!apiKey) {
-                showNotification("❌ Nenhuma API key configurada", "error");
+                showNotification(" Nenhuma API key configurada", "error");
                 return false;
             }
 
-            log("🔑 Testando API key...");
+            log(" Testando API key...");
 
             const testId = Date.now().toString();
             debugApiCall(testId, "TEST_START", {
@@ -2977,7 +3154,7 @@ ${texto}`;
             if (response.ok) {
                 const data = await response.json();
 
-                log("✅ API key válida! Modelo usado:", data.model || "sonar");
+                log(" API key válida! Modelo usado:", data.model || "sonar");
 
                 debugApiCall(testId, "TEST_SUCCESS", {
                     model: data.model,
@@ -2986,7 +3163,7 @@ ${texto}`;
                 });
 
                 showNotification(
-                    `✅ API key válida!\nModelo: ${data.model || "sonar"}`,
+                    ` API key válida!\nModelo: ${data.model || "sonar"}`,
                     "success"
                 );
                 return true;
@@ -2997,7 +3174,7 @@ ${texto}`;
                 try {
                     errorJson = JSON.parse(errorData);
                 } catch (e) {
-                    log("⚠️ Erro de resposta não é JSON válido");
+                    log(" Erro de resposta não é JSON válido");
                 }
 
                 debugApiCall(testId, "TEST_ERROR", {
@@ -3010,7 +3187,7 @@ ${texto}`;
                     const errorMsg =
                         errorJson?.error?.message ||
                         "API key inválida ou expirada";
-                    showNotification(`🔑 ${errorMsg}`, "error");
+                    showNotification(` ${errorMsg}`, "error");
                     await removeStoredApiKey();
                 } else if (response.status === 429) {
                     const rateLimitType =
@@ -3018,31 +3195,31 @@ ${texto}`;
 
                     if (rateLimitType === "insufficient_quota") {
                         showNotification(
-                            "💳 Cota da API Perplexity esgotada. Verifique em perplexity.ai/settings/api",
+                            " Cota da API Perplexity esgotada. Verifique em perplexity.ai/settings/api",
                             "error"
                         );
                         await removeStoredApiKey();
                     } else {
                         showNotification(
-                            `⏳ Rate limit atingido no teste da API`,
+                            ` Rate limit atingido no teste da API`,
                             "warning"
                         );
                     }
                 } else if (response.status === 403) {
                     showNotification(
-                        "🚫 Acesso negado. Verifique créditos da conta",
+                        " Acesso negado. Verifique créditos da conta",
                         "error"
                     );
                 } else {
                     const errorMsg =
                         errorJson?.error?.message || `Erro ${response.status}`;
-                    showNotification(`❌ ${errorMsg}`, "error");
+                    showNotification(` ${errorMsg}`, "error");
                 }
                 return false;
             }
         } catch (error) {
-            log("❌ Erro de conexão no teste:", error);
-            showNotification("🌐 Erro de conexão com Perplexity", "error");
+            log(" Erro de conexão no teste:", error);
+            showNotification(" Erro de conexão com Perplexity", "error");
             return false;
         }
     }
@@ -3050,12 +3227,12 @@ ${texto}`;
     // Mostrar modal para seleção de múltiplos documentos relevantes
     function showDocumentSelectionModal(documentosRelevantes) {
         log(
-            "🔍 DEBUG MODAL: Recebido documentosRelevantes:",
+            " DEBUG MODAL: Recebido documentosRelevantes:",
             documentosRelevantes
         );
-        log("🔍 DEBUG MODAL: Detalhes de cada documento:");
+        log(" DEBUG MODAL: Detalhes de cada documento:");
         documentosRelevantes.forEach((doc, i) => {
-            log(`  DOC${i + 1}:`, {
+            log(` DOC${i + 1}:`, {
                 eventoDescricao: doc.eventoDescricao,
                 seqEvento: doc.seqEvento,
                 tipoDocumento: doc.tipoDocumento,
@@ -3074,18 +3251,18 @@ ${texto}`;
             const modal = document.createElement("div");
             modal.id = "document-selection-modal";
             modal.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0,0,0,0.8);
-                z-index: 100010;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                backdrop-filter: blur(4px);
-            `;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.8);
+ z-index: 100010;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ backdrop-filter: blur(4px);
+ `;
 
             let documentOptions = "";
             documentosRelevantes.forEach((documento, index) => {
@@ -3101,7 +3278,7 @@ ${texto}`;
                     "DOCUMENTO";
                 const eventoDesc = documento.eventoDescricao || "Documento";
 
-                log(`🔍 DEBUG OPTION ${index + 1}:`, {
+                log(` DEBUG OPTION ${index + 1}:`, {
                     seqEvento,
                     tipoInfo,
                     eventoDesc,
@@ -3110,77 +3287,75 @@ ${texto}`;
                 });
 
                 documentOptions += `
-                    <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
-                         class="document-option" data-index="${index}">
-                        <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(101, 171, 255);">
-                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                                <polyline points="14,2 14,8 20,8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <polyline points="10,9 9,9 8,9"/>
-                            </svg>
-                            ${tipoInfo} - ${seqEvento}
-                        </div>
-                        <div style="font-size: 13px; color: rgb(101, 171, 255); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                            </svg>
-                            ${eventoDesc}
-                        </div>
-                        <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            Documento: ${documento.tipo}${
-                    documento.index
-                }${tamanhoInfo}
-                        </div>
-                        <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.8; display: flex; align-items: center; gap: 8px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                            </svg>
-                            ID: ${documento.eventoId.substring(0, 20)}...
-                        </div>
-                    </div>
-                `;
+ <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
+ class="document-option" data-index="${index}">
+ <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(19, 67, 119);">
+ <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+ <polyline points="14,2 14,8 20,8"/>
+ <line x1="16" y1="13" x2="8" y2="13"/>
+ <line x1="16" y1="17" x2="8" y2="17"/>
+ <polyline points="10,9 9,9 8,9"/>
+ </svg>
+ ${tipoInfo} - ${seqEvento}
+ </div>
+ <div style="font-size: 13px; color: rgb(19, 67, 119); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+ <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ </svg>
+ ${eventoDesc}
+ </div>
+ <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+ </svg>
+ Documento: ${documento.tipo}${documento.index}${tamanhoInfo}
+ </div>
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.8; display: flex; align-items: center; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+ <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+ </svg>
+ ID: ${documento.eventoId.substring(0, 20)}...
+ </div>
+ </div>
+ `;
             });
 
             modal.innerHTML = `
-                <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
-                    <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
-                        <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
-                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                                <polyline points="14,2 14,8 20,8"/>
-                                <line x1="16" y1="13" x2="8" y2="13"/>
-                                <line x1="16" y1="17" x2="8" y2="17"/>
-                                <polyline points="10,9 9,9 8,9"/>
-                            </svg>
-                            Múltiplos Documentos Encontrados
-                        </h2>
-                        <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
-                            Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
-                        </p>
-                    </div>
-                    
-                    <div id="document-options" style="margin-bottom: 20px;">
-                        ${documentOptions}
-                    </div>
+ <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+ <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+ <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+ <polyline points="14,2 14,8 20,8"/>
+ <line x1="16" y1="13" x2="8" y2="13"/>
+ <line x1="16" y1="17" x2="8" y2="17"/>
+ <polyline points="10,9 9,9 8,9"/>
+ </svg>
+ Múltiplos Documentos Encontrados
+ </h2>
+ <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
+ Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
+ </p>
+ </div>
+ 
+ <div id="document-options" style="margin-bottom: 20px;">
+ ${documentOptions}
+ </div>
 
-                    <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
-                        <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="m18 6-12 12"/>
-                                <path d="m6 6 12 12"/>
-                            </svg>
-                            Cancelar
-                        </button>
-                    </div>
-                </div>
-            `;
+ <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+ <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m18 6-12 12"/>
+ <path d="m6 6 12 12"/>
+ </svg>
+ Cancelar
+ </button>
+ </div>
+ </div>
+ `;
 
             document.body.appendChild(modal);
 
@@ -3189,11 +3364,11 @@ ${texto}`;
                 .querySelectorAll(".document-option")
                 .forEach((option, index) => {
                     option.addEventListener("mouseover", () => {
-                        option.style.borderColor = "rgba(101, 171, 255, 0.6)";
+                        option.style.borderColor = "rgba(19, 67, 119, 0.6)";
                         option.style.background = "rgb(47, 52, 61)";
                         option.style.transform = "translateY(-1px)";
                         option.style.boxShadow =
-                            "0 4px 12px rgba(101, 171, 255, 0.25)";
+                            "0 4px 12px rgba(19, 67, 119, 0.25)";
                     });
 
                     option.addEventListener("mouseout", () => {
@@ -3211,10 +3386,10 @@ ${texto}`;
                             documentosRelevantes[selectedIndex];
 
                         log(
-                            `✅ Documento selecionado: ${selectedDocument.eventoDescricao} - Evento ${selectedDocument.seqEvento}`
+                            ` Documento selecionado: ${selectedDocument.eventoDescricao} - Evento ${selectedDocument.seqEvento}`
                         );
                         showNotification(
-                            `✅ Documento selecionado: ${selectedDocument.eventoDescricao}`,
+                            ` Documento selecionado: ${selectedDocument.eventoDescricao}`,
                             "success"
                         );
 
@@ -3224,28 +3399,23 @@ ${texto}`;
                 });
 
             // Evento do botão cancelar
-            modal
-                .querySelector("#cancel-selection")
-                .addEventListener("mouseover", () => {
-                    modal.querySelector(
-                        "#cancel-selection"
-                    ).style.backgroundColor = "rgb(153, 40, 0)";
-                });
+            const cancelBtn = modal.querySelector("#cancel-selection");
 
-            modal
-                .querySelector("#cancel-selection")
-                .addEventListener("mouseout", () => {
-                    modal.querySelector(
-                        "#cancel-selection"
-                    ).style.backgroundColor = "rgb(32, 39, 51)";
-                });
+            // Adicionar hover vermelho no botão cancelar
+            cancelBtn.addEventListener("mouseenter", () => {
+                cancelBtn.style.backgroundColor = "#91433d";
+                cancelBtn.style.borderColor = "#91433d";
+            });
 
-            modal
-                .querySelector("#cancel-selection")
-                .addEventListener("click", () => {
-                    modal.remove();
-                    resolve(null);
-                });
+            cancelBtn.addEventListener("mouseleave", () => {
+                cancelBtn.style.backgroundColor = "rgb(32, 39, 51)";
+                cancelBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
+            });
+
+            cancelBtn.addEventListener("click", () => {
+                modal.remove();
+                resolve(null);
+            });
 
             modal.addEventListener("click", (e) => {
                 if (e.target === modal) {
@@ -3269,80 +3439,80 @@ ${texto}`;
         const modal = document.createElement("div");
         modal.id = "api-key-config";
         modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100001;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        `;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.8);
+ z-index: 100001;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ backdrop-filter: blur(4px);
+ `;
 
         modal.innerHTML = `
-            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 520px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
-                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
-                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
-                            <circle cx="12" cy="16" r="1"/>
-                            <rect x="3" y="10" width="18" height="12" rx="2"/>
-                            <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
-                        </svg>
-                        Configurar API Key do Perplexity
-                    </h2>
-                </div>
-                
-                <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; font-size: 13px; line-height: 1.5; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.3);">
-                    <strong style="color: rgb(101, 171, 255);">Como obter sua API Key do Perplexity:</strong><br>
-                    1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(101, 171, 255); text-decoration: none;">www.perplexity.ai/settings/api</a><br>
-                    2. Faça login na sua conta Perplexity<br>
-                    3. Clique em "Generate" para criar uma nova chave<br>
-                    4. Copie a chave e cole abaixo
-                </div>
+ <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 520px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+ <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+ <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <circle cx="12" cy="16" r="1"/>
+ <rect x="3" y="10" width="18" height="12" rx="2"/>
+ <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
+ </svg>
+ Configurar API Key do Perplexity
+ </h2>
+ </div>
+ 
+ <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; font-size: 13px; line-height: 1.5; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.3);">
+ <strong style="color: rgb(19, 67, 119);">Como obter sua API Key do Perplexity:</strong><br>
+ 1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(19, 67, 119); text-decoration: none;">www.perplexity.ai/settings/api</a><br>
+ 2. Faça login na sua conta Perplexity<br>
+ 3. Clique em "Generate" para criar uma nova chave<br>
+ 4. Copie a chave e cole abaixo
+ </div>
 
-                <div style="margin-bottom: 16px;">
-                    <label style="display: block; margin-bottom: 6px; font-weight: 500; color: rgb(243, 246, 249); font-size: 13px;">API Key:</label>
-                    <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 10px 12px; border: 1px solid rgba(82, 82, 82, 0.5); border-radius: 8px; font-family: monospace; background: rgb(32, 39, 51); color: rgb(243, 246, 249); font-size: 14px; transition: all 0.2s ease;" value="${
-                        currentKey || ""
-                    }" />
-                </div>
+ <div style="margin-bottom: 16px;">
+ <label style="display: block; margin-bottom: 6px; font-weight: 500; color: rgb(243, 246, 249); font-size: 13px;">API Key:</label>
+ <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 10px 12px; border: 1px solid rgba(82, 82, 82, 0.5); border-radius: 8px; font-family: monospace; background: rgb(32, 39, 51); color: rgb(243, 246, 249); font-size: 14px; transition: all 0.2s ease;" value="${
+     currentKey || ""
+ }" />
+ </div>
 
-                <div style="margin-bottom: 20px; padding: 12px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; color: rgb(251, 191, 36);">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
-                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
-                        <path d="M12 9v4"/>
-                        <path d="m12 17 .01 0"/>
-                    </svg>
-                    <span>Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
-                </div>
+ <div style="margin-bottom: 20px; padding: 12px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; color: rgb(251, 191, 36);">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+ <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+ <path d="M12 9v4"/>
+ <path d="m12 17 .01 0"/>
+ </svg>
+ <span>Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
+ </div>
 
-                <div style="text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
-                    <button id="save-key" style="background: rgb(34, 197, 94); color: white; border: 1px solid rgb(34, 197, 94); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20,6 9,17 4,12"/>
-                        </svg>
-                        Salvar e Testar
-                    </button>
-                    <button id="remove-key" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3,6 5,6 21,6"/>
-                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                        </svg>
-                        Remover
-                    </button>
-                    <button id="cancel-config" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m18 6-12 12"/>
-                            <path d="m6 6 12 12"/>
-                        </svg>
-                        Cancelar
-                    </button>
-                </div>
-            </div>
-        `;
+ <div style="text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
+ <button id="save-key" style="background: rgb(19, 67, 119); color: white; border: 1px solid rgb(19, 67, 119); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <polyline points="20,6 9,17 4,12"/>
+ </svg>
+ Salvar e Testar
+ </button>
+ <button id="remove-key" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <polyline points="3,6 5,6 21,6"/>
+ <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+ </svg>
+ Remover
+ </button>
+ <button id="cancel-config" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m18 6-12 12"/>
+ <path d="m6 6 12 12"/>
+ </svg>
+ Cancelar
+ </button>
+ </div>
+ </div>
+ `;
 
         document.body.appendChild(modal);
 
@@ -3353,8 +3523,8 @@ ${texto}`;
 
         // Adicionar eventos de focus/blur para o input
         input.addEventListener("focus", () => {
-            input.style.borderColor = "rgb(101, 171, 255)";
-            input.style.boxShadow = "0 0 0 3px rgba(101, 171, 255, 0.1)";
+            input.style.borderColor = "rgb(19, 67, 119)";
+            input.style.boxShadow = "0 0 0 3px rgba(19, 67, 119, 0.1)";
         });
 
         input.addEventListener("blur", () => {
@@ -3368,13 +3538,13 @@ ${texto}`;
             const newKey = input.value.trim();
 
             if (!newKey) {
-                showNotification("❌ Digite uma API key", "error");
+                showNotification("Digite uma API key", "error");
                 return;
             }
 
             if (!(await validateApiKey(newKey))) {
                 showNotification(
-                    "❌ API key inválida. Deve começar com 'pplx-'",
+                    "API key inválida. Deve começar com 'pplx-'",
                     "error"
                 );
                 return;
@@ -3384,29 +3554,40 @@ ${texto}`;
                 await storeApiKey(newKey);
                 modal.remove();
 
-                showNotification("🔑 Testando API key...", "info");
+                showNotification("Testando API key...", "info");
 
                 const isValid = await testApiKey();
                 if (isValid) {
                     showNotification(
-                        "✅ API key configurada e validada!",
+                        "API key configurada e validada!",
                         "success"
                     );
                 } else {
                     showNotification(
-                        "⚠️ API key salva, mas pode não estar funcionando",
+                        "API key salva, mas pode não estar funcionando",
                         "warning"
                     );
                 }
             } catch (error) {
-                showNotification(`❌ Erro: ${error.message}`, "error");
+                showNotification(`Erro: ${error.message}`, "error");
             }
         });
 
         removeBtn.addEventListener("click", async () => {
             await removeStoredApiKey();
             modal.remove();
-            showNotification("🗑️ API key removida!", "info");
+            showNotification("API key removida!", "info");
+        });
+
+        // Adicionar hover vermelho no botão cancelar da configuração de API
+        cancelBtn.addEventListener("mouseenter", () => {
+            cancelBtn.style.backgroundColor = "#91433d";
+            cancelBtn.style.borderColor = "#91433d";
+        });
+
+        cancelBtn.addEventListener("mouseleave", () => {
+            cancelBtn.style.backgroundColor = "rgb(32, 39, 51)";
+            cancelBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
         });
 
         cancelBtn.addEventListener("click", () => {
@@ -3439,73 +3620,73 @@ ${texto}`;
 
         const modal = document.createElement("div");
         modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100002;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        `;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.8);
+ z-index: 100002;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ backdrop-filter: blur(4px);
+ `;
 
         modal.innerHTML = `
-            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
-                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
-                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(101, 171, 255);">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.35-4.35"/>
-                        </svg>
-                        Logs de Erro da API
-                    </h2>
-                    <button id="clear-logs" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3,6 5,6 21,6"/>
-                            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
-                        </svg>
-                        Limpar Logs
-                    </button>
-                </div>
-                <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
-                    ${logs
-                        .map(
-                            (log, i) => `
-                        <div style="margin-bottom: 16px; padding: 12px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
-                            <strong style="color: rgb(101, 171, 255);">Log ${
-                                i + 1
-                            } - ${log.timestamp}</strong><br>
-                            <strong style="color: rgb(136, 152, 181);">Request ID:</strong> <span style="color: rgb(243, 246, 249);">${
-                                log.requestId
-                            }</span><br>
-                            <strong style="color: rgb(136, 152, 181);">Phase:</strong> <span style="color: rgb(243, 246, 249);">${
-                                log.phase
-                            }</span><br>
-                            <strong style="color: rgb(136, 152, 181);">Data:</strong><br>
-                            <pre style="background: rgb(18, 26, 39); padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.2); margin-top: 8px;">${JSON.stringify(
-                                log.data,
-                                null,
-                                2
-                            )}</pre>
-                        </div>
-                    `
-                        )
-                        .join("")}
-                </div>
-                <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
-                    <button id="close-logs" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m18 6-12 12"/>
-                            <path d="m6 6 12 12"/>
-                        </svg>
-                        Fechar
-                    </button>
-                </div>
-            </div>
-        `;
+ <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+ <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+ <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <circle cx="11" cy="11" r="8"/>
+ <path d="m21 21-4.35-4.35"/>
+ </svg>
+ Logs de Erro da API
+ </h2>
+ <button id="clear-logs" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <polyline points="3,6 5,6 21,6"/>
+ <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+ </svg>
+ Limpar Logs
+ </button>
+ </div>
+ <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
+ ${logs
+     .map(
+         (log, i) => `
+ <div style="margin-bottom: 16px; padding: 12px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
+ <strong style="color: rgb(19, 67, 119);">Log ${i + 1} - ${
+             log.timestamp
+         }</strong><br>
+ <strong style="color: rgb(136, 152, 181);">Request ID:</strong> <span style="color: rgb(243, 246, 249);">${
+     log.requestId
+ }</span><br>
+ <strong style="color: rgb(136, 152, 181);">Phase:</strong> <span style="color: rgb(243, 246, 249);">${
+     log.phase
+ }</span><br>
+ <strong style="color: rgb(136, 152, 181);">Data:</strong><br>
+ <pre style="background: rgb(18, 26, 39); padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.2); margin-top: 8px;">${JSON.stringify(
+     log.data,
+     null,
+     2
+ )}</pre>
+ </div>
+ `
+     )
+     .join("")}
+ </div>
+ <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+ <button id="close-logs" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m18 6-12 12"/>
+ <path d="m6 6 12 12"/>
+ </svg>
+ Fechar
+ </button>
+ </div>
+ </div>
+ `;
 
         document.body.appendChild(modal);
 
@@ -3530,51 +3711,51 @@ ${texto}`;
     function showApiQuotaInfo() {
         const modal = document.createElement("div");
         modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 100003;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        `;
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.7);
+ z-index: 100003;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `;
 
         modal.innerHTML = `
-            <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
-                <div style="margin-bottom: 20px; text-align: center;">
-                    <h2 style="margin: 0; color: #dc3545; font-size: 20px;">💳 Créditos da API Esgotados</h2>
-                </div>
-                
-                <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
-                    <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
-                    
-                    <p><strong>Para resolver:</strong></p>
-                    <ol>
-                        <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #007bff;">perplexity.ai/settings/api</a></li>
-                        <li>Verifique seus créditos e limites</li>
-                        <li>Se necessário, adicione créditos à sua conta</li>
-                        <li>Ou aguarde a renovação dos créditos</li>
-                    </ol>
-                    
-                    <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar no ChatGPT web.</p>
-                </div>
+ <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+ <div style="margin-bottom: 20px; text-align: center;">
+ <h2 style="margin: 0; color: #dc3545; font-size: 20px;"> Créditos da API Esgotados</h2>
+ </div>
+ 
+ <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+ <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
+ 
+ <p><strong>Para resolver:</strong></p>
+ <ol>
+ <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #134377;">perplexity.ai/settings/api</a></li>
+ <li>Verifique seus créditos e limites</li>
+ <li>Se necessário, adicione créditos à sua conta</li>
+ <li>Ou aguarde a renovação dos créditos</li>
+ </ol>
+ 
+ <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar no ChatGPT web.</p>
+ </div>
 
-                <div style="text-align: center;">
-                    <button id="open-billing" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
-                        💳 Abrir Configurações
-                    </button>
-                    <button id="config-new-key" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
-                        🔑 Nova API Key
-                    </button>
-                    <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                        ❌ Fechar
-                    </button>
-                </div>
-            </div>
-        `;
+ <div style="text-align: center;">
+ <button id="open-billing" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+ Abrir Configurações
+ </button>
+ <button id="config-new-key" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+ Nova API Key
+ </button>
+ <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+ Fechar
+ </button>
+ </div>
+ </div>
+ `;
 
         document.body.appendChild(modal);
 
@@ -3603,16 +3784,16 @@ ${texto}`;
 
     // Mostrar opções de processamento para página de lista com múltiplas sentenças
     async function showSentenceProcessingOptions() {
-        const sent1Links = findSENT1Links();
+        const documentosRelevantes = findDocumentosRelevantes();
 
-        if (sent1Links.length === 0) {
-            showNotification("❌ Nenhuma sentença encontrada", "error");
+        if (documentosRelevantes.length === 0) {
+            showNotification("Nenhuma sentença encontrada", "error");
             return;
         }
 
-        if (sent1Links.length === 1) {
+        if (documentosRelevantes.length === 1) {
             // Apenas uma sentença, abrir diretamente
-            await autoOpenSENT1();
+            await autoOpenDocumentoRelevante();
             return;
         }
 
@@ -3626,21 +3807,17 @@ ${texto}`;
         }
 
         // Perguntar o que fazer com o documento selecionado
-        const processChoice = confirm(
-            "Como deseja processar o documento selecionado?\n\n" +
-                "✅ OK = Abrir documento para processamento manual\n" +
-                "❌ Cancelar = Processar diretamente via API (experimental)"
-        );
+        const processChoice = await showDocumentProcessingModal();
 
         if (processChoice) {
             // Abrir o documento selecionado
-            log("🚀 Abrindo documento selecionado:", selectedDocument.href);
-            showNotification("🚀 Abrindo documento selecionado...", "info");
+            log(" Abrindo documento selecionado:", selectedDocument.href);
+            showNotification(" Abrindo documento selecionado...", "info");
             window.open(selectedDocument.href, "_blank");
         } else {
             // Processar diretamente via API (funcionalidade experimental)
             showNotification(
-                "🔬 Processamento direto via API ainda não implementado. Abrindo documento...",
+                " Processamento direto via API ainda não implementado. Abrindo documento...",
                 "warning"
             );
             window.open(selectedDocument.href, "_blank");
@@ -3649,13 +3826,13 @@ ${texto}`;
 
     // Debug completo da estrutura HTML ao redor do link SENT1
     function debugEventStructure(linkElement) {
-        log("🔍 === DEBUG ESTRUTURA HTML ===");
+        log(" === DEBUG ESTRUTURA HTML ===");
 
         // 1. Informações sobre o próprio link
-        log("📎 Link SENT1:");
-        log(`  Texto: "${linkElement.textContent.trim()}"`);
-        log(`  Classes: "${linkElement.className}"`);
-        log(`  Atributos:`, {
+        log(" Link SENT1:");
+        log(` Texto: "${linkElement.textContent.trim()}"`);
+        log(` Classes: "${linkElement.className}"`);
+        log(` Atributos:`, {
             href: linkElement.getAttribute("href"),
             onclick: linkElement.getAttribute("onclick"),
             onmouseover: linkElement.getAttribute("onmouseover"),
@@ -3666,16 +3843,16 @@ ${texto}`;
         // 2. Analisar a linha (tr) que contém o link
         const currentRow = linkElement.closest("tr");
         if (currentRow) {
-            log("📋 Linha atual (TR):");
-            log(`  Classes da linha: "${currentRow.className}"`);
+            log(" Linha atual (TR):");
+            log(` Classes da linha: "${currentRow.className}"`);
 
             const cells = currentRow.querySelectorAll("td");
-            log(`  Total de células: ${cells.length}`);
+            log(` Total de células: ${cells.length}`);
 
             cells.forEach((cell, index) => {
                 const text = cell.textContent.trim();
                 log(
-                    `  Célula ${index}: "${text}" (classes: "${cell.className}")`
+                    ` Célula ${index}: "${text}" (classes: "${cell.className}")`
                 );
 
                 // Verificar se tem elementos filhos interessantes
@@ -3686,7 +3863,7 @@ ${texto}`;
                 if (labels.length > 0) {
                     labels.forEach((label, i) => {
                         log(
-                            `    Label ${i}: "${label.textContent.trim()}" (classes: "${
+                            ` Label ${i}: "${label.textContent.trim()}" (classes: "${
                                 label.className
                             }")`
                         );
@@ -3695,7 +3872,7 @@ ${texto}`;
                 if (spans.length > 0) {
                     spans.forEach((span, i) => {
                         log(
-                            `    Span ${i}: "${span.textContent.trim()}" (classes: "${
+                            ` Span ${i}: "${span.textContent.trim()}" (classes: "${
                                 span.className
                             }")`
                         );
@@ -3704,7 +3881,7 @@ ${texto}`;
                 if (divs.length > 0) {
                     divs.forEach((div, i) => {
                         log(
-                            `    Div ${i}: "${div.textContent.trim()}" (classes: "${
+                            ` Div ${i}: "${div.textContent.trim()}" (classes: "${
                                 div.className
                             }")`
                         );
@@ -3714,18 +3891,18 @@ ${texto}`;
         }
 
         // 3. Analisar linhas anteriores
-        log("📋 Linhas anteriores:");
+        log(" Linhas anteriores:");
         let prevRow = currentRow?.previousElementSibling;
         let rowCount = 0;
         while (prevRow && rowCount < 3) {
             rowCount++;
             const prevCells = prevRow.querySelectorAll("td");
-            log(`  Linha anterior ${rowCount}: ${prevCells.length} células`);
+            log(` Linha anterior ${rowCount}: ${prevCells.length} células`);
 
             prevCells.forEach((cell, index) => {
                 const text = cell.textContent.trim();
                 if (text.length > 10) {
-                    log(`    Célula ${index}: "${text.substring(0, 100)}..."`);
+                    log(` Célula ${index}: "${text.substring(0, 100)}..."`);
                 }
             });
 
@@ -3735,21 +3912,21 @@ ${texto}`;
         // 4. Analisar a tabela completa
         const table = linkElement.closest("table");
         if (table) {
-            log("📊 Tabela:");
-            log(`  Classes da tabela: "${table.className}"`);
-            log(`  ID da tabela: "${table.id}"`);
+            log(" Tabela:");
+            log(` Classes da tabela: "${table.className}"`);
+            log(` ID da tabela: "${table.id}"`);
 
             // Procurar por cabeçalhos
             const headers = table.querySelectorAll("th");
             if (headers.length > 0) {
-                log("  Cabeçalhos encontrados:");
+                log(" Cabeçalhos encontrados:");
                 headers.forEach((header, index) => {
-                    log(`    Header ${index}: "${header.textContent.trim()}"`);
+                    log(` Header ${index}: "${header.textContent.trim()}"`);
                 });
             }
         }
 
-        log("🔍 === FIM DEBUG ESTRUTURA ===");
+        log(" === FIM DEBUG ESTRUTURA ===");
     }
 
     // Função aprimorada para encontrar descrição do evento
@@ -3764,18 +3941,18 @@ ${texto}`;
 
         for (let i = 0; i < strategies.length; i++) {
             try {
-                log(`🔍 Executando estratégia ${i + 1} para descrição...`);
+                log(`Executando estratégia ${i + 1} para descrição...`);
                 const result = strategies[i]();
                 if (result && result.trim().length > 3) {
-                    log(`✅ Estratégia ${i + 1} bem-sucedida:`, result);
+                    log(`Estratégia ${i + 1} bem-sucedida:`, result);
                     return result.trim();
                 }
             } catch (e) {
-                log(`❌ Erro na estratégia ${i + 1}:`, e);
+                log(`Erro na estratégia ${i + 1}:`, e);
             }
         }
 
-        log("❌ Nenhuma estratégia encontrou descrição válida");
+        log("Nenhuma estratégia encontrou descrição válida");
         return "";
     }
 
@@ -3784,7 +3961,7 @@ ${texto}`;
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando na linha atual...");
+        log("Buscando na linha atual...");
 
         // Buscar por seletores conhecidos
         const selectors = [
@@ -3799,7 +3976,7 @@ ${texto}`;
             if (element) {
                 const text = element.textContent.trim();
                 if (text && !text.toLowerCase().includes("sent")) {
-                    log(`✅ Encontrado via seletor ${selector}:`, text);
+                    log(`Encontrado via seletor ${selector}:`, text);
                     return text;
                 }
             }
@@ -3813,7 +3990,7 @@ ${texto}`;
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando em linhas anteriores...");
+        log("Buscando em linhas anteriores...");
 
         let previousRow = currentRow.previousElementSibling;
         let attempts = 0;
@@ -3839,7 +4016,7 @@ ${texto}`;
                         !text.toLowerCase().includes("sent")
                     ) {
                         log(
-                            `✅ Encontrado em linha anterior (${attempts}):`,
+                            `Encontrado em linha anterior (${attempts}):`,
                             text
                         );
                         return text;
@@ -3858,7 +4035,7 @@ ${texto}`;
         const currentRow = linkElement.closest("tr");
         if (!currentRow) return "";
 
-        log("📍 Buscando por padrões de texto...");
+        log("Buscando por padrões de texto...");
 
         // Expandir busca para linhas próximas
         const rowsToCheck = [];
@@ -3910,7 +4087,7 @@ ${texto}`;
                             pattern.test(text) &&
                             !text.toLowerCase().includes("sent1")
                         ) {
-                            log(`✅ Encontrado por padrão "${pattern}":`, text);
+                            log(`Encontrado por padrão "${pattern}":`, text);
                             return text;
                         }
                     }
@@ -3926,7 +4103,7 @@ ${texto}`;
         const table = linkElement.closest("table");
         if (!table) return "";
 
-        log("📍 Analisando estrutura da tabela...");
+        log("Analisando estrutura da tabela...");
 
         const currentRow = linkElement.closest("tr");
         const linkCellIndex = Array.from(currentRow.cells).findIndex((cell) =>
@@ -3949,7 +4126,7 @@ ${texto}`;
                     !/^https?:\/\//.test(text)
                 ) {
                     log(
-                        `✅ Encontrado na estrutura da tabela (célula ${i}):`,
+                        `Encontrado na estrutura da tabela (célula ${i}):`,
                         text
                     );
                     return text;
@@ -3962,7 +4139,7 @@ ${texto}`;
 
     // Estratégia 5: Buscar por proximidade usando XPath-like logic
     function findEventDescriptionByProximity(linkElement) {
-        log("📍 Buscando por proximidade...");
+        log("Buscando por proximidade...");
 
         // Buscar elementos próximos que podem conter descrição
         const parent = linkElement.closest("td") || linkElement.closest("tr");
@@ -3989,7 +4166,7 @@ ${texto}`;
                         text
                     )
                 ) {
-                    log(`✅ Encontrado por proximidade:`, text);
+                    log(`Encontrado por proximidade:`, text);
                     return text;
                 }
             }
@@ -4008,7 +4185,7 @@ ${texto}`;
 
             // Verificar se a URL mudou (navegação SPA)
             if (currentUrl !== lastUrl) {
-                console.log("🔄 Navegação detectada:", currentUrl);
+                console.log(" Navegação detectada:", currentUrl);
                 lastUrl = currentUrl;
 
                 // Recriar botão após navegação apenas em páginas válidas
@@ -4017,10 +4194,10 @@ ${texto}`;
                         !document.getElementById("sent1-auto-button") &&
                         isValidPageForButton()
                     ) {
-                        console.log("🔄 Recriando botão após navegação...");
+                        console.log(" Recriando botão após navegação...");
                         createAutomationButton();
                     } else if (!isValidPageForButton()) {
-                        console.log("🔄 Nova página não é válida para o botão");
+                        console.log(" Nova página não é válida para o botão");
                     }
                 }, 1500);
             }
@@ -4030,11 +4207,11 @@ ${texto}`;
             if (!buttonExists) {
                 // Verificar se a página é válida antes de recriar o botão
                 if (isValidPageForButton()) {
-                    console.log("🔄 Botão removido do DOM, recriando...");
+                    console.log(" Botão removido do DOM, recriando...");
                     setTimeout(createAutomationButton, 500);
                 } else {
                     console.log(
-                        "🔄 Página não é válida para o botão, não recriando"
+                        " Página não é válida para o botão, não recriando"
                     );
                 }
             }
@@ -4050,14 +4227,14 @@ ${texto}`;
         // Observar mudanças de URL via popstate
         window.addEventListener("popstate", () => {
             setTimeout(() => {
-                console.log("🔄 Popstate detectado, verificando botão...");
+                console.log(" Popstate detectado, verificando botão...");
                 if (
                     !document.getElementById("sent1-auto-button") &&
                     isValidPageForButton()
                 ) {
                     createAutomationButton();
                 } else if (!isValidPageForButton()) {
-                    console.log("🔄 Página atual não é válida para o botão");
+                    console.log(" Página atual não é válida para o botão");
                 }
             }, 1000);
         });
@@ -4065,8 +4242,8 @@ ${texto}`;
 
     // Inicialização
     function init() {
-        log("🚀 Iniciando content script automatizado");
-        console.log("🚀 RESUMIR DOCUMENTO: Script iniciado");
+        log(" Iniciando content script automatizado");
+        console.log(" RESUMIR SENTENÇA: Script iniciado");
 
         // Configurar observador de página
         setupPageObserver();
@@ -4087,7 +4264,7 @@ ${texto}`;
         // Tentar novamente após mais tempo para SPAs
         setTimeout(() => {
             if (!document.getElementById("sent1-auto-button")) {
-                console.log("🔄 Segunda tentativa de criação do botão...");
+                console.log(" Segunda tentativa de criação do botão...");
                 createAutomationButton();
             }
         }, 3000);
@@ -4102,14 +4279,14 @@ ${texto}`;
     // Expor funções para debug manual
     window.SENT1_AUTO = {
         runFullAutomation,
-        autoOpenSENT1,
+        autoOpenDocumentoRelevante,
         autoExtractText,
         copyToClipboard,
         sendToChatGPT,
         autoOpenChatGPT,
         detectPageType,
         isValidPageForButton,
-        findSENT1Links,
+        findDocumentosRelevantes,
         showDocumentSelectionModal,
         showSentenceProcessingOptions,
         getStoredApiKey,
@@ -4121,5 +4298,668 @@ ${texto}`;
         showApiQuotaInfo,
         cleanInvisibleChars,
         debugEventStructure,
+        extractTextFromPDF,
     };
+
+    // ========================================
+    // FUNÇÕES DE EXTRAÇÃO DIRETA DE TEXTO PDF
+    // ========================================
+
+    /**
+     * Extrai texto de PDF usando estratégias de extração direta
+     * @param {HTMLElement} pdfElement - Elemento do PDF
+     * @returns {Promise<string|null>} - Texto extraído ou null se falhar
+     */
+    async function extractTextFromPDF(pdfElement) {
+        log("� Iniciando extração de texto do PDF...");
+
+        try {
+            showNotification("� Extraindo texto do PDF...", "info");
+
+            // ESTRATÉGIA 1: Seleção automática de texto no PDF
+            const textFromSelection = await tryExtractTextViaSelection(
+                pdfElement
+            );
+            if (textFromSelection && textFromSelection.length > 100) {
+                log(
+                    ` Texto extraído via seleção: ${textFromSelection.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromSelection.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromSelection);
+            }
+
+            // ESTRATÉGIA 2: PDF.js para extrair texto estruturado
+            const textFromPdfJs = await tryExtractTextViaPdfJs(pdfElement);
+            if (textFromPdfJs && textFromPdfJs.length > 100) {
+                log(
+                    ` Texto extraído via PDF.js: ${textFromPdfJs.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromPdfJs.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromPdfJs);
+            }
+
+            // ESTRATÉGIA 3: Fetch direto do PDF e processamento
+            const textFromFetch = await tryExtractTextViaFetch(pdfElement);
+            if (textFromFetch && textFromFetch.length > 100) {
+                log(
+                    ` Texto extraído via fetch: ${textFromFetch.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromFetch.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromFetch);
+            }
+
+            // ESTRATÉGIA 4: Clipboard após comando de cópia
+            const textFromClipboard = await tryExtractTextViaClipboard(
+                pdfElement
+            );
+            if (textFromClipboard && textFromClipboard.length > 100) {
+                log(
+                    ` Texto extraído via clipboard: ${textFromClipboard.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromClipboard.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromClipboard);
+            }
+
+            // Se todas as estratégias diretas falharam, oferecer alternativas
+            throw new Error(
+                "Não foi possível extrair texto diretamente do PDF"
+            );
+        } catch (error) {
+            log(` Erro na extração de texto: ${error.message}`);
+            return await handleTextExtractionError(error, pdfElement);
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 1: Extrair texto via seleção automática
+     */
+    async function tryExtractTextViaSelection(pdfElement) {
+        try {
+            log("� Tentando extração via seleção automática...");
+
+            // Focar no elemento PDF
+            pdfElement.focus();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Simular Ctrl+A para selecionar todo o texto
+            const selectAllEvent = new KeyboardEvent("keydown", {
+                key: "a",
+                code: "KeyA",
+                ctrlKey: true,
+                metaKey: false,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            pdfElement.dispatchEvent(selectAllEvent);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            // Tentar obter texto selecionado
+            const selectedText = window.getSelection().toString();
+            if (selectedText && selectedText.length > 50) {
+                log(" Texto obtido via getSelection()");
+                return selectedText;
+            }
+
+            // Simular Ctrl+C para copiar
+            const copyEvent = new KeyboardEvent("keydown", {
+                key: "c",
+                code: "KeyC",
+                ctrlKey: true,
+                metaKey: false,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            pdfElement.dispatchEvent(copyEvent);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Tentar ler do clipboard
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                if (clipboardText && clipboardText.length > 50) {
+                    log(" Texto obtido via clipboard após Ctrl+C");
+                    return clipboardText;
+                }
+            } catch (clipError) {
+                log(" Acesso negado ao clipboard");
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro na seleção automática: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 2: Extrair texto via PDF.js
+     */
+    async function tryExtractTextViaPdfJs(pdfElement) {
+        try {
+            log("📚 Tentando extração via PDF.js...");
+
+            const pdfUrl = pdfElement.src;
+            if (
+                !pdfUrl ||
+                pdfUrl.startsWith("blob:") ||
+                pdfUrl.startsWith("data:")
+            ) {
+                log(" URL do PDF não é adequada para PDF.js");
+                return null;
+            }
+
+            // Carregar PDF.js se necessário
+            if (typeof pdfjsLib === "undefined") {
+                log("📦 Carregando PDF.js...");
+                await loadPdfJsLibrary();
+            }
+
+            log(`� Processando PDF: ${pdfUrl}`);
+            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+            let fullText = "";
+
+            // Extrair texto de todas as páginas (limitado a 10 páginas para performance)
+            const numPages = Math.min(pdf.numPages, 10);
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+
+                const pageText = textContent.items
+                    .filter((item) => item.str && item.str.trim().length > 0)
+                    .map((item) => item.str)
+                    .join(" ");
+
+                if (pageText.trim()) {
+                    fullText += pageText + "\n\n";
+                }
+
+                // Mostrar progresso
+                if (numPages > 1) {
+                    showNotification(
+                        ` Processando página ${pageNum}/${numPages}...`,
+                        "info"
+                    );
+                }
+            }
+
+            if (fullText.trim().length > 50) {
+                log(
+                    ` PDF.js extraiu ${fullText.length} caracteres de ${numPages} páginas`
+                );
+                return fullText.trim();
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro no PDF.js: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 3: Fetch direto do PDF
+     */
+    async function tryExtractTextViaFetch(pdfElement) {
+        try {
+            log(" Tentando extração via fetch direto...");
+
+            const pdfUrl = pdfElement.src;
+            if (
+                !pdfUrl ||
+                pdfUrl.startsWith("blob:") ||
+                pdfUrl.startsWith("data:")
+            ) {
+                log(" URL do PDF não é adequada para fetch");
+                return null;
+            }
+
+            // Carregar PDF.js se necessário
+            if (typeof pdfjsLib === "undefined") {
+                await loadPdfJsLibrary();
+            }
+
+            showNotification(" Baixando PDF...", "info");
+
+            // Fetch do PDF com timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+            const response = await fetch(pdfUrl, {
+                signal: controller.signal,
+                headers: {
+                    Accept: "application/pdf",
+                },
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+            let fullText = "";
+            const numPages = Math.min(pdf.numPages, 15); // Limite maior para fetch direto
+
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+
+                const pageText = textContent.items
+                    .filter((item) => item.str && item.str.trim().length > 0)
+                    .map((item) => item.str)
+                    .join(" ");
+
+                if (pageText.trim()) {
+                    fullText += pageText + "\n\n";
+                }
+
+                showNotification(
+                    ` Processando página ${pageNum}/${numPages}...`,
+                    "info"
+                );
+            }
+
+            if (fullText.trim().length > 50) {
+                log(
+                    ` Fetch extraiu ${fullText.length} caracteres de ${numPages} páginas`
+                );
+                return fullText.trim();
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro no fetch: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 4: Extrair via clipboard com comandos específicos
+     */
+    async function tryExtractTextViaClipboard(pdfElement) {
+        try {
+            log(" Tentando extração via clipboard...");
+
+            // Limpar clipboard primeiro
+            try {
+                await navigator.clipboard.writeText("");
+            } catch (e) {
+                log(" Não foi possível limpar clipboard");
+            }
+
+            // Focar e tentar diferentes combinações de teclas
+            pdfElement.focus();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Tentar Ctrl+A seguido de Ctrl+C
+            document.execCommand("selectAll");
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            document.execCommand("copy");
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Verificar clipboard
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                if (clipboardText && clipboardText.trim().length > 50) {
+                    log(" Texto obtido via execCommand");
+                    return clipboardText.trim();
+                }
+            } catch (clipError) {
+                log(" Acesso negado ao clipboard após execCommand");
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro na extração via clipboard: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Carrega a biblioteca PDF.js dinamicamente
+     */
+    async function loadPdfJsLibrary() {
+        if (typeof pdfjsLib !== "undefined") {
+            return;
+        }
+
+        log("📦 Carregando PDF.js...");
+
+        // Carregar PDF.js da CDN
+        const script = document.createElement("script");
+        script.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+        document.head.appendChild(script);
+
+        await new Promise((resolve, reject) => {
+            script.onload = () => {
+                log(" PDF.js carregado com sucesso");
+                // Configurar worker
+                if (typeof pdfjsLib !== "undefined") {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc =
+                        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                }
+                resolve();
+            };
+            script.onerror = () => {
+                log(" Erro ao carregar PDF.js");
+                reject(new Error("Falha ao carregar PDF.js"));
+            };
+        });
+
+        // Aguardar inicialização
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    /**
+     * Limpa e normaliza texto extraído de PDF
+     */
+    function cleanExtractedText(text) {
+        return text
+            .replace(/\r\n/g, "\n") // Normalizar quebras de linha
+            .replace(/\r/g, "\n") // Normalizar quebras de linha
+            .replace(/\n{3,}/g, "\n\n") // Reduzir quebras de linha excessivas
+            .replace(/\s+/g, " ") // Normalizar espaços múltiplos
+            .replace(/([.!?])\s*([A-ZÁÊÇ])/g, "$1\n\n$2") // Quebrar em parágrafos
+            .trim();
+    }
+
+    /**
+     * Trata erros na extração de texto e oferece soluções
+     */
+    async function handleTextExtractionError(error, pdfElement) {
+        const pdfUrl = pdfElement?.src || "";
+
+        log(" Tentativas diretas falharam, oferecendo alternativas");
+
+        showNotification(
+            " Extração automática não foi possível!\n\n" +
+                "Métodos alternativos:\n" +
+                "1. Selecione o texto manualmente no PDF (Ctrl+A, Ctrl+C)\n" +
+                "2. Baixe o PDF e use ChatGPT/Claude com upload\n" +
+                "3. Use ferramenta de conversão PDF para texto\n\n" +
+                " Alguns PDFs têm proteções que impedem extração automática.",
+            "warning"
+        );
+
+        // Tentar iniciar download automático como fallback
+        await tryAutoDownloadPDF(pdfUrl);
+
+        return null;
+    }
+
+    /**
+     * Tenta extrair texto direto do PDF usando APIs nativas
+     */
+    async function tryExtractDirectPdfText(pdfElement) {
+        try {
+            log(" Tentando extração direta de texto do PDF...");
+
+            // Verificar se é um PDF embedado do Chrome
+            if (
+                pdfElement.type === "application/pdf" ||
+                pdfElement.type === "application/x-google-chrome-pdf"
+            ) {
+                // Tentar selecionar tudo no PDF e copiar
+                pdfElement.focus();
+
+                // Simular Ctrl+A para selecionar todo o texto
+                const selectAllEvent = new KeyboardEvent("keydown", {
+                    key: "a",
+                    ctrlKey: true,
+                    bubbles: true,
+                });
+                pdfElement.dispatchEvent(selectAllEvent);
+
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Tentar ler da clipboard se possível
+                try {
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        const clipboardText =
+                            await navigator.clipboard.readText();
+                        if (clipboardText && clipboardText.length > 100) {
+                            log(" Texto extraído via clipboard");
+                            return clipboardText;
+                        }
+                    }
+                } catch (clipboardError) {
+                    log(" Acesso ao clipboard negado");
+                }
+            }
+
+            // Tentar outras abordagens para PDFs
+            const pdfUrl = pdfElement.src;
+            if (pdfUrl && !pdfUrl.startsWith("blob:")) {
+                // Tentar carregar PDF.js se disponível
+                if (typeof pdfjsLib !== "undefined") {
+                    log("📚 Tentando PDF.js para extração...");
+                    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                    const page = await pdf.getPage(1);
+                    const textContent = await page.getTextContent();
+
+                    const text = textContent.items
+                        .map((item) => item.str)
+                        .join(" ");
+                    if (text.length > 100) {
+                        log(" Texto extraído via PDF.js");
+                        return text;
+                    }
+                }
+            }
+
+            return null;
+        } catch (error) {
+            log(` Extração direta falhou: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Captura imagem do PDF para OCR usando múltiplas estratégias
+     */
+    async function captureImageForOCR(pdfElement) {
+        try {
+            showNotification("� Capturando imagem do PDF...", "info");
+
+            // Método 1: html2canvas (mais confiável)
+            const canvasFromHtml2Canvas = await tryHtml2Canvas(pdfElement);
+            if (canvasFromHtml2Canvas) {
+                log(" Captura via html2canvas bem-sucedida");
+                return canvasFromHtml2Canvas;
+            }
+
+            // Método 2: Canvas nativo
+            log(" Tentando captura via canvas nativo...");
+            const canvasNativo = await tryNativeCanvas(pdfElement);
+            if (canvasNativo) {
+                log(" Captura via canvas nativo bem-sucedida");
+                return canvasNativo;
+            }
+
+            // Método 3: Usar screenshot da viewport
+            log(" Tentando captura da viewport...");
+            const viewportCanvas = await tryViewportCapture(pdfElement);
+            if (viewportCanvas) {
+                log(" Captura da viewport bem-sucedida");
+                return viewportCanvas;
+            }
+
+            throw new Error("Todos os métodos de captura falharam");
+        } catch (error) {
+            log(` Erro na captura de imagem: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Tenta download automático do PDF
+     */
+    async function tryAutoDownloadPDF(pdfUrl) {
+        if (
+            !pdfUrl ||
+            pdfUrl.startsWith("blob:") ||
+            pdfUrl.startsWith("chrome-extension:")
+        ) {
+            return;
+        }
+
+        try {
+            log(" Tentando download automático do PDF...");
+            const link = document.createElement("a");
+            link.href = pdfUrl;
+            link.download = "documento-eproc.pdf";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification(
+                "Download iniciado! Use o arquivo com ChatGPT/Claude.",
+                "info"
+            );
+        } catch (downloadError) {
+            log(` Download automático falhou: ${downloadError.message}`);
+        }
+    }
+
+    // Modal customizado para opções de preview
+    function showPreviewOptionsModal() {
+        return new Promise((resolve) => {
+            const overlay = document.createElement("div");
+            overlay.className = "help-modal-overlay";
+            overlay.innerHTML = `
+ <div class="help-modal" style="max-width: 420px;">
+ <div class="help-modal-header">
+ <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
+ <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+ <circle cx="12" cy="12" r="3"/>
+ </svg>
+ Texto Extraído
+ </h2>
+ <button class="help-close-btn" aria-label="Fechar">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
+ </button>
+ </div>
+ <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
+ <div style="margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.1em;height:1.1em;color:#134377;"><polyline points="20 6 9 17 4 12" /></svg>
+ <span style="color:rgb(var(--color-text-main));font-size:1rem;">Texto extraído com sucesso!</span>
+ </div>
+ <p style="color:rgb(var(--color-text-muted));margin-bottom:20px;line-height:1.5;">Deseja visualizar o preview do texto antes de copiar?</p>
+ <div style="display:flex;gap:12px;justify-content:flex-end;">
+ <button class="btn primary" id="preview-yes-btn" style="min-width:100px;">Ver Preview</button>
+ <button class="btn" id="preview-no-btn" style="min-width:120px;">Copiar Direto</button>
+ </div>
+ </div>
+ </div>
+ `;
+            document.body.appendChild(overlay);
+            const close = (result) => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            };
+            overlay.querySelector(".help-close-btn").onclick = () =>
+                close(false);
+            overlay.querySelector("#preview-yes-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#preview-no-btn").onclick = () =>
+                close(false);
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close(false);
+            });
+        });
+    }
+
+    // Modal customizado para opções de processamento de documento
+    function showDocumentProcessingModal() {
+        return new Promise((resolve) => {
+            const overlay = document.createElement("div");
+            overlay.className = "help-modal-overlay";
+            overlay.innerHTML = `
+ <div class="help-modal" style="max-width: 450px;">
+ <div class="help-modal-header">
+ <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
+ <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+ <polyline points="14,2 14,8 20,8"/>
+ <line x1="16" y1="13" x2="8" y2="13"/>
+ <line x1="16" y1="17" x2="8" y2="17"/>
+ <polyline points="10,9 9,9 8,9"/>
+ </svg>
+ Documento Selecionado
+ </h2>
+ <button class="help-close-btn" aria-label="Fechar">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
+ </button>
+ </div>
+ <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
+ <p style="color:rgb(var(--color-text-main));margin-bottom:20px;line-height:1.5;">Como deseja processar o documento selecionado?</p>
+ <div style="margin-bottom:20px;">
+ <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#134377;flex-shrink:0;">
+ <path d="M15 3h6v6"/>
+ <path d="M10 14 21 3"/>
+ <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+ </svg>
+ <div>
+ <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento Manual</div>
+ <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Abre o documento em nova aba para extração manual</div>
+ </div>
+ </div>
+ <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#f59e0b;flex-shrink:0;">
+ <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+ <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+ <line x1="12" y1="19" x2="12" y2="22"/>
+ <line x1="8" y1="22" x2="16" y2="22"/>
+ </svg>
+ <div>
+ <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento via API</div>
+ <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Tenta processar diretamente (experimental)</div>
+ </div>
+ </div>
+ </div>
+ <div style="display:flex;gap:12px;justify-content:flex-end;">
+ <button class="btn primary" id="process-manual-btn" style="min-width:120px;">Manual</button>
+ <button class="btn" id="process-api-btn" style="min-width:100px;">Via API</button>
+ </div>
+ </div>
+ </div>
+ `;
+            document.body.appendChild(overlay);
+            const close = (result) => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            };
+            overlay.querySelector(".help-close-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#process-manual-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#process-api-btn").onclick = () =>
+                close(false);
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close(true);
+            });
+        });
+    }
 })();
