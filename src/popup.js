@@ -118,6 +118,73 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Funcionalidade do toggle switch para destaque da data da sessão
+    const highlightSessionDateToggle = document.getElementById(
+        "highlight-session-date"
+    );
+
+    // Carregar estado salvo do toggle
+    chrome.storage.local.get(["highlightSessionDate"], function (result) {
+        if (result.highlightSessionDate !== undefined) {
+            highlightSessionDateToggle.checked = result.highlightSessionDate;
+        }
+    });
+
+    // Salvar estado quando o toggle for alterado
+    highlightSessionDateToggle.addEventListener("change", function () {
+        const isChecked = this.checked;
+
+        // Salvar no storage
+        chrome.storage.local.set({
+            highlightSessionDate: isChecked,
+        });
+
+        // Enviar mensagem para o content script
+        chrome.tabs.query(
+            { active: true, currentWindow: true },
+            function (tabs) {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                            action: "toggleSessionDateHighlight",
+                            enabled: isChecked,
+                        },
+                        function (response) {
+                            if (chrome.runtime.lastError) {
+                                console.log(
+                                    "Content script não está ativo na aba atual"
+                                );
+                                return;
+                            }
+
+                            // Mostrar feedback visual
+                            if (isChecked) {
+                                showStatus(
+                                    "Destaque da data da sessão ativado",
+                                    "success"
+                                );
+                            } else {
+                                showStatus(
+                                    "Destaque da data da sessão desativado",
+                                    "info"
+                                );
+                            }
+
+                            // Limpar status após 2 segundos
+                            setTimeout(() => {
+                                showStatus(
+                                    "🄯 Alexandre Claudino Simas Santos\n          ✉ alexandress@tjsc.jus.br",
+                                    "info"
+                                );
+                            }, 2000);
+                        }
+                    );
+                }
+            }
+        );
+    });
+
     // Verificar estado inicial - removido por enquanto
     showStatus(
         "🄯 Alexandre Claudino Simas Santos\n          ✉ alexandress@tjsc.jus.br",

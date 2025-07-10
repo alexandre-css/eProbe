@@ -557,10 +557,10 @@
                     if (tooltipMatch) {
                         const tooltipContent = tooltipMatch[1];
                         const tipoMatch = tooltipContent.match(
-                            /Tipo Documento:.*?<font[^>]*>([^<]+)/
+                            /Tipo Documento:.*?<font[^>]*>([^<]+)/i
                         );
                         const tamanhoMatch = tooltipContent.match(
-                            /Tamanho:.*?<font[^>]*>([^<]+)/
+                            /Tamanho:.*?<font[^>]*>([^<]+)/i
                         );
 
                         if (tipoMatch) tipoDocumento = tipoMatch[1].trim();
@@ -742,7 +742,7 @@
                             // Estratégia 2: Texto após "infraTooltipMostrar"
                             if (!magistradoEncontrado) {
                                 const magistradoMatch2 = onmouseoverAttr.match(
-                                    /infraTooltipMostrar\(['"]([^'"]+)['"]\)/
+                                    /infraTooltipMostrar\(['"]([^'"]+)['"]\)/i
                                 );
                                 if (magistradoMatch2 && magistradoMatch2[1]) {
                                     eventoMagistrado =

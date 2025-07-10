@@ -868,3 +868,103 @@ body {
     font-size: 12px;
     line-height: 1.4;
 }
+
+/* Área de configurações */
+.settings-area {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: rgb(var(--color-background-alt2));
+    border-radius: 8px;
+    border: 1px solid rgb(var(--color-neutral-600) / 0.3);
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 32px;
+}
+
+.setting-label {
+    font-size: 14px;
+    color: rgb(var(--color-text-main));
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    line-height: 1.4;
+    margin: 0;
+    align-self: center;
+    flex: 1;
+}
+
+/* Toggle Switch */
+.switch {
+    --secondary-container: #134377;
+    --primary: #85beff;
+    --slider-bg: rgb(var(--color-neutral-600));
+    --slider-knob: rgb(var(--color-neutral-400));
+    font-size: 12px;
+    position: relative;
+    display: inline-block;
+    width: 3.2em;
+    height: 1.6em;
+    flex-shrink: 0;
+    vertical-align: middle;
+    align-self: center;
+}
+
+.switch input {
+    display: none;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--slider-bg);
+    transition: all 0.3s ease;
+    border-radius: 30px;
+    border: 1px solid rgb(var(--color-neutral-600) / 0.5);
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 1.2em;
+    width: 1.2em;
+    border-radius: 50%;
+    left: 0.2em;
+    bottom: 0.2em;
+    background-color: var(--slider-knob);
+    transition: all 0.4s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.switch input:checked + .slider::before {
+    background-color: var(--primary);
+    transform: translateX(1.4em);
+}
+
+.switch input:checked + .slider {
+    background-color: var(--secondary-container);
+    border-color: var(--primary);
+}
+
+.switch input:focus + .slider {
+    box-shadow: 0 0 8px rgba(133, 190, 255, 0.3);
+}
+
+.slider:hover {
+    background-color: rgb(var(--color-neutral-500));
+}
+
+.switch input:checked + .slider:hover {
+    background-color: #0f3a66;
+}
