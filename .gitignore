@@ -1,0 +1,34 @@
+# Chrome Extension - Arquivos sensíveis e de build
+*.crx
+*.pem
+*.zip
+
+# Pastas de build e privadas
+/build/
+/private/
+
+# Arquivos de desenvolvimento
+*.code-workspace
+.vscode/
+.vs/
+
+# Documentação de desenvolvimento (manter apenas no local)
+STATUS_DESENVOLVIMENTO.md
+CHROME_STORE_CHECKLIST.md
+FINAL_REPORT.md
+CHANGELOG.md
+
+# Logs e temporários
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Node modules se usar ferramentas de build
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Arquivos específicos do sistema
+desktop.ini
+.directory

@@ -1,16 +1,16 @@
 {
     "manifest_version": 3,
     "name": "eProbe - Automação ePROC",
-    "version": "2.0.0",
-    "description": "Automação completa: detecta, abre, extrai e envia SENT1 para ChatGPT automaticamente",
+    "version": "2.0.1",
+    "description": "Extensão para advogados e servidores do TJSC: detecta automaticamente documentos SENT1 e INIC1 no eProc, extrai texto e facilita a criação de resumos para capa do processo digital.",
     "author": "eProbe Team",
+    "homepage_url": "https://github.com/seu-usuario/eProbe",
 
     "permissions": ["activeTab", "storage", "tabs", "clipboardWrite"],
 
     "host_permissions": [
         "https://eproc1g.tjsc.jus.br/*",
         "https://eproc2g.tjsc.jus.br/*",
-        "https://chatgpt.com/*",
         "https://fonts.googleapis.com/*",
         "https://fonts.gstatic.com/*"
     ],
@@ -28,7 +28,7 @@
 
     "action": {
         "default_popup": "src/popup.html",
-        "default_title": "eProbe - automação"
+        "default_title": "eProbe - Automação ePROC"
     },
 
     "icons": {
@@ -39,11 +39,15 @@
 
     "web_accessible_resources": [
         {
-            "resources": ["src/*"],
+            "resources": ["src/icons.css"],
             "matches": [
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ]
         }
-    ]
+    ],
+
+    "content_security_policy": {
+        "extension_pages": "script-src 'self'; object-src 'self'"
+    }
 }

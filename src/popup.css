@@ -321,6 +321,43 @@ body {
     margin-bottom: 12px;
     font-size: 14px;
     color: rgb(var(--color-text-main));
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.step::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(133, 190, 255, 0.1),
+        transparent
+    );
+    transition: left 0.5s ease;
+}
+
+.step:hover {
+    background: rgba(30, 41, 59, 0.4);
+    transform: translateX(2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.step:hover::before {
+    left: 100%;
+}
+
+.step:active {
+    transform: translateX(1px);
+    transition-duration: 0.1s;
 }
 
 .step:last-child {
@@ -342,8 +379,9 @@ body {
 }
 
 .step:hover .step-number {
-    transform: scale(1.1);
-    background: rgba(var(--color-primary-600), 0.3);
+    transform: scale(1.15);
+    background: rgba(var(--color-primary-600), 0.4);
+    box-shadow: 0 0 12px rgba(var(--color-primary-600), 0.3);
 }
 
 /* Ícones nos steps - sobrescreve configuração anterior */
@@ -356,6 +394,12 @@ body {
 .step-text {
     flex: 1;
     line-height: 1.4;
+    transition: var(--transition-base);
+}
+
+.step:hover .step-text {
+    color: rgb(var(--color-primary-700));
+    font-weight: 500;
 }
 
 /* Status indicators - Modo Escuro */

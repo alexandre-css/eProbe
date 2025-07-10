@@ -33,6 +33,299 @@
     const DELAY_ENTRE_TENTATIVAS = 60000; // AUMENTADO: 1 minuto entre tentativas
     const CACHE_DURATION = 600000; // AUMENTADO: Cache válido por 10 minutos
 
+    // ========================================
+    // FUNÇÃO DE MODAL CUSTOMIZADA
+    // ========================================
+
+    // Função para substituir alert() - cria modal personalizado
+    function showAlert(message, type = "info") {
+        return new Promise((resolve) => {
+            const modal = document.createElement("div");
+            modal.className = "eprobe-alert-modal";
+            modal.style.cssText = `
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100vw !important;
+                height: 100vh !important;
+                background: rgba(0, 0, 0, 0.8) !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                z-index: 999999 !important;
+                font-family: "Roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                backdrop-filter: blur(8px) !important;
+                margin: 0 !important;
+                padding: 20px !important;
+                box-sizing: border-box !important;
+            `;
+
+            const content = document.createElement("div");
+            content.style.cssText = `
+                background: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(15, 23, 42) 100%) !important;
+                padding: 0 !important;
+                border-radius: 16px !important;
+                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+                max-width: 520px !important;
+                width: 100% !important;
+                max-height: 85vh !important;
+                overflow: hidden !important;
+                text-align: left !important;
+                font-family: "Roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
+                animation: modalEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+                margin: 0 !important;
+                box-sizing: border-box !important;
+                position: relative !important;
+            `;
+
+            // Definir ícones SVG seguindo o padrão do app
+            const getIcon = (type) => {
+                switch (type) {
+                    case "error":
+                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(248, 113, 113)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="15" y1="9" x2="9" y2="15"/>
+                            <line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>`;
+                    case "success":
+                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(34, 197, 94)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20,6 9,17 4,12"/>
+                        </svg>`;
+                    default:
+                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(96, 165, 250)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>`;
+                }
+            };
+
+            content.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, rgb(51, 65, 85) 0%, rgb(30, 41, 59) 100%) !important;
+                    padding: 24px 28px !important;
+                    border-radius: 16px 16px 0 0 !important;
+                    border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
+                    display: flex !important;
+                    align-items: flex-start !important;
+                    gap: 16px !important;
+                    margin: 0 !important;
+                    box-sizing: border-box !important;
+                    position: relative !important;
+                ">
+                    <div style="
+                        flex-shrink: 0 !important; 
+                        margin-top: 4px !important;
+                        background: rgba(96, 165, 250, 0.1) !important;
+                        border-radius: 12px !important;
+                        padding: 12px !important;
+                        border: 1px solid rgba(96, 165, 250, 0.2) !important;
+                    ">
+                        ${getIcon(type)}
+                    </div>
+                    <div style="flex: 1 !important; overflow: hidden !important;">
+                        <div style="
+                            font-size: 16px !important; 
+                            line-height: 1.6 !important; 
+                            color: rgb(248, 250, 252) !important;
+                            font-weight: 400 !important;
+                            margin: 0 !important;
+                            padding: 0 !important;
+                            overflow-wrap: break-word !important;
+                        ">
+                            ${message.replace(/\n/g, "<br>")}
+                        </div>
+                    </div>
+                    <button id="eprobe-alert-close" style="
+                        position: absolute !important;
+                        top: 20px !important;
+                        right: 20px !important;
+                        background: rgba(148, 163, 184, 0.1) !important;
+                        border: 1px solid rgba(148, 163, 184, 0.2) !important;
+                        color: rgb(203, 213, 225) !important;
+                        width: 32px !important;
+                        height: 32px !important;
+                        border-radius: 8px !important;
+                        cursor: pointer !important;
+                        display: flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        transition: all 0.2s ease !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        font-size: 16px !important;
+                        line-height: 1 !important;
+                    ">×</button>
+                </div>
+                <div style="
+                    background: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(15, 23, 42) 100%) !important;
+                    padding: 20px 28px 28px 28px !important;
+                    border-radius: 0 0 16px 16px !important;
+                    text-align: right !important;
+                    margin: 0 !important;
+                    box-sizing: border-box !important;
+                    border-top: 1px solid rgba(148, 163, 184, 0.1) !important;
+                ">
+                    <button id="eprobe-alert-ok" style="
+                        background: linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%) !important;
+                        color: white !important;
+                        border: 1px solid rgb(59, 130, 246) !important;
+                        padding: 12px 32px !important;
+                        border-radius: 10px !important;
+                        cursor: pointer !important;
+                        font-size: 14px !important;
+                        font-weight: 600 !important;
+                        min-width: 100px !important;
+                        min-height: 44px !important;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                        font-family: inherit !important;
+                        margin: 0 !important;
+                        box-sizing: border-box !important;
+                        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3) !important;
+                        letter-spacing: 0.025em !important;
+                    ">Entendi</button>
+                </div>
+            `;
+
+            // Adicionar animação CSS
+            const style = document.createElement("style");
+            style.textContent = `
+                @keyframes modalEnter {
+                    from {
+                        opacity: 0;
+                        transform: translateY(30px) scale(0.9);
+                        filter: blur(4px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                        filter: blur(0);
+                    }
+                }
+                
+                @keyframes modalExit {
+                    from {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                        filter: blur(0);
+                    }
+                    to {
+                        opacity: 0;
+                        transform: translateY(-20px) scale(0.95);
+                        filter: blur(2px);
+                    }
+                }
+                
+                .eprobe-alert-modal {
+                    isolation: isolate !important;
+                }
+                
+                .eprobe-alert-modal * {
+                    box-sizing: border-box !important;
+                }
+            `;
+            document.head.appendChild(style);
+
+            modal.appendChild(content);
+
+            // Garantir que o modal seja anexado ao document.body
+            if (document.body) {
+                document.body.appendChild(modal);
+            } else {
+                document.documentElement.appendChild(modal);
+            }
+
+            // Função para remover o modal com animação
+            const removeModal = () => {
+                try {
+                    content.style.animation =
+                        "modalExit 0.3s ease-out forwards";
+                    modal.style.opacity = "0";
+                    setTimeout(() => {
+                        if (modal.parentNode) {
+                            modal.parentNode.removeChild(modal);
+                        }
+                        if (style.parentNode) {
+                            style.parentNode.removeChild(style);
+                        }
+                    }, 300);
+                } catch (e) {
+                    console.warn("Erro ao remover modal:", e);
+                }
+                resolve();
+            };
+
+            // Adicionar eventos aos botões
+            const okButton = content.querySelector("#eprobe-alert-ok");
+            const closeButton = content.querySelector("#eprobe-alert-close");
+
+            if (okButton) {
+                okButton.addEventListener("click", removeModal);
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener("click", removeModal);
+            }
+
+            // Adicionar efeitos hover elegantes
+            if (okButton) {
+                okButton.addEventListener("mouseenter", () => {
+                    okButton.style.background =
+                        "linear-gradient(135deg, rgb(96, 165, 250) 0%, rgb(59, 130, 246) 100%)";
+                    okButton.style.borderColor = "rgb(96, 165, 250)";
+                    okButton.style.transform = "translateY(-2px)";
+                    okButton.style.boxShadow =
+                        "0 8px 25px rgba(59, 130, 246, 0.4)";
+                });
+                okButton.addEventListener("mouseleave", () => {
+                    okButton.style.background =
+                        "linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)";
+                    okButton.style.borderColor = "rgb(59, 130, 246)";
+                    okButton.style.transform = "translateY(0)";
+                    okButton.style.boxShadow =
+                        "0 4px 14px rgba(59, 130, 246, 0.3)";
+                });
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener("mouseenter", () => {
+                    closeButton.style.background = "rgba(248, 113, 113, 0.2)";
+                    closeButton.style.borderColor = "rgba(248, 113, 113, 0.4)";
+                    closeButton.style.color = "rgb(248, 113, 113)";
+                    closeButton.style.transform = "scale(1.1)";
+                });
+                closeButton.addEventListener("mouseleave", () => {
+                    closeButton.style.background = "rgba(148, 163, 184, 0.1)";
+                    closeButton.style.borderColor = "rgba(148, 163, 184, 0.2)";
+                    closeButton.style.color = "rgb(203, 213, 225)";
+                    closeButton.style.transform = "scale(1)";
+                });
+            }
+
+            // Fechar com ESC
+            const handleKeydown = (e) => {
+                if (e.key === "Escape") {
+                    document.removeEventListener("keydown", handleKeydown);
+                    removeModal();
+                }
+            };
+            document.addEventListener("keydown", handleKeydown);
+
+            // Fechar clicando fora do modal
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) {
+                    removeModal();
+                }
+            });
+
+            // Focar no modal
+            modal.setAttribute("tabindex", "-1");
+            setTimeout(() => {
+                modal.focus();
+            }, 100);
+        });
+    }
+
     // Injetar CSS apenas para elementos da extensão eProbe
     const extensionStyle = document.createElement("style");
     extensionStyle.textContent = `
@@ -54,6 +347,22 @@
         #api-config-modal *, #error-logs-modal *, #api-key-config *,
         .eprobe-notification *, .eprobe-tooltip *, .eprobe-modal *, .eprobe-button *, .eprobe-menu * {
             font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
+        }
+        
+        /* Remover barras de rolagem do menu de opções de documentos */
+        #documento-relevante-options-menu {
+            overflow: visible !important;
+            overflow-x: visible !important;
+            overflow-y: visible !important;
+            scrollbar-width: none !important; /* Firefox */
+            -ms-overflow-style: none !important; /* IE/Edge */
+        }
+        
+        /* Webkit browsers (Chrome, Safari, etc.) */
+        #documento-relevante-options-menu::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
         }
     `;
     document.head.appendChild(extensionStyle);
@@ -1536,13 +1845,14 @@
 
         // Para PDFs incorporados, não é possível extrair texto automaticamente
         // Orientar o usuário para processo manual
-        const confirmAction = confirm(
+        const confirmAction = await showConfirm(
             "🔍 DOCUMENTO PDF DETECTADO\n\n" +
                 "Para documentos PDF, você precisa:\n\n" +
                 "1. Selecionar todo o texto do PDF (Ctrl+A)\n" +
                 "2. Copiar o texto selecionado (Ctrl+C)\n" +
                 "3. Clicar 'OK' para processar o texto copiado\n\n" +
-                "Continuar?"
+                "Continuar?",
+            "Documento PDF Detectado"
         );
 
         if (!confirmAction) {
@@ -2106,7 +2416,7 @@ ${texto}`;
  top: ${y}px;
  z-index: 10001;
  min-width: ${menuWidth}px;
- overflow: auto;
+ overflow: visible;
  border-radius: 8px;
  border: 1px solid rgb(19 67 119);
  background: #134377;
@@ -6735,7 +7045,7 @@ ${texto}`;
         return info;
     }
 
-    function showDataSessaoPautadoInfo() {
+    async function showDataSessaoPautadoInfo() {
         if (hasDataSessaoPautado()) {
             const info = `📅 DATA DA SESSÃO DETECTADA:
             
@@ -6747,12 +7057,12 @@ Ano: ${dataSessaoPautado.ano}
 Timestamp: ${dataSessaoPautado.timestamp}`;
 
             console.log(info);
-            alert(info);
+            await showAlert(info, "success");
             return dataSessaoPautado;
         } else {
             const msg = "❌ Nenhuma data da sessão foi detectada ainda.";
             console.log(msg);
-            alert(msg);
+            await showAlert(msg, "error");
             return null;
         }
     }
@@ -6950,8 +7260,9 @@ Detectada automaticamente pelo eProbe
                     this.innerHTML = elementoOriginal;
 
                     // Mostrar notificação
-                    alert(
-                        "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido"
+                    await showAlert(
+                        "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido",
+                        "error"
                     );
                 }
             } catch (error) {
@@ -6960,7 +7271,10 @@ Detectada automaticamente pelo eProbe
                 this.innerHTML = elementoOriginal;
 
                 // Mostrar erro
-                alert(`Erro ao buscar dados da sessão:\n${error.message}`);
+                await showAlert(
+                    `Erro ao buscar dados da sessão:\n${error.message}`,
+                    "error"
+                );
             }
         });
 
@@ -7543,7 +7857,7 @@ Detectada automaticamente pelo eProbe
     /**
      * Mostra informações completas da sessão
      */
-    function showDadosCompletosSessionJulgamento() {
+    async function showDadosCompletosSessionJulgamento() {
         if (hasDadosCompletosSessionJulgamento()) {
             const dados = dadosCompletosSessionJulgamento;
             const info = `📋 DADOS COMPLETOS DA SESSÃO:
@@ -7562,13 +7876,13 @@ Detectada automaticamente pelo eProbe
 🆔 ID: ${dados.id}`;
 
             console.log(info);
-            alert(info);
+            await showAlert(info, "success");
             return dados;
         } else {
             const msg =
                 "❌ Nenhum dado completo de sessão foi encontrado ainda.";
             console.log(msg);
-            alert(msg);
+            await showAlert(msg, "error");
             return null;
         }
     }
