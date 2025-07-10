@@ -120,7 +120,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Verificar estado inicial - removido por enquanto
     showStatus(
-        "Extensão carregada. Use o botão 'Como Usar' para instruções.",
+        "🄯 Alexandre Claudino Simas Santos\n          ✉ alexandress@tjsc.jus.br",
         "info"
     );
 });

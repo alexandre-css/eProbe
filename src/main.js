@@ -2,6 +2,31 @@
 (function () {
     "use strict";
 
+    // Injetar CSS apenas para elementos da extensão eProbe
+    const extensionStyle = document.createElement("style");
+    extensionStyle.textContent = `
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+        
+        /* Padronização da fonte Roboto APENAS para elementos da extensão eProbe */
+        [id*="sent1"], [id*="documento-relevante"], [class*="eprobe"], 
+        #sent1-auto-button, #documento-relevante-options-menu,
+        #documento-relevante-selection-modal, #documento-relevante-preview-modal,
+        #api-config-modal, #error-logs-modal, #api-key-config,
+        .eprobe-notification, .eprobe-tooltip, .eprobe-modal, .eprobe-button, .eprobe-menu {
+            font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
+        }
+        
+        /* Elementos criados dinamicamente pela extensão */
+        [id*="sent1"] *, [id*="documento-relevante"] *, [class*="eprobe"] *,
+        #sent1-auto-button *, #documento-relevante-options-menu *,
+        #documento-relevante-selection-modal *, #documento-relevante-preview-modal *,
+        #api-config-modal *, #error-logs-modal *, #api-key-config *,
+        .eprobe-notification *, .eprobe-tooltip *, .eprobe-modal *, .eprobe-button *, .eprobe-menu * {
+            font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
+        }
+    `;
+    document.head.appendChild(extensionStyle);
+
     let debugMode = true;
     let isAutomationActive = false;
 
@@ -159,12 +184,42 @@
 
         // Para compatibilidade com documento específico (página de visualização do documento)
         const pageType = detectPageType();
-        if (pageType === "documento_especifico") {
+        if (
+            pageType === "documento_especifico" ||
+            pageType === "documento_html" ||
+            pageType === "documento_pdf"
+        ) {
             console.log("Página válida detectada: documento específico");
             return true;
         }
 
+        // Verificar URLs específicas do eProc que podem conter documentos
         const url = window.location.href;
+        if (
+            url.includes("eproc") &&
+            (url.includes("documento") || url.includes("processo"))
+        ) {
+            console.log(
+                "Página válida detectada: URL contém eproc e documento/processo"
+            );
+            return true;
+        }
+
+        // Verificar se há tabelas com links de documentos relevantes (SENT, INIC, etc.)
+        const hasDocumentLinks = !!(
+            document.querySelector('[href*="SENT"]') ||
+            document.querySelector('[href*="INIC"]') ||
+            document.querySelector('[href*="DECI"]') ||
+            document.querySelector('[href*="DESP"]')
+        );
+
+        if (hasDocumentLinks) {
+            console.log(
+                "Página válida detectada: contém links de documentos relevantes"
+            );
+            return true;
+        }
+
         console.log("Página não é válida para o botão:", {
             url: url,
             pageType: pageType,
@@ -174,12 +229,28 @@
                 ? tituloConsultaProcessual.textContent
                 : "não encontrado",
             hasTable: !!document.querySelector("table"),
-            hasDocumentoRelevante:
-                !!document.querySelector('[href*="SENT"]') ||
-                !!document.querySelector('[href*="INIC"]'),
+            hasDocumentLinks: hasDocumentLinks,
             hasEventDesc: !!document.querySelector(".infraEventoDescricao"),
         });
         return false;
+    }
+
+    // Função específica para verificar se deve mostrar o botão flutuante
+    function shouldShowFloatingButton() {
+        // Verificar se há links para documentos HTML ou PDF no código da página
+        const pageHTML = document.documentElement.outerHTML;
+
+        // Buscar por padrões específicos que indicam documentos
+        const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
+        const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
+
+        console.log(" Verificando critérios para botão flutuante:", {
+            hasDocumentHtml: hasDocumentHtml,
+            hasDocumentPdf: hasDocumentPdf,
+            shouldShow: hasDocumentHtml || hasDocumentPdf,
+        });
+
+        return hasDocumentHtml || hasDocumentPdf;
     }
 
     // Função aprimorada para encontrar descrição do evento
@@ -549,6 +620,8 @@
                 log(` Buscando descrição para documento #${index + 1}...`);
 
                 let eventoDescricao = "";
+                let eventoData = "";
+                let eventoMagistrado = "";
                 const linkElement = linkData.element; // Encontrar a linha (tr) do evento que contém o link
                 // O link está em uma tabela aninhada, então precisamos buscar o tr principal
                 const eventRow =
@@ -573,11 +646,11 @@
                     if (eventDescCell) {
                         eventoDescricao = eventDescCell.textContent.trim();
                         log(
-                            ` Descrição encontrada na linha do evento: "${eventoDescricao}"`
+                            `📝 Descrição encontrada na linha do evento: "${eventoDescricao}"`
                         );
                     } else {
                         log(
-                            " Célula td.infraEventoDescricao não encontrada na linha do evento"
+                            "⚠️ Célula td.infraEventoDescricao não encontrada na linha do evento"
                         );
 
                         // Fallback: buscar qualquer elemento com classe infraEventoDescricao na linha
@@ -588,23 +661,257 @@
                             eventoDescricao =
                                 fallbackDescElement.textContent.trim();
                             log(
-                                ` Descrição encontrada via fallback: "${eventoDescricao}"`
+                                `📝 Descrição encontrada via fallback: "${eventoDescricao}"`
                             );
                         } else {
                             // Debug: mostrar todas as células da linha para entender a estrutura
                             const allCells = eventRow.querySelectorAll("td");
                             log(
-                                ` Debug - Total de células na linha: ${allCells.length}`
+                                `🔍 Debug - Total de células na linha: ${allCells.length}`
                             );
                             allCells.forEach((cell, index) => {
                                 log(
-                                    ` Célula ${index + 1}: "${cell.textContent
+                                    `📋 Célula ${index + 1}: "${cell.textContent
                                         .trim()
                                         .substring(0, 50)}" (classe: ${
                                         cell.className
                                     })`
                                 );
                             });
+                        }
+                    }
+
+                    // Buscar informações do magistrado/vara
+                    const magistradoCell =
+                        eventRow.querySelector("label.infraEventoUsuario") ||
+                        eventRow.querySelector("td.infraEventoUsuario");
+
+                    log(
+                        `🔍 Debug Magistrado - Célula encontrada: ${!!magistradoCell} (${
+                            magistradoCell
+                                ? magistradoCell.tagName.toLowerCase()
+                                : "N/A"
+                        })`
+                    );
+                    if (magistradoCell) {
+                        log(
+                            `🔍 Debug Magistrado - Elemento: <${magistradoCell.tagName.toLowerCase()}> com classe: ${
+                                magistradoCell.className
+                            }`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Conteúdo da célula: "${magistradoCell.textContent.trim()}"`
+                        );
+
+                        const onmouseoverAttr =
+                            magistradoCell.getAttribute("onmouseover");
+                        const titleAttr = magistradoCell.getAttribute("title");
+                        const tooltipAttr =
+                            magistradoCell.getAttribute("data-tooltip");
+
+                        log(
+                            `🔍 Debug Magistrado - Atributo onmouseover: ${!!onmouseoverAttr}`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Atributo title: ${!!titleAttr}`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Atributo data-tooltip: ${!!tooltipAttr}`
+                        );
+
+                        // Tentar extrair de onmouseover primeiro
+                        if (onmouseoverAttr) {
+                            log(
+                                `🔍 Debug Magistrado - Conteúdo onmouseover: "${onmouseoverAttr}"`
+                            );
+
+                            // Estratégias múltiplas para extrair o texto do magistrado
+                            let magistradoEncontrado = false;
+
+                            // Estratégia 1: Texto entre aspas simples ou duplas
+                            const magistradoMatch1 =
+                                onmouseoverAttr.match(/['"]([^'"]+)['"]/);
+                            if (magistradoMatch1 && magistradoMatch1[1]) {
+                                eventoMagistrado = magistradoMatch1[1].trim();
+                                magistradoEncontrado = true;
+                                log(
+                                    `🔍 Estratégia 1 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                );
+                            }
+
+                            // Estratégia 2: Texto após "infraTooltipMostrar"
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch2 = onmouseoverAttr.match(
+                                    /infraTooltipMostrar\(['"]([^'"]+)['"]\)/
+                                );
+                                if (magistradoMatch2 && magistradoMatch2[1]) {
+                                    eventoMagistrado =
+                                        magistradoMatch2[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 2 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            // Estratégia 3: Qualquer texto que pareça nome/cargo entre parênteses ou tags
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch3 = onmouseoverAttr.match(
+                                    />\s*([^<>]+(?:juiz|magistrad|vara|gabinete)[^<>]*)\s*</i
+                                );
+                                if (magistradoMatch3 && magistradoMatch3[1]) {
+                                    eventoMagistrado =
+                                        magistradoMatch3[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 3 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            // Estratégia 4: Fallback - qualquer texto substancial
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch4 = onmouseoverAttr.match(
+                                    />\s*([A-Za-zÀ-ÿ\s]{10,})\s*</
+                                );
+                                if (magistradoMatch4 && magistradoMatch4[1]) {
+                                    eventoMagistrado =
+                                        magistradoMatch4[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 4 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            if (!magistradoEncontrado) {
+                                log(
+                                    `❌ Nenhuma estratégia conseguiu extrair texto do onmouseover`
+                                );
+                            }
+                        }
+
+                        // Se não conseguiu pelo onmouseover, tentar title
+                        if (!eventoMagistrado && titleAttr) {
+                            log(
+                                `🔍 Tentando extrair do atributo title: "${titleAttr}"`
+                            );
+                            if (titleAttr.length > 5) {
+                                eventoMagistrado = titleAttr.trim();
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no title: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Se não conseguiu pelo title, tentar data-tooltip
+                        if (!eventoMagistrado && tooltipAttr) {
+                            log(
+                                `🔍 Tentando extrair do atributo data-tooltip: "${tooltipAttr}"`
+                            );
+                            if (tooltipAttr.length > 5) {
+                                eventoMagistrado = tooltipAttr.trim();
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no data-tooltip: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Fallback final: usar o texto da própria célula se tiver conteúdo
+                        if (!eventoMagistrado) {
+                            const cellText = magistradoCell.textContent.trim();
+                            if (
+                                cellText &&
+                                cellText.length > 3 &&
+                                !cellText.match(/^\d+$/)
+                            ) {
+                                eventoMagistrado = cellText;
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no texto da célula: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Formatar informações do magistrado/advogado
+                        if (eventoMagistrado) {
+                            const magistradoFormatado =
+                                formatarMagistradoAdvogado(eventoMagistrado);
+                            if (
+                                typeof magistradoFormatado === "object" &&
+                                magistradoFormatado.tipo
+                            ) {
+                                // Armazenar informações estruturadas
+                                linkData.magistradoInfo = magistradoFormatado;
+                                eventoMagistrado = magistradoFormatado.nome;
+                            } else {
+                                eventoMagistrado = magistradoFormatado;
+                            }
+                            log(
+                                `🔍 Informações formatadas: "${eventoMagistrado}"`
+                            );
+                        }
+
+                        if (!eventoMagistrado) {
+                            log(
+                                `❌ Nenhuma informação de magistrado/advogado encontrada`
+                            );
+                        }
+                    } else {
+                        log(
+                            `❌ Elemento label.infraEventoUsuario OU td.infraEventoUsuario não encontrado`
+                        );
+
+                        // Debug: verificar todas as células da linha para encontrar possíveis alternativas
+                        const allCells = eventRow.querySelectorAll("td, label");
+                        log(
+                            `🔍 Debug - Verificando todos os ${allCells.length} elementos (td/label) da linha:`
+                        );
+                        allCells.forEach((cell, idx) => {
+                            log(
+                                `📋 Elemento ${
+                                    idx + 1
+                                }: <${cell.tagName.toLowerCase()}> classe="${
+                                    cell.className
+                                }", texto="${cell.textContent
+                                    .trim()
+                                    .substring(
+                                        0,
+                                        30
+                                    )}", onmouseover="${!!cell.getAttribute(
+                                    "onmouseover"
+                                )}"`
+                            );
+                        });
+                    }
+
+                    // Buscar a célula de data do evento na mesma linha (geralmente é a 3ª coluna)
+                    const eventCells = eventRow.querySelectorAll("td");
+                    if (eventCells.length >= 3) {
+                        // A data geralmente está na 3ª célula (índice 2)
+                        const dateCell = eventCells[2];
+                        if (dateCell) {
+                            const dateText = dateCell.textContent.trim();
+                            // Verificar se parece uma data (formato XX/XX/XXXX)
+                            if (dateText.match(/\d{2}\/\d{2}\/\d{4}/)) {
+                                eventoData = dateText;
+                                log(
+                                    `📅 Data encontrada na linha do evento: "${eventoData}"`
+                                );
+                            }
+                        }
+                    }
+
+                    if (!eventoData) {
+                        // Fallback: buscar qualquer texto que pareça uma data na linha
+                        const allText = eventRow.textContent;
+                        const dateMatch = allText.match(
+                            /(\d{2}\/\d{2}\/\d{4}[\s\d:]*)/
+                        );
+                        if (dateMatch) {
+                            eventoData = dateMatch[1].trim();
+                            log(
+                                `📅 Data encontrada via fallback: "${eventoData}"`
+                            );
                         }
                     }
                 } else {
@@ -627,13 +934,17 @@
                     }
                 }
 
-                // Adicionar a descrição encontrada ao objeto do link
+                // Adicionar a descrição, data e magistrado encontrados ao objeto do link
                 linkData.eventoDescricao =
                     eventoDescricao || linkData.tipo.descricao;
+                linkData.eventoData = eventoData || "";
+                linkData.eventoMagistrado = eventoMagistrado || "";
                 log(
-                    ` Descrição final para documento #${index + 1}: "${
-                        linkData.eventoDescricao
-                    }"`
+                    `📋 Dados finais para documento #${
+                        index + 1
+                    }: Descrição: "${linkData.eventoDescricao}", Data: "${
+                        linkData.eventoData
+                    }", Magistrado: "${linkData.eventoMagistrado}"`
                 );
             });
         } else {
@@ -643,6 +954,8 @@
             // Se não estivermos na lista de documentos, usar descrição padrão do tipo
             documentosData.forEach((linkData) => {
                 linkData.eventoDescricao = linkData.tipo.descricao;
+                linkData.eventoData = "";
+                linkData.eventoMagistrado = "";
             });
         }
 
@@ -658,6 +971,9 @@
             tipoDocumento: linkData.tipoDocumento,
             tamanho: linkData.tamanho,
             eventoDescricao: linkData.eventoDescricao,
+            eventoData: linkData.eventoData,
+            eventoMagistrado: linkData.eventoMagistrado,
+            magistradoInfo: linkData.magistradoInfo, // Informações estruturadas
             index: linkData.index,
         }));
 
@@ -733,13 +1049,35 @@
         const pageType = detectPageType();
         log(" Tipo de página:", pageType);
 
-        if (pageType !== "documento_especifico") {
-            log(" Não está na página do documento específico");
-            showNotification(
-                "Execute na página do documento, não na lista",
-                "error"
-            );
-            return null;
+        // Aceitar múltiplos tipos de página de documento
+        const validDocumentTypes = [
+            "documento_especifico",
+            "documento_html",
+            "documento_pdf",
+        ];
+
+        if (!validDocumentTypes.includes(pageType)) {
+            // Se não é um tipo de documento reconhecido, verificar se há documentos na página
+            const pageHTML = document.documentElement.outerHTML;
+            const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
+            const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
+
+            console.log(" Verificação adicional para página não reconhecida:", {
+                pageType: pageType,
+                hasDocumentHtml: hasDocumentHtml,
+                hasDocumentPdf: hasDocumentPdf,
+            });
+
+            if (!hasDocumentHtml && !hasDocumentPdf) {
+                log(" Não está na página do documento específico");
+                showNotification(
+                    "Execute na página do documento, não na lista",
+                    "error"
+                );
+                return null;
+            } else {
+                log(" Página contém documentos, prosseguindo com extração...");
+            }
         }
 
         // Aguardar documento carregar completamente
@@ -1696,11 +2034,22 @@ ${texto}`;
             return;
         }
 
+        // Verificar se há botão flutuante e ajustar posição se necessário
+        const floatingButton = document.getElementById("sent1-auto-button");
+        const isFloatingButtonVisible =
+            floatingButton && floatingButton.style.display !== "none";
+
         // Calcular posição para evitar sair da tela
         const menuWidth = 200;
         const menuHeight = 400; // Estimativa
         const screenWidth = window.innerWidth;
         const screenHeight = window.innerHeight;
+
+        // Se o menu vai aparecer perto do botão flutuante, ajustar posição
+        if (isFloatingButtonVisible && x > screenWidth - 220 && y < 200) {
+            // Mover menu para a esquerda do botão flutuante
+            x = screenWidth - 240;
+        }
 
         // Ajustar X se o menu sair da tela pela direita
         if (x + menuWidth > screenWidth) {
@@ -1718,6 +2067,7 @@ ${texto}`;
 
         const menu = document.createElement("ul");
         menu.id = "documento-relevante-options-menu";
+        menu.className = "eprobe-menu";
         menu.setAttribute("role", "menu");
         menu.style.cssText = `
  position: fixed;
@@ -1731,10 +2081,13 @@ ${texto}`;
  background: #134377;
  padding: 6px;
  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
- font-family: system-ui, -apple-system, sans-serif;
+ font-family: "Roboto", -apple-system, system-ui, sans-serif;
  `;
 
         const pageType = detectPageType();
+
+        console.log(" Debug showOptionsMenu - pageType detectado:", pageType);
+        console.log(" Debug showOptionsMenu - Posição do menu:", { x, y });
 
         if (pageType === "lista_documentos") {
             // Verificar quantos documentos existem para customizar o menu
@@ -1743,7 +2096,7 @@ ${texto}`;
 
             let menuTitle = "Processar Documentos";
             let buttonColor = "#134377";
-            let titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5,3 19,12 5,21 12,12"/></svg>`;
+            let titleIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>`;
 
             if (documentCount === 0) {
                 menuTitle = "Nenhum Documento";
@@ -1801,48 +2154,50 @@ ${texto}`;
                     }
                 });
             }
-        } else if (pageType === "documento_especifico") {
+        } else if (
+            pageType === "documento_especifico" ||
+            pageType === "documento_html" ||
+            pageType === "documento_pdf"
+        ) {
+            // Menu para páginas de documento específico
+            console.log(" Mostrando menu para documento específico");
             menu.innerHTML = `
  <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="M12 8V4H8"/>
- <rect width="16" height="12" x="4" y="8" rx="2"/>
- <path d="M2 14h2"/>
- <path d="M20 14h2"/>
- <path d="M15 13v2"/>
- <path d="M9 13v2"/>
- </svg>
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
  Processar Documento
  </li>
  <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <polygon points="5,3 19,12 5,21 12,12"/>
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+ <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
  </svg>
- API Perplexity (Recomendado)
+ API Perplexity
  </li>
  <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
  </svg>
  Método Manual
  </li>
  <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
  <circle cx="12" cy="12" r="3"/>
  </svg>
  Configurar API
  </li>
  <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <circle cx="11" cy="11" r="8"/>
- <path d="m21 21-4.35-4.35"/>
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m14.5 9.5 1 1"/>
+ <path d="m15.5 8.5-4 4"/>
+ <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
+ <path d="M3 3v5h5"/>
+ <circle cx="10" cy="14" r="2"/>
  </svg>
  Testar API Key
  </li>
  <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#134377" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
  <line x1="9" y1="9" x2="15" y2="9"/>
@@ -1930,9 +2285,169 @@ ${texto}`;
                 menu.remove();
                 showErrorLogs();
             });
+        } else {
+            // Página não reconhecida, mas vamos verificar se há documentos
+            const pageHTML = document.documentElement.outerHTML;
+            const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
+            const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
+
+            console.log(" Página não reconhecida, verificando documentos:", {
+                hasDocumentHtml: hasDocumentHtml,
+                hasDocumentPdf: hasDocumentPdf,
+            });
+
+            if (hasDocumentHtml || hasDocumentPdf) {
+                // Há documentos, mostrar menu como se fosse documento específico
+                console.log(
+                    " Há documentos, mostrando menu de documento específico"
+                );
+                menu.innerHTML = `
+ <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M12 8V4H8"/>
+ <rect width="16" height="12" x="4" y="8" rx="2"/>
+ <path d="M2 14h2"/>
+ <path d="M20 14h2"/>
+ <path d="M15 13v2"/>
+ <path d="M9 13v2"/>
+ </svg>
+ Processar Documento
+ </li>
+ <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+ <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+ </svg>
+ API Perplexity
+ </li>
+ <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+ <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ </svg>
+ Método Manual
+ </li>
+ <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l-.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+ <circle cx="12" cy="12" r="3"/>
+ </svg>
+ Configurar API
+ </li>
+ <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m14.5 9.5 1 1"/>
+ <path d="m15.5 8.5-4 4"/>
+ <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
+ <path d="M3 3v5h5"/>
+ <circle cx="10" cy="14" r="2"/>
+ </svg>
+ Testar API Key
+ </li>
+ <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+ <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ <line x1="9" y1="9" x2="15" y2="9"/>
+ <line x1="9" y1="13" x2="15" y2="13"/>
+ <line x1="9" y1="17" x2="13" y2="17"/>
+ </svg>
+ Ver Logs de Erro
+ </li>
+ `;
+
+                // Adicionar eventos de hover e click para todos os botões
+                const menuItems = menu.querySelectorAll("li[id]");
+                menuItems.forEach((item) => {
+                    item.addEventListener("mouseenter", () => {
+                        item.style.backgroundColor = "rgba(148, 163, 184, 0.1)";
+                    });
+                    item.addEventListener("mouseleave", () => {
+                        item.style.backgroundColor = "transparent";
+                    });
+                });
+
+                menu.querySelector("#api-btn").addEventListener(
+                    "click",
+                    async () => {
+                        menu.remove();
+                        const texto = await autoExtractText();
+                        if (texto) {
+                            await sendToChatGPT(texto);
+                        }
+                    }
+                );
+
+                menu.querySelector("#manual-btn").addEventListener(
+                    "click",
+                    async () => {
+                        menu.remove();
+                        const texto = await autoExtractText();
+                        if (texto) {
+                            const usePreview = await showPreviewOptionsModal();
+
+                            if (usePreview) {
+                                log(" Usuário escolheu preview");
+                                showTextPreview(texto);
+                            } else {
+                                log("Usuário escolheu cópia direta");
+                                const copied = await copyToClipboardWithPrefix(
+                                    texto
+                                );
+                                if (copied) {
+                                    log(" Texto copiado, abrindo ChatGPT...");
+                                    setTimeout(() => {
+                                        autoOpenChatGPT();
+                                        showNotification(
+                                            " Texto copiado! Cole no ChatGPT (Ctrl+V)",
+                                            "success"
+                                        );
+                                    }, 500);
+                                } else {
+                                    log(
+                                        " Falha ao copiar texto no método manual direto"
+                                    );
+                                }
+                            }
+                        }
+                    }
+                );
+
+                menu.querySelector("#config-btn").addEventListener(
+                    "click",
+                    async () => {
+                        menu.remove();
+                        await showApiKeyConfig();
+                    }
+                );
+
+                menu.querySelector("#test-btn").addEventListener(
+                    "click",
+                    async () => {
+                        menu.remove();
+                        await testApiKey();
+                    }
+                );
+
+                menu.querySelector("#logs-btn").addEventListener(
+                    "click",
+                    () => {
+                        menu.remove();
+                        showErrorLogs();
+                    }
+                );
+            } else {
+                // Não há documentos, mostrar mensagem de erro
+                console.log(" Não há documentos, não criando menu");
+                return;
+            }
         }
 
         document.body.appendChild(menu);
+
+        // Verificar e prevenir sobreposições após um pequeno delay
+        setTimeout(() => {
+            preventElementOverlap();
+        }, 100);
 
         document.addEventListener("click", function closeMenu(e) {
             if (!menu.contains(e.target)) {
@@ -1963,6 +2478,7 @@ ${texto}`;
 
         const overlay = document.createElement("div");
         overlay.id = "documento-relevante-selection-modal";
+        overlay.className = "eprobe-modal";
         overlay.style.cssText = `
             position: fixed;
             top: 0;
@@ -1974,7 +2490,7 @@ ${texto}`;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: "Roboto", -apple-system, system-ui, sans-serif;
         `;
 
         const modal = document.createElement("div");
@@ -2263,6 +2779,113 @@ ${texto}`;
         }
     }
 
+    // Função para prevenir sobreposição de elementos da interface
+    function preventElementOverlap() {
+        const floatingButton = document.getElementById("sent1-auto-button");
+        const notification = document.getElementById(
+            "documento-relevante-notification"
+        );
+        const optionsMenu = document.getElementById(
+            "documento-relevante-options-menu"
+        );
+
+        if (!floatingButton || floatingButton.style.display === "none") {
+            return; // Botão flutuante não está visível
+        }
+
+        // Verificar sobreposição com notificação
+        if (notification) {
+            const buttonRect = floatingButton.getBoundingClientRect();
+            const notificationRect = notification.getBoundingClientRect();
+
+            // Se há sobreposição, mover notificação
+            if (
+                buttonRect.left < notificationRect.right + 10 &&
+                buttonRect.top < notificationRect.bottom + 10 &&
+                buttonRect.bottom > notificationRect.top - 10
+            ) {
+                log(
+                    "🔧 Ajustando posição da notificação para evitar sobreposição"
+                );
+                notification.style.right = "240px"; // Mover mais à esquerda
+            }
+        }
+
+        // Verificar sobreposição com menu de opções
+        if (optionsMenu) {
+            const buttonRect = floatingButton.getBoundingClientRect();
+            const menuRect = optionsMenu.getBoundingClientRect();
+
+            // Se há sobreposição, mover menu
+            if (
+                buttonRect.left < menuRect.right + 10 &&
+                buttonRect.top < menuRect.bottom + 10 &&
+                buttonRect.bottom > menuRect.top - 10
+            ) {
+                log("🔧 Ajustando posição do menu para evitar sobreposição");
+                const newLeft = Math.max(
+                    10,
+                    buttonRect.left - menuRect.width - 10
+                );
+                optionsMenu.style.left = newLeft + "px";
+            }
+        }
+    }
+
+    // Função para configurar o observer de mudanças na interface
+    function setupInterfaceObserver() {
+        // Observer para detectar mudanças nos elementos da interface
+        const observer = new MutationObserver((mutations) => {
+            let shouldCheckOverlap = false;
+
+            mutations.forEach((mutation) => {
+                // Se elementos foram adicionados ou removidos
+                if (mutation.type === "childList") {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            const id = node.id;
+                            if (
+                                id === "sent1-auto-button" ||
+                                id === "documento-relevante-notification" ||
+                                id === "documento-relevante-options-menu"
+                            ) {
+                                shouldCheckOverlap = true;
+                            }
+                        }
+                    });
+                }
+
+                // Se atributos de estilo mudaram
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "style" &&
+                    mutation.target.id &&
+                    (mutation.target.id === "sent1-auto-button" ||
+                        mutation.target.id ===
+                            "documento-relevante-notification" ||
+                        mutation.target.id ===
+                            "documento-relevante-options-menu")
+                ) {
+                    shouldCheckOverlap = true;
+                }
+            });
+
+            if (shouldCheckOverlap) {
+                setTimeout(preventElementOverlap, 50);
+            }
+        });
+
+        // Observar mudanças no body
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["style"],
+        });
+
+        return observer;
+    }
+
     // Sistema de notificações
     function showNotification(message, type = "info") {
         // Remover notificação anterior se existir
@@ -2273,12 +2896,44 @@ ${texto}`;
             existing.remove();
         }
 
+        // Verificar se existe botão flutuante para ajustar posição
+        const floatingButton = document.getElementById("sent1-auto-button");
+        const isFloatingButtonVisible =
+            floatingButton &&
+            floatingButton.style.display !== "none" &&
+            floatingButton.offsetParent !== null; // Verifica se está realmente visível
+
+        // Posição dinâmica baseada na presença do botão flutuante
+        let notificationTop = "20px";
+        let notificationRight = "20px";
+
+        if (isFloatingButtonVisible) {
+            // Se há botão flutuante, calcular posição para evitar sobreposição
+            const buttonRect = floatingButton.getBoundingClientRect();
+            const windowWidth = window.innerWidth;
+
+            // Se há espaço à esquerda do botão, colocar a notificação lá
+            if (buttonRect.left > 300) {
+                notificationRight = windowWidth - buttonRect.left + 10 + "px";
+            } else {
+                // Se não há espaço, colocar acima ou abaixo do botão
+                if (buttonRect.top > 100) {
+                    notificationTop = buttonRect.top - 80 + "px";
+                    notificationRight = "20px";
+                } else {
+                    notificationTop = buttonRect.bottom + 10 + "px";
+                    notificationRight = "20px";
+                }
+            }
+        }
+
         const notification = document.createElement("div");
         notification.id = "documento-relevante-notification";
+        notification.className = "eprobe-notification";
         notification.style.cssText = `
  position: fixed;
- top: 20px;
- right: 20px;
+ top: ${notificationTop};
+ right: ${notificationRight};
  background: ${
      type === "error"
          ? "#dc3545"
@@ -2294,13 +2949,37 @@ ${texto}`;
  font-weight: bold;
  z-index: 10000;
  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
- max-width: 300px;
+ max-width: 280px;
  font-size: 14px;
  line-height: 1.4;
  `;
-        notification.textContent = message;
+        // Verificar se deve mostrar spinner
+        if (message.includes("Enviando para Perplexity")) {
+            notification.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="position: relative; width: 24px; height: 24px;">
+                        <div style="width: 24px; height: 24px; border-top: 3px solid rgba(255,255,255,0.3); border-bottom: 3px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; top: 0; left: 0;"></div>
+                        <div style="width: 24px; height: 24px; border-top: 3px solid white; border-bottom: 3px solid white; border-radius: 50%; position: absolute; top: 0; left: 0; animation: spin 1s linear infinite;"></div>
+                    </div>
+                    <span>${message}</span>
+                </div>
+                <style>
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                </style>
+            `;
+        } else {
+            notification.textContent = message;
+        }
 
         document.body.appendChild(notification);
+
+        // Verificar e prevenir sobreposições após um pequeno delay
+        setTimeout(() => {
+            preventElementOverlap();
+        }, 100);
 
         // Remover após 5 segundos
         setTimeout(() => {
@@ -2310,21 +2989,50 @@ ${texto}`;
         }, 5000);
     }
 
+    // Verificar se a página deve mostrar o botão integrado (critério específico)
+    function shouldShowIntegratedButton() {
+        const h1Element = document.querySelector("h1");
+        if (!h1Element) {
+            console.log(" Elemento h1 não encontrado");
+            return false;
+        }
+
+        const titleText = h1Element.textContent.trim();
+        const hasCorrectTitle =
+            titleText === "Consulta Processual - Detalhes do Processo";
+
+        console.log(" Verificando título para botão integrado:", {
+            titleFound: titleText,
+            isCorrect: hasCorrectTitle,
+        });
+
+        return hasCorrectTitle;
+    }
+
     // Criar botão de automação integrado na página
     function createAutomationButton() {
         console.log(" Tentando criar botão integrado...");
 
-        // Verificar se já existe
-        if (document.getElementById("documento-relevante-auto-button")) {
+        // Verificar se já existe (verificar todos os IDs possíveis)
+        if (
+            document.getElementById("documento-relevante-auto-button") ||
+            document.getElementById("sent1-auto-button")
+        ) {
             console.log(" Botão já existe, pulando criação");
             return;
         }
 
-        // Verificar se a página é válida para mostrar o botão
-        if (!isValidPageForButton()) {
+        // CRITÉRIO ESPECÍFICO: Verificar se a página tem o título exato
+        if (!shouldShowIntegratedButton()) {
             console.log(
-                " Página não é válida para o botão, cancelando criação"
+                " Página não possui o título correto para botão integrado, verificando critério para botão flutuante..."
             );
+            // Se não tem o título correto mas deve mostrar o botão flutuante, criar botão flutuante
+            if (shouldShowFloatingButton()) {
+                createFloatingButton();
+            } else {
+                console.log(" Página não atende critérios para nenhum botão");
+            }
             return;
         }
 
@@ -2348,14 +3056,11 @@ ${texto}`;
         const button = document.createElement("button");
         button.id = "documento-relevante-auto-button";
         button.innerHTML = `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
- <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
- <path d="M16.5 7.5 19 5"/>
- <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
- <path d="M9 21a6 6 0 0 0-6-6"/>
- <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <rect width="18" height="18" x="3" y="3" rx="2"/>
+ <path d="m9 8 6 4-6 4Z"/>
  </svg>
- Resumir Sentença
+ Resumir Documento
  `;
         button.className = "infraButton btn-primary";
 
@@ -2395,7 +3100,7 @@ ${texto}`;
             e.stopPropagation();
 
             log(" Botão integrado clicado!");
-            console.log(" Debug: Botão RESUMIR SENTENÇA clicado");
+            console.log(" Debug: Botão Resumir Documento clicado");
 
             // Adicionar feedback visual
             button.style.transform = "scale(0.95)";
@@ -2891,10 +3596,16 @@ ${texto}`;
 
     // Função de fallback para criar botão flutuante (caso container não seja encontrado)
     function createFloatingButton() {
+        // Verificar se já existe um botão
+        if (document.getElementById("sent1-auto-button")) {
+            console.log(" Botão flutuante já existe, cancelando criação");
+            return;
+        }
+
         // Verificar se a página é válida para mostrar o botão
-        if (!isValidPageForButton()) {
+        if (!shouldShowFloatingButton()) {
             console.log(
-                " Página não é válida para o botão flutuante, cancelando criação"
+                " Página não atende critérios para o botão flutuante, cancelando criação"
             );
             return;
         }
@@ -2902,21 +3613,19 @@ ${texto}`;
         console.log(" Criando botão flutuante como fallback...");
         const button = document.createElement("button");
         button.id = "sent1-auto-button";
+        button.className = "eprobe-button";
         button.innerHTML = `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
- <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
- <path d="M16.5 7.5 19 5"/>
- <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
- <path d="M9 21a6 6 0 0 0-6-6"/>
- <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <rect width="18" height="18" x="3" y="3" rx="2"/>
+ <path d="m9 8 6 4-6 4Z"/>
  </svg>
- Resumir Sentença
+ Resumir Documento
  `;
 
         // Usar estilo customizado próprio para o botão flutuante
         button.style.cssText = `
  position: fixed;
- top: 80px;
+ top: 120px;
  right: 20px;
  z-index: 99999;
  background-color: #134377;
@@ -2924,7 +3633,7 @@ ${texto}`;
  color: white;
  padding: 8px 16px;
  border-radius: 4px;
- font-family: Arial, sans-serif;
+ font-family: "Roboto", -apple-system, system-ui, sans-serif;
  font-size: 14px;
  font-weight: normal;
  cursor: pointer;
@@ -2963,32 +3672,99 @@ ${texto}`;
             e.stopPropagation();
 
             log(" Botão flutuante clicado!");
-            console.log(" Debug: Botão RESUMIR SENTENÇA clicado");
+            console.log(" Debug: Botão Resumir Documento clicado");
+
+            // Adicionar feedback visual
+            button.style.transform = "scale(0.95)";
+            setTimeout(() => {
+                button.style.transform = "";
+            }, 150);
 
             const pageType = detectPageType();
             log(" Tipo de página detectado:", pageType);
 
+            // Lógica específica para o botão flutuante
+            // Como o botão flutuante só aparece quando há documentos específicos,
+            // podemos assumir que estamos em uma página de documento
             if (pageType === "lista_documentos") {
                 showNotification(" Abrindo documento...", "info");
                 await runFullAutomation();
-            } else if (pageType === "documento_especifico") {
+            } else if (
+                pageType === "documento_especifico" ||
+                pageType === "documento_html" ||
+                pageType === "documento_pdf"
+            ) {
+                // Página de documento específico - mostrar menu de opções
                 const rect = button.getBoundingClientRect();
                 showOptionsMenu(rect.left, rect.bottom);
             } else {
-                showNotification(" Página não reconhecida", "error");
+                // Para o botão flutuante, se chegou até aqui é porque deve haver um documento
+                // Vamos verificar se há elementos que indicam documento na página
+                const pageHTML = document.documentElement.outerHTML;
+                const hasDocumentHtml = pageHTML.includes(
+                    "acessar_documento&id"
+                );
+                const hasDocumentPdf = pageHTML.includes(
+                    "acessar_documento&amp"
+                );
+
+                console.log(
+                    " Debug: Verificação de documento na página não reconhecida:",
+                    {
+                        hasDocumentHtml: hasDocumentHtml,
+                        hasDocumentPdf: hasDocumentPdf,
+                        url: window.location.href,
+                    }
+                );
+
+                if (hasDocumentHtml || hasDocumentPdf) {
+                    // Há documento, mas a página não foi reconhecida - tratar como documento específico
+                    console.log(
+                        " Página contém documento mas não foi reconhecida - tratando como documento específico"
+                    );
+                    const rect = button.getBoundingClientRect();
+                    console.log(
+                        " Debug: Chamando showOptionsMenu com coordenadas:",
+                        {
+                            x: rect.left,
+                            y: rect.bottom,
+                        }
+                    );
+                    showOptionsMenu(rect.left, rect.bottom);
+                } else {
+                    // Realmente não há documento reconhecível
+                    showNotification(
+                        " Página não reconhecida ou sem documento válido",
+                        "error"
+                    );
+                }
             }
         });
 
         document.body.appendChild(button);
         console.log(" Botão flutuante adicionado ao DOM");
+
+        // Verificar e prevenir sobreposições após um pequeno delay
+        setTimeout(() => {
+            preventElementOverlap();
+        }, 100);
     }
 
     // Debug: verificar se o botão foi criado
     function debugButtonStatus() {
         setTimeout(() => {
             const button = document.getElementById("sent1-auto-button");
+            const integratedButton = document.getElementById(
+                "documento-relevante-auto-button"
+            );
+
+            console.log("=== DEBUG STATUS DO BOTÃO ===");
+            console.log("Página atual:", window.location.href);
+            console.log("Tipo de página detectado:", detectPageType());
+            console.log("Página é válida para botão:", isValidPageForButton());
+
             if (button) {
-                console.log(" Botão RESUMIR SENTENÇA encontrado:", button);
+                console.log(" Botão SENT1 encontrado:", button);
                 const isFloating = button.style.position === "fixed";
                 console.log(
                     " Tipo de botão:",
@@ -3011,9 +3787,30 @@ ${texto}`;
                         visibility: getComputedStyle(button).visibility,
                     });
                 }
+            } else if (integratedButton) {
+                console.log(" Botão integrado encontrado:", integratedButton);
             } else {
-                console.log(" Botão RESUMIR SENTENÇA NÃO encontrado!");
+                console.log(" NENHUM BOTÃO ENCONTRADO!");
+                console.log(" Tentando criar botão agora...");
+
+                // Tentar criar botão imediatamente no debug
+                if (shouldShowIntegratedButton()) {
+                    console.log(
+                        " Página atende critérios para botão integrado - tentando criar..."
+                    );
+                    createAutomationButton();
+                } else if (shouldShowFloatingButton()) {
+                    console.log(
+                        " Página atende critérios para botão flutuante - tentando criar..."
+                    );
+                    createFloatingButton();
+                } else {
+                    console.log(
+                        " Página não atende critérios para nenhum botão"
+                    );
+                }
             }
+            console.log("=== FIM DEBUG STATUS ===");
         }, 2000);
     }
 
@@ -3283,6 +4080,7 @@ ${texto}`;
                     tipoInfo,
                     eventoDesc,
                     tamanhoInfo,
+                    eventoMagistrado: documento.eventoMagistrado, // Debug magistrado
                     original_eventoDescricao: documento.eventoDescricao,
                 });
 
@@ -3290,7 +4088,7 @@ ${texto}`;
  <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
  class="document-option" data-index="${index}">
  <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(19, 67, 119);">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(133, 190, 255);">
  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
  <polyline points="14,2 14,8 20,8"/>
  <line x1="16" y1="13" x2="8" y2="13"/>
@@ -3299,26 +4097,80 @@ ${texto}`;
  </svg>
  ${tipoInfo} - ${seqEvento}
  </div>
- <div style="font-size: 13px; color: rgb(19, 67, 119); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+ <div style="font-size: 13px; color: rgb(243, 246, 249); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
  <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
  </svg>
  ${eventoDesc}
  </div>
- <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+ <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
  </svg>
- Documento: ${documento.tipo}${documento.index}${tamanhoInfo}
- </div>
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.8; display: flex; align-items: center; gap: 8px;">
+ Documento: ${documento.texto}${tamanhoInfo}
+ </div>${
+     documento.magistradoInfo && documento.magistradoInfo.tipo === "magistrado"
+         ? `
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
- <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+ <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+ <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+ <circle cx="10" cy="7" r="4"/>
  </svg>
- ID: ${documento.eventoId.substring(0, 20)}...
- </div>
+ ${documento.magistradoInfo.nome}
+ </div>${
+     documento.magistradoInfo.vara
+         ? `
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M10 18v-7"/>
+ <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
+ <path d="M14 18v-7"/>
+ <path d="M18 18v-7"/>
+ <path d="M3 22h18"/>
+ <path d="M6 18v-7"/>
+ </svg>
+ ${documento.magistradoInfo.vara}
+ </div>`
+         : ""
+ }`
+         : documento.magistradoInfo &&
+           documento.magistradoInfo.tipo === "advogado"
+         ? `
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+ <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+ <circle cx="10" cy="7" r="4"/>
+ </svg>
+ ${documento.magistradoInfo.nome}
+ </div>`
+         : documento.eventoMagistrado
+         ? `
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+ <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+ <circle cx="10" cy="7" r="4"/>
+ </svg>
+ ${documento.eventoMagistrado}
+ </div>`
+         : ""
+ }${
+                    documento.eventoData
+                        ? `
+ <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+ <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/>
+ <path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/>
+ <path d="m2.3 2.3 7.286 7.286"/>
+ <circle cx="11" cy="11" r="2"/>
+ </svg>
+ Assinado em ${documento.eventoData}
+ </div>`
+                        : ""
+                }
  </div>
  `;
             });
@@ -3327,7 +4179,7 @@ ${texto}`;
  <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
  <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
  <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(133, 190, 255);">
  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
  <polyline points="14,2 14,8 20,8"/>
  <line x1="16" y1="13" x2="8" y2="13"/>
@@ -3438,6 +4290,7 @@ ${texto}`;
 
         const modal = document.createElement("div");
         modal.id = "api-key-config";
+        modal.className = "eprobe-modal";
         modal.style.cssText = `
  position: fixed;
  top: 0;
@@ -3453,10 +4306,10 @@ ${texto}`;
  `;
 
         modal.innerHTML = `
- <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 520px; width: 90%; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
- <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
- <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <div style="background: #134377; border-radius: 12px; padding: 32px; max-width: 560px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
+ <div style="margin-bottom: 24px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 20px;">
+ <h2 style="margin: 0; color: rgb(255, 255, 255); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; letter-spacing: -0.025em;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <circle cx="12" cy="16" r="1"/>
  <rect x="3" y="10" width="18" height="12" rx="2"/>
  <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
@@ -3465,45 +4318,49 @@ ${texto}`;
  </h2>
  </div>
  
- <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; font-size: 13px; line-height: 1.5; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.3);">
- <strong style="color: rgb(19, 67, 119);">Como obter sua API Key do Perplexity:</strong><br>
- 1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(19, 67, 119); text-decoration: none;">www.perplexity.ai/settings/api</a><br>
- 2. Faça login na sua conta Perplexity<br>
- 3. Clique em "Generate" para criar uma nova chave<br>
- 4. Copie a chave e cole abaixo
+ <div style="margin-bottom: 24px; padding: 20px; background: rgba(32, 39, 51, 0.6); border-radius: 10px; font-size: 14px; line-height: 1.6; color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.1);">
+ <div style="margin-bottom: 12px;">
+ <strong style="color: rgb(133, 190, 255); font-size: 15px;">Como obter sua API Key do Perplexity:</strong>
+ </div>
+ <div style="padding-left: 8px; color: rgb(226, 232, 240);">
+ <div style="margin-bottom: 8px;">1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(133, 190, 255); text-decoration: underline; font-weight: 500;">www.perplexity.ai/settings/api</a></div>
+ <div style="margin-bottom: 8px;">2. Faça login na sua conta Perplexity</div>
+ <div style="margin-bottom: 8px;">3. Clique em "Generate" para criar uma nova chave</div>
+ <div>4. Copie a chave e cole abaixo</div>
+ </div>
  </div>
 
- <div style="margin-bottom: 16px;">
- <label style="display: block; margin-bottom: 6px; font-weight: 500; color: rgb(243, 246, 249); font-size: 13px;">API Key:</label>
- <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 10px 12px; border: 1px solid rgba(82, 82, 82, 0.5); border-radius: 8px; font-family: monospace; background: rgb(32, 39, 51); color: rgb(243, 246, 249); font-size: 14px; transition: all 0.2s ease;" value="${
+ <div style="margin-bottom: 20px;">
+ <label style="display: block; margin-bottom: 8px; font-weight: 600; color: rgb(255, 255, 255); font-size: 14px;">API Key:</label>
+ <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-family: 'Roboto', monospace, sans-serif; background: rgba(32, 39, 51, 0.5); color: rgb(255, 255, 255); font-size: 14px; transition: all 0.2s ease; box-sizing: border-box;" value="${
      currentKey || ""
  }" />
  </div>
 
- <div style="margin-bottom: 20px; padding: 12px; background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 8px; font-size: 12px; display: flex; align-items: flex-start; gap: 8px; color: rgb(251, 191, 36);">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;">
+ <div style="margin-bottom: 24px; padding: 16px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; font-size: 13px; display: flex; align-items: flex-start; gap: 12px; color: rgb(254, 240, 138);">
+ <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
  <path d="M12 9v4"/>
  <path d="m12 17 .01 0"/>
  </svg>
- <span>Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
+ <span style="line-height: 1.5;"><strong>Privacidade:</strong> Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
  </div>
 
- <div style="text-align: center; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap;">
- <button id="save-key" style="background: rgb(19, 67, 119); color: white; border: 1px solid rgb(19, 67, 119); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+ <button id="save-key" style="background: rgb(133, 190, 255); color: #134377; border: 1px solid rgb(133, 190, 255); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 140px; justify-content: center;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <polyline points="20,6 9,17 4,12"/>
  </svg>
  Salvar e Testar
  </button>
- <button id="remove-key" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <button id="remove-key" style="background: rgb(145, 67, 61); color: white; border: 1px solid rgb(145, 67, 61); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 120px; justify-content: center;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <polyline points="3,6 5,6 21,6"/>
  <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
  </svg>
  Remover
  </button>
- <button id="cancel-config" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <button id="cancel-config" style="background: rgba(255, 255, 255, 0.1); color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 100px; justify-content: center;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <path d="m18 6-12 12"/>
  <path d="m6 6 12 12"/>
@@ -3579,15 +4436,40 @@ ${texto}`;
             showNotification("API key removida!", "info");
         });
 
-        // Adicionar hover vermelho no botão cancelar da configuração de API
+        // Adicionar eventos de hover para os botões
+        saveBtn.addEventListener("mouseenter", () => {
+            saveBtn.style.backgroundColor = "rgb(107, 170, 255)";
+            saveBtn.style.color = "#134377";
+            saveBtn.style.transform = "translateY(-1px)";
+        });
+
+        saveBtn.addEventListener("mouseleave", () => {
+            saveBtn.style.backgroundColor = "rgb(133, 190, 255)";
+            saveBtn.style.color = "#134377";
+            saveBtn.style.transform = "translateY(0)";
+        });
+
+        removeBtn.addEventListener("mouseenter", () => {
+            removeBtn.style.backgroundColor = "rgb(120, 55, 50)";
+            removeBtn.style.transform = "translateY(-1px)";
+        });
+
+        removeBtn.addEventListener("mouseleave", () => {
+            removeBtn.style.backgroundColor = "rgb(145, 67, 61)";
+            removeBtn.style.transform = "translateY(0)";
+        });
+
+        // Adicionar hover para o botão cancelar
         cancelBtn.addEventListener("mouseenter", () => {
-            cancelBtn.style.backgroundColor = "#91433d";
-            cancelBtn.style.borderColor = "#91433d";
+            cancelBtn.style.backgroundColor = "rgba(255, 255, 255, 0.15)";
+            cancelBtn.style.borderColor = "rgba(255, 255, 255, 0.3)";
+            cancelBtn.style.transform = "translateY(-1px)";
         });
 
         cancelBtn.addEventListener("mouseleave", () => {
-            cancelBtn.style.backgroundColor = "rgb(32, 39, 51)";
-            cancelBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
+            cancelBtn.style.backgroundColor = "rgba(255, 255, 255, 0.1)";
+            cancelBtn.style.borderColor = "rgba(255, 255, 255, 0.2)";
+            cancelBtn.style.transform = "translateY(0)";
         });
 
         cancelBtn.addEventListener("click", () => {
@@ -3619,6 +4501,7 @@ ${texto}`;
         }
 
         const modal = document.createElement("div");
+        modal.className = "eprobe-modal";
         modal.style.cssText = `
  position: fixed;
  top: 0;
@@ -3651,7 +4534,7 @@ ${texto}`;
  Limpar Logs
  </button>
  </div>
- <div style="font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
+ <div style="font-family: 'Roboto', monospace, sans-serif; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
  ${logs
      .map(
          (log, i) => `
@@ -4243,7 +5126,7 @@ ${texto}`;
     // Inicialização
     function init() {
         log(" Iniciando content script automatizado");
-        console.log(" RESUMIR SENTENÇA: Script iniciado");
+        console.log(" Resumir Documento: Script iniciado");
 
         // Configurar observador de página
         setupPageObserver();
@@ -4263,11 +5146,37 @@ ${texto}`;
 
         // Tentar novamente após mais tempo para SPAs
         setTimeout(() => {
-            if (!document.getElementById("sent1-auto-button")) {
+            if (
+                !document.getElementById("sent1-auto-button") &&
+                !document.getElementById("documento-relevante-auto-button")
+            ) {
                 console.log(" Segunda tentativa de criação do botão...");
                 createAutomationButton();
             }
         }, 3000);
+
+        // Tentativa final com botão flutuante forçado se necessário
+        setTimeout(() => {
+            if (
+                !document.getElementById("sent1-auto-button") &&
+                !document.getElementById("documento-relevante-auto-button")
+            ) {
+                console.log(
+                    " Terceira tentativa - verificando critérios para criação do botão..."
+                );
+                if (shouldShowIntegratedButton()) {
+                    console.log(" Tentando criar botão integrado...");
+                    createAutomationButton();
+                } else if (shouldShowFloatingButton()) {
+                    console.log(" Tentando criar botão flutuante...");
+                    createFloatingButton();
+                } else {
+                    console.log(
+                        " Página não atende critérios para nenhum botão"
+                    );
+                }
+            }
+        }, 5000);
 
         // Debug do botão
         debugButtonStatus();
@@ -4961,5 +5870,137 @@ ${texto}`;
                 if (e.target === overlay) close(true);
             });
         });
+    }
+
+    // Formatar informações de magistrado/advogado
+    function formatarMagistradoAdvogado(texto) {
+        if (!texto || texto.trim().length === 0) {
+            return "";
+        }
+
+        let textoLimpo = texto.trim();
+
+        // Remover tags HTML (incluindo <br/> e <br>)
+        textoLimpo = textoLimpo.replace(/<br\s*\/?>/gi, "\n");
+        textoLimpo = textoLimpo.replace(/<[^>]*>/g, "");
+
+        // Separar em linhas e filtrar conteúdo útil
+        const linhas = textoLimpo
+            .split(/\n/)
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0)
+            .filter((l) => !l.match(/^(MAGISTRADO|ADVOGADO)$/i)); // Remover labels extras
+
+        // Detectar se é magistrado ou advogado baseado em palavras-chave
+        const isMagistrado = /juiz|juíz|magistrad|vara|gabinete|comarca/i.test(
+            textoLimpo
+        );
+
+        if (isMagistrado) {
+            // Para magistrados: procurar nome da pessoa e informação da vara
+            let nomePessoa = "";
+            let infoVara = "";
+
+            for (const linha of linhas) {
+                // Se a linha contém palavras típicas de vara/gabinete, é info de vara
+                if (/\d+[ªº]?\s*(vara|gabinete|comarca)/i.test(linha)) {
+                    infoVara = linha;
+                }
+                // Se é um nome de pessoa (contém pelo menos 2 palavras com letras)
+                else if (
+                    /^[A-ZÁÊÇÕÜÀÁÉÊÍÓÔÚÂÃ\s]{3,}$/i.test(linha) &&
+                    linha.split(" ").length >= 2
+                ) {
+                    // Capitalizar corretamente o nome (primeira letra maiúscula, resto minúscula)
+                    nomePessoa = linha
+                        .toLowerCase()
+                        .split(" ")
+                        .map(
+                            (palavra) =>
+                                palavra.charAt(0).toUpperCase() +
+                                palavra.slice(1)
+                        )
+                        .join(" ");
+                }
+            }
+
+            // Se encontrou nome e vara, retornar objeto com ambos
+            if (nomePessoa && infoVara) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${nomePessoa}`,
+                    vara: infoVara,
+                };
+            }
+            // Se só encontrou nome
+            else if (nomePessoa) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${nomePessoa}`,
+                    vara: null,
+                };
+            }
+            // Se só encontrou vara
+            else if (infoVara) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${infoVara}`,
+                    vara: null,
+                };
+            }
+            // Fallback: usar primeira linha útil
+            else if (linhas.length > 0) {
+                const primeiraLinha = linhas[0]
+                    .toLowerCase()
+                    .split(" ")
+                    .map(
+                        (palavra) =>
+                            palavra.charAt(0).toUpperCase() + palavra.slice(1)
+                    )
+                    .join(" ");
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${primeiraLinha}`,
+                    vara: null,
+                };
+            }
+        } else {
+            // Para advogados: usar a primeira linha que parece um nome
+            let nomeAdvogado =
+                linhas.find(
+                    (linha) =>
+                        /^[A-ZÁÊÇÕÜÀÁÉÊÍÓÔÚÂÃ\s]{3,}$/i.test(linha) &&
+                        linha.split(" ").length >= 2
+                ) || linhas[0];
+
+            if (nomeAdvogado) {
+                // Capitalizar corretamente o nome do advogado
+                nomeAdvogado = nomeAdvogado
+                    .toLowerCase()
+                    .split(" ")
+                    .map(
+                        (palavra) =>
+                            palavra.charAt(0).toUpperCase() + palavra.slice(1)
+                    )
+                    .join(" ");
+                return {
+                    tipo: "advogado",
+                    nome: `Advogado(a): ${nomeAdvogado}`,
+                    vara: null,
+                };
+            }
+        }
+
+        // Fallback final
+        return textoLimpo;
+    }
+
+    // Inicializar observer para prevenir sobreposições
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            setupInterfaceObserver();
+        });
+    } else {
+        setupInterfaceObserver();
     }
 })();

@@ -1,9 +1,4 @@
-@font-face {
-    font-family: "Roboto";
-    src: url("../fonts/roboto.woff2") format("woff2");
-    font-display: swap;
-    font-weight: 100 900;
-}
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 
 /* Reset e configurações básicas */
 * {
@@ -89,7 +84,7 @@
 body {
     width: 380px;
     min-height: 500px;
-    font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Roboto", -apple-system, system-ui, sans-serif;
     font-size: 14px;
     line-height: 1.5;
     background: rgb(var(--color-background));
@@ -338,8 +333,8 @@ body {
     justify-content: center;
     width: 28px;
     height: 28px;
-    background: rgba(var(--color-primary-500), 0.2);
-    color: rgb(var(--color-primary-500));
+    background: rgba(var(--color-primary-600), 0.2);
+    color: rgb(var(--color-primary-600));
     border-radius: 50%;
     margin-right: 12px;
     flex-shrink: 0;
@@ -348,7 +343,7 @@ body {
 
 .step:hover .step-number {
     transform: scale(1.1);
-    background: rgba(var(--color-primary-500), 0.3);
+    background: rgba(var(--color-primary-600), 0.3);
 }
 
 /* Ícones nos steps - sobrescreve configuração anterior */
@@ -574,9 +569,9 @@ body {
 }
 
 .status.info {
-    background: rgb(var(--color-info-100) / 0.3);
-    border-color: rgb(var(--color-info-300) / 0.3);
-    color: rgb(var(--color-info-300));
+    background: transparent;
+    border-color: transparent;
+    color: rgb(var(--color-text-muted));
 }
 
 .status.success {
@@ -666,7 +661,7 @@ html.theme_dark .btn:hover {
 }
 
 .status.info::before {
-    background: rgb(var(--color-info-300));
+    display: none;
 }
 
 .status.success::before {
@@ -774,7 +769,7 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: rgb(var(--color-primary-500));
+    color: rgb(var(--color-primary-600));
     font-size: 0.95rem;
     font-weight: 600;
     margin-bottom: 12px;
@@ -796,7 +791,7 @@ body {
 
 .help-section li:before {
     content: "•";
-    color: rgb(var(--color-primary-500));
+    color: rgb(var(--color-primary-600));
     position: absolute;
     left: 0;
     top: 0;
@@ -820,4 +815,56 @@ body {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
+}
+
+/* Classes para melhor contraste e acessibilidade */
+.modal-text-primary {
+    color: rgb(var(--color-primary-600)) !important;
+}
+
+.modal-text-secondary {
+    color: rgb(var(--color-text-main)) !important;
+}
+
+.modal-text-muted {
+    color: rgb(var(--color-text-muted)) !important;
+}
+
+.modal-icon-primary {
+    color: rgb(var(--color-primary-600)) !important;
+}
+
+.modal-icon-secondary {
+    color: rgb(var(--color-primary-700)) !important;
+}
+
+/* Garantir contraste adequado em elementos interativos */
+.document-option {
+    transition: all 0.2s ease;
+}
+
+.document-option:hover {
+    border-color: rgb(var(--color-primary-600)) !important;
+    box-shadow: 0 4px 12px rgb(var(--color-primary-600) / 0.25);
+}
+
+.document-option:focus {
+    outline: 2px solid rgb(var(--color-primary-600));
+    outline-offset: 2px;
+}
+
+/* Melhorar acessibilidade para elementos pequenos */
+.modal-small-text {
+    color: rgb(var(--color-text-muted));
+    font-size: 12px;
+    opacity: 0.9;
+}
+
+/* Footer personalizado */
+.status.info .status-text {
+    color: rgb(var(--color-text-muted));
+    white-space: pre-line;
+    text-align: center;
+    font-size: 12px;
+    line-height: 1.4;
 }
