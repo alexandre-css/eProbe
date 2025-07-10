@@ -10,9 +10,9 @@ Adicionar um toggle no popup da extensão para controlar as requisições autom�
 
 #### 1. **popup.html**
 
--   **Localização**: Seção `settings-area`
--   **Alteração**: Adicionado novo toggle "Requisições automáticas de sessão"
--   **Posição**: Abaixo do toggle existente "Data da sessão em destaque"
+- **Localização**: Seção `settings-area`
+- **Alteração**: Adicionado novo toggle "Requisições automáticas de sessão"
+- **Posição**: Abaixo do toggle existente "Data da sessão em destaque"
 
 ```html
 <div class="setting-item">
@@ -28,13 +28,13 @@ Adicionar um toggle no popup da extensão para controlar as requisições autom�
 
 #### 2. **popup.js**
 
--   **Funcionalidade**: Controle completo do novo toggle
--   **Características**:
-    -   Carrega estado salvo do `chrome.storage.local`
-    -   Estado padrão: DESABILITADO (por segurança)
-    -   Salva mudanças no storage
-    -   Envia mensagens para o content script
-    -   Feedback visual para o usuário
+- **Funcionalidade**: Controle completo do novo toggle
+- **Características**:
+  - Carrega estado salvo do `chrome.storage.local`
+  - Estado padrão: DESABILITADO (por segurança)
+  - Salva mudanças no storage
+  - Envia mensagens para o content script
+  - Feedback visual para o usuário
 
 ```javascript
 // Novo toggle para requisições automáticas
@@ -46,9 +46,9 @@ const autoSessionRequestsToggle = document.getElementById(
 
 #### 3. **main.js**
 
--   **Handler de mensagens**: Comunicação com o popup
--   **Controle**: Gerencia a variável `REQUISICOES_AUTOMATICAS_DESABILITADAS`
--   **Logs**: Debug completo para monitoramento
+- **Handler de mensagens**: Comunicação com o popup
+- **Controle**: Gerencia a variável `REQUISICOES_AUTOMATICAS_DESABILITADAS`
+- **Logs**: Debug completo para monitoramento
 
 ```javascript
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
@@ -60,8 +60,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 #### 4. **popup.css**
 
--   **Estilo**: Adicionado espaçamento entre múltiplos toggles
--   **Aparência**: Mantém consistência visual com o design existente
+- **Estilo**: Adicionado espaçamento entre múltiplos toggles
+- **Aparência**: Mantém consistência visual com o design existente
 
 ```css
 .setting-item + .setting-item {
@@ -103,10 +103,10 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 
 Ao usar o toggle, o console mostrará:
 
--   `📨 MENSAGEM: Recebida do popup:`
--   `🔓 POPUP: Habilitando requisições automáticas`
--   `🔒 POPUP: Desabilitando requisições automáticas`
--   `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = [estado]`
+- `📨 MENSAGEM: Recebida do popup:`
+- `🔓 POPUP: Habilitando requisições automáticas`
+- `🔒 POPUP: Desabilitando requisições automáticas`
+- `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = [estado]`
 
 ### 📊 Estado do Sistema
 
@@ -120,13 +120,13 @@ window.SENT1_AUTO.statusRequisicoes();
 
 A extensão agora possui:
 
--   ✅ Toggle para "Data da sessão em destaque"
--   ✅ Toggle para "Requisições automáticas de sessão"
--   ✅ Controle completo pelo usuário
--   ✅ Segurança por padrão (desabilitado)
--   ✅ Comunicação popup ↔ content script
--   ✅ Persistência de configurações
--   ✅ Feedback visual apropriado
+- ✅ Toggle para "Data da sessão em destaque"
+- ✅ Toggle para "Requisições automáticas de sessão"
+- ✅ Controle completo pelo usuário
+- ✅ Segurança por padrão (desabilitado)
+- ✅ Comunicação popup ↔ content script
+- ✅ Persistência de configurações
+- ✅ Feedback visual apropriado
 
 ### 📋 Próximos Passos
 

@@ -5,6 +5,9 @@
     // Armazenar a data da sessão quando detectada
     let dataSessaoPautado = null;
 
+    // Variável para armazenar qual processo tem a data da sessão detectada
+    let processoComDataSessao = null;
+
     // Armazenar dados completos da sessão obtidos do cruzamento
     let dadosCompletosSessionJulgamento = null;
 
@@ -5292,18 +5295,254 @@ ${texto}`;
         inserirDataSessaoNaInterface,
         removerDataSessaoDaInterface,
         atualizarDataSessaoNaInterface,
+        forcarInsercaoCardSemValidacao, // <-- Adiciona a função ao namespace global
         // Funções de cruzamento de dados de sessão
         buscarDadosSessoes,
         parsearDadosSessoes,
         extrairDadosLinhaSessao,
         buscarSessaoPorData,
         cruzarDadosDataSessao,
-        cruzarDadosDataSessaoForcado,
+        cruzarDadosDataSessao,
         getDadosCompletosSessionJulgamento,
         hasDadosCompletosSessionJulgamento,
         resetDadosCompletosSessionJulgamento,
         showDadosCompletosSessionJulgamento,
+        // Funções de debug
+        debugDeteccaoDataSessao,
+        forcarDeteccaoDataSessao,
     };
+
+    // 🔍 FUNÇÕES DE DEBUG
+    window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
+    window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
+
+    // 🔍 FUNÇÕES DE DEBUG - Para investigar problemas com o card
+    function debugDeteccaoDataSessao() {
+        console.log("🔍 DEBUG: Iniciando debug da detecção de data da sessão");
+
+        // 1. Verificar estado atual
+        console.log("📊 Estado atual:");
+        console.log(
+            `   - Data detectada: ${
+                hasDataSessaoPautado()
+                    ? getDataSessaoPautado().dataFormatada
+                    : "NÃO"
+            }`
+        );
+        console.log(
+            `   - Processo atual: ${processoAtual || "não identificado"}`
+        );
+        console.log(
+            `   - Já processado: ${
+                processoAtual ? processoJaFoiProcessado(processoAtual) : "N/A"
+            }`
+        );
+        console.log(
+            `   - Card na interface: ${
+                document.getElementById("eprobe-data-sessao") ? "SIM" : "NÃO"
+            }`
+        );
+
+        // 2. Verificar texto da página
+        const textoCompleto = document.body.innerText;
+        console.log(`📄 Texto da página: ${textoCompleto.length} caracteres`);
+
+        // 3. Testar padrões de busca
+        const padroes = [
+            /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
+        ];
+
+        padroes.forEach((padrao, index) => {
+            const match = textoCompleto.match(padrao);
+            if (match) {
+                console.log(`✅ Padrão ${index + 1}: Encontrado "${match[1]}"`);
+            } else {
+                console.log(`❌ Padrão ${index + 1}: Não encontrado`);
+            }
+        });
+
+        // 4. Verificar container alvo
+        const container = document.querySelector(
+            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
+        );
+        console.log(
+            `🎯 Container alvo: ${container ? "ENCONTRADO" : "NÃO ENCONTRADO"}`
+        );
+
+        if (container) {
+            console.log(`   - TagName: ${container.tagName}`);
+            console.log(`   - ID: ${container.id}`);
+            console.log(`   - Classes: ${container.className}`);
+            console.log(`   - Filhos: ${container.children.length}`);
+        }
+
+        // 5. Listar containers alternativos
+        const alternativas = [
+            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso",
+            "#divCapaProcesso .row",
+            "#fldCapa .row",
+            ".row.mt-2",
+        ];
+
+        console.log("🔍 Containers alternativos:");
+        alternativas.forEach((seletor, index) => {
+            const elemento = document.querySelector(seletor);
+            console.log(
+                `   ${index + 1}. ${seletor}: ${
+                    elemento ? "ENCONTRADO" : "NÃO ENCONTRADO"
+                }`
+            );
+        });
+
+        // 6. Testar inserção do card
+        if (hasDataSessaoPautado()) {
+            console.log("🧪 Testando inserção do card...");
+            const resultadoInsercao = inserirDataSessaoNaInterface();
+            console.log(
+                `🎯 Resultado da inserção: ${
+                    resultadoInsercao ? "SUCESSO" : "FALHA"
+                }`
+            );
+        }
+    }
+
+    function forcarDeteccaoDataSessao() {
+        console.log("🔄 FORÇA: Forçando nova detecção de data da sessão");
+
+        // 1. Resetar estado
+        resetDataSessaoPautado();
+        processoAtual = null;
+
+        // 2. Remover card se existir
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ Card existente removido");
+        }
+
+        // 3. Forçar detecção
+        const dataDetectada = detectarDataSessao();
+
+        if (dataDetectada) {
+            console.log(`✅ Data detectada: ${dataDetectada.dataFormatada}`);
+
+            // 4. Tentar inserir card imediatamente
+            const sucesso = inserirDataSessaoNaInterface();
+            console.log(
+                `🎯 Inserção do card: ${sucesso ? "SUCESSO" : "FALHA"}`
+            );
+
+            if (sucesso) {
+                // Marcar processo como processado apenas após inserção bem-sucedida
+                marcarProcessoComoProcessado(processoAtual);
+                console.log(
+                    "🔐 Processo marcado como processado após inserção do card"
+                );
+            }
+        } else {
+            console.log("❌ Nenhuma data detectada");
+        }
+    }
+
+    // 🧪 FUNÇÃO DE TESTE PARA VERIFICAR INSERÇÃO DO CARD
+    function testarInsercaoCard() {
+        console.log("🧪 TESTE: Verificando inserção do card");
+
+        // 1. Verificar se há data detectada
+        if (!hasDataSessaoPautado()) {
+            console.log("❌ TESTE: Nenhuma data detectada - forçando detecção");
+            forcarDeteccaoDataSessao();
+            return;
+        }
+
+        console.log(
+            `✅ TESTE: Data detectada: ${getDataSessaoPautado().dataFormatada}`
+        );
+
+        // 2. Remover card existente se houver
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ TESTE: Card existente removido");
+        }
+
+        // 3. Tentar inserir card
+        console.log("🎯 TESTE: Tentando inserir card...");
+        const sucesso = inserirDataSessaoNaInterface();
+
+        if (sucesso) {
+            console.log("✅ TESTE: Card inserido com sucesso!");
+            const cardInserido = document.getElementById("eprobe-data-sessao");
+            if (cardInserido) {
+                console.log("✅ TESTE: Card confirmado no DOM");
+                console.log("🎯 TESTE: Elemento:", cardInserido);
+                return true;
+            } else {
+                console.log(
+                    "❌ TESTE: Card não encontrado no DOM após inserção"
+                );
+                return false;
+            }
+        } else {
+            console.log("❌ TESTE: Falha na inserção do card");
+            return false;
+        }
+    }
+
+    // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD SEM VALIDAÇÃO
+    function forcarInsercaoCardSemValidacao() {
+        console.log("🚨 FORÇA: Forçando inserção do card sem validações");
+
+        // 1. Verificar se há data detectada
+        if (!hasDataSessaoPautado()) {
+            console.log("❌ FORÇA: Nenhuma data detectada - tentando detectar");
+
+            // Forçar detecção mesmo para processo já processado
+            const processoAnterior = processoAtual;
+            const jaProcessadoAnterior = processoAnterior
+                ? processosJaProcessados.has(processoAnterior)
+                : false;
+
+            if (jaProcessadoAnterior) {
+                console.log(
+                    "🔄 FORÇA: Removendo processo da lista de processados temporariamente"
+                );
+                processosJaProcessados.delete(processoAnterior);
+            }
+
+            // Detectar data
+            const dataDetectada = detectarDataSessao();
+
+            if (!dataDetectada) {
+                console.log("❌ FORÇA: Falha na detecção da data");
+                if (jaProcessadoAnterior) {
+                    processosJaProcessados.add(processoAnterior);
+                }
+                return false;
+            }
+        }
+
+        // 2. Remover card existente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ FORÇA: Card existente removido");
+        }
+
+        // 3. Forçar inserção
+        console.log("🎯 FORÇA: Tentando inserir card...");
+        const sucesso = inserirDataSessaoNaInterface();
+
+        if (sucesso) {
+            console.log("✅ FORÇA: Card inserido com sucesso!");
+            return true;
+        } else {
+            console.log("❌ FORÇA: Falha na inserção do card");
+            return false;
+        }
+    }
 
     // ========================================
     // FUNÇÕES DE EXTRAÇÃO DIRETA DE TEXTO PDF
@@ -6291,7 +6530,7 @@ ${texto}`;
     function detectarDataSessao() {
         console.log("🔍 INICIANDO: Detecção da data da sessão");
 
-        // 🔐 VERIFICAÇÃO ÚNICA POR PROCESSO
+        // 🔐 VERIFICAÇÃO DE PROCESSO
         processoAtual = obterNumeroProcesso();
         if (!processoAtual) {
             console.log(
@@ -6300,14 +6539,32 @@ ${texto}`;
             return null;
         }
 
-        if (processoJaFoiProcessado(processoAtual)) {
+        // 🔓 PERMITIR MÚLTIPLAS DETECÇÕES - Verificar se já há data detectada
+        if (hasDataSessaoPautado()) {
             console.log(
-                `🔐 BLOQUEIO: Processo ${processoAtual} já foi processado. Busca por dados da sessão cancelada.`
+                `ℹ️ DETECÇÃO: Data da sessão já detectada para o processo ${processoAtual}: ${
+                    getDataSessaoPautado().dataFormatada
+                }`
             );
             console.log(
-                "💡 Use window.SENT1_AUTO.resetProcessosProcessados() para resetar se necessário"
+                `🔍 DEBUG: Processo com data armazenada: ${processoComDataSessao}`
             );
-            return null;
+            return getDataSessaoPautado();
+        }
+
+        console.log(
+            `🔍 DETECÇÃO: Analisando processo ${processoAtual} pela primeira vez...`
+        );
+        console.log(
+            `🔍 DEBUG: Processo anterior com data: ${processoComDataSessao}`
+        );
+
+        // Verificar se há data armazenada de outro processo
+        if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
+            console.log(
+                `⚠️ CACHE: Limpando data de processo anterior (${processoComDataSessao}): ${dataSessaoPautado.dataFormatada}`
+            );
+            resetDataSessaoPautado();
         }
 
         // Buscar em todo o texto da página
@@ -6325,8 +6582,9 @@ ${texto}`;
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
                 dataSessaoPautado = dataValidada;
+                processoComDataSessao = processoAtual;
                 console.log(
-                    `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
+                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
                 );
 
                 // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
@@ -6402,8 +6660,9 @@ ${texto}`;
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
                 dataSessaoPautado = dataValidada;
+                processoComDataSessao = processoAtual;
                 console.log(
-                    `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
+                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
                 );
 
                 // 🔐 MARCAR PROCESSO COMO PROCESSADO
@@ -6430,12 +6689,16 @@ ${texto}`;
     }
 
     function hasDataSessaoPautado() {
-        return dataSessaoPautado !== null;
+        return (
+            dataSessaoPautado !== null &&
+            processoComDataSessao === processoAtual
+        );
     }
 
     function resetDataSessaoPautado() {
         console.log("🔄 RESET: Limpando data da sessão armazenada");
         dataSessaoPautado = null;
+        processoComDataSessao = null;
     }
 
     // 🛡️ FUNÇÃO PARA RESETAR CONTROLES DE REQUISIÇÃO
@@ -6669,7 +6932,7 @@ Detectada automaticamente pelo eProbe
                 console.log(
                     "🔄 CLIQUE: Forçando cruzamento de dados da sessão"
                 );
-                const resultado = await cruzarDadosDataSessaoForcado();
+                const resultado = await cruzarDadosDataSessao(null, true);
 
                 if (resultado) {
                     console.log(
@@ -6736,6 +6999,59 @@ Detectada automaticamente pelo eProbe
 
         // Inserir elemento atualizado
         return inserirDataSessaoNaInterface();
+    }
+
+    // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
+    function forcarInsercaoCardSemValidacao() {
+        console.log("🚨 FORÇA: Forçando inserção do card sem validações");
+
+        // 1. Verificar se há data detectada
+        if (!hasDataSessaoPautado()) {
+            console.log("❌ FORÇA: Nenhuma data detectada - tentando detectar");
+
+            // Forçar detecção mesmo para processo já processado
+            const processoAnterior = processoAtual;
+            const jaProcessadoAnterior = processoAnterior
+                ? processosJaProcessados.has(processoAnterior)
+                : false;
+
+            if (jaProcessadoAnterior) {
+                console.log(
+                    "🔄 FORÇA: Removendo processo da lista de processados temporariamente"
+                );
+                processosJaProcessados.delete(processoAnterior);
+            }
+
+            // Detectar data
+            const dataDetectada = detectarDataSessao();
+
+            if (!dataDetectada) {
+                console.log("❌ FORÇA: Falha na detecção da data");
+                if (jaProcessadoAnterior) {
+                    processosJaProcessados.add(processoAnterior);
+                }
+                return false;
+            }
+        }
+
+        // 2. Remover card existente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ FORÇA: Card existente removido");
+        }
+
+        // 3. Forçar inserção
+        console.log("🎯 FORÇA: Tentando inserir card...");
+        const sucesso = inserirDataSessaoNaInterface();
+
+        if (sucesso) {
+            console.log("✅ FORÇA: Card inserido com sucesso!");
+            return true;
+        } else {
+            console.log("❌ FORÇA: Falha na inserção do card");
+            return false;
+        }
     }
 
     // ========================================
@@ -7131,7 +7447,10 @@ Detectada automaticamente pelo eProbe
      * @param {string} hash - Hash da página (opcional)
      * @returns {Promise<boolean>} - true se encontrou e cruzou dados
      */
-    async function cruzarDadosDataSessao(hash = null) {
+    async function cruzarDadosDataSessao(
+        hash = null,
+        forcarRequisicao = false
+    ) {
         console.log("🔄 CRUZAMENTO: Iniciando cruzamento de dados da sessão");
 
         // � VERIFICAR SE REQUISIÇÕES AUTOMÁTICAS ESTÃO DESABILITADAS
