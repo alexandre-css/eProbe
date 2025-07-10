@@ -185,6 +185,76 @@ document.addEventListener("DOMContentLoaded", function () {
         );
     });
 
+    // Funcionalidade do toggle switch para requisições automáticas de sessão
+    const autoSessionRequestsToggle = document.getElementById(
+        "auto-session-requests"
+    );
+
+    // Carregar estado salvo do toggle (por padrão, requisições automáticas estão desabilitadas)
+    chrome.storage.local.get(["autoSessionRequests"], function (result) {
+        if (result.autoSessionRequests !== undefined) {
+            autoSessionRequestsToggle.checked = result.autoSessionRequests;
+        } else {
+            // Por padrão, requisições automáticas estão desabilitadas
+            autoSessionRequestsToggle.checked = false;
+        }
+    });
+
+    // Salvar estado quando o toggle for alterado
+    autoSessionRequestsToggle.addEventListener("change", function () {
+        const isChecked = this.checked;
+
+        // Salvar no storage
+        chrome.storage.local.set({
+            autoSessionRequests: isChecked,
+        });
+
+        // Enviar mensagem para o content script
+        chrome.tabs.query(
+            { active: true, currentWindow: true },
+            function (tabs) {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                            action: "toggleAutoSessionRequests",
+                            enabled: isChecked,
+                        },
+                        function (response) {
+                            if (chrome.runtime.lastError) {
+                                console.log(
+                                    "Content script não está ativo na aba atual"
+                                );
+                                return;
+                            }
+
+                            // Mostrar feedback visual
+                            if (isChecked) {
+                                showStatus(
+                                    "Requisições automáticas de sessão ativadas",
+                                    "success"
+                                );
+                            } else {
+                                showStatus(
+                                    "Requisições automáticas de sessão desativadas",
+                                    "info"
+                                );
+                            }
+
+                            // Limpar status após 2 segundos
+                            setTimeout(() => {
+                                showStatus(
+                                    "🄯 Alexandre Claudino Simas Santos\n          ✉ alexandress@tjsc.jus.br",
+                                    "info"
+                                );
+                            }, 2000);
+                        }
+                    );
+                }
+            }
+        );
+    });
+
     // Verificar estado inicial - removido por enquanto
     showStatus(
         "🄯 Alexandre Claudino Simas Santos\n          ✉ alexandress@tjsc.jus.br",

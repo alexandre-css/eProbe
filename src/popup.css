@@ -886,6 +886,10 @@ body {
     min-height: 32px;
 }
 
+.setting-item + .setting-item {
+    margin-top: 16px;
+}
+
 .setting-label {
     font-size: 14px;
     color: rgb(var(--color-text-main));
