@@ -6541,16 +6541,16 @@ Timestamp: ${dataSessaoPautado.timestamp}`;
         `;
 
         // Adicionar efeitos hover
-        dataSessaoElement.addEventListener('mouseenter', function() {
-            this.style.backgroundColor = '#e1f5fe';
-            this.style.borderColor = '#3b82f6';
-            this.style.boxShadow = '0 4px 8px 0 rgba(59, 130, 246, 0.1)';
+        dataSessaoElement.addEventListener("mouseenter", function () {
+            this.style.backgroundColor = "#e1f5fe";
+            this.style.borderColor = "#3b82f6";
+            this.style.boxShadow = "0 4px 8px 0 rgba(59, 130, 246, 0.1)";
         });
 
-        dataSessaoElement.addEventListener('mouseleave', function() {
-            this.style.backgroundColor = '#f8fafc';
-            this.style.borderColor = '#d1d5db';
-            this.style.boxShadow = '0 1px 2px 0 rgba(0, 0, 0, 0.05)';
+        dataSessaoElement.addEventListener("mouseleave", function () {
+            this.style.backgroundColor = "#f8fafc";
+            this.style.borderColor = "#d1d5db";
+            this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
         });
 
         // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
@@ -6622,19 +6622,23 @@ Detectada automaticamente pelo eProbe
         }
 
         // 🔗 ADICIONAR LISTENER DE CLIQUE - Cruzamento de dados acionado pelo usuário
-        dataSessaoElement.addEventListener('click', async function(event) {
+        dataSessaoElement.addEventListener("click", async function (event) {
             event.preventDefault();
             event.stopPropagation();
-            
-            console.log("🖱️ CLIQUE: Usuário clicou na data da sessão - iniciando cruzamento de dados");
-            
+
+            console.log(
+                "🖱️ CLIQUE: Usuário clicou na data da sessão - iniciando cruzamento de dados"
+            );
+
             // Verificar se já há dados completos
             if (getDadosCompletosSessionJulgamento()) {
-                console.log("ℹ️ CLIQUE: Dados completos já disponíveis - mostrando informações");
+                console.log(
+                    "ℹ️ CLIQUE: Dados completos já disponíveis - mostrando informações"
+                );
                 showDadosCompletosSessionJulgamento();
                 return;
             }
-            
+
             // Mostrar feedback visual de carregamento
             const elementoOriginal = this.innerHTML;
             this.innerHTML = `
@@ -6646,44 +6650,52 @@ Detectada automaticamente pelo eProbe
                     <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
                 </div>
             `;
-            
+
             // Adicionar animação de rotação
-            const style = document.createElement('style');
+            const style = document.createElement("style");
             style.textContent = `
                 @keyframes spin {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
                 }
             `;
-            if (!document.head.querySelector('style[data-eprobe-spin]')) {
-                style.setAttribute('data-eprobe-spin', 'true');
+            if (!document.head.querySelector("style[data-eprobe-spin]")) {
+                style.setAttribute("data-eprobe-spin", "true");
                 document.head.appendChild(style);
             }
-            
+
             try {
                 // Forçar cruzamento de dados independente do toggle
-                console.log("🔄 CLIQUE: Forçando cruzamento de dados da sessão");
+                console.log(
+                    "🔄 CLIQUE: Forçando cruzamento de dados da sessão"
+                );
                 const resultado = await cruzarDadosDataSessaoForcado();
-                
+
                 if (resultado) {
-                    console.log("✅ CLIQUE: Cruzamento realizado com sucesso - atualizando interface");
+                    console.log(
+                        "✅ CLIQUE: Cruzamento realizado com sucesso - atualizando interface"
+                    );
                     // A interface será atualizada automaticamente pelo cruzamento
                     setTimeout(() => {
                         atualizarDataSessaoNaInterface();
                     }, 500);
                 } else {
-                    console.log("⚠️ CLIQUE: Cruzamento não retornou dados - restaurando interface");
+                    console.log(
+                        "⚠️ CLIQUE: Cruzamento não retornou dados - restaurando interface"
+                    );
                     // Restaurar conteúdo original
                     this.innerHTML = elementoOriginal;
-                    
+
                     // Mostrar notificação
-                    alert("Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido");
+                    alert(
+                        "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido"
+                    );
                 }
             } catch (error) {
                 console.error("❌ CLIQUE: Erro durante cruzamento:", error);
                 // Restaurar conteúdo original
                 this.innerHTML = elementoOriginal;
-                
+
                 // Mostrar erro
                 alert(`Erro ao buscar dados da sessão:\n${error.message}`);
             }
