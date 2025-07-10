@@ -3,6 +3,7 @@
     "name": "eProbe - Automação ePROC",
     "version": "2.0.0",
     "description": "Automação completa: detecta, abre, extrai e envia SENT1 para ChatGPT automaticamente",
+    "author": "eProbe Team",
 
     "permissions": ["activeTab", "storage", "tabs", "clipboardWrite"],
 
