@@ -15,6 +15,10 @@
     let dadosCompletosMinutas = null;
     let processoComDadosCompletos = null;
 
+    // 📄 DADOS DETALHADOS DAS MINUTAS - ACÓRDÃO E RELATÓRIO/VOTO
+    let dadosCompletosMinutasTexto = null;
+    let processoComDadosMinutasTexto = null;
+
     // 🛡️ CONTROLE DE REQUISIÇÕES - Prevenir spam e logout
     let tentativasCruzamento = 0;
     let ultimaTentativaCruzamento = 0;
@@ -5227,20 +5231,63 @@ ${texto}`;
         debugButtonStatus();
 
         // Tentar detectar data da sessão após a página carregar completamente
-        setTimeout(() => {
+        setTimeout(async () => {
             console.log(
                 "🔍 Tentando detectar data da sessão automaticamente..."
             );
             detectarDataSessao();
+
+            // Aguardar um pouco e tentar extrair dados das minutas se temos dados da sessão
+            setTimeout(async () => {
+                if (hasDadosCompletosMinutas()) {
+                    console.log(
+                        "🔍 MINUTAS: Iniciando extração automática de dados das minutas..."
+                    );
+                    try {
+                        await extrairDadosMinutasDetalhadas();
+                        console.log(
+                            "✅ MINUTAS: Extração automática concluída!"
+                        );
+                    } catch (error) {
+                        console.log(
+                            "❌ MINUTAS: Erro na extração automática:",
+                            error
+                        );
+                    }
+                }
+            }, 3000);
         }, 2000);
 
         // Segunda tentativa de detecção de data após mais tempo (para SPAs)
-        setTimeout(() => {
+        setTimeout(async () => {
             if (!hasDataSessaoPautado()) {
                 console.log(
                     "🔍 Segunda tentativa de detecção da data da sessão..."
                 );
                 detectarDataSessao();
+
+                // Segunda tentativa de extração de minutas
+                setTimeout(async () => {
+                    if (
+                        hasDadosCompletosMinutas() &&
+                        !hasDadosCompletosMinutasTexto()
+                    ) {
+                        console.log(
+                            "🔍 MINUTAS: Segunda tentativa de extração de dados das minutas..."
+                        );
+                        try {
+                            await extrairDadosMinutasDetalhadas();
+                            console.log(
+                                "✅ MINUTAS: Segunda tentativa concluída!"
+                            );
+                        } catch (error) {
+                            console.log(
+                                "❌ MINUTAS: Erro na segunda tentativa:",
+                                error
+                            );
+                        }
+                    }
+                }, 3000);
             }
         }, 5000);
 
@@ -5329,6 +5376,41 @@ ${texto}`;
         debugDeteccaoDataSessao,
         forcarDeteccaoDataSessao,
         debugTextoMinutas,
+
+        // ========================================
+        // NOVAS FUNÇÕES - EXTRAÇÃO DE MINUTAS DETALHADAS
+        // ========================================
+
+        // Funções principais
+        detectarLinksMinutas,
+        processarPaginaMinuta,
+        extrairDadosMinutasDetalhadas,
+
+        // Funções utilitárias
+        getDadosCompletosMinutasTexto,
+        hasDadosCompletosMinutasTexto,
+        resetDadosCompletosMinutasTexto,
+        showDadosCompletosMinutasTexto,
+
+        // Funções globais específicas
+        MinutaEmentaCapaProcesso,
+        MinutaRelatorioVotoCapaProcesso,
+
+        // Funções de debug das minutas
+        debugExtracaoMinutasTexto,
+        forcarExtracaoMinutasTexto,
+
+        // Funções de debug para testar extração de minutas
+        debugMinutas: debugTextoMinutas,
+        testarMinutas: async function () {
+            console.log("🧪 TESTE: Iniciando teste de extração de minutas...");
+            const resultado = await extrairDadosMinutasDetalhadas();
+            console.log(
+                "🧪 TESTE: Resultado da extração de minutas:",
+                resultado
+            );
+            return resultado;
+        },
     };
 
     // 🔍 FUNÇÕES DE DEBUG - Estas já estão no namespace principal acima
@@ -6750,6 +6832,7 @@ ${texto}`;
             );
             resetDataSessaoPautado();
             resetDadosCompletosMinutas();
+            resetDadosCompletosMinutasTexto();
         }
 
         // 5. SEGUIR CAMINHO DOM ESPECÍFICO
@@ -7370,7 +7453,9 @@ Detectada automaticamente pelo eProbe
                             </svg>
                             <div>
                                 <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">PROCESSO</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600; font-family: monospace;">${dados.processo}</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600; font-family: monospace;">${
+                                    dados.processo
+                                }</div>
                             </div>
                         </div>
                         
@@ -7383,7 +7468,9 @@ Detectada automaticamente pelo eProbe
                             </svg>
                             <div>
                                 <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">DATA PRINCIPAL</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.dataPrincipal.dataFormatada}</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
+                                    dados.dataPrincipal.dataFormatada
+                                }</div>
                             </div>
                         </div>
                         
@@ -7398,7 +7485,9 @@ Detectada automaticamente pelo eProbe
                             </svg>
                             <div>
                                 <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">ÓRGÃO PRINCIPAL</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.orgaoPrincipal}</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
+                                    dados.orgaoPrincipal
+                                }</div>
                             </div>
                         </div>
                         
@@ -7409,7 +7498,9 @@ Detectada automaticamente pelo eProbe
                             </svg>
                             <div>
                                 <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">TOTAL DE REGISTROS</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.dadosEncontrados.length}</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
+                                    dados.dadosEncontrados.length
+                                }</div>
                             </div>
                         </div>
                     </div>
@@ -7425,6 +7516,8 @@ Detectada automaticamente pelo eProbe
                     </div>
                     ${detalhesHtml}
                 </div>
+
+                ${gerarAcordeaoMinutas()}
 
                 <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
                     <button id="close-dados-modal" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
@@ -7487,6 +7580,659 @@ Detectada automaticamente pelo eProbe
         console.log(info);
 
         return dados;
+    }
+
+    // ========================================
+    // FUNÇÕES GLOBAIS ESPECÍFICAS - MINUTAS
+    // ========================================
+
+    // Função global para obter texto da Ementa (ACÓRDÃO)
+    function MinutaEmentaCapaProcesso() {
+        if (!hasDadosCompletosMinutasTexto()) {
+            console.log("❌ EMENTA: Nenhum dado de minutas disponível");
+            return null;
+        }
+
+        const dados = getDadosCompletosMinutasTexto();
+        const ementasEncontradas = [];
+
+        dados.minutas.forEach((minuta, index) => {
+            if (minuta.acorda) {
+                ementasEncontradas.push({
+                    minutaId: minuta.id,
+                    index: index + 1,
+                    texto: minuta.acorda,
+                    url: minuta.url,
+                });
+            }
+        });
+
+        if (ementasEncontradas.length === 0) {
+            console.log("❌ EMENTA: Nenhuma ementa encontrada nas minutas");
+            return null;
+        }
+
+        console.log(
+            `✅ EMENTA: ${ementasEncontradas.length} ementa(s) encontrada(s)`
+        );
+
+        // Se há apenas uma ementa, retornar o texto diretamente
+        if (ementasEncontradas.length === 1) {
+            console.log(
+                "📄 EMENTA (única):",
+                ementasEncontradas[0].texto.substring(0, 200) + "..."
+            );
+            return ementasEncontradas[0].texto;
+        }
+
+        // Se há múltiplas ementas, retornar array com todas
+        console.log("📄 EMENTAS (múltiplas):");
+        ementasEncontradas.forEach((ementa, i) => {
+            console.log(
+                `   ${i + 1}. Minuta ${
+                    ementa.minutaId
+                }: ${ementa.texto.substring(0, 100)}...`
+            );
+        });
+
+        return ementasEncontradas;
+    }
+
+    // Função global para obter texto do Voto (RELATÓRIO/VOTO)
+    function MinutaRelatorioVotoCapaProcesso() {
+        if (!hasDadosCompletosMinutasTexto()) {
+            console.log("❌ VOTO: Nenhum dado de minutas disponível");
+            return null;
+        }
+
+        const dados = getDadosCompletosMinutasTexto();
+        const votosEncontrados = [];
+
+        dados.minutas.forEach((minuta, index) => {
+            if (minuta.relatorioVoto) {
+                votosEncontrados.push({
+                    minutaId: minuta.id,
+                    index: index + 1,
+                    texto: minuta.relatorioVoto,
+                    url: minuta.url,
+                });
+            }
+        });
+
+        if (votosEncontrados.length === 0) {
+            console.log(
+                "❌ VOTO: Nenhum relatório/voto encontrado nas minutas"
+            );
+            return null;
+        }
+
+        console.log(
+            `✅ VOTO: ${votosEncontrados.length} relatório(s)/voto(s) encontrado(s)`
+        );
+
+        // Se há apenas um voto, retornar o texto diretamente
+        if (votosEncontrados.length === 1) {
+            console.log(
+                "📝 VOTO (único):",
+                votosEncontrados[0].texto.substring(0, 200) + "..."
+            );
+            return votosEncontrados[0].texto;
+        }
+
+        // Se há múltiplos votos, retornar array com todos
+        console.log("📝 VOTOS (múltiplos):");
+        votosEncontrados.forEach((voto, i) => {
+            console.log(
+                `   ${i + 1}. Minuta ${voto.minutaId}: ${voto.texto.substring(
+                    0,
+                    100
+                )}...`
+            );
+        });
+
+        return votosEncontrados;
+    }
+
+    // ========================================
+    // FUNÇÃO PARA GERAR ACORDEÃO DAS MINUTAS NO MODAL
+    // ========================================
+
+    function gerarAcordeaoMinutas() {
+        // Verificar se há dados das minutas texto
+        if (!hasDadosCompletosMinutasTexto()) {
+            return ""; // Não exibir seção se não há dados
+        }
+
+        const dadosMinutas = getDadosCompletosMinutasTexto();
+
+        // Consolidar textos de todas as minutas
+        let acordaoCompleto = "";
+        let relatorioVotoCompleto = "";
+
+        dadosMinutas.minutas.forEach((minuta, index) => {
+            if (minuta.acorda) {
+                acordaoCompleto += `\n\n=== MINUTA ${index + 1} (ID: ${
+                    minuta.id
+                }) ===\n\n${minuta.acorda}`;
+            }
+            if (minuta.relatorioVoto) {
+                relatorioVotoCompleto += `\n\n=== MINUTA ${index + 1} (ID: ${
+                    minuta.id
+                }) ===\n\n${minuta.relatorioVoto}`;
+            }
+        });
+
+        // Se não há textos, não mostrar seção
+        if (!acordaoCompleto && !relatorioVotoCompleto) {
+            return "";
+        }
+
+        return `
+            <div style="margin-bottom: 20px;">
+                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(243, 246, 249)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                    </svg>
+                    <h3 style="margin: 0; color: rgb(243, 246, 249); font-size: 16px; font-weight: 600;">Textos das Minutas</h3>
+                </div>
+
+                ${
+                    acordaoCompleto
+                        ? `
+                <div class="eprobe-accordion" style="margin-bottom: 12px; background: rgb(32, 39, 51); border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; overflow: hidden;">
+                    <div class="eprobe-accordion-header" onclick="toggleAccordion('acordao')" style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s ease;">
+                        <svg id="acordao-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M10 18v-7"/>
+                            <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
+                            <path d="M14 18v-7"/>
+                            <path d="M18 18v-7"/>
+                            <path d="M3 22h18"/>
+                            <path d="M6 18v-7"/>
+                        </svg>
+                        ACÓRDÃO
+                    </div>
+                    <div id="acordao-content" class="eprobe-accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgb(47, 52, 61);">
+                        <div style="padding: 16px; font-size: 13px; color: rgb(243, 246, 249); line-height: 1.5; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                            ${acordaoCompleto.trim()}
+                        </div>
+                    </div>
+                </div>
+                `
+                        : ""
+                }
+
+                ${
+                    relatorioVotoCompleto
+                        ? `
+                <div class="eprobe-accordion" style="background: rgb(32, 39, 51); border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; overflow: hidden;">
+                    <div class="eprobe-accordion-header" onclick="toggleAccordion('relatorio')" style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s ease;">
+                        <svg id="relatorio-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                        </svg>
+                        RELATÓRIO/VOTO
+                    </div>
+                    <div id="relatorio-content" class="eprobe-accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgb(47, 52, 61);">
+                        <div style="padding: 16px; font-size: 13px; color: rgb(243, 246, 249); line-height: 1.5; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                            ${relatorioVotoCompleto.trim()}
+                        </div>
+                    </div>
+                </div>
+                `
+                        : ""
+                }
+            </div>
+        `;
+    }
+
+    // Função para controlar expansão do acordeão
+    window.toggleAccordion = function (type) {
+        const content = document.getElementById(`${type}-content`);
+        const icon = document.getElementById(`${type}-icon`);
+
+        if (!content || !icon) return;
+
+        const isExpanded =
+            content.style.maxHeight && content.style.maxHeight !== "0px";
+
+        if (isExpanded) {
+            // Recolher
+            content.style.maxHeight = "0px";
+            icon.style.transform = "rotate(0deg)";
+        } else {
+            // Expandir
+            content.style.maxHeight = "450px"; // Altura máxima fixa
+            icon.style.transform = "rotate(90deg)";
+        }
+    };
+
+    // ========================================
+    // EXTRAÇÃO DE MINUTAS DETALHADAS (ACÓRDÃO E RELATÓRIO/VOTO)
+    // ========================================
+
+    // Função para detectar links de minutas na página
+    function detectarLinksMinutas() {
+        console.log("🔍 MINUTAS: Iniciando detecção de links de minutas");
+
+        // Verificar se está na página correta
+        const h1Element = document.querySelector("h1");
+        if (
+            !h1Element ||
+            h1Element.textContent.trim() !==
+                "Consulta Processual - Detalhes do Processo"
+        ) {
+            console.log(
+                "❌ MINUTAS: Não está na página 'Consulta Processual - Detalhes do Processo'"
+            );
+            return [];
+        }
+
+        // Buscar tabela de minutas
+        const tabelaMinutas = document.querySelector(
+            'table.infraTable[id^="tblMinutas"]'
+        );
+        if (!tabelaMinutas) {
+            console.log("❌ MINUTAS: Tabela de minutas não encontrada");
+            return [];
+        }
+
+        console.log(
+            "✅ MINUTAS: Tabela de minutas encontrada:",
+            tabelaMinutas.id
+        );
+
+        // Buscar links com onclick contendo 'minuta_inteiro_teor'
+        const linksMinutas = tabelaMinutas.querySelectorAll(
+            'a[onclick*="minuta_inteiro_teor"]'
+        );
+        console.log(
+            `🔍 MINUTAS: ${linksMinutas.length} links de minutas encontrados`
+        );
+
+        const minutasEncontradas = [];
+
+        linksMinutas.forEach((link, index) => {
+            const onclick = link.getAttribute("onclick") || "";
+            const idMinutaMatch = onclick.match(/id_minuta=([^'&]+)/);
+
+            if (idMinutaMatch) {
+                const idMinuta = idMinutaMatch[1];
+                const textoLink = link.textContent.trim();
+
+                // Construir URL completa da minuta
+                const baseUrl =
+                    window.location.origin +
+                    window.location.pathname.replace(/[^/]*$/, "");
+                const urlMinuta =
+                    baseUrl +
+                    "controlador.php?acao=minuta_inteiro_teor&acao_origem=processo_selecionar&acao_retorno=processo_selecionar&id_minuta=" +
+                    idMinuta;
+
+                minutasEncontradas.push({
+                    id: idMinuta,
+                    texto: textoLink,
+                    url: urlMinuta,
+                    element: link,
+                    index: index + 1,
+                });
+
+                console.log(
+                    `✅ MINUTAS: Minuta ${
+                        index + 1
+                    } - ID: ${idMinuta}, Texto: "${textoLink}"`
+                );
+            }
+        });
+
+        console.log(
+            `📊 MINUTAS: Total de ${minutasEncontradas.length} minutas válidas detectadas`
+        );
+        return minutasEncontradas;
+    }
+
+    // Função para extrair textos de uma página de minuta específica
+    async function processarPaginaMinuta(urlMinuta, minutaInfo) {
+        console.log(
+            `🔍 MINUTAS: Processando minuta ${minutaInfo.id} - ${minutaInfo.texto}`
+        );
+
+        return new Promise((resolve) => {
+            // Criar iframe oculto para carregar a página da minuta
+            const iframe = document.createElement("iframe");
+            iframe.style.cssText =
+                "position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;";
+            iframe.src = urlMinuta;
+
+            let timeoutId;
+            let resolved = false;
+
+            const cleanup = () => {
+                if (timeoutId) clearTimeout(timeoutId);
+                if (iframe.parentNode) {
+                    iframe.parentNode.removeChild(iframe);
+                }
+            };
+
+            const resolveOnce = (result) => {
+                if (!resolved) {
+                    resolved = true;
+                    cleanup();
+                    resolve(result);
+                }
+            };
+
+            // Timeout de 15 segundos
+            timeoutId = setTimeout(() => {
+                console.log(
+                    `⏰ MINUTAS: Timeout na extração da minuta ${minutaInfo.id}`
+                );
+                resolveOnce({
+                    id: minutaInfo.id,
+                    acorda: null,
+                    relatorioVoto: null,
+                    erro: "Timeout no carregamento",
+                    url: urlMinuta,
+                });
+            }, 15000);
+
+            iframe.onload = () => {
+                try {
+                    console.log(
+                        `✅ MINUTAS: Iframe carregado para minuta ${minutaInfo.id}`
+                    );
+
+                    const iframeDoc =
+                        iframe.contentDocument || iframe.contentWindow.document;
+
+                    // Aguardar o formulário estar disponível
+                    setTimeout(() => {
+                        try {
+                            const form = iframeDoc.querySelector(
+                                "#frmVisualizarInteiroTeor"
+                            );
+                            if (!form) {
+                                console.log(
+                                    `❌ MINUTAS: Formulário frmVisualizarInteiroTeor não encontrado na minuta ${minutaInfo.id}`
+                                );
+                                resolveOnce({
+                                    id: minutaInfo.id,
+                                    acorda: null,
+                                    relatorioVoto: null,
+                                    erro: "Formulário não encontrado",
+                                    url: urlMinuta,
+                                });
+                                return;
+                            }
+
+                            console.log(
+                                `✅ MINUTAS: Formulário encontrado na minuta ${minutaInfo.id}`
+                            );
+
+                            // Extrair texto da EMENTA (ACÓRDÃO)
+                            const secaoEmenta = form.querySelector(
+                                'section[data-nome_apresentacao="Ementa"]'
+                            );
+                            const textoEmenta = secaoEmenta
+                                ? (
+                                      secaoEmenta.innerText ||
+                                      secaoEmenta.textContent ||
+                                      ""
+                                  ).trim()
+                                : null;
+
+                            // Extrair texto do VOTO (RELATÓRIO/VOTO)
+                            const secaoVoto = form.querySelector(
+                                'section[data-nome_apresentacao="Voto"]'
+                            );
+                            const textoVoto = secaoVoto
+                                ? (
+                                      secaoVoto.innerText ||
+                                      secaoVoto.textContent ||
+                                      ""
+                                  ).trim()
+                                : null;
+
+                            console.log(
+                                `📄 MINUTAS: Minuta ${
+                                    minutaInfo.id
+                                } - Ementa: ${
+                                    textoEmenta
+                                        ? "ENCONTRADA"
+                                        : "NÃO ENCONTRADA"
+                                }, Voto: ${
+                                    textoVoto ? "ENCONTRADO" : "NÃO ENCONTRADO"
+                                }`
+                            );
+
+                            resolveOnce({
+                                id: minutaInfo.id,
+                                acorda: textoEmenta || null,
+                                relatorioVoto: textoVoto || null,
+                                erro: null,
+                                url: urlMinuta,
+                                timestamp: Date.now(),
+                            });
+                        } catch (error) {
+                            console.log(
+                                `❌ MINUTAS: Erro ao processar conteúdo da minuta ${minutaInfo.id}:`,
+                                error
+                            );
+                            resolveOnce({
+                                id: minutaInfo.id,
+                                acorda: null,
+                                relatorioVoto: null,
+                                erro: error.message,
+                                url: urlMinuta,
+                            });
+                        }
+                    }, 2000); // Aguardar 2 segundos para carregamento completo
+                } catch (error) {
+                    console.log(
+                        `❌ MINUTAS: Erro ao acessar iframe da minuta ${minutaInfo.id}:`,
+                        error
+                    );
+                    resolveOnce({
+                        id: minutaInfo.id,
+                        acorda: null,
+                        relatorioVoto: null,
+                        erro: "Erro de acesso ao iframe: " + error.message,
+                        url: urlMinuta,
+                    });
+                }
+            };
+
+            iframe.onerror = () => {
+                console.log(
+                    `❌ MINUTAS: Erro ao carregar iframe da minuta ${minutaInfo.id}`
+                );
+                resolveOnce({
+                    id: minutaInfo.id,
+                    acorda: null,
+                    relatorioVoto: null,
+                    erro: "Erro no carregamento do iframe",
+                    url: urlMinuta,
+                });
+            };
+
+            // Adicionar iframe ao DOM
+            document.body.appendChild(iframe);
+        });
+    }
+
+    // Função principal para extrair dados detalhados das minutas
+    async function extrairDadosMinutasDetalhadas() {
+        console.log(
+            "🚀 MINUTAS: Iniciando extração de dados detalhados das minutas"
+        );
+
+        // Verificar se já temos dados para este processo
+        if (hasDadosCompletosMinutasTexto()) {
+            console.log("✅ MINUTAS: Dados já disponíveis para este processo");
+            return dadosCompletosMinutasTexto;
+        }
+
+        // ========================================
+        // FUNÇÕES UTILITÁRIAS - DADOS DAS MINUTAS
+        // ========================================
+
+        // Obter dados completos das minutas texto
+        function getDadosCompletosMinutasTexto() {
+            return dadosCompletosMinutasTexto &&
+                processoComDadosMinutasTexto === processoAtual
+                ? dadosCompletosMinutasTexto
+                : null;
+        }
+
+        // Verificar se há dados completos das minutas texto
+        function hasDadosCompletosMinutasTexto() {
+            return (
+                dadosCompletosMinutasTexto !== null &&
+                processoComDadosMinutasTexto === processoAtual
+            );
+        }
+
+        // Resetar dados completos das minutas texto
+        function resetDadosCompletosMinutasTexto() {
+            console.log("🔄 MINUTAS: Resetando dados das minutas texto");
+            dadosCompletosMinutasTexto = null;
+            processoComDadosMinutasTexto = null;
+        }
+
+        // Mostrar dados completos das minutas texto no console
+        function showDadosCompletosMinutasTexto() {
+            if (!hasDadosCompletosMinutasTexto()) {
+                const msg =
+                    "❌ Nenhum dado completo das minutas texto foi detectado ainda.";
+                console.log(msg);
+                alert(msg);
+                return null;
+            }
+
+            const dados = dadosCompletosMinutasTexto;
+
+            console.log("📄 DADOS COMPLETOS DAS MINUTAS TEXTO:");
+            console.log(`📊 Processo: ${dados.processo}`);
+            console.log(`📊 Total de Minutas: ${dados.resumo.totalMinutas}`);
+            console.log(`✅ Minutas Válidas: ${dados.resumo.minutasValidas}`);
+            console.log(`❌ Minutas com Erro: ${dados.resumo.minutasComErro}`);
+            console.log(
+                `📄 Tem Acórdão: ${dados.resumo.temAcordao ? "SIM" : "NÃO"}`
+            );
+            console.log(
+                `📝 Tem Relatório/Voto: ${
+                    dados.resumo.temRelatorioVoto ? "SIM" : "NÃO"
+                }`
+            );
+
+            dados.minutas.forEach((minuta, index) => {
+                console.log(`\n📋 MINUTA ${index + 1} (ID: ${minuta.id}):`);
+                console.log(`   🏛️ URL: ${minuta.url}`);
+
+                if (minuta.erro) {
+                    console.log(`   ❌ Erro: ${minuta.erro}`);
+                } else {
+                    if (minuta.acorda) {
+                        console.log(
+                            `   📄 ACÓRDÃO: ${minuta.acorda.substring(
+                                0,
+                                100
+                            )}...`
+                        );
+                    }
+                    if (minuta.relatorioVoto) {
+                        console.log(
+                            `   📝 RELATÓRIO/VOTO: ${minuta.relatorioVoto.substring(
+                                0,
+                                100
+                            )}...`
+                        );
+                    }
+                }
+            });
+
+            return dados;
+        }
+
+        // Detectar links de minutas
+        const linksMinutas = detectarLinksMinutas();
+        if (linksMinutas.length === 0) {
+            console.log("❌ MINUTAS: Nenhuma minuta encontrada para extração");
+            return null;
+        }
+
+        console.log(
+            `🔍 MINUTAS: Processando ${linksMinutas.length} minutas encontradas`
+        );
+
+        // Processar minutas em paralelo (máximo 2 simultâneas para não sobrecarregar)
+        const resultados = [];
+        const maxConcorrencia = 2;
+
+        for (let i = 0; i < linksMinutas.length; i += maxConcorrencia) {
+            const lote = linksMinutas.slice(i, i + maxConcorrencia);
+            console.log(
+                `🔄 MINUTAS: Processando lote ${
+                    Math.floor(i / maxConcorrencia) + 1
+                } (${lote.length} minutas)`
+            );
+
+            const promessasLote = lote.map((minuta) =>
+                processarPaginaMinuta(minuta.url, minuta)
+            );
+            const resultadosLote = await Promise.all(promessasLote);
+
+            resultados.push(...resultadosLote);
+
+            // Aguardar 1 segundo entre lotes para não sobrecarregar o servidor
+            if (i + maxConcorrencia < linksMinutas.length) {
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+        }
+
+        console.log(
+            "📊 MINUTAS: Processamento concluído, consolidando dados..."
+        );
+
+        // Consolidar resultados
+        const minutasValidas = resultados.filter(
+            (r) => r.acorda || r.relatorioVoto
+        );
+        const minutasComErro = resultados.filter((r) => r.erro);
+
+        console.log(
+            `✅ MINUTAS: ${minutasValidas.length} minutas com dados válidos`
+        );
+        console.log(`❌ MINUTAS: ${minutasComErro.length} minutas com erro`);
+
+        // Criar estrutura de dados global
+        dadosCompletosMinutasTexto = {
+            processo: processoAtual,
+            minutas: resultados,
+            resumo: {
+                totalMinutas: resultados.length,
+                minutasValidas: minutasValidas.length,
+                minutasComErro: minutasComErro.length,
+                temAcordao: resultados.some((r) => r.acorda),
+                temRelatorioVoto: resultados.some((r) => r.relatorioVoto),
+            },
+            timestamp: Date.now(),
+        };
+
+        processoComDadosMinutasTexto = processoAtual;
+
+        console.log(
+            "🎉 MINUTAS: Dados detalhados das minutas extraídos e armazenados com sucesso!"
+        );
+        console.log("📄 MINUTAS: Resumo:", dadosCompletosMinutasTexto.resumo);
+
+        return dadosCompletosMinutasTexto;
     }
 
     // ========================================
