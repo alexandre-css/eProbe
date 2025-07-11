@@ -1,4 +1,4 @@
-// Content script automatizado para DocumentosRelevantes
+﻿// Content script automatizado para DocumentosRelevantes
 (function () {
     "use strict";
 
@@ -10,6 +10,10 @@
 
     // Armazenar dados completos da sessão obtidos do cruzamento
     let dadosCompletosSessionJulgamento = null;
+
+    // Variáveis globais para armazenar informações completas das minutas
+    let dadosCompletosMinutas = null;
+    let processoComDadosCompletos = null;
 
     // 🛡️ CONTROLE DE REQUISIÇÕES - Prevenir spam e logout
     let tentativasCruzamento = 0;
@@ -33,299 +37,6 @@
     const DELAY_ENTRE_TENTATIVAS = 60000; // AUMENTADO: 1 minuto entre tentativas
     const CACHE_DURATION = 600000; // AUMENTADO: Cache válido por 10 minutos
 
-    // ========================================
-    // FUNÇÃO DE MODAL CUSTOMIZADA
-    // ========================================
-
-    // Função para substituir alert() - cria modal personalizado
-    function showAlert(message, type = "info") {
-        return new Promise((resolve) => {
-            const modal = document.createElement("div");
-            modal.className = "eprobe-alert-modal";
-            modal.style.cssText = `
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100vw !important;
-                height: 100vh !important;
-                background: rgba(0, 0, 0, 0.8) !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                z-index: 999999 !important;
-                font-family: "Roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                backdrop-filter: blur(8px) !important;
-                margin: 0 !important;
-                padding: 20px !important;
-                box-sizing: border-box !important;
-            `;
-
-            const content = document.createElement("div");
-            content.style.cssText = `
-                background: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(15, 23, 42) 100%) !important;
-                padding: 0 !important;
-                border-radius: 16px !important;
-                box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
-                max-width: 520px !important;
-                width: 100% !important;
-                max-height: 85vh !important;
-                overflow: hidden !important;
-                text-align: left !important;
-                font-family: "Roboto", -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif !important;
-                animation: modalEnter 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
-                margin: 0 !important;
-                box-sizing: border-box !important;
-                position: relative !important;
-            `;
-
-            // Definir ícones SVG seguindo o padrão do app
-            const getIcon = (type) => {
-                switch (type) {
-                    case "error":
-                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(248, 113, 113)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="15" y1="9" x2="9" y2="15"/>
-                            <line x1="9" y1="9" x2="15" y2="15"/>
-                        </svg>`;
-                    case "success":
-                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(34, 197, 94)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="20,6 9,17 4,12"/>
-                        </svg>`;
-                    default:
-                        return `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(96, 165, 250)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="12" y1="16" x2="12" y2="12"/>
-                            <line x1="12" y1="8" x2="12.01" y2="8"/>
-                        </svg>`;
-                }
-            };
-
-            content.innerHTML = `
-                <div style="
-                    background: linear-gradient(135deg, rgb(51, 65, 85) 0%, rgb(30, 41, 59) 100%) !important;
-                    padding: 24px 28px !important;
-                    border-radius: 16px 16px 0 0 !important;
-                    border-bottom: 1px solid rgba(148, 163, 184, 0.2) !important;
-                    display: flex !important;
-                    align-items: flex-start !important;
-                    gap: 16px !important;
-                    margin: 0 !important;
-                    box-sizing: border-box !important;
-                    position: relative !important;
-                ">
-                    <div style="
-                        flex-shrink: 0 !important; 
-                        margin-top: 4px !important;
-                        background: rgba(96, 165, 250, 0.1) !important;
-                        border-radius: 12px !important;
-                        padding: 12px !important;
-                        border: 1px solid rgba(96, 165, 250, 0.2) !important;
-                    ">
-                        ${getIcon(type)}
-                    </div>
-                    <div style="flex: 1 !important; overflow: hidden !important;">
-                        <div style="
-                            font-size: 16px !important; 
-                            line-height: 1.6 !important; 
-                            color: rgb(248, 250, 252) !important;
-                            font-weight: 400 !important;
-                            margin: 0 !important;
-                            padding: 0 !important;
-                            overflow-wrap: break-word !important;
-                        ">
-                            ${message.replace(/\n/g, "<br>")}
-                        </div>
-                    </div>
-                    <button id="eprobe-alert-close" style="
-                        position: absolute !important;
-                        top: 20px !important;
-                        right: 20px !important;
-                        background: rgba(148, 163, 184, 0.1) !important;
-                        border: 1px solid rgba(148, 163, 184, 0.2) !important;
-                        color: rgb(203, 213, 225) !important;
-                        width: 32px !important;
-                        height: 32px !important;
-                        border-radius: 8px !important;
-                        cursor: pointer !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        transition: all 0.2s ease !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        font-size: 16px !important;
-                        line-height: 1 !important;
-                    ">×</button>
-                </div>
-                <div style="
-                    background: linear-gradient(135deg, rgb(30, 41, 59) 0%, rgb(15, 23, 42) 100%) !important;
-                    padding: 20px 28px 28px 28px !important;
-                    border-radius: 0 0 16px 16px !important;
-                    text-align: right !important;
-                    margin: 0 !important;
-                    box-sizing: border-box !important;
-                    border-top: 1px solid rgba(148, 163, 184, 0.1) !important;
-                ">
-                    <button id="eprobe-alert-ok" style="
-                        background: linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%) !important;
-                        color: white !important;
-                        border: 1px solid rgb(59, 130, 246) !important;
-                        padding: 12px 32px !important;
-                        border-radius: 10px !important;
-                        cursor: pointer !important;
-                        font-size: 14px !important;
-                        font-weight: 600 !important;
-                        min-width: 100px !important;
-                        min-height: 44px !important;
-                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                        font-family: inherit !important;
-                        margin: 0 !important;
-                        box-sizing: border-box !important;
-                        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3) !important;
-                        letter-spacing: 0.025em !important;
-                    ">Entendi</button>
-                </div>
-            `;
-
-            // Adicionar animação CSS
-            const style = document.createElement("style");
-            style.textContent = `
-                @keyframes modalEnter {
-                    from {
-                        opacity: 0;
-                        transform: translateY(30px) scale(0.9);
-                        filter: blur(4px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                        filter: blur(0);
-                    }
-                }
-                
-                @keyframes modalExit {
-                    from {
-                        opacity: 1;
-                        transform: translateY(0) scale(1);
-                        filter: blur(0);
-                    }
-                    to {
-                        opacity: 0;
-                        transform: translateY(-20px) scale(0.95);
-                        filter: blur(2px);
-                    }
-                }
-                
-                .eprobe-alert-modal {
-                    isolation: isolate !important;
-                }
-                
-                .eprobe-alert-modal * {
-                    box-sizing: border-box !important;
-                }
-            `;
-            document.head.appendChild(style);
-
-            modal.appendChild(content);
-
-            // Garantir que o modal seja anexado ao document.body
-            if (document.body) {
-                document.body.appendChild(modal);
-            } else {
-                document.documentElement.appendChild(modal);
-            }
-
-            // Função para remover o modal com animação
-            const removeModal = () => {
-                try {
-                    content.style.animation =
-                        "modalExit 0.3s ease-out forwards";
-                    modal.style.opacity = "0";
-                    setTimeout(() => {
-                        if (modal.parentNode) {
-                            modal.parentNode.removeChild(modal);
-                        }
-                        if (style.parentNode) {
-                            style.parentNode.removeChild(style);
-                        }
-                    }, 300);
-                } catch (e) {
-                    console.warn("Erro ao remover modal:", e);
-                }
-                resolve();
-            };
-
-            // Adicionar eventos aos botões
-            const okButton = content.querySelector("#eprobe-alert-ok");
-            const closeButton = content.querySelector("#eprobe-alert-close");
-
-            if (okButton) {
-                okButton.addEventListener("click", removeModal);
-            }
-
-            if (closeButton) {
-                closeButton.addEventListener("click", removeModal);
-            }
-
-            // Adicionar efeitos hover elegantes
-            if (okButton) {
-                okButton.addEventListener("mouseenter", () => {
-                    okButton.style.background =
-                        "linear-gradient(135deg, rgb(96, 165, 250) 0%, rgb(59, 130, 246) 100%)";
-                    okButton.style.borderColor = "rgb(96, 165, 250)";
-                    okButton.style.transform = "translateY(-2px)";
-                    okButton.style.boxShadow =
-                        "0 8px 25px rgba(59, 130, 246, 0.4)";
-                });
-                okButton.addEventListener("mouseleave", () => {
-                    okButton.style.background =
-                        "linear-gradient(135deg, rgb(59, 130, 246) 0%, rgb(37, 99, 235) 100%)";
-                    okButton.style.borderColor = "rgb(59, 130, 246)";
-                    okButton.style.transform = "translateY(0)";
-                    okButton.style.boxShadow =
-                        "0 4px 14px rgba(59, 130, 246, 0.3)";
-                });
-            }
-
-            if (closeButton) {
-                closeButton.addEventListener("mouseenter", () => {
-                    closeButton.style.background = "rgba(248, 113, 113, 0.2)";
-                    closeButton.style.borderColor = "rgba(248, 113, 113, 0.4)";
-                    closeButton.style.color = "rgb(248, 113, 113)";
-                    closeButton.style.transform = "scale(1.1)";
-                });
-                closeButton.addEventListener("mouseleave", () => {
-                    closeButton.style.background = "rgba(148, 163, 184, 0.1)";
-                    closeButton.style.borderColor = "rgba(148, 163, 184, 0.2)";
-                    closeButton.style.color = "rgb(203, 213, 225)";
-                    closeButton.style.transform = "scale(1)";
-                });
-            }
-
-            // Fechar com ESC
-            const handleKeydown = (e) => {
-                if (e.key === "Escape") {
-                    document.removeEventListener("keydown", handleKeydown);
-                    removeModal();
-                }
-            };
-            document.addEventListener("keydown", handleKeydown);
-
-            // Fechar clicando fora do modal
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) {
-                    removeModal();
-                }
-            });
-
-            // Focar no modal
-            modal.setAttribute("tabindex", "-1");
-            setTimeout(() => {
-                modal.focus();
-            }, 100);
-        });
-    }
-
     // Injetar CSS apenas para elementos da extensão eProbe
     const extensionStyle = document.createElement("style");
     extensionStyle.textContent = `
@@ -347,22 +58,6 @@
         #api-config-modal *, #error-logs-modal *, #api-key-config *,
         .eprobe-notification *, .eprobe-tooltip *, .eprobe-modal *, .eprobe-button *, .eprobe-menu * {
             font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
-        }
-        
-        /* Remover barras de rolagem do menu de opções de documentos */
-        #documento-relevante-options-menu {
-            overflow: visible !important;
-            overflow-x: visible !important;
-            overflow-y: visible !important;
-            scrollbar-width: none !important; /* Firefox */
-            -ms-overflow-style: none !important; /* IE/Edge */
-        }
-        
-        /* Webkit browsers (Chrome, Safari, etc.) */
-        #documento-relevante-options-menu::-webkit-scrollbar {
-            display: none !important;
-            width: 0 !important;
-            height: 0 !important;
         }
     `;
     document.head.appendChild(extensionStyle);
@@ -1845,14 +1540,13 @@
 
         // Para PDFs incorporados, não é possível extrair texto automaticamente
         // Orientar o usuário para processo manual
-        const confirmAction = await showConfirm(
+        const confirmAction = confirm(
             "🔍 DOCUMENTO PDF DETECTADO\n\n" +
                 "Para documentos PDF, você precisa:\n\n" +
                 "1. Selecionar todo o texto do PDF (Ctrl+A)\n" +
                 "2. Copiar o texto selecionado (Ctrl+C)\n" +
                 "3. Clicar 'OK' para processar o texto copiado\n\n" +
-                "Continuar?",
-            "Documento PDF Detectado"
+                "Continuar?"
         );
 
         if (!confirmAction) {
@@ -2416,7 +2110,7 @@ ${texto}`;
  top: ${y}px;
  z-index: 10001;
  min-width: ${menuWidth}px;
- overflow: visible;
+ overflow: auto;
  border-radius: 8px;
  border: 1px solid rgb(19 67 119);
  background: #134377;
@@ -3355,10 +3049,13 @@ ${texto}`;
         console.log(" Tentando criar botão integrado...");
 
         // Verificar se já existe (verificar todos os IDs possíveis)
-        if (
-            document.getElementById("documento-relevante-auto-button") ||
-            document.getElementById("sent1-auto-button")
-        ) {
+        const existingIntegratedButton = document.getElementById(
+            "documento-relevante-auto-button"
+        );
+        const existingFloatingButton =
+            document.getElementById("sent1-auto-button");
+
+        if (existingIntegratedButton || existingFloatingButton) {
             console.log(" Botão já existe, pulando criação");
             return;
         }
@@ -5426,12 +5123,19 @@ ${texto}`;
                 }, 1500);
             }
 
-            // Verificar se o botão ainda existe no DOM
-            const buttonExists = document.getElementById("sent1-auto-button");
-            if (!buttonExists) {
+            // Verificar se algum botão ainda existe no DOM
+            const integratedButtonExists = document.getElementById(
+                "documento-relevante-auto-button"
+            );
+            const floatingButtonExists =
+                document.getElementById("sent1-auto-button");
+
+            if (!integratedButtonExists && !floatingButtonExists) {
                 // Verificar se a página é válida antes de recriar o botão
                 if (isValidPageForButton()) {
-                    console.log(" Botão removido do DOM, recriando...");
+                    console.log(
+                        " Nenhum botão encontrado no DOM, recriando..."
+                    );
                     setTimeout(createAutomationButton, 500);
                 } else {
                     console.log(
@@ -5605,13 +5309,17 @@ ${texto}`;
         inserirDataSessaoNaInterface,
         removerDataSessaoDaInterface,
         atualizarDataSessaoNaInterface,
-        forcarInsercaoCardSemValidacao, // <-- Adiciona a função ao namespace global
+        forcarInsercaoCardSemValidacao,
+        // Funções para dados completos das minutas
+        getDadosCompletosMinutas,
+        hasDadosCompletosMinutas,
+        resetDadosCompletosMinutas,
+        showDadosCompletosMinutas,
         // Funções de cruzamento de dados de sessão
         buscarDadosSessoes,
         parsearDadosSessoes,
         extrairDadosLinhaSessao,
         buscarSessaoPorData,
-        cruzarDadosDataSessao,
         cruzarDadosDataSessao,
         getDadosCompletosSessionJulgamento,
         hasDadosCompletosSessionJulgamento,
@@ -5620,11 +5328,13 @@ ${texto}`;
         // Funções de debug
         debugDeteccaoDataSessao,
         forcarDeteccaoDataSessao,
+        debugTextoMinutas,
     };
 
-    // 🔍 FUNÇÕES DE DEBUG
-    window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
-    window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
+    // 🔍 FUNÇÕES DE DEBUG - Estas já estão no namespace principal acima
+    // window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
+    // window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
+    // window.SENT1_AUTO.debugTextoMinutas = debugTextoMinutas;
 
     // 🔍 FUNÇÕES DE DEBUG - Para investigar problemas com o card
     function debugDeteccaoDataSessao() {
@@ -5852,6 +5562,166 @@ ${texto}`;
             console.log("❌ FORÇA: Falha na inserção do card");
             return false;
         }
+    }
+
+    // 🔍 FUNÇÃO DE DEBUG PARA ANALISAR O TEXTO DAS MINUTAS
+    function debugTextoMinutas() {
+        console.log("🔍 DEBUG: Iniciando análise manual do texto das minutas");
+
+        // Verificar página
+        const h1Element = document.querySelector("h1");
+        if (
+            !h1Element ||
+            h1Element.textContent.trim() !==
+                "Consulta Processual - Detalhes do Processo"
+        ) {
+            console.log("❌ DEBUG: Não está na página correta");
+            console.log(
+                "📄 DEBUG: Título encontrado:",
+                h1Element ? h1Element.textContent.trim() : "nenhum h1"
+            );
+            return;
+        }
+
+        console.log("✅ DEBUG: Página correta identificada");
+
+        // USAR AS MESMAS ESTRATÉGIAS DA FUNÇÃO PRINCIPAL
+        console.log("🔍 DEBUG: Usando estratégias amplas de busca...");
+
+        let textoMinutasDebug = "";
+        let fonteBuscaDebug = "";
+
+        // ESTRATÉGIA 1: Área de processo completa
+        console.log(
+            "🔍 DEBUG ESTRATÉGIA 1: Buscando em toda área de processo..."
+        );
+        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
+        if (areaProcesso) {
+            console.log("✅ DEBUG ESTRATÉGIA 1: Área de processo encontrada");
+            textoMinutasDebug = areaProcesso.innerText;
+            fonteBuscaDebug = "área de processo completa";
+        } else {
+            console.log(
+                "❌ DEBUG ESTRATÉGIA 1: Área de processo não encontrada"
+            );
+        }
+
+        // ESTRATÉGIA 2: Página completa
+        if (!textoMinutasDebug) {
+            console.log("🔍 DEBUG ESTRATÉGIA 2: Buscando em toda a página...");
+            const corpoCompleto = document.body;
+            if (corpoCompleto) {
+                console.log(
+                    "✅ DEBUG ESTRATÉGIA 2: Usando corpo completo da página"
+                );
+                textoMinutasDebug = corpoCompleto.innerText;
+                fonteBuscaDebug = "página completa";
+            }
+        }
+
+        if (!textoMinutasDebug) {
+            console.log(
+                "❌ DEBUG: Nenhuma estratégia conseguiu encontrar texto para análise"
+            );
+            return;
+        }
+
+        console.log(`📄 DEBUG: Fonte: ${fonteBuscaDebug}`);
+        console.log("📄 DEBUG: Tamanho do texto:", textoMinutasDebug.length);
+        console.log(
+            "📄 DEBUG: Primeiros 1000 caracteres:",
+            textoMinutasDebug.substring(0, 1000)
+        );
+        console.log(
+            "📄 DEBUG: Últimos 500 caracteres:",
+            textoMinutasDebug.substring(
+                Math.max(0, textoMinutasDebug.length - 500)
+            )
+        );
+
+        // Testar padrões
+        const testePadroes = [
+            { nome: "Incluído em Pauta", regex: /Incluído em Pauta/gi },
+            { nome: "Data DD/MM/AAAA", regex: /\d{1,2}\/\d{1,2}\/\d{4}/g },
+            { nome: "Mérito", regex: /Mérito/gi },
+            { nome: "Agravo", regex: /Agravo/gi },
+            { nome: "Embargos", regex: /Embargos/gi },
+            { nome: "Interno", regex: /Interno/gi },
+            { nome: "Declaração", regex: /Declaração/gi },
+            {
+                nome: "Parênteses com data",
+                regex: /\([^)]*\d{1,2}\/\d{1,2}\/\d{4}[^)]*\)/gi,
+            },
+        ];
+
+        testePadroes.forEach(({ nome, regex }) => {
+            const matches = textoMinutasDebug.match(regex);
+            console.log(
+                `🔍 DEBUG: ${nome}: ${
+                    matches ? matches.length + " matches" : "nenhum match"
+                }`
+            );
+            if (matches && matches.length > 0) {
+                console.log(`   Primeiros matches:`, matches.slice(0, 5));
+            }
+        });
+
+        // Testar padrão principal
+        const padraoMinutas =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchesPrincipais = [
+            ...textoMinutasDebug.matchAll(padraoMinutas),
+        ];
+        console.log(
+            `🔍 DEBUG: Padrão principal: ${matchesPrincipais.length} matches`
+        );
+
+        if (matchesPrincipais.length > 0) {
+            matchesPrincipais.forEach((match, index) => {
+                console.log(`   Match ${index + 1}:`, {
+                    completo: match[0],
+                    tipo: match[1]?.trim(),
+                    data: match[2],
+                    orgao: match[3],
+                });
+            });
+        }
+
+        // Buscar padrões alternativos mais flexíveis
+        console.log("🔍 DEBUG: Testando padrões alternativos...");
+
+        const padroesAlternativos = [
+            {
+                nome: "Qualquer coisa em pauta",
+                regex: /\([^)]*pauta[^)]*\d{1,2}\/\d{1,2}\/\d{4}[^)]*\)/gi,
+            },
+            {
+                nome: "Texto seguido de parênteses com data",
+                regex: /([A-Za-zÀ-ÿ\s]+)\s*\([^)]*(\d{1,2}\/\d{1,2}\/\d{4})[^)]*\)/gi,
+            },
+            {
+                nome: "Apenas datas isoladas",
+                regex: /\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g,
+            },
+        ];
+
+        padroesAlternativos.forEach(({ nome, regex }) => {
+            const matches = [...textoMinutasDebug.matchAll(regex)];
+            console.log(`🔍 DEBUG: ${nome}: ${matches.length} matches`);
+            if (matches.length > 0) {
+                console.log(
+                    `   Primeiros matches:`,
+                    matches.slice(0, 3).map((m) => m[0])
+                );
+            }
+        });
+
+        return {
+            textoCompleto: textoMinutasDebug,
+            tamanho: textoMinutasDebug.length,
+            fonteBusca: fonteBuscaDebug,
+            matchesPrincipais: matchesPrincipais,
+        };
     }
 
     // ========================================
@@ -6838,159 +6708,184 @@ ${texto}`;
 
     // Função principal para detectar data da sessão
     function detectarDataSessao() {
-        console.log("🔍 INICIANDO: Detecção da data da sessão");
+        console.log("🔍 INICIANDO: Detecção da data da sessão nas minutas");
 
-        // 🔐 VERIFICAÇÃO DE PROCESSO
+        // 1. VERIFICAR SE ESTÁ NA PÁGINA CORRETA
+        const h1Element = document.querySelector("h1");
+        if (
+            !h1Element ||
+            h1Element.textContent.trim() !==
+                "Consulta Processual - Detalhes do Processo"
+        ) {
+            console.log(
+                "❌ PÁGINA: Não está na página 'Consulta Processual - Detalhes do Processo'"
+            );
+            return null;
+        }
+        console.log("✅ PÁGINA: Página correta identificada");
+
+        // 2. VERIFICAÇÃO DE PROCESSO
         processoAtual = obterNumeroProcesso();
         if (!processoAtual) {
             console.log(
-                "❌ BLOQUEIO: Não foi possível identificar o número do processo"
+                "❌ PROCESSO: Não foi possível identificar o número do processo"
             );
             return null;
         }
 
-        // 🔓 PERMITIR MÚLTIPLAS DETECÇÕES - Verificar se já há data detectada
+        // 3. VERIFICAR SE JÁ HÁ DATA DETECTADA PARA ESTE PROCESSO
         if (hasDataSessaoPautado()) {
             console.log(
-                `ℹ️ DETECÇÃO: Data da sessão já detectada para o processo ${processoAtual}: ${
+                `ℹ️ CACHE: Data da sessão já detectada para o processo ${processoAtual}: ${
                     getDataSessaoPautado().dataFormatada
                 }`
-            );
-            console.log(
-                `🔍 DEBUG: Processo com data armazenada: ${processoComDataSessao}`
             );
             return getDataSessaoPautado();
         }
 
-        console.log(
-            `🔍 DETECÇÃO: Analisando processo ${processoAtual} pela primeira vez...`
-        );
-        console.log(
-            `🔍 DEBUG: Processo anterior com data: ${processoComDataSessao}`
-        );
-
-        // Verificar se há data armazenada de outro processo
+        // 4. LIMPAR DADOS DE OUTRO PROCESSO SE NECESSÁRIO
         if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
             console.log(
-                `⚠️ CACHE: Limpando data de processo anterior (${processoComDataSessao}): ${dataSessaoPautado.dataFormatada}`
+                `⚠️ LIMPEZA: Removendo dados do processo anterior (${processoComDataSessao})`
             );
             resetDataSessaoPautado();
+            resetDadosCompletosMinutas();
         }
 
-        // Buscar em todo o texto da página
-        const textoCompleto = document.body.innerText;
+        // 5. SEGUIR CAMINHO DOM ESPECÍFICO
+        const container = document.querySelector(
+            "#divInfraAreaGlobal #divInfraAreaProcesso #conteudoMinutas #fldMinutas"
+        );
+        if (!container) {
+            console.log(
+                "❌ DOM: Caminho específico não encontrado (#divInfraAreaGlobal → #divInfraAreaProcesso → #conteudoMinutas → #fldMinutas)"
+            );
+            return null;
+        }
+        console.log("✅ DOM: Caminho específico encontrado");
 
-        // Primeiro padrão: buscar por texto que contém data da sessão
-        const padrao1 =
-            /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
+        // 6. BUSCAR BOTÃO INFRALEGEND E ÁREA DE MINUTAS
+        const botaoInfra = container.querySelector(
+            "button.infraLegendObrigatorio"
+        );
+        if (!botaoInfra) {
+            console.log(
+                "❌ BUSCA: Botão .infraLegendObrigatorio não encontrado"
+            );
+            return null;
+        }
+        console.log("✅ BUSCA: Botão infraLegendObrigatorio encontrado");
 
-        const match1 = textoCompleto.match(padrao1);
-        if (match1) {
-            const dataEncontrada = match1[1];
-            console.log(`✅ PADRÃO 1: Data encontrada: ${dataEncontrada}`);
+        // 7. BUSCA AMPLA NA PÁGINA - Estratégias eficazes
+        console.log(
+            "🔍 INICIANDO: Busca ampla por dados de sessão na página..."
+        );
 
-            const dataValidada = validarDataBrasileira(dataEncontrada);
-            if (dataValidada) {
-                dataSessaoPautado = dataValidada;
-                processoComDataSessao = processoAtual;
-                console.log(
-                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
-                );
+        let textoMinutas = "";
+        let fonteBusca = "";
 
-                // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
-                marcarProcessoComoProcessado(processoAtual);
+        // ESTRATÉGIA 1: Buscar em toda a área de processo
+        console.log("🔍 ESTRATÉGIA 1: Buscando em toda área de processo...");
+        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
+        if (areaProcesso) {
+            console.log("✅ ESTRATÉGIA 1: Área de processo encontrada");
+            textoMinutas = areaProcesso.innerText;
+            fonteBusca = "área de processo completa";
+        }
 
-                // �🚀 INTEGRAÇÃO AUTOMÁTICA CONTROLADA: Apenas uma tentativa
-                setTimeout(async () => {
-                    try {
-                        console.log(
-                            "� CRUZAMENTO: Tentativa automática única e controlada"
-                        );
-                        const resultado = await cruzarDadosDataSessao();
-                        if (resultado) {
-                            console.log("✅ CRUZAMENTO: Sucesso!");
-                            atualizarDataSessaoNaInterface();
-                        } else {
-                            console.log("ℹ️ CRUZAMENTO: Dados não encontrados");
-                            console.log(
-                                "💡 Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
-                            );
-                        }
-                    } catch (error) {
-                        console.warn(
-                            "⚠️ CRUZAMENTO: Erro controlado:",
-                            error.message
-                        );
-                    }
-                }, 3000); // Delay maior
-
-                return dataValidada;
+        // ESTRATÉGIA 2: Buscar em toda a página se não encontrou
+        if (!textoMinutas) {
+            console.log("🔍 ESTRATÉGIA 2: Buscando em toda a página...");
+            const corpoCompleto = document.body;
+            if (corpoCompleto) {
+                console.log("✅ ESTRATÉGIA 2: Usando corpo completo da página");
+                textoMinutas = corpoCompleto.innerText;
+                fonteBusca = "página completa";
             }
         }
 
-        // Segundo padrão: julgamento em [data]
-        const padrao2 =
-            /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
+        if (!textoMinutas) {
+            console.log(
+                "❌ BUSCA: Nenhuma estratégia conseguiu encontrar texto para análise"
+            );
+            return null;
+        }
 
-        const match2 = textoCompleto.match(padrao2);
-        if (match2) {
-            const dataEncontrada = match2[1];
-            console.log(`✅ PADRÃO 2: Data encontrada: ${dataEncontrada}`);
+        console.log(
+            `🔍 ANÁLISE: Analisando texto de ${fonteBusca} (${textoMinutas.length} caracteres)...`
+        );
+        console.log("� ANÁLISE: Analisando texto das minutas...");
+
+        // 8. PADRÃO ÚNICO DE BUSCA: (Tipo) (Incluído em Pauta em Data - Órgão)
+        const padraoMinutas =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        let dadosEncontrados = [];
+        let match;
+
+        while ((match = padraoMinutas.exec(textoMinutas)) !== null) {
+            const tipoJulgamento = match[1].trim();
+            const dataEncontrada = match[2];
+            const orgaoJulgador = match[3];
+
+            console.log(
+                `✅ ENCONTRADO: ${tipoJulgamento} | ${dataEncontrada} | ${orgaoJulgador}`
+            );
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
-                dataSessaoPautado = dataValidada;
-                console.log(
-                    `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
-                );
-
-                // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                marcarProcessoComoProcessado(processoAtual);
-
-                // Interface inserida automaticamente
-                setTimeout(() => {
-                    inserirDataSessaoNaInterface();
-                }, 500);
-
-                // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo spam de requisições
-
-                return dataValidada;
+                dadosEncontrados.push({
+                    tipoJulgamento: tipoJulgamento,
+                    statusJulgamento: "Incluído em Pauta",
+                    dataSessao: dataValidada,
+                    orgaoJulgador: orgaoJulgador,
+                    textoCompleto: match[0],
+                });
             }
         }
 
-        // Terceiro padrão: data isolada próxima de palavras-chave
-        const padrao3 =
-            /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i;
-
-        const match3 = textoCompleto.match(padrao3);
-        if (match3) {
-            const dataEncontrada = match3[1];
-            console.log(`✅ PADRÃO 3: Data encontrada: ${dataEncontrada}`);
-
-            const dataValidada = validarDataBrasileira(dataEncontrada);
-            if (dataValidada) {
-                dataSessaoPautado = dataValidada;
-                processoComDataSessao = processoAtual;
-                console.log(
-                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
-                );
-
-                // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                marcarProcessoComoProcessado(processoAtual);
-
-                // Interface inserida automaticamente
-                setTimeout(() => {
-                    inserirDataSessaoNaInterface();
-                }, 500);
-
-                // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo múltiplas requisições
-
-                return dataValidada;
-            }
+        // 9. PROCESSAR RESULTADOS
+        if (dadosEncontrados.length === 0) {
+            console.log(
+                "❌ RESULTADO: Nenhum padrão válido encontrado nas minutas"
+            );
+            return null;
         }
 
-        console.log("❌ Nenhuma data válida encontrada em todos os padrões");
-        return null;
+        // 10. USAR A PRIMEIRA DATA ENCONTRADA COMO PRINCIPAL
+        const dadosPrincipais = dadosEncontrados[0];
+        dataSessaoPautado = dadosPrincipais.dataSessao;
+        processoComDataSessao = processoAtual;
+
+        // 11. ARMAZENAR DADOS COMPLETOS GLOBALMENTE
+        dadosCompletosMinutas = {
+            processo: processoAtual,
+            dadosEncontrados: dadosEncontrados,
+            dataPrincipal: dadosPrincipais.dataSessao,
+            orgaoPrincipal: dadosPrincipais.orgaoJulgador,
+            timestamp: Date.now(),
+        };
+        processoComDadosCompletos = processoAtual;
+
+        console.log(
+            `✅ SUCESSO: Data detectada e dados armazenados para processo ${processoAtual}`
+        );
+        console.log(
+            `📊 DADOS: ${dadosEncontrados.length} registro(s) encontrado(s)`
+        );
+        console.log(
+            `📅 DATA PRINCIPAL: ${dadosPrincipais.dataSessao.dataFormatada}`
+        );
+
+        // 12. MARCAR PROCESSO COMO PROCESSADO
+        marcarProcessoComoProcessado(processoAtual);
+
+        // 13. INSERIR INTERFACE AUTOMATICAMENTE
+        setTimeout(() => {
+            inserirDataSessaoNaInterface();
+        }, 500);
+
+        return dataSessaoPautado;
     }
 
     // Funções utilitárias para gerenciar data da sessão
@@ -7045,7 +6940,7 @@ ${texto}`;
         return info;
     }
 
-    async function showDataSessaoPautadoInfo() {
+    function showDataSessaoPautadoInfo() {
         if (hasDataSessaoPautado()) {
             const info = `📅 DATA DA SESSÃO DETECTADA:
             
@@ -7057,12 +6952,12 @@ Ano: ${dataSessaoPautado.ano}
 Timestamp: ${dataSessaoPautado.timestamp}`;
 
             console.log(info);
-            await showAlert(info, "success");
+            alert(info);
             return dataSessaoPautado;
         } else {
             const msg = "❌ Nenhuma data da sessão foi detectada ainda.";
             console.log(msg);
-            await showAlert(msg, "error");
+            alert(msg);
             return null;
         }
     }
@@ -7126,65 +7021,50 @@ Timestamp: ${dataSessaoPautado.timestamp}`;
             this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
         });
 
-        // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
-        const dadosCompletos = getDadosCompletosSessionJulgamento();
+        // 🎨 INTERFACE SIMPLIFICADA: Sempre mostrar apenas "Processo Pautado" e "Data da Sessão"
+        console.log("🎨 INTERFACE: Usando interface simplificada");
 
-        if (dadosCompletos) {
-            // Interface RICA com dados completos
-            console.log("🎨 INTERFACE: Usando dados completos da sessão");
-            dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 10px; color: #6b7280; line-height: 1;">${
-                        dadosCompletos.orgaoJulgador
-                    }</span>
-                    <span style="font-weight: 700; font-size: 12px; color: #1f2937; line-height: 1;">${
-                        dadosCompletos.dataHoraCompleta
-                    } | ${dadosCompletos.tipoSessao}</span>
-                    <span style="font-weight: 500; font-size: 9px; color: ${
-                        dadosCompletos.statusSessao
-                            .toLowerCase()
-                            .includes("encerrada")
-                            ? "#dc2626"
-                            : "#16a34a"
-                    }; line-height: 1;">${dadosCompletos.statusSessao}</span>
-                </div>
-            `;
+        // Verificar se há dados completos das minutas para tooltip
+        const dadosMinutas = getDadosCompletosMinutas();
 
-            // Tooltip com informações completas
-            dataSessaoElement.title = `Dados Completos da Sessão
+        dataSessaoElement.innerHTML = `
+            <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
+                <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
+            </svg>
+            <div style="display: flex; flex-direction: column; gap: 1px;">
+                <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Processo Pautado</span>
+                <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
+            </div>
+        `;
 
-🏛️ Órgão: ${dadosCompletos.orgaoJulgador}
-📅 Data/Hora: ${dadosCompletos.dataHoraCompleta}
-🖥️ Tipo: ${dadosCompletos.tipoSessao}
-📍 Local: ${dadosCompletos.localSessao}
-📋 Status: ${dadosCompletos.statusSessao}
+        // Tooltip com informações completas se disponível
+        if (dadosMinutas) {
+            let tooltipText = `Dados Completos das Minutas
 
-📅 Limites:
-• Pauta: ${dadosCompletos.dataLimitePauta}
-• Mesa: ${dadosCompletos.dataLimiteMesa}
-• Minutas: ${dadosCompletos.dataLimiteMinutas}
+📄 Processo: ${dadosMinutas.processo}
+📅 Data da Sessão: ${dadosMinutas.dataPrincipal.dataFormatada}
+🏛️ Órgão: ${dadosMinutas.orgaoPrincipal}
+� Total de Registros: ${dadosMinutas.dadosEncontrados.length}
 
-🆔 ID: ${dadosCompletos.id}
-Dados obtidos automaticamente pelo eProbe`;
+DETALHES:`;
+
+            dadosMinutas.dadosEncontrados.forEach((item, index) => {
+                tooltipText += `
+${index + 1}. ${item.tipoJulgamento}
+   Status: ${item.statusJulgamento}
+   Data: ${item.dataSessao.dataFormatada}
+   Órgão: ${item.orgaoJulgador}`;
+            });
+
+            tooltipText += `
+
+🔍 Detectado automaticamente pelo eProbe
+🖱️ Clique para ver mais opções`;
+
+            dataSessaoElement.title = tooltipText;
         } else {
-            // Interface BÁSICA apenas com data detectada
-            console.log("🎨 INTERFACE: Usando dados básicos (apenas data)");
-            dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Processo Pautado</span>
-                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
-                </div>
-            `;
-
-            // Tooltip básico
+            // Tooltip básico se não há dados completos
             dataSessaoElement.title = `Data da Sessão Detectada
 
 Data Original: ${dataSessaoPautado.dataOriginal}
@@ -7194,87 +7074,63 @@ Detectada automaticamente pelo eProbe
 🖱️ Clique para buscar dados completos da sessão`;
         }
 
-        // 🔗 ADICIONAR LISTENER DE CLIQUE - Cruzamento de dados acionado pelo usuário
+        // 🔗 ADICIONAR LISTENER DE CLIQUE - Mostrar dados completos das minutas
         dataSessaoElement.addEventListener("click", async function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            console.log(
-                "🖱️ CLIQUE: Usuário clicou na data da sessão - iniciando cruzamento de dados"
-            );
+            console.log("🖱️ CLIQUE: Usuário clicou na data da sessão");
 
-            // Verificar se já há dados completos
-            if (getDadosCompletosSessionJulgamento()) {
-                console.log(
-                    "ℹ️ CLIQUE: Dados completos já disponíveis - mostrando informações"
-                );
-                showDadosCompletosSessionJulgamento();
-                return;
-            }
+            // Verificar se há dados completos das minutas
+            const dadosMinutas = getDadosCompletosMinutas();
+            if (dadosMinutas) {
+                console.log("✅ CLIQUE: Mostrando dados completos das minutas");
+                showDadosCompletosMinutas();
+            } else {
+                console.log("ℹ️ CLIQUE: Tentando redetectar dados das minutas");
 
-            // Mostrar feedback visual de carregamento
-            const elementoOriginal = this.innerHTML;
-            this.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Buscando dados...</span>
-                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
-                </div>
-            `;
+                // Mostrar feedback visual
+                const elementoOriginal = this.innerHTML;
+                this.innerHTML = `
+                    <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                    </svg>
+                    <div style="display: flex; flex-direction: column; gap: 1px;">
+                        <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Buscando dados...</span>
+                        <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
+                    </div>
+                `;
 
-            // Adicionar animação de rotação
-            const style = document.createElement("style");
-            style.textContent = `
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
+                // Adicionar animação de rotação
+                const style = document.createElement("style");
+                style.textContent = `
+                    @keyframes spin {
+                        from { transform: rotate(0deg); }
+                        to { transform: rotate(360deg); }
+                    }
+                `;
+                if (!document.head.querySelector("style[data-eprobe-spin]")) {
+                    style.setAttribute("data-eprobe-spin", "true");
+                    document.head.appendChild(style);
                 }
-            `;
-            if (!document.head.querySelector("style[data-eprobe-spin]")) {
-                style.setAttribute("data-eprobe-spin", "true");
-                document.head.appendChild(style);
-            }
 
-            try {
-                // Forçar cruzamento de dados independente do toggle
-                console.log(
-                    "🔄 CLIQUE: Forçando cruzamento de dados da sessão"
-                );
-                const resultado = await cruzarDadosDataSessao(null, true);
+                // Tentar redetectar dados
+                setTimeout(() => {
+                    const novosDados = detectarDataSessao();
 
-                if (resultado) {
-                    console.log(
-                        "✅ CLIQUE: Cruzamento realizado com sucesso - atualizando interface"
-                    );
-                    // A interface será atualizada automaticamente pelo cruzamento
-                    setTimeout(() => {
+                    if (novosDados && getDadosCompletosMinutas()) {
+                        console.log("✅ REDETECÇÃO: Dados encontrados");
+                        showDadosCompletosMinutas();
                         atualizarDataSessaoNaInterface();
-                    }, 500);
-                } else {
-                    console.log(
-                        "⚠️ CLIQUE: Cruzamento não retornou dados - restaurando interface"
-                    );
-                    // Restaurar conteúdo original
-                    this.innerHTML = elementoOriginal;
-
-                    // Mostrar notificação
-                    await showAlert(
-                        "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido",
-                        "error"
-                    );
-                }
-            } catch (error) {
-                console.error("❌ CLIQUE: Erro durante cruzamento:", error);
-                // Restaurar conteúdo original
-                this.innerHTML = elementoOriginal;
-
-                // Mostrar erro
-                await showAlert(
-                    `Erro ao buscar dados da sessão:\n${error.message}`,
-                    "error"
-                );
+                    } else {
+                        console.log("⚠️ REDETECÇÃO: Nenhum dado encontrado");
+                        // Restaurar conteúdo original
+                        this.innerHTML = elementoOriginal;
+                        alert(
+                            "Não foi possível encontrar dados completos das minutas.\n\nVerifique se você está na página correta:\n'Consulta Processual - Detalhes do Processo'"
+                        );
+                    }
+                }, 1000);
             }
         });
 
@@ -7366,6 +7222,271 @@ Detectada automaticamente pelo eProbe
             console.log("❌ FORÇA: Falha na inserção do card");
             return false;
         }
+    }
+
+    // ========================================
+    // FUNÇÕES PARA DADOS COMPLETOS DAS MINUTAS
+    // ========================================
+
+    /**
+     * Retorna os dados completos das minutas (se disponíveis)
+     * @returns {Object|null} - Dados das minutas ou null
+     */
+    function getDadosCompletosMinutas() {
+        if (
+            dadosCompletosMinutas &&
+            processoComDadosCompletos === processoAtual
+        ) {
+            return dadosCompletosMinutas;
+        }
+        return null;
+    }
+
+    /**
+     * Verifica se há dados completos das minutas disponíveis
+     * @returns {boolean} - true se há dados disponíveis
+     */
+    function hasDadosCompletosMinutas() {
+        return (
+            dadosCompletosMinutas !== null &&
+            processoComDadosCompletos === processoAtual
+        );
+    }
+
+    /**
+     * Reseta os dados completos das minutas
+     */
+    function resetDadosCompletosMinutas() {
+        console.log("🔄 RESET: Limpando dados completos das minutas");
+        dadosCompletosMinutas = null;
+        processoComDadosCompletos = null;
+    }
+
+    /**
+     * Mostra informações completas das minutas em modal moderno
+     */
+    function showDadosCompletosMinutas() {
+        if (!hasDadosCompletosMinutas()) {
+            const msg =
+                "❌ Nenhum dado completo das minutas foi detectado ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
+        }
+
+        const dados = dadosCompletosMinutas;
+
+        // Remover modal anterior se existir
+        const existing = document.getElementById("dados-sessao-modal");
+        if (existing) {
+            existing.remove();
+        }
+
+        const modal = document.createElement("div");
+        modal.id = "dados-sessao-modal";
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100010;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        `;
+
+        // Gerar conteúdo dos detalhes (simplificado - sem texto verboso das minutas)
+        let detalhesHtml = "";
+        dados.dadosEncontrados.forEach((item, index) => {
+            detalhesHtml += `
+                <div style="margin-bottom: 16px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
+                    <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                        <div style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">
+                            ${index + 1}
+                        </div>
+                        ${item.tipoJulgamento}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <strong>Data:</strong> ${
+                                item.dataSessao.dataFormatada
+                            }
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M10 18v-7"/>
+                                <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
+                                <path d="M14 18v-7"/>
+                                <path d="M18 18v-7"/>
+                                <path d="M3 22h18"/>
+                                <path d="M6 18v-7"/>
+                            </svg>
+                            <strong>Órgão:</strong> ${item.orgaoJulgador}
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <circle cx="12" cy="12" r="10"/>
+                                <path d="m9 12 2 2 4-4"/>
+                            </svg>
+                            <strong>Status:</strong> ${item.statusJulgamento}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        modal.innerHTML = `
+            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 800px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                            <line x1="16" y1="2" x2="16" y2="6"/>
+                            <line x1="8" y1="2" x2="8" y2="6"/>
+                            <line x1="3" y1="10" x2="21" y2="10"/>
+                        </svg>
+                        Dados Completos da Sessão
+                    </h2>
+                </div>
+                
+                <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; border: 1px solid rgba(82, 82, 82, 0.3);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">PROCESSO</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600; font-family: monospace;">${dados.processo}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+                                <line x1="16" y1="2" x2="16" y2="6"/>
+                                <line x1="8" y1="2" x2="8" y2="6"/>
+                                <line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">DATA PRINCIPAL</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.dataPrincipal.dataFormatada}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M10 18v-7"/>
+                                <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
+                                <path d="M14 18v-7"/>
+                                <path d="M18 18v-7"/>
+                                <path d="M3 22h18"/>
+                                <path d="M6 18v-7"/>
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">ÓRGÃO PRINCIPAL</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.orgaoPrincipal}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            </svg>
+                            <div>
+                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">TOTAL DE REGISTROS</div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${dados.dadosEncontrados.length}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(243, 246, 249)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                        </svg>
+                        <h3 style="margin: 0; color: rgb(243, 246, 249); font-size: 16px; font-weight: 600;">Detalhes dos Registros</h3>
+                    </div>
+                    ${detalhesHtml}
+                </div>
+
+                <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                    <button id="close-dados-modal" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m18 6-12 12"/>
+                            <path d="m6 6 12 12"/>
+                        </svg>
+                        Fechar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Eventos
+        const closeBtn = modal.querySelector("#close-dados-modal");
+
+        // Hover no botão fechar
+        closeBtn.addEventListener("mouseenter", () => {
+            closeBtn.style.backgroundColor = "#91433d";
+            closeBtn.style.borderColor = "#91433d";
+        });
+
+        closeBtn.addEventListener("mouseleave", () => {
+            closeBtn.style.backgroundColor = "rgb(32, 39, 51)";
+            closeBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
+        });
+
+        // Fechar modal
+        closeBtn.addEventListener("click", () => {
+            modal.remove();
+        });
+
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+        // Log simplificado dos detalhes para console (sem texto verboso)
+        dados.dadosEncontrados.forEach((item, index) => {
+            const detalhes = `
+    ${index + 1}. ${item.tipoJulgamento}
+       📅 Data: ${item.dataSessao.dataFormatada}
+       🏛️ Órgão: ${item.orgaoJulgador}
+       📝 Status: ${item.statusJulgamento}`;
+            console.log(detalhes);
+        });
+
+        const info = `📋 DADOS COMPLETOS DAS MINUTAS:
+    
+    📄 Processo: ${dados.processo}
+    📅 Data Principal: ${dados.dataPrincipal.dataFormatada}
+    🏛️ Órgão Principal: ${dados.orgaoPrincipal}
+    📊 Total de Registros: ${dados.dadosEncontrados.length}
+    
+    DETALHES:`;
+
+        console.log(info);
+
+        return dados;
     }
 
     // ========================================
@@ -7857,7 +7978,7 @@ Detectada automaticamente pelo eProbe
     /**
      * Mostra informações completas da sessão
      */
-    async function showDadosCompletosSessionJulgamento() {
+    function showDadosCompletosSessionJulgamento() {
         if (hasDadosCompletosSessionJulgamento()) {
             const dados = dadosCompletosSessionJulgamento;
             const info = `📋 DADOS COMPLETOS DA SESSÃO:
@@ -7876,13 +7997,13 @@ Detectada automaticamente pelo eProbe
 🆔 ID: ${dados.id}`;
 
             console.log(info);
-            await showAlert(info, "success");
+            alert(info);
             return dados;
         } else {
             const msg =
                 "❌ Nenhum dado completo de sessão foi encontrado ainda.";
             console.log(msg);
-            await showAlert(msg, "error");
+            alert(msg);
             return null;
         }
     }
@@ -8005,6 +8126,7 @@ Detectada automaticamente pelo eProbe
 
     // Adicionar função de teste ao namespace global para debug
     if (window.SENT1_AUTO) {
+        // Funções principais de teste e debug
         window.SENT1_AUTO.testarSistemaCompleto = testarSistemaCompleto;
         window.SENT1_AUTO.debugPaginaSessoes = debugPaginaSessoes;
         window.SENT1_AUTO.resetControlesRequisicao = resetControlesRequisicao;
