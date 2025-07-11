@@ -3,6 +3,14 @@ document.addEventListener("DOMContentLoaded", function () {
     const helpBtn = document.getElementById("help");
     const statusDiv = document.getElementById("status");
 
+    // Verifica se os elementos existem antes de tentar usá-los
+    if (!statusDiv) {
+        console.warn("❌ POPUP.JS: Elemento #status não encontrado");
+        return;
+    }
+
+    console.log("✅ POPUP.JS: Script carregado e inicializado");
+
     // ========================================
     // FUNÇÕES DE MODAL CUSTOMIZADAS
     // ========================================
@@ -331,11 +339,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Ajuda
-    helpBtn.addEventListener("click", async function () {
-        // Modal de ajuda com visual limpo e profissional
-        await showAlert(
-            `
+    // Ajuda - só adiciona event listener se o botão existir
+    if (helpBtn) {
+        helpBtn.addEventListener("click", async function () {
+            // Modal de ajuda com visual limpo e profissional
+            await showAlert(
+                `
             <div style="text-align: left; line-height: 1.5; color: rgb(243, 246, 249);">
                 <div style="
                     text-align: center; 
@@ -494,54 +503,55 @@ document.addEventListener("DOMContentLoaded", function () {
                 </div>
             </div>
             `,
-            "info",
-            function () {
-                // Callback quando modal é fechado
-                if (chrome.tabs) {
-                    chrome.tabs.query(
-                        { active: true, currentWindow: true },
-                        function (tabs) {
-                            if (tabs[0]) {
-                                chrome.tabs.sendMessage(
-                                    tabs[0].id,
-                                    { action: "executeAutomation" },
-                                    function (response) {
-                                        if (chrome.runtime.lastError) {
-                                            console.log(
-                                                "Erro ao comunicar com a página:",
-                                                chrome.runtime.lastError.message
-                                            );
-                                            showStatus(
-                                                "Erro de comunicação. Recarregue a página.",
-                                                "error"
-                                            );
-                                        } else if (
-                                            response &&
-                                            response.success
-                                        ) {
-                                            showStatus(
-                                                "Automação executada com sucesso!",
-                                                "success"
-                                            );
-                                        } else {
-                                            showStatus(
-                                                "Navegue até uma página do eProc para usar a automação",
-                                                "info"
-                                            );
+                "info",
+                function () {
+                    // Callback quando modal é fechado
+                    if (chrome.tabs) {
+                        chrome.tabs.query(
+                            { active: true, currentWindow: true },
+                            function (tabs) {
+                                if (tabs[0]) {
+                                    chrome.tabs.sendMessage(
+                                        tabs[0].id,
+                                        { action: "executeAutomation" },
+                                        function (response) {
+                                            if (chrome.runtime.lastError) {
+                                                console.log(
+                                                    "Erro ao comunicar com a página:",
+                                                    chrome.runtime.lastError
+                                                        .message
+                                                );
+                                                showStatus(
+                                                    "Erro de comunicação. Recarregue a página.",
+                                                    "error"
+                                                );
+                                            } else if (
+                                                response &&
+                                                response.success
+                                            ) {
+                                                showStatus(
+                                                    "Automação executada com sucesso!",
+                                                    "success"
+                                                );
+                                            } else {
+                                                showStatus(
+                                                    "Navegue até uma página do eProc para usar a automação",
+                                                    "info"
+                                                );
+                                            }
                                         }
-                                    }
-                                );
-                            } else {
-                                showStatus(
-                                    "Nenhuma aba ativa encontrada",
-                                    "info"
-                                );
-                            }
+                                    );
+                                } else {
+                                    showStatus(
+                                        "Nenhuma aba ativa encontrada",
+                                        "info"
+                                    );
+                                }
 
-                            // Limpar status após 2 segundos
-                            setTimeout(() => {
-                                showStatus(
-                                    `<div style="text-align: center; font-size: 11px; line-height: 1.3; color: rgba(255,255,255,0.7);">
+                                // Limpar status após 2 segundos
+                                setTimeout(() => {
+                                    showStatus(
+                                        `<div style="text-align: center; font-size: 11px; line-height: 1.3; color: rgba(255,255,255,0.7);">
                                         <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 1px;">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                                 <circle cx="12" cy="12" r="10"/>
@@ -557,21 +567,21 @@ document.addEventListener("DOMContentLoaded", function () {
                                             <span>alexandress@tjsc.jus.br</span>
                                         </div>
                                     </div>`,
-                                    "info",
-                                    false,
-                                    true
-                                );
-                            }, 2000);
-                        }
-                    );
+                                        "info",
+                                        false,
+                                        true
+                                    );
+                                }, 2000);
+                            }
+                        );
+                    }
                 }
-            }
-        );
-    });
+            );
+        });
 
-    // Verificar estado inicial - removido por enquanto
-    showStatus(
-        `<div style="text-align: center; font-size: 11px; line-height: 1.3; color: rgba(255,255,255,0.7);">
+        // Verificar estado inicial - removido por enquanto
+        showStatus(
+            `<div style="text-align: center; font-size: 11px; line-height: 1.3; color: rgba(255,255,255,0.7);">
             <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 1px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                     <circle cx="12" cy="12" r="10"/>
@@ -587,8 +597,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 <span>alexandress@tjsc.jus.br</span>
             </div>
         </div>`,
-        "info",
-        false,
-        true
-    );
+            "info",
+            false,
+            true
+        );
+    } else {
+        console.warn(
+            "❌ POPUP.JS: Botão help não encontrado, mas continuando normalmente"
+        );
+    }
 });
