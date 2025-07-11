@@ -1,10 +1,41 @@
 /* Fontes e configurações básicas */
 
 /* Reset e configurações básicas */
-* {
+*,
+*::before,
+*::after {
     box-sizing: border-box;
     padding: 0;
     margin: 0;
+
+    /* Renderização de fontes otimizada */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    /* Performance de renderização */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+
+    /* Tipografia avançada */
+    -webkit-font-feature-settings: "kern" 1, "liga" 1;
+    font-feature-settings: "kern" 1, "liga" 1;
+    font-variant-ligatures: common-ligatures;
+
+    /* Interação móvel otimizada */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Focus moderno e acessível */
+*:focus {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 2px solid rgb(var(--color-primary-600));
+    outline-offset: 2px;
+    border-radius: 2px;
 }
 
 /* Variáveis CSS modernas - Modo Escuro */
@@ -80,6 +111,19 @@
     --transition-base: all 0.2s ease;
 }
 
+/* Configurações globais do documento */
+html {
+    /* Scroll suave nativo */
+    scroll-behavior: smooth;
+
+    /* Melhora a renderização de texto */
+    text-rendering: optimizeLegibility;
+
+    /* Força aceleração de hardware */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+}
+
 /* Corpo principal */
 body {
     width: 380px;
@@ -91,7 +135,17 @@ body {
     color: rgb(var(--color-text-main));
     margin: 0;
     overflow: hidden;
-    -webkit-font-smoothing: antialiased;
+}
+
+/* Seleção de texto personalizada */
+::selection {
+    background: rgb(var(--color-primary-600) / 0.3);
+    color: rgb(var(--color-text-main));
+}
+
+::-moz-selection {
+    background: rgb(var(--color-primary-600) / 0.3);
+    color: rgb(var(--color-text-main));
 }
 
 /* Estilos para ícones Lucide */
@@ -118,9 +172,9 @@ body {
 
 /* Ícones no header */
 .header h1 .icon {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
+    width: 24px;
+    height: 24px;
+    margin-right: 4px;
 }
 
 /* Ícone principal com círculo branco fino */
@@ -184,7 +238,7 @@ body {
 
 .header h1 {
     margin: 0;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 500;
     font-family: "Exo 2", "Roboto", -apple-system, BlinkMacSystemFont,
         "Segoe UI", system-ui, sans-serif;
@@ -299,10 +353,6 @@ body {
     color: white;
 }
 
-.btn.block {
-    width: 100%;
-}
-
 /* Focus states modernos */
 .btn:focus {
     outline: none;
@@ -314,7 +364,6 @@ body {
     background: rgb(var(--color-background-alt));
     border-radius: var(--border-radius);
     padding: 16px;
-    margin-bottom: 20px;
 }
 
 .step {
@@ -917,11 +966,26 @@ body {
 
 /* Área de configurações */
 .settings-area {
-    margin-bottom: 20px;
-    padding: 16px;
     background: rgb(var(--color-background-alt2));
-    border-radius: 8px;
     border: 1px solid rgb(var(--color-neutral-600) / 0.3);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+    transition: var(--transition-base);
+}
+
+.settings-area:hover {
+    border-color: rgb(var(--color-primary-600) / 0.4);
+    box-shadow: 0 4px 12px rgb(var(--color-primary-600) / 0.25);
+    transform: translateY(-1px);
+}
+
+/* Container interno das configurações */
+.settings-container {
+    background: rgb(var(--color-background-alt));
+    border-radius: var(--border-radius);
+    padding: 16px;
 }
 
 .setting-item {
@@ -981,7 +1045,6 @@ body {
     background-color: var(--slider-bg);
     transition: all 0.3s ease;
     border-radius: 30px;
-    border: 1px solid rgb(var(--color-neutral-600) / 0.5);
 }
 
 .slider:before {
@@ -1017,4 +1080,326 @@ body {
 
 .switch input:checked + .slider:hover {
     background-color: #0f3a66;
+}
+
+/* Área de seleção de temas */
+.theme-area {
+    background: rgb(var(--color-background-alt2));
+    border: 1px solid rgb(var(--color-neutral-600) / 0.3);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgb(0, 0, 0 / 0.3);
+    transition: var(--transition-base);
+}
+
+.theme-area:hover {
+    border-color: rgb(var(--color-primary-600) / 0.4);
+    box-shadow: 0 4px 12px rgb(var(--color-primary-600) / 0.25);
+    transform: translateY(-1px);
+}
+
+/* Container interno dos temas */
+.theme-container {
+    background: rgb(var(--color-background-alt));
+    border-radius: var(--border-radius);
+    padding: 16px;
+}
+
+.theme-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.theme-option {
+    padding: 12px;
+    border: 2px solid rgb(var(--color-neutral-600) / 0.3);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgb(var(--color-text-main));
+}
+
+.theme-option:hover {
+    border-color: rgb(var(--color-primary-600) / 0.6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgb(var(--color-primary-600) / 0.25);
+}
+
+.theme-option.active {
+    border-color: rgb(var(--color-primary-600));
+    background: rgb(var(--color-primary-600) / 0.1);
+    color: rgb(var(--color-primary-600));
+}
+
+.theme-option::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0.8;
+    border-radius: calc(var(--border-radius) - 2px);
+}
+
+/* Temas específicos com gradientes visuais */
+.theme-option[data-theme="blue"]::before {
+    background: linear-gradient(135deg, #134377, #85beff);
+}
+
+.theme-option[data-theme="dark"]::before {
+    background: linear-gradient(135deg, #0d1c2c, #202733);
+}
+
+.theme-option[data-theme="light"]::before {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+}
+
+.theme-option[data-theme="violet"]::before {
+    background: linear-gradient(135deg, #5b21b6, #a855f7);
+}
+
+.theme-option span {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.theme-label {
+    font-size: 14px;
+    color: rgb(var(--color-text-main));
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+/* Seletor de Temas do eProc - Botões com cores representativas */
+.flex {
+    display: flex;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+/* Container principal dos botões de tema */
+#buttons_container {
+    border-radius: 0.5rem;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    display: flex;
+    border: 14px solid rgb(var(--color-background-alt));
+}
+
+/* Estilos base para todos os botões de tema */
+#buttons_container button {
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    height: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#buttons_container button:last-child {
+    border-right: none;
+}
+
+/* Tema Azul - Cor principal do eProc */
+#buttons_container button[data-theme="blue"] {
+    background: linear-gradient(135deg, #134377, #1e5a96);
+    color: transparent;
+}
+
+#buttons_container button[data-theme="blue"]:hover {
+    background: linear-gradient(135deg, #1e5a96, #2196f3);
+    color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(19, 67, 119, 0.4);
+}
+
+/* Tema Escuro - Para modo noturno */
+#buttons_container button[data-theme="dark"] {
+    background: linear-gradient(135deg, #0d1c2c, #1a2332);
+    color: transparent;
+}
+
+#buttons_container button[data-theme="dark"]:hover {
+    background: linear-gradient(135deg, #1a2332, #2d3748);
+    color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(13, 28, 44, 0.6);
+}
+
+/* Tema Claro - Para ambiente bem iluminado */
+#buttons_container button[data-theme="light"] {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: transparent;
+    border: 1px solid rgba(45, 55, 72, 0.1);
+}
+
+#buttons_container button[data-theme="light"]:hover {
+    background: linear-gradient(135deg, #ffffff, #f1f5f9);
+    color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Tema Violeta - Alternativa moderna */
+#buttons_container button[data-theme="violet"] {
+    background: linear-gradient(135deg, #5b21b6, #7c3aed);
+    color: transparent;
+}
+
+#buttons_container button[data-theme="violet"]:hover {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(124, 58, 237, 0.4);
+}
+
+/* Estados de foco para acessibilidade */
+#buttons_container button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(19, 67, 119, 0.5);
+    z-index: 10;
+    position: relative;
+}
+
+/* Estado ativo (tema selecionado) */
+#buttons_container button.text-white {
+    box-shadow: inset 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(1px);
+    border-top: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+/* Estado de clique */
+#buttons_container button:active {
+    transform: scale(0.98) translateY(1px);
+    transition-duration: 0.1s;
+}
+
+/* Efeito de brilho ao passar o mouse */
+#buttons_container button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.6s ease;
+}
+
+#buttons_container button:hover::before {
+    left: 100%;
+}
+
+/* Indicador visual para tema ativo */
+#buttons_container button.text-white::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 2px;
+}
+
+/* Classes de estado */
+.text-white {
+    color: transparent;
+}
+
+/* Footer da extensão */
+.footer {
+    margin-top: 20px;
+    padding: 16px;
+    text-align: center;
+}
+
+.footer-content {
+    color: rgb(var(--color-text-muted));
+}
+
+.footer-text {
+    font-size: 12px;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.footer-text strong {
+    color: rgb(var(--color-text-main));
+    font-weight: 600;
+}
+
+.footer-text small {
+    opacity: 0.8;
+    font-size: 11px;
+}
+
+/* Configurações globais para inputs e botões */
+button,
+input,
+select,
+textarea {
+    /* Remove aparência padrão do sistema */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* Herda tipografia do elemento pai */
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+
+    /* Remove bordas padrão */
+    border: none;
+    background: none;
+
+    /* Melhora a interação */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Melhora performance de animações */
+.automation-card,
+.btn,
+.step,
+.theme-option,
+.settings-area,
+.theme-area {
+    will-change: transform, box-shadow;
+}
+
+.automation-card:hover,
+.btn:hover,
+.step:hover,
+.theme-option:hover,
+.settings-area:hover,
+.theme-area:hover {
+    will-change: auto;
 }

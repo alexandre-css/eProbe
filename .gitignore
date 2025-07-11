@@ -6,6 +6,8 @@
 # Pastas de build e privadas
 /build/
 /private/
+/old/
+/examples/
 
 # Arquivos de desenvolvimento
 *.code-workspace

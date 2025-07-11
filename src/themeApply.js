@@ -2,6 +2,12 @@
 // Aplica automaticamente o tema salvo quando a página do e    // Escuta mudanças no storage para aplicar temas em tempo real
 if (typeof chrome !== "undefined" && chrome.storage) {
     chrome.storage.onChanged.addListener(function (changes, area) {
+        console.log(
+            "🔄 STORAGE: Mudança detectada no storage:",
+            changes,
+            "área:",
+            area
+        );
         if (area === "sync") {
             // Mudança de tema
             if (changes.selectedTheme) {
@@ -22,6 +28,7 @@ if (typeof chrome !== "undefined" && chrome.storage) {
             }
         }
     });
+    console.log("✅ STORAGE: Listener de mudanças registrado");
 }
 
 // Função para controlar exibição da data da sessão
@@ -159,4 +166,15 @@ if (typeof chrome !== "undefined" && chrome.storage) {
             }
         });
     }
+
+    // Exposição da função para chamada direta (debugging)
+    window.applyThemeStyles = applyThemeStyles;
+    window.testVioletTheme = function () {
+        console.log("🧪 TESTE: Aplicando tema violeta diretamente...");
+        applyThemeStyles("violet");
+    };
+    console.log("🌐 GLOBAL: Funções de tema expostas globalmente");
+    console.log(
+        "🧪 TESTE: Use window.testVioletTheme() para testar o tema violeta"
+    );
 })();

@@ -9140,6 +9140,35 @@ Detectada automaticamente pelo eProbe
                 });
             }
 
+            // Handler para aplicação de temas
+            if (request.action === "applyTheme") {
+                console.log("🎨 MAIN: Aplicando tema:", request.theme);
+
+                // Salva o tema no storage e aplica automaticamente
+                chrome.storage.sync.set(
+                    { selectedTheme: request.theme },
+                    function () {
+                        console.log(
+                            "✅ MAIN: Tema salvo no storage:",
+                            request.theme
+                        );
+
+                        // Chama diretamente a função se ela existir
+                        if (typeof window.applyThemeStyles === "function") {
+                            console.log(
+                                "🎨 MAIN: Aplicando tema diretamente via função global"
+                            );
+                            window.applyThemeStyles(request.theme);
+                        }
+
+                        sendResponse({
+                            success: true,
+                            message: `Tema ${request.theme} aplicado`,
+                        });
+                    }
+                );
+            }
+
             return true; // Indica que a resposta será enviada de forma assíncrona
         });
 

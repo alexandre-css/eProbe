@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "eProbe - Automação ePROC",
-    "version": "2.0.1",
+    "version": "1.0.0",
     "description": "Extensão para advogados e servidores do TJSC: detecta automaticamente documentos SENT1 e INIC1 no eProc, extrai texto e facilita a criação de resumos para capa do processo digital.",
     "author": "eProbe Team",
     "homepage_url": "https://github.com/seu-usuario/eProbe",
@@ -21,7 +21,7 @@
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ],
-            "js": ["src/main.js"],
+            "js": ["src/main.js", "src/themeApply.js"],
             "run_at": "document_end"
         }
     ],
