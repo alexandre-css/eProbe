@@ -266,6 +266,615 @@
         return false;
     }
 
+    // 📋 FUNÇÕES DE DETECÇÃO E PROCESSAMENTO DA PÁGINA "MEUS LOCALIZADORES"
+
+    // Função para salvar separadores no localStorage
+    function salvarSeparadores(separadores) {
+        try {
+            const chave = "eprobe_separadores_localizadores";
+            localStorage.setItem(chave, JSON.stringify(separadores));
+            console.log("💾 LOCALIZADORES: Separadores salvos no localStorage");
+        } catch (error) {
+            console.error(
+                "❌ LOCALIZADORES: Erro ao salvar separadores:",
+                error
+            );
+        }
+    }
+
+    // Função para carregar separadores do localStorage
+    function carregarSeparadores() {
+        try {
+            const chave = "eprobe_separadores_localizadores";
+            const dados = localStorage.getItem(chave);
+            if (dados) {
+                const separadores = JSON.parse(dados);
+                console.log(
+                    "📂 LOCALIZADORES: Separadores carregados do localStorage:",
+                    separadores.length
+                );
+                return separadores;
+            }
+        } catch (error) {
+            console.error(
+                "❌ LOCALIZADORES: Erro ao carregar separadores:",
+                error
+            );
+        }
+        return [];
+    }
+
+    // Função para detectar e processar página "Meus Localizadores"
+    function detectarPaginaLocalizadores() {
+        const currentUrl = window.location.href;
+
+        // Verifica se está na página de Meus Localizadores
+        if (
+            !currentUrl.includes(
+                "acao=usuario_tipo_monitoramento_localizador_listar"
+            )
+        ) {
+            return false;
+        }
+
+        console.log("📋 LOCALIZADORES: Página 'Meus Localizadores' detectada");
+
+        // Processa a tabela de localizadores
+        processarTabelaLocalizadores();
+
+        return true;
+    }
+
+    // Função para processar a tabela de localizadores
+    function processarTabelaLocalizadores() {
+        console.log("🔍 LOCALIZADORES: Iniciando processamento da tabela");
+
+        // Busca a tabela de localizadores
+        const tabela = document.querySelector(
+            'table.infraTable[summary*="Localizadores"]'
+        );
+
+        if (!tabela) {
+            console.log(
+                "⚠️ LOCALIZADORES: Tabela de localizadores não encontrada"
+            );
+            return;
+        }
+
+        console.log("✅ LOCALIZADORES: Tabela encontrada, processando...");
+
+        // Destaca localizadores urgentes
+        destacarLocalizadoresUrgentes(tabela);
+
+        // Adiciona interface de separadores
+        adicionarInterfaceSeparadores(tabela);
+
+        // Restaurar separadores salvos
+        restaurarSeparadores(tabela);
+    }
+
+    // Função para restaurar separadores salvos
+    function restaurarSeparadores(tabela) {
+        console.log("🔄 LOCALIZADORES: Restaurando separadores salvos");
+
+        const separadoresSalvos = carregarSeparadores();
+
+        if (separadoresSalvos.length === 0) {
+            console.log("ℹ️ LOCALIZADORES: Nenhum separador salvo encontrado");
+            return;
+        }
+
+        const tbody = tabela.querySelector("tbody");
+        if (!tbody) {
+            console.log(
+                "⚠️ LOCALIZADORES: tbody não encontrado para restaurar separadores"
+            );
+            return;
+        }
+
+        const linhasOriginais = Array.from(
+            tbody.querySelectorAll("tr:not(.eprobe-divisor-linha)")
+        );
+
+        // Ordenar separadores por posição para inserir na ordem correta
+        separadoresSalvos.sort((a, b) => a.posicao - b.posicao);
+
+        separadoresSalvos.forEach((separadorData) => {
+            let linhaReferencia = null;
+
+            // Encontrar linha de referência pela posição
+            if (
+                separadorData.posicao > 0 &&
+                separadorData.posicao <= linhasOriginais.length
+            ) {
+                linhaReferencia = linhasOriginais[separadorData.posicao - 1];
+            }
+
+            // Criar o separador
+            criarDivisorEditavel(tabela, linhaReferencia, separadorData.texto);
+            console.log(
+                `✅ LOCALIZADORES: Separador "${separadorData.texto}" restaurado na posição ${separadorData.posicao}`
+            );
+        });
+
+        console.log(
+            `🔄 LOCALIZADORES: ${separadoresSalvos.length} separador(es) restaurado(s)`
+        );
+    }
+
+    // Função para destacar localizadores com palavra "urgente"
+    function destacarLocalizadoresUrgentes(tabela) {
+        console.log("🔴 LOCALIZADORES: Destacando localizadores urgentes");
+
+        const linhas = tabela.querySelectorAll("tbody tr");
+        let urgentesEncontrados = 0;
+
+        linhas.forEach((linha, index) => {
+            const primeiraColuna = linha.querySelector("td:first-child");
+
+            if (primeiraColuna) {
+                const textoLocalizador =
+                    primeiraColuna.textContent.toLowerCase();
+
+                // Verifica se contém a palavra "urgente" (case insensitive)
+                if (textoLocalizador.includes("urgente")) {
+                    // Aplica estilo de destaque vermelho suave
+                    linha.style.backgroundColor = "#fecaca";
+                    linha.style.border = "1px solid #f87171";
+                    linha.style.transition = "all 0.2s ease";
+
+                    urgentesEncontrados++;
+                    console.log(
+                        `🔴 LOCALIZADORES: Linha ${
+                            index + 1
+                        } marcada como urgente: "${primeiraColuna.textContent.trim()}"`
+                    );
+                }
+            }
+        });
+
+        if (urgentesEncontrados > 0) {
+            console.log(
+                `✅ LOCALIZADORES: ${urgentesEncontrados} localizador(es) urgente(s) destacado(s)`
+            );
+        } else {
+            console.log(
+                "ℹ️ LOCALIZADORES: Nenhum localizador urgente encontrado"
+            );
+        }
+    }
+
+    // Função para criar divisores editáveis na tabela de localizadores
+    function criarDivisorEditavel(
+        tabela,
+        linhaPosicao,
+        textoInicial = "Seção"
+    ) {
+        console.log("📝 LOCALIZADORES: Criando divisor editável");
+        console.log("🔧 DEBUG: Parâmetros recebidos:", {
+            tabela,
+            linhaPosicao,
+            textoInicial,
+        });
+
+        if (!tabela) {
+            console.log(
+                "⚠️ LOCALIZADORES: Tabela não fornecida para criar divisor"
+            );
+            return null;
+        }
+
+        const tbody = tabela.querySelector("tbody");
+        console.log("🔧 DEBUG: tbody encontrado:", tbody);
+
+        if (!tbody) {
+            console.log("⚠️ LOCALIZADORES: tbody não encontrado na tabela");
+            return null;
+        }
+
+        // Contar colunas da tabela para criar divisor do tamanho correto
+        const primeiraLinhaComCelulas =
+            tbody.querySelector("tr") || tabela.querySelector("thead tr");
+        let totalColunas = 2; // Padrão para localizadores
+
+        if (primeiraLinhaComCelulas) {
+            const celulas = primeiraLinhaComCelulas.querySelectorAll("td, th");
+            totalColunas = celulas.length;
+        }
+
+        console.log(`🔧 DEBUG: Número de colunas detectado: ${totalColunas}`);
+
+        // Criar nova linha divisor
+        const linhaDivisor = document.createElement("tr");
+        linhaDivisor.className = "eprobe-divisor-linha";
+        linhaDivisor.style.backgroundColor = "#f3f4f6";
+        linhaDivisor.style.borderTop = "2px solid #6b7280";
+        linhaDivisor.style.borderBottom = "1px solid #d1d5db";
+
+        // Criar célula que ocupa todas as colunas
+        const celulaDivisor = document.createElement("td");
+        celulaDivisor.colSpan = totalColunas;
+        celulaDivisor.style.padding = "12px";
+        celulaDivisor.style.textAlign = "center";
+        celulaDivisor.style.position = "relative";
+
+        // Criar container para o título editável
+        const containerTitulo = document.createElement("div");
+        containerTitulo.style.position = "relative";
+        containerTitulo.style.display = "inline-block";
+
+        // Criar ícone do separador
+        const iconeSeparador = document.createElement("span");
+        iconeSeparador.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal" style="margin-right: 4px; vertical-align: middle;">
+                <path d="m16 16-4 4-4-4"/>
+                <path d="M3 12h18"/>
+                <path d="m8 8 4-4 4 4"/>
+            </svg>
+        `;
+
+        // Criar título editável (sem caixa, apenas texto)
+        const tituloEditavel = document.createElement("span");
+        tituloEditavel.textContent = textoInicial;
+        tituloEditavel.contentEditable = true;
+        tituloEditavel.style.cssText = `
+            font-weight: bold;
+            color: #374151;
+            font-size: 14px;
+            cursor: text;
+            outline: none;
+            border: none;
+            background: transparent;
+            min-width: 100px;
+            display: inline-block;
+            text-align: center;
+        `;
+
+        // Criar botão para remover divisor (discreto, só aparece no hover)
+        const botaoRemover = document.createElement("button");
+        botaoRemover.innerHTML = "×";
+        botaoRemover.style.cssText = `
+            position: absolute;
+            top: -8px;
+            right: -20px;
+            border: none;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            font-size: 12px;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        `;
+        botaoRemover.title = "Remover divisor";
+
+        // Mostrar botão X apenas no hover do container
+        containerTitulo.addEventListener("mouseenter", function () {
+            botaoRemover.style.opacity = "1";
+        });
+
+        containerTitulo.addEventListener("mouseleave", function () {
+            botaoRemover.style.opacity = "0";
+        });
+
+        // Evento para remover divisor
+        botaoRemover.addEventListener("click", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Remover da persistência antes de remover do DOM
+            removerSeparadorDoPersistencia(linhaDivisor);
+
+            linhaDivisor.remove();
+            console.log("🗑️ LOCALIZADORES: Divisor removido");
+        });
+
+        // Adicionar elementos ao container
+        containerTitulo.appendChild(iconeSeparador);
+        containerTitulo.appendChild(tituloEditavel);
+        containerTitulo.appendChild(botaoRemover);
+        celulaDivisor.appendChild(containerTitulo);
+        linhaDivisor.appendChild(celulaDivisor);
+
+        // Inserir divisor na posição especificada
+        console.log("🔧 DEBUG: Inserindo divisor. linhaPosicao:", linhaPosicao);
+        if (linhaPosicao && linhaPosicao.nextSibling) {
+            tbody.insertBefore(linhaDivisor, linhaPosicao.nextSibling);
+            console.log("🔧 DEBUG: Divisor inserido após linha específica");
+        } else {
+            tbody.appendChild(linhaDivisor);
+            console.log("🔧 DEBUG: Divisor inserido no final da tabela");
+        }
+
+        console.log("✅ LOCALIZADORES: Divisor criado com sucesso");
+
+        // Salvar separador na persistência (se não for uma restauração)
+        if (arguments.length <= 3) {
+            // Se não foi chamado durante restauração
+            salvarSeparadorNaPersistencia(
+                linhaDivisor,
+                textoInicial,
+                linhaPosicao
+            );
+        }
+
+        return linhaDivisor;
+    }
+
+    // Função para salvar separador na persistência
+    function salvarSeparadorNaPersistencia(linhaDivisor, texto, linhaPosicao) {
+        const tabela = linhaDivisor.closest("table");
+        if (!tabela) return;
+
+        const tbody = tabela.querySelector("tbody");
+        const todasLinhas = Array.from(
+            tbody.querySelectorAll("tr:not(.eprobe-divisor-linha)")
+        );
+
+        // Calcular posição baseada na linha de referência
+        let posicao = todasLinhas.length; // Por padrão, no final
+
+        if (linhaPosicao) {
+            const indice = todasLinhas.findIndex(
+                (linha) => linha === linhaPosicao
+            );
+            if (indice !== -1) {
+                posicao = indice + 1; // Posição após a linha de referência
+            }
+        }
+
+        const separadoresSalvos = carregarSeparadores();
+
+        const novoSeparador = {
+            id: Date.now(), // ID único baseado em timestamp
+            texto: texto,
+            posicao: posicao,
+            criadoEm: new Date().toISOString(),
+        };
+
+        separadoresSalvos.push(novoSeparador);
+        salvarSeparadores(separadoresSalvos);
+
+        // Adicionar ID ao elemento para facilitar remoção
+        linhaDivisor.setAttribute("data-separador-id", novoSeparador.id);
+
+        console.log(
+            "💾 LOCALIZADORES: Separador salvo na persistência:",
+            novoSeparador
+        );
+    }
+
+    // Função para remover separador da persistência
+    function removerSeparadorDoPersistencia(linhaDivisor) {
+        const separadorId = linhaDivisor.getAttribute("data-separador-id");
+        if (!separadorId) return;
+
+        const separadoresSalvos = carregarSeparadores();
+        const separadoresFiltrados = separadoresSalvos.filter(
+            (sep) => sep.id != separadorId
+        );
+
+        salvarSeparadores(separadoresFiltrados);
+        console.log(
+            "🗑️ LOCALIZADORES: Separador removido da persistência:",
+            separadorId
+        );
+    }
+
+    // Função para limpar todos os separadores salvos (útil para debug/reset)
+    function limparTodosSeparadores() {
+        try {
+            const chave = "eprobe_separadores_localizadores";
+            localStorage.removeItem(chave);
+            console.log(
+                "🧹 LOCALIZADORES: Todos os separadores foram limpos do localStorage"
+            );
+
+            // Remover também do DOM se estiver na página
+            const separadoresExistentes = document.querySelectorAll(
+                ".eprobe-divisor-linha"
+            );
+            separadoresExistentes.forEach((separador) => separador.remove());
+
+            return true;
+        } catch (error) {
+            console.error(
+                "❌ LOCALIZADORES: Erro ao limpar separadores:",
+                error
+            );
+            return false;
+        }
+    }
+
+    // Função para adicionar interface de separadores na página de localizadores
+    function adicionarInterfaceSeparadores(tabela) {
+        console.log("🛠️ LOCALIZADORES: Adicionando interface para separadores");
+
+        // Adicionar texto informativo no lugar do botão
+        adicionarTextoInformativoSeparadores(tabela);
+
+        // Adicionar menu de contexto nas linhas da tabela
+        adicionarMenuContextoLinhas(tabela);
+    } // Função para adicionar texto informativo sobre separadores
+    function adicionarTextoInformativoSeparadores(tabela) {
+        // Procurar container adequado para o texto (acima da tabela)
+        const containerTabela =
+            tabela.closest(".infraAreaTabela") || tabela.parentElement;
+
+        if (!containerTabela) {
+            console.log("⚠️ LOCALIZADORES: Container da tabela não encontrado");
+            return;
+        }
+
+        // Verificar se já existe o texto informativo
+        if (document.getElementById("eprobe-info-separadores")) {
+            return;
+        }
+
+        // Criar container para o texto informativo
+        const containerInfo = document.createElement("div");
+        containerInfo.id = "eprobe-info-separadores";
+        containerInfo.style.cssText = `
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            color: #000000;
+            font-size: 14px;
+        `;
+
+        // Criar ícone
+        const icone = document.createElement("span");
+        icone.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-satellite" style="vertical-align: middle;">
+                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+                <path d="M16.5 7.5 19 5"/>
+                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+                <path d="M9 21a6 6 0 0 0-6-6"/>
+                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+            </svg>
+        `;
+
+        // Criar texto
+        const textoInfo = document.createElement("span");
+        textoInfo.innerHTML =
+            'Função <strong><span style="color: #134377;">eProbe</span></strong>: clique com o botão direito em qualquer localizador para adicionar um separador';
+
+        // Adicionar elementos ao container
+        containerInfo.appendChild(icone);
+        containerInfo.appendChild(textoInfo);
+
+        // Inserir antes da tabela
+        containerTabela.insertBefore(containerInfo, tabela);
+
+        console.log(
+            "✅ LOCALIZADORES: Texto informativo de separadores adicionado"
+        );
+    }
+
+    // Função para adicionar menu de contexto nas linhas
+    function adicionarMenuContextoLinhas(tabela) {
+        const linhas = tabela.querySelectorAll(
+            "tbody tr:not(.eprobe-divisor-linha)"
+        );
+
+        linhas.forEach((linha, index) => {
+            // Adicionar evento de clique direito
+            linha.addEventListener("contextmenu", function (e) {
+                e.preventDefault();
+                mostrarMenuContextoSeparador(e, linha, tabela, index + 1);
+            });
+
+            // Adicionar indicação visual de que é clicável
+            linha.style.cursor = "context-menu";
+            linha.title = "Clique com o botão direito para adicionar separador";
+        });
+
+        console.log(
+            `✅ LOCALIZADORES: Menu de contexto adicionado a ${linhas.length} linhas`
+        );
+    }
+
+    // Função para mostrar menu de contexto para separador
+    function mostrarMenuContextoSeparador(event, linha, tabela, numeroLinha) {
+        // Remover menu existente se houver
+        const menuExistente = document.getElementById(
+            "eprobe-menu-contexto-separador"
+        );
+        if (menuExistente) {
+            menuExistente.remove();
+        }
+
+        // Criar menu de contexto
+        const menu = document.createElement("div");
+        menu.id = "eprobe-menu-contexto-separador";
+        menu.style.cssText = `
+            position: fixed;
+            top: ${event.clientY}px;
+            left: ${event.clientX}px;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10000;
+            min-width: 200px;
+            font-family: 'Roboto', sans-serif;
+        `;
+
+        // Criar opção do menu
+        const opcaoSeparador = document.createElement("div");
+        opcaoSeparador.style.cssText = `
+            padding: 8px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        `;
+        opcaoSeparador.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal">
+                <path d="m16 16-4 4-4-4"/>
+                <path d="M3 12h18"/>
+                <path d="m8 8 4-4 4 4"/>
+            </svg>
+            <span>Adicionar separador após linha ${numeroLinha}</span>
+        `;
+
+        // Evento da opção
+        opcaoSeparador.addEventListener("click", function () {
+            const nomeSecao = prompt("Digite o nome da seção:", "Nova Seção");
+            if (nomeSecao !== null && nomeSecao.trim() !== "") {
+                criarDivisorEditavel(tabela, linha, nomeSecao.trim());
+                console.log(
+                    `📝 LOCALIZADORES: Separador "${nomeSecao}" adicionado após linha ${numeroLinha}`
+                );
+            }
+            menu.remove();
+        });
+
+        // Adicionar hover
+        opcaoSeparador.addEventListener("mouseenter", function () {
+            this.style.backgroundColor = "#f8f9fa";
+        });
+
+        opcaoSeparador.addEventListener("mouseleave", function () {
+            this.style.backgroundColor = "transparent";
+        });
+
+        // Adicionar opção ao menu
+        menu.appendChild(opcaoSeparador);
+
+        // Adicionar menu ao documento
+        document.body.appendChild(menu);
+
+        // Remover menu ao clicar fora
+        setTimeout(() => {
+            document.addEventListener("click", function removerMenu() {
+                menu.remove();
+                document.removeEventListener("click", removerMenu);
+            });
+        }, 100);
+
+        // Ajustar posição se sair da tela
+        const rect = menu.getBoundingClientRect();
+        if (rect.right > window.innerWidth) {
+            menu.style.left = event.clientX - rect.width + "px";
+        }
+        if (rect.bottom > window.innerHeight) {
+            menu.style.top = event.clientY - rect.height + "px";
+        }
+    }
+
     // Função específica para verificar se deve mostrar o botão flutuante
     function shouldShowFloatingButton() {
         // Verificar se há links para documentos HTML ou PDF no código da página
@@ -5231,6 +5840,144 @@ ${texto}`;
                 );
             }
         }, 10000);
+
+        // 📋 DETECÇÃO E PROCESSAMENTO DA PÁGINA DE LOCALIZADORES
+        setTimeout(() => {
+            detectarPaginaLocalizadores();
+        }, 1000);
+    }
+
+    // Função de debug para verificar status dos localizadores
+    function debugLocalizadores() {
+        const currentUrl = window.location.href;
+        const isLocalizadoresPage = currentUrl.includes(
+            "acao=usuario_tipo_monitoramento_localizador_listar"
+        );
+        const tabela = document.querySelector(
+            'table.infraTable[summary*="Localizadores"]'
+        );
+        const toolbar = document.getElementById("eprobe-separadores-toolbar");
+
+        console.log("🐛 DEBUG LOCALIZADORES:", {
+            url: currentUrl,
+            isLocalizadoresPage: isLocalizadoresPage,
+            tabelaEncontrada: !!tabela,
+            toolbarCriado: !!toolbar,
+            urlPattern: "acao=usuario_tipo_monitoramento_localizador_listar",
+        });
+
+        if (!isLocalizadoresPage) {
+            console.log("❌ Você não está na página de localizadores!");
+            console.log(
+                "🔗 Para acessar: Painel → Localizadores → Meus Localizadores"
+            );
+            return false;
+        }
+
+        if (!tabela) {
+            console.log("❌ Tabela de localizadores não encontrada!");
+            return false;
+        }
+
+        if (!toolbar) {
+            console.log("❌ Interface de separadores não foi criada!");
+            console.log("🔧 Tentando criar agora...");
+            adicionarInterfaceSeparadores(tabela);
+            return true;
+        }
+
+        console.log("✅ Tudo funcionando corretamente!");
+        return true;
+    }
+
+    // 🎨 FUNÇÕES REUTILIZÁVEIS DE INTERFACE
+
+    // Função para criar botão com estilo eProc elegante e discreto
+    function criarBotaoEleganteeProc(id, className = "col-auto mr-2") {
+        const botao = document.createElement("div");
+        botao.id = id;
+        botao.className = className;
+
+        // Estilo base elegante (inspirado no eprobe-data-sessao)
+        botao.style.cssText = `
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid #d1d5db;
+            padding: 8px 12px;
+            border-radius: 4px;
+            background-color: #f8fafc;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+            cursor: pointer;
+            white-space: nowrap;
+            max-width: fit-content;
+        `;
+
+        // Adicionar efeitos hover discretos e elegantes
+        botao.addEventListener("mouseenter", function () {
+            this.style.backgroundColor = "#fafbfc";
+            this.style.borderColor = "#e2e8f0";
+            this.style.boxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.04)";
+        });
+
+        botao.addEventListener("mouseleave", function () {
+            this.style.backgroundColor = "#f8fafc";
+            this.style.borderColor = "#d1d5db";
+            this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+        });
+
+        return botao;
+    }
+
+    // Função específica para criar botão branco capa do processo (alias mais descritivo)
+    function botaoBrancoCapaProcesso(id, className = "col-auto mr-2") {
+        return criarBotaoEleganteeProc(id, className);
+    }
+
+    // Função para criar botão infraButton btn-primary com estilo eProc
+    function criarInfraButtonPrimary(id, innerHTML) {
+        const button = document.createElement("button");
+        button.id = id;
+        button.className = "infraButton btn-primary";
+
+        // Conteúdo do botão (HTML interno)
+        if (innerHTML) {
+            button.innerHTML = innerHTML;
+        }
+
+        // Aplicar cor azul personalizada eProc
+        button.style.backgroundColor = "#134377";
+        button.style.borderColor = "#134377";
+
+        // Adicionar eventos para hover, focus e blur
+        button.addEventListener("mouseenter", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("mouseleave", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        button.addEventListener("focus", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("blur", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        return button;
+    }
+
+    // Função específica para criar botão azul eProc (alias mais descritivo)
+    function botaoAzuleProc(id, innerHTML) {
+        return criarInfraButtonPrimary(id, innerHTML);
     }
 
     // Inicializar
@@ -5290,11 +6037,38 @@ ${texto}`;
         botaoBrancoCapaProcesso,
         criarInfraButtonPrimary,
         botaoAzuleProc,
+        // Funções de localizadores
+        detectarPaginaLocalizadores,
+        processarTabelaLocalizadores,
+        destacarLocalizadoresUrgentes,
     };
 
     // 🔍 FUNÇÕES DE DEBUG
     window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
     window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
+
+    // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
+    // Estrutura preparada para futuras funcionalidades da página de localizadores
+    window.SENT1_AUTO.localizadores = {
+        detectarPagina: detectarPaginaLocalizadores,
+        processarTabela: processarTabelaLocalizadores,
+        destacarUrgentes: destacarLocalizadoresUrgentes,
+        criarDivisor: criarDivisorEditavel,
+        adicionarInterface: adicionarInterfaceSeparadores,
+        adicionarTextoInformativo: adicionarTextoInformativoSeparadores,
+        adicionarMenuContexto: adicionarMenuContextoLinhas,
+        mostrarMenuContexto: mostrarMenuContextoSeparador,
+        debug: debugLocalizadores,
+        // Funções de persistência de separadores
+        salvarSeparadores: salvarSeparadores,
+        carregarSeparadores: carregarSeparadores,
+        restaurarSeparadores: restaurarSeparadores,
+        limparTodosSeparadores: limparTodosSeparadores,
+        // Espaço reservado para futuras funções:
+        // processarEmLote: null,
+        // criarDashboard: null,
+        // adicionarFiltros: null,
+    };
 
     // 🔍 FUNÇÕES DE DEBUG - Para investigar problemas com o card
     function debugDeteccaoDataSessao() {
