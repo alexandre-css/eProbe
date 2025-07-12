@@ -129,7 +129,7 @@ setTimeout(() => {
 ```bash
 # Use VS Code task (Ctrl+Shift+P → "Tasks: Run Task")
 # Task: "Testar Extensão eProbe"
-# 1. Open Chrome → chrome://extensions/
+# 1. Open Chrome → edge://extensions/
 # 2. Enable "Developer mode"
 # 3. "Load unpacked" → select c:\eProbe folder
 # 4. Navigate to eProc page
@@ -207,7 +207,6 @@ let processoComDadosCompletos = null; // Process with complete data
 
 ## File Priority for Understanding
 
-1. `src/main.js` (lines 2757-2800: `runFullAutomation`, 6580-6660: `detectarDataSessao`)
-2. `manifest.json` - Extension permissions and content script configuration
-3. `src/md/Anotações.md` - Domain requirements for session detection
-4. `src/popup.js` - Theme system and user interface patterns
+1. `manifest.json` - Extension permissions and content script configuration
+2. `src/md/Anotações.md` - Domain requirements for session detection
+3. `src/popup.js` - Theme system and user interface patterns

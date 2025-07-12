@@ -1,4 +1,4 @@
-﻿// Content script automatizado para DocumentosRelevantes
+// Content script automatizado para DocumentosRelevantes
 (function () {
     "use strict";
 
@@ -10,14 +10,6 @@
 
     // Armazenar dados completos da sessão obtidos do cruzamento
     let dadosCompletosSessionJulgamento = null;
-
-    // Variáveis globais para armazenar informações completas das minutas
-    let dadosCompletosMinutas = null;
-    let processoComDadosCompletos = null;
-
-    // 📄 DADOS DETALHADOS DAS MINUTAS - ACÓRDÃO E RELATÓRIO/VOTO
-    let dadosCompletosMinutasTexto = null;
-    let processoComDadosMinutasTexto = null;
 
     // 🛡️ CONTROLE DE REQUISIÇÕES - Prevenir spam e logout
     let tentativasCruzamento = 0;
@@ -3053,13 +3045,10 @@ ${texto}`;
         console.log(" Tentando criar botão integrado...");
 
         // Verificar se já existe (verificar todos os IDs possíveis)
-        const existingIntegratedButton = document.getElementById(
-            "documento-relevante-auto-button"
-        );
-        const existingFloatingButton =
-            document.getElementById("sent1-auto-button");
-
-        if (existingIntegratedButton || existingFloatingButton) {
+        if (
+            document.getElementById("documento-relevante-auto-button") ||
+            document.getElementById("sent1-auto-button")
+        ) {
             console.log(" Botão já existe, pulando criação");
             return;
         }
@@ -5127,19 +5116,12 @@ ${texto}`;
                 }, 1500);
             }
 
-            // Verificar se algum botão ainda existe no DOM
-            const integratedButtonExists = document.getElementById(
-                "documento-relevante-auto-button"
-            );
-            const floatingButtonExists =
-                document.getElementById("sent1-auto-button");
-
-            if (!integratedButtonExists && !floatingButtonExists) {
+            // Verificar se o botão ainda existe no DOM
+            const buttonExists = document.getElementById("sent1-auto-button");
+            if (!buttonExists) {
                 // Verificar se a página é válida antes de recriar o botão
                 if (isValidPageForButton()) {
-                    console.log(
-                        " Nenhum botão encontrado no DOM, recriando..."
-                    );
+                    console.log(" Botão removido do DOM, recriando...");
                     setTimeout(createAutomationButton, 500);
                 } else {
                     console.log(
@@ -5231,63 +5213,20 @@ ${texto}`;
         debugButtonStatus();
 
         // Tentar detectar data da sessão após a página carregar completamente
-        setTimeout(async () => {
+        setTimeout(() => {
             console.log(
                 "🔍 Tentando detectar data da sessão automaticamente..."
             );
             detectarDataSessao();
-
-            // Aguardar um pouco e tentar extrair dados das minutas se temos dados da sessão
-            setTimeout(async () => {
-                if (hasDadosCompletosMinutas()) {
-                    console.log(
-                        "🔍 MINUTAS: Iniciando extração automática de dados das minutas..."
-                    );
-                    try {
-                        await extrairDadosMinutasDetalhadas();
-                        console.log(
-                            "✅ MINUTAS: Extração automática concluída!"
-                        );
-                    } catch (error) {
-                        console.log(
-                            "❌ MINUTAS: Erro na extração automática:",
-                            error
-                        );
-                    }
-                }
-            }, 3000);
         }, 2000);
 
         // Segunda tentativa de detecção de data após mais tempo (para SPAs)
-        setTimeout(async () => {
+        setTimeout(() => {
             if (!hasDataSessaoPautado()) {
                 console.log(
                     "🔍 Segunda tentativa de detecção da data da sessão..."
                 );
                 detectarDataSessao();
-
-                // Segunda tentativa de extração de minutas
-                setTimeout(async () => {
-                    if (
-                        hasDadosCompletosMinutas() &&
-                        !hasDadosCompletosMinutasTexto()
-                    ) {
-                        console.log(
-                            "🔍 MINUTAS: Segunda tentativa de extração de dados das minutas..."
-                        );
-                        try {
-                            await extrairDadosMinutasDetalhadas();
-                            console.log(
-                                "✅ MINUTAS: Segunda tentativa concluída!"
-                            );
-                        } catch (error) {
-                            console.log(
-                                "❌ MINUTAS: Erro na segunda tentativa:",
-                                error
-                            );
-                        }
-                    }
-                }, 3000);
             }
         }, 5000);
 
@@ -5317,427 +5256,6 @@ ${texto}`;
                 );
             }
         }, 10000);
-    }
-
-    // ========================================
-    // FUNÇÕES UTILITÁRIAS - DADOS DAS MINUTAS
-    // ========================================
-
-    // Obter dados completos das minutas texto
-    function getDadosCompletosMinutasTexto() {
-        return dadosCompletosMinutasTexto &&
-            processoComDadosMinutasTexto === processoAtual
-            ? dadosCompletosMinutasTexto
-            : null;
-    }
-
-    // Verificar se há dados completos das minutas texto
-    function hasDadosCompletosMinutasTexto() {
-        return (
-            dadosCompletosMinutasTexto !== null &&
-            processoComDadosMinutasTexto === processoAtual
-        );
-    }
-
-    // Resetar dados completos das minutas texto
-    function resetDadosCompletosMinutasTexto() {
-        console.log("🔄 MINUTAS: Resetando dados das minutas texto");
-        dadosCompletosMinutasTexto = null;
-        processoComDadosMinutasTexto = null;
-    }
-
-    // Mostrar dados completos das minutas texto no console
-    function showDadosCompletosMinutasTexto() {
-        if (!hasDadosCompletosMinutasTexto()) {
-            const msg =
-                "❌ Nenhum dado completo das minutas texto foi detectado ainda.";
-            console.log(msg);
-            alert(msg);
-            return null;
-        }
-
-        const dados = dadosCompletosMinutasTexto;
-
-        console.log("📄 DADOS COMPLETOS DAS MINUTAS TEXTO:");
-        console.log(`📊 Processo: ${dados.processo}`);
-        console.log(`📊 Total de Minutas: ${dados.resumo.totalMinutas}`);
-        console.log(`✅ Minutas Válidas: ${dados.resumo.minutasValidas}`);
-        console.log(`❌ Minutas com Erro: ${dados.resumo.minutasComErro}`);
-        console.log(
-            `📄 Tem Acórdão: ${dados.resumo.temAcordao ? "SIM" : "NÃO"}`
-        );
-        console.log(
-            `📝 Tem Relatório/Voto: ${
-                dados.resumo.temRelatorioVoto ? "SIM" : "NÃO"
-            }`
-        );
-
-        dados.minutas.forEach((minuta, index) => {
-            console.log(`\n📋 MINUTA ${index + 1} (ID: ${minuta.id}):`);
-            console.log(`   🏛️ URL: ${minuta.url}`);
-
-            if (minuta.erro) {
-                console.log(`   ❌ Erro: ${minuta.erro}`);
-            } else {
-                if (minuta.acorda) {
-                    console.log(
-                        `   📄 ACÓRDÃO: ${minuta.acorda.substring(0, 100)}...`
-                    );
-                }
-                if (minuta.relatorioVoto) {
-                    console.log(
-                        `   📝 RELATÓRIO/VOTO: ${minuta.relatorioVoto.substring(
-                            0,
-                            100
-                        )}...`
-                    );
-                }
-            }
-        });
-
-        return dados;
-    }
-
-    // 🧪 FUNÇÃO DE TESTE ESPECÍFICA PARA O CARD "PROCESSO PAUTADO"
-    function testarCardProcessoPautado() {
-        console.log(
-            "🧪 TESTE CARD: Iniciando teste específico do card 'Processo Pautado'"
-        );
-
-        // 1. Verificar página atual
-        const h1Element = document.querySelector("h1");
-        console.log(
-            `📄 PÁGINA: ${
-                h1Element ? h1Element.textContent.trim() : "h1 não encontrado"
-            }`
-        );
-
-        // 2. Verificar se está na página correta
-        const paginaCorreta =
-            h1Element &&
-            h1Element.textContent.trim() ===
-                "Consulta Processual - Detalhes do Processo";
-        console.log(`✅ PÁGINA CORRETA: ${paginaCorreta ? "SIM" : "NÃO"}`);
-
-        if (!paginaCorreta) {
-            console.log(
-                "❌ ERRO: Você deve estar na página 'Consulta Processual - Detalhes do Processo'"
-            );
-            alert(
-                "❌ ERRO: Você deve estar na página 'Consulta Processual - Detalhes do Processo' para o card funcionar."
-            );
-            return false;
-        }
-
-        // 3. Verificar processo atual
-        const processoDetectado = obterNumeroProcesso();
-        console.log(`📋 PROCESSO: ${processoDetectado || "não detectado"}`);
-
-        // 4. Verificar variáveis globais
-        console.log(`🔍 VARIÁVEIS GLOBAIS:`);
-        console.log(
-            `   - dataSessaoPautado: ${dataSessaoPautado ? "SET" : "NULL"}`
-        );
-        console.log(
-            `   - processoComDataSessao: ${processoComDataSessao || "NULL"}`
-        );
-        console.log(`   - processoAtual: ${processoAtual || "NULL"}`);
-
-        // 5. Verificar se já tem data detectada
-        console.log(
-            `📅 DATA ATUAL: ${
-                hasDataSessaoPautado()
-                    ? getDataSessaoPautado().dataFormatada
-                    : "nenhuma"
-            }`
-        );
-
-        // 6. Verificar se card já existe
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        console.log(`🎯 CARD EXISTENTE: ${cardExistente ? "SIM" : "NÃO"}`);
-
-        // 7. Verificar container alvo
-        const targetContainer = document.querySelector(
-            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
-        );
-        console.log(
-            `📦 CONTAINER ALVO: ${
-                targetContainer ? "ENCONTRADO" : "NÃO ENCONTRADO"
-            }`
-        );
-
-        if (!targetContainer) {
-            console.log("🔍 CONTAINERS ALTERNATIVOS:");
-            const containers = [
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso",
-                "#divCapaProcesso .row",
-                "#fldCapa .row",
-                ".row.mt-2",
-                "#divCapaProcesso",
-                "#fldCapa",
-            ];
-
-            containers.forEach((selector, index) => {
-                const container = document.querySelector(selector);
-                console.log(
-                    `   ${index + 1}. ${selector}: ${
-                        container ? "ENCONTRADO" : "NÃO ENCONTRADO"
-                    }`
-                );
-            });
-        }
-
-        // 8. Verificar estrutura DOM específica para minutas
-        const divInfraArea = document.querySelector("#divInfraAreaProcesso");
-        const conteudoMinutas = document.querySelector("#conteudoMinutas");
-        const fldMinutas = document.querySelector("#fldMinutas");
-
-        console.log(`🔍 ESTRUTURA DOM:`);
-        console.log(
-            `   - #divInfraAreaProcesso: ${
-                divInfraArea ? "ENCONTRADO" : "NÃO ENCONTRADO"
-            }`
-        );
-        console.log(
-            `   - #conteudoMinutas: ${
-                conteudoMinutas ? "ENCONTRADO" : "NÃO ENCONTRADO"
-            }`
-        );
-        console.log(
-            `   - #fldMinutas: ${fldMinutas ? "ENCONTRADO" : "NÃO ENCONTRADO"}`
-        );
-
-        // 9. Forçar nova detecção
-        console.log("🔄 FORÇANDO NOVA DETECÇÃO...");
-
-        // Reset completo
-        dataSessaoPautado = null;
-        processoComDataSessao = null;
-        processoAtual = null;
-
-        // Remover card se existir
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ Card anterior removido");
-        }
-
-        // Tentar detectar novamente
-        const resultado = detectarDataSessao();
-
-        if (resultado) {
-            console.log(`✅ DETECÇÃO: Sucesso - ${resultado.dataFormatada}`);
-
-            // Tentar inserir card
-            setTimeout(() => {
-                const sucesso = inserirDataSessaoNaInterface();
-                console.log(`🎯 INSERÇÃO: ${sucesso ? "SUCESSO" : "FALHA"}`);
-
-                // Verificar se card foi inserido
-                const cardNovo = document.getElementById("eprobe-data-sessao");
-                console.log(
-                    `✨ CARD FINAL: ${cardNovo ? "INSERIDO" : "NÃO INSERIDO"}`
-                );
-
-                if (cardNovo) {
-                    console.log("🎉 TESTE CONCLUÍDO COM SUCESSO!");
-                    return true;
-                } else {
-                    console.log("❌ TESTE FALHOU - Card não apareceu");
-
-                    // Debug adicional se falhou
-                    console.log("🔍 DEBUG ADICIONAL:");
-                    console.log(
-                        `   - hasDataSessaoPautado(): ${hasDataSessaoPautado()}`
-                    );
-
-                    if (hasDataSessaoPautado()) {
-                        const targetAgain = document.querySelector(
-                            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
-                        );
-                        console.log(
-                            `   - Container ainda existe: ${
-                                targetAgain ? "SIM" : "NÃO"
-                            }`
-                        );
-                    }
-
-                    return false;
-                }
-            }, 1000);
-        } else {
-            console.log("❌ DETECÇÃO: Falhou - nenhuma data encontrada");
-
-            // Tentar debug do texto das minutas
-            console.log("🔍 TENTANDO DEBUG DO TEXTO DAS MINUTAS...");
-            try {
-                const debugResult = debugTextoMinutas();
-                console.log("📄 DEBUG MINUTAS:", debugResult);
-            } catch (error) {
-                console.log("❌ ERRO NO DEBUG MINUTAS:", error);
-            }
-
-            return false;
-        }
-    }
-
-    // 🔧 FUNÇÃO PARA FORÇAR CRIAÇÃO DO CARD SEM VALIDAÇÕES
-    function forcarCriacaoCard() {
-        console.log("🔧 FORÇA: Tentando forçar criação do card sem validações");
-
-        // Verificar se está na página correta
-        const h1Element = document.querySelector("h1");
-        if (
-            !h1Element ||
-            h1Element.textContent.trim() !==
-                "Consulta Processual - Detalhes do Processo"
-        ) {
-            console.log("❌ FORÇA: Página incorreta");
-            alert(
-                "❌ Você deve estar na página 'Consulta Processual - Detalhes do Processo'"
-            );
-            return false;
-        }
-
-        // Remover card existente se houver
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ FORÇA: Card existente removido");
-        }
-
-        // Buscar container com múltiplas estratégias
-        const containers = [
-            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#divCapaProcesso .row.mt-2",
-            "#fldCapa .row.mt-2",
-            "#divCapaProcesso .row",
-            "#fldCapa .row",
-            "#divCapaProcesso",
-            "#fldCapa",
-        ];
-
-        let targetContainer = null;
-        for (const selector of containers) {
-            targetContainer = document.querySelector(selector);
-            if (targetContainer) {
-                console.log(`✅ FORÇA: Container encontrado com: ${selector}`);
-                break;
-            }
-        }
-
-        if (!targetContainer) {
-            console.log("❌ FORÇA: Nenhum container encontrado");
-            alert("❌ Container para inserir o card não foi encontrado");
-            return false;
-        }
-
-        // Criar card com dados fictícios para teste
-        const dataTeste = {
-            dataFormatada: "TEST/TEST/TEST",
-            dataOriginal: "Teste Forçado",
-        };
-
-        // Forçar criação do card
-        const dataSessaoElement = document.createElement("div");
-        dataSessaoElement.id = "eprobe-data-sessao";
-        dataSessaoElement.className = "col-auto mr-2";
-        dataSessaoElement.style.cssText = `
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-            border: 2px solid #dc3545;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background-color: #ffe6e6;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            white-space: nowrap;
-            max-width: fit-content;
-        `;
-
-        dataSessaoElement.innerHTML = `
-            <svg style="width: 16px; height: 16px; color: #dc3545; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-            </svg>
-            <div style="display: flex; flex-direction: column; gap: 1px;">
-                <span style="font-weight: 600; font-size: 11px; color: #dc3545; line-height: 1;">TESTE FORÇADO</span>
-                <span style="font-weight: 700; font-size: 13px; color: #dc3545; line-height: 1;">${dataTeste.dataFormatada}</span>
-            </div>
-        `;
-
-        dataSessaoElement.title =
-            "Card de teste forçado para verificar se a inserção funciona";
-
-        // Inserir no container
-        try {
-            targetContainer.appendChild(dataSessaoElement);
-            console.log("✅ FORÇA: Card de teste inserido com sucesso!");
-
-            // Verificar se realmente apareceu
-            setTimeout(() => {
-                const cardVerificacao =
-                    document.getElementById("eprobe-data-sessao");
-                if (cardVerificacao) {
-                    console.log("🎉 FORÇA: Card confirmado no DOM!");
-                    alert(
-                        "✅ Card de teste criado com sucesso! O problema não é na inserção."
-                    );
-                } else {
-                    console.log("❌ FORÇA: Card não encontrado após inserção");
-                    alert("❌ Card não permaneceu no DOM após inserção");
-                }
-            }, 500);
-
-            return true;
-        } catch (error) {
-            console.log("❌ FORÇA: Erro ao inserir card:", error);
-            alert(`❌ Erro ao inserir card: ${error.message}`);
-            return false;
-        }
-    }
-
-    // ========================================
-    // FUNÇÕES DE DEBUG PARA MINUTAS
-    // ========================================
-
-    // Função de debug para extração de minutas texto
-    function debugExtracaoMinutasTexto() {
-        console.log("🔍 DEBUG: Estado atual da extração de minutas texto");
-        console.log(
-            `   Processo atual: ${processoAtual || "não identificado"}`
-        );
-        console.log(
-            `   Processo com dados: ${processoComDadosMinutasTexto || "nenhum"}`
-        );
-        console.log(`   Dados disponíveis: ${hasDadosCompletosMinutasTexto()}`);
-
-        if (hasDadosCompletosMinutasTexto()) {
-            const dados = getDadosCompletosMinutasTexto();
-            console.log(`   Total de minutas: ${dados.minutas?.length || 0}`);
-            console.log(`   Resumo:`, dados.resumo);
-        }
-    }
-
-    // Função para forçar extração de minutas texto
-    async function forcarExtracaoMinutasTexto() {
-        console.log(
-            "🔄 FORÇAR: Iniciando extração forçada de minutas texto..."
-        );
-
-        // Resetar estado
-        resetDadosCompletosMinutasTexto();
-
-        try {
-            const resultado = await extrairDadosMinutasDetalhadas();
-            console.log("✅ FORÇAR: Extração concluída:", resultado);
-            return resultado;
-        } catch (error) {
-            console.error("❌ FORÇAR: Erro na extração:", error);
-            return null;
-        }
     }
 
     // Inicializar
@@ -5777,17 +5295,13 @@ ${texto}`;
         inserirDataSessaoNaInterface,
         removerDataSessaoDaInterface,
         atualizarDataSessaoNaInterface,
-        forcarInsercaoCardSemValidacao,
-        // Funções para dados completos das minutas
-        getDadosCompletosMinutas,
-        hasDadosCompletosMinutas,
-        resetDadosCompletosMinutas,
-        showDadosCompletosMinutas,
+        forcarInsercaoCardSemValidacao, // <-- Adiciona a função ao namespace global
         // Funções de cruzamento de dados de sessão
         buscarDadosSessoes,
         parsearDadosSessoes,
         extrairDadosLinhaSessao,
         buscarSessaoPorData,
+        cruzarDadosDataSessao,
         cruzarDadosDataSessao,
         getDadosCompletosSessionJulgamento,
         hasDadosCompletosSessionJulgamento,
@@ -5796,61 +5310,11 @@ ${texto}`;
         // Funções de debug
         debugDeteccaoDataSessao,
         forcarDeteccaoDataSessao,
-        debugTextoMinutas,
-
-        // ========================================
-        // NOVAS FUNÇÕES - EXTRAÇÃO DE MINUTAS DETALHADAS
-        // ========================================
-
-        // Funções principais
-        detectarLinksMinutas,
-        processarPaginaMinuta,
-        extrairDadosMinutasDetalhadas,
-
-        // Funções utilitárias
-        getDadosCompletosMinutasTexto,
-        hasDadosCompletosMinutasTexto,
-        resetDadosCompletosMinutasTexto,
-        showDadosCompletosMinutasTexto,
-
-        // Funções globais específicas
-        MinutaEmentaCapaProcesso,
-        MinutaRelatorioVotoCapaProcesso,
-
-        // Funções de debug das minutas
-        debugExtracaoMinutasTexto,
-        forcarExtracaoMinutasTexto,
-
-        // Função de teste do card
-        testarCardProcessoPautado,
-        forcarCriacaoCard,
-
-        // Função de diagnóstico baseada na documentação
-        diagnosticoDocumentacao,
-
-        // Função de execução forçada seguindo a documentação
-        executarFluxoDocumentacao,
-
-        // Função de teste rápido conforme documentação
-        testeRapidoDocumentacao,
-
-        // Funções de debug para testar extração de minutas
-        debugMinutas: debugTextoMinutas,
-        testarMinutas: async function () {
-            console.log("🧪 TESTE: Iniciando teste de extração de minutas...");
-            const resultado = await extrairDadosMinutasDetalhadas();
-            console.log(
-                "🧪 TESTE: Resultado da extração de minutas:",
-                resultado
-            );
-            return resultado;
-        },
     };
 
-    // 🔍 FUNÇÕES DE DEBUG - Estas já estão no namespace principal acima
-    // window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
-    // window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
-    // window.SENT1_AUTO.debugTextoMinutas = debugTextoMinutas;
+    // 🔍 FUNÇÕES DE DEBUG
+    window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
+    window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
 
     // 🔍 FUNÇÕES DE DEBUG - Para investigar problemas com o card
     function debugDeteccaoDataSessao() {
@@ -6076,245 +5540,6 @@ ${texto}`;
             return true;
         } else {
             console.log("❌ FORÇA: Falha na inserção do card");
-            return false;
-        }
-    }
-
-    // 🔍 FUNÇÃO DE DEBUG PARA ANALISAR O TEXTO DAS MINUTAS
-    function debugTextoMinutas() {
-        console.log("🔍 DEBUG: Iniciando análise manual do texto das minutas");
-
-        // Verificar página
-        const h1Element = document.querySelector("h1");
-        if (
-            !h1Element ||
-            h1Element.textContent.trim() !==
-                "Consulta Processual - Detalhes do Processo"
-        ) {
-            console.log("❌ DEBUG: Não está na página correta");
-            console.log(
-                "📄 DEBUG: Título encontrado:",
-                h1Element ? h1Element.textContent.trim() : "nenhum h1"
-            );
-            return;
-        }
-
-        console.log("✅ DEBUG: Página correta identificada");
-
-        // USAR AS MESMAS ESTRATÉGIAS DA FUNÇÃO PRINCIPAL
-        console.log("🔍 DEBUG: Usando estratégias amplas de busca...");
-
-        let textoMinutasDebug = "";
-        let fonteBuscaDebug = "";
-
-        // ESTRATÉGIA 1: Área de processo completa
-        console.log(
-            "🔍 DEBUG ESTRATÉGIA 1: Buscando em toda área de processo..."
-        );
-        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
-        if (areaProcesso) {
-            console.log("✅ DEBUG ESTRATÉGIA 1: Área de processo encontrada");
-            textoMinutasDebug = areaProcesso.innerText;
-            fonteBuscaDebug = "área de processo completa";
-        } else {
-            console.log(
-                "❌ DEBUG ESTRATÉGIA 1: Área de processo não encontrada"
-            );
-        }
-
-        // ESTRATÉGIA 2: Página completa
-        if (!textoMinutasDebug) {
-            console.log("🔍 DEBUG ESTRATÉGIA 2: Buscando em toda a página...");
-            const corpoCompleto = document.body;
-            if (corpoCompleto) {
-                console.log(
-                    "✅ DEBUG ESTRATÉGIA 2: Usando corpo completo da página"
-                );
-                textoMinutasDebug = corpoCompleto.innerText;
-                fonteBuscaDebug = "página completa";
-            }
-        }
-
-        if (!textoMinutasDebug) {
-            console.log(
-                "❌ DEBUG: Nenhuma estratégia conseguiu encontrar texto para análise"
-            );
-            return;
-        }
-
-        console.log(`📄 DEBUG: Fonte: ${fonteBuscaDebug}`);
-        console.log("📄 DEBUG: Tamanho do texto:", textoMinutasDebug.length);
-        console.log(
-            "📄 DEBUG: Primeiros 1000 caracteres:",
-            textoMinutasDebug.substring(0, 1000)
-        );
-        console.log(
-            "📄 DEBUG: Últimos 500 caracteres:",
-            textoMinutasDebug.substring(
-                Math.max(0, textoMinutasDebug.length - 500)
-            )
-        );
-
-        // Testar padrões
-        const testePadroes = [
-            { nome: "Incluído em Pauta", regex: /Incluído em Pauta/gi },
-            { nome: "Data DD/MM/AAAA", regex: /\d{1,2}\/\d{1,2}\/\d{4}/g },
-            { nome: "Mérito", regex: /Mérito/gi },
-            { nome: "Agravo", regex: /Agravo/gi },
-            { nome: "Embargos", regex: /Embargos/gi },
-            { nome: "Interno", regex: /Interno/gi },
-            { nome: "Declaração", regex: /Declaração/gi },
-            {
-                nome: "Parênteses com data",
-                regex: /\([^)]*\d{1,2}\/\d{1,2}\/\d{4}[^)]*\)/gi,
-            },
-        ];
-
-        testePadroes.forEach(({ nome, regex }) => {
-            const matches = textoMinutasDebug.match(regex);
-            console.log(
-                `🔍 DEBUG: ${nome}: ${
-                    matches ? matches.length + " matches" : "nenhum match"
-                }`
-            );
-            if (matches && matches.length > 0) {
-                console.log(`   Primeiros matches:`, matches.slice(0, 5));
-            }
-        });
-
-        // Testar padrão principal
-        const padraoMinutas =
-            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-        const matchesPrincipais = [
-            ...textoMinutasDebug.matchAll(padraoMinutas),
-        ];
-        console.log(
-            `🔍 DEBUG: Padrão principal: ${matchesPrincipais.length} matches`
-        );
-
-        if (matchesPrincipais.length > 0) {
-            matchesPrincipais.forEach((match, index) => {
-                console.log(`   Match ${index + 1}:`, {
-                    completo: match[0],
-                    tipo: match[1]?.trim(),
-                    data: match[2],
-                    orgao: match[3],
-                });
-            });
-        }
-
-        // Buscar padrões alternativos mais flexíveis
-        console.log("🔍 DEBUG: Testando padrões alternativos...");
-
-        const padroesAlternativos = [
-            {
-                nome: "Qualquer coisa em pauta",
-                regex: /\([^)]*pauta[^)]*\d{1,2}\/\d{1,2}\/\d{4}[^)]*\)/gi,
-            },
-            {
-                nome: "Texto seguido de parênteses com data",
-                regex: /([A-Za-zÀ-ÿ\s]+)\s*\([^)]*(\d{1,2}\/\d{1,2}\/\d{4})[^)]*\)/gi,
-            },
-            {
-                nome: "Apenas datas isoladas",
-                regex: /\b(\d{1,2}\/\d{1,2}\/\d{4})\b/g,
-            },
-        ];
-
-        padroesAlternativos.forEach(({ nome, regex }) => {
-            const matches = [...textoMinutasDebug.matchAll(regex)];
-            console.log(`🔍 DEBUG: ${nome}: ${matches.length} matches`);
-            if (matches.length > 0) {
-                console.log(
-                    `   Primeiros matches:`,
-                    matches.slice(0, 3).map((m) => m[0])
-                );
-            }
-        });
-
-        return {
-            textoCompleto: textoMinutasDebug,
-            tamanho: textoMinutasDebug.length,
-            fonteBusca: fonteBuscaDebug,
-            matchesPrincipais: matchesPrincipais,
-        };
-    }
-
-    // 📖 TESTE RÁPIDO CONFORME DOCUMENTAÇÃO
-    function testeRapidoDocumentacao() {
-        console.log(
-            "📖 TESTE RÁPIDO: Verificando conformidade com documentação"
-        );
-        console.log("=".repeat(50));
-
-        // 1. Verificar URL
-        const url = window.location.href;
-        const temProcessoSelecionar = url.includes("processo_selecionar");
-        console.log(
-            `✅ URL contém 'processo_selecionar': ${
-                temProcessoSelecionar ? "SIM" : "NÃO"
-            }`
-        );
-
-        // 2. Verificar título
-        const h1 = document.querySelector("h1");
-        const tituloCorreto =
-            h1 &&
-            h1.textContent.trim() ===
-                "Consulta Processual - Detalhes do Processo";
-        console.log(`✅ Título correto: ${tituloCorreto ? "SIM" : "NÃO"}`);
-
-        // 3. Verificar estrutura DOM específica
-        const caminho = document.querySelector(
-            "#divInfraAreaGlobal #divInfraAreaProcesso #conteudoMinutas #fldMinutas"
-        );
-        console.log(
-            `✅ Caminho DOM específico: ${
-                caminho ? "ENCONTRADO" : "NÃO ENCONTRADO"
-            }`
-        );
-
-        // 4. Verificar botão de referência
-        const botao = caminho?.querySelector("button.infraLegendObrigatorio");
-        console.log(
-            `✅ Botão infraLegendObrigatorio: ${
-                botao ? "ENCONTRADO" : "NÃO ENCONTRADO"
-            }`
-        );
-
-        // 5. Testar estratégia 1
-        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
-        if (areaProcesso) {
-            const texto =
-                areaProcesso.textContent || areaProcesso.innerText || "";
-            console.log(
-                `✅ Estratégia 1 - Caracteres: ${texto.length} ${
-                    texto.length > 7000 ? "(BOM)" : "(BAIXO)"
-                }`
-            );
-        } else {
-            console.log(`❌ Estratégia 1 - Área não encontrada`);
-        }
-
-        // 6. Se tudo OK, executar detecção
-        if (temProcessoSelecionar && tituloCorreto && caminho && botao) {
-            console.log(
-                "🚀 EXECUTANDO: detectarDataSessao() - todos os pré-requisitos atendidos"
-            );
-            const resultado = detectarDataSessao();
-            console.log(`🎯 RESULTADO: ${resultado ? "SUCESSO" : "FALHA"}`);
-
-            // Verificar se card apareceu
-            setTimeout(() => {
-                const card = document.getElementById("eprobe-data-sessao");
-                console.log(`🎯 CARD: ${card ? "APARECEU" : "NÃO APARECEU"}`);
-            }, 1000);
-
-            return resultado;
-        } else {
-            console.log(
-                "❌ PRÉ-REQUISITOS: Não atendidos - navegue para página correta"
-            );
             return false;
         }
     }
@@ -7303,256 +6528,159 @@ ${texto}`;
 
     // Função principal para detectar data da sessão
     function detectarDataSessao() {
-        console.log(
-            "� INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
-        );
+        console.log("🔍 INICIANDO: Detecção da data da sessão");
 
-        // 1. VERIFICAR SE ESTÁ NA PÁGINA CORRETA (CONFORME DOCUMENTAÇÃO)
-        // 1.1 URL requerida: Deve conter 'processo_selecionar'
-        const urlAtual = window.location.href;
-        if (!urlAtual.includes("processo_selecionar")) {
-            console.log("❌ PÁGINA: URL não contém 'processo_selecionar'");
-            console.log(`❌ URL atual: ${urlAtual}`);
-            return null;
-        }
-
-        // 1.2 Título obrigatório: "Consulta Processual - Detalhes do Processo"
-        const h1Element = document.querySelector("h1");
-        if (
-            !h1Element ||
-            h1Element.textContent.trim() !==
-                "Consulta Processual - Detalhes do Processo"
-        ) {
-            console.log(
-                "❌ PÁGINA: Não está na página 'Consulta Processual - Detalhes do Processo'"
-            );
-            return null;
-        }
-        console.log("✅ PÁGINA: Página correta identificada");
-
-        // 2. IDENTIFICAÇÃO DO PROCESSO (CONFORME DOCUMENTAÇÃO)
-        console.log("🔍 PROCESSO: Tentando identificar número do processo");
+        // 🔐 VERIFICAÇÃO DE PROCESSO
         processoAtual = obterNumeroProcesso();
         if (!processoAtual) {
             console.log(
-                "❌ PROCESSO: Não foi possível identificar o número do processo"
+                "❌ BLOQUEIO: Não foi possível identificar o número do processo"
             );
             return null;
         }
-        console.log(`✅ PROCESSO: Encontrado: ${processoAtual}`);
 
-        // 3. VERIFICAÇÃO DE CACHE (CONFORME DOCUMENTAÇÃO)
+        // 🔓 PERMITIR MÚLTIPLAS DETECÇÕES - Verificar se já há data detectada
         if (hasDataSessaoPautado()) {
             console.log(
-                "ℹ️ CACHE: Data da sessão já detectada para o processo..."
+                `ℹ️ DETECÇÃO: Data da sessão já detectada para o processo ${processoAtual}: ${
+                    getDataSessaoPautado().dataFormatada
+                }`
+            );
+            console.log(
+                `🔍 DEBUG: Processo com data armazenada: ${processoComDataSessao}`
             );
             return getDataSessaoPautado();
         }
 
-        // 4. LIMPAR DADOS DE OUTRO PROCESSO SE NECESSÁRIO
+        console.log(
+            `🔍 DETECÇÃO: Analisando processo ${processoAtual} pela primeira vez...`
+        );
+        console.log(
+            `🔍 DEBUG: Processo anterior com data: ${processoComDataSessao}`
+        );
+
+        // Verificar se há data armazenada de outro processo
         if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
             console.log(
-                `⚠️ LIMPEZA: Removendo dados do processo anterior (${processoComDataSessao})`
+                `⚠️ CACHE: Limpando data de processo anterior (${processoComDataSessao}): ${dataSessaoPautado.dataFormatada}`
             );
             resetDataSessaoPautado();
-            resetDadosCompletosMinutas();
-            resetDadosCompletosMinutasTexto();
         }
 
-        // 5. ESTRUTURA DOM ESPECÍFICA (CONFORME DOCUMENTAÇÃO)
-        // Caminho DOM específico: #divInfraAreaGlobal → #divInfraAreaProcesso → #conteudoMinutas → #fldMinutas
-        const container = document.querySelector(
-            "#divInfraAreaGlobal #divInfraAreaProcesso #conteudoMinutas #fldMinutas"
-        );
-        if (!container) {
-            console.log(
-                "❌ DOM: Caminho específico não encontrado (#divInfraAreaGlobal → #divInfraAreaProcesso → #conteudoMinutas → #fldMinutas)"
-            );
-            return null;
-        }
-        console.log("✅ DOM: Caminho específico encontrado");
+        // Buscar em todo o texto da página
+        const textoCompleto = document.body.innerText;
 
-        // 6. BOTÃO DE REFERÊNCIA (CONFORME DOCUMENTAÇÃO)
-        // Procura pelo botão infraLegendObrigatorio como marco de navegação
-        const botaoInfra = container.querySelector(
-            "button.infraLegendObrigatorio"
-        );
-        if (!botaoInfra) {
-            console.log(
-                "❌ BUSCA: Botão .infraLegendObrigatorio não encontrado"
-            );
-            return null;
-        }
-        console.log("✅ BUSCA: Botão infraLegendObrigatorio encontrado");
+        // Primeiro padrão: buscar por texto que contém data da sessão
+        const padrao1 =
+            /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
 
-        // 7. ESTRATÉGIAS DE BUSCA OTIMIZADAS (CONFORME DOCUMENTAÇÃO)
-        // Apenas 2 estratégias amplas após otimização
-        console.log(
-            "🔍 INICIANDO: Busca ampla por dados de sessão na página..."
-        );
+        const match1 = textoCompleto.match(padrao1);
+        if (match1) {
+            const dataEncontrada = match1[1];
+            console.log(`✅ PADRÃO 1: Data encontrada: ${dataEncontrada}`);
 
-        let textoMinutas = "";
-        let fonteBusca = "";
-
-        // ESTRATÉGIA 1: Busca na Área de Processo (CONFORME DOCUMENTAÇÃO)
-        // Seletor: #divInfraAreaProcesso
-        // Resultado típico: ~7.755 caracteres analisados
-        console.log("🔍 ESTRATÉGIA 1: Buscando em toda área de processo...");
-        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
-        if (areaProcesso) {
-            console.log("✅ ESTRATÉGIA 1: Área de processo encontrada");
-            textoMinutas =
-                areaProcesso.textContent || areaProcesso.innerText || "";
-            fonteBusca = "área de processo completa";
-            console.log(
-                `🔍 ANÁLISE: Analisando texto de área de processo completa (${textoMinutas.length} caracteres)...`
-            );
-        }
-
-        // ESTRATÉGIA 2: Busca em Todo o Documento (CONFORME DOCUMENTAÇÃO)
-        // Seletor: document.body
-        // Uso: Backup para casos edge
-        if (!textoMinutas) {
-            console.log("🔍 ESTRATÉGIA 2: Buscando em todo o documento...");
-            const corpoCompleto = document.body;
-            if (corpoCompleto) {
-                console.log("✅ ESTRATÉGIA 2: Usando corpo completo da página");
-                textoMinutas =
-                    corpoCompleto.textContent || corpoCompleto.innerText || "";
-                fonteBusca = "página completa";
+            const dataValidada = validarDataBrasileira(dataEncontrada);
+            if (dataValidada) {
+                dataSessaoPautado = dataValidada;
+                processoComDataSessao = processoAtual;
                 console.log(
-                    `🔍 ANÁLISE: Analisando texto de página completa (${textoMinutas.length} caracteres)...`
+                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
                 );
+
+                // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
+                marcarProcessoComoProcessado(processoAtual);
+
+                // �🚀 INTEGRAÇÃO AUTOMÁTICA CONTROLADA: Apenas uma tentativa
+                setTimeout(async () => {
+                    try {
+                        console.log(
+                            "� CRUZAMENTO: Tentativa automática única e controlada"
+                        );
+                        const resultado = await cruzarDadosDataSessao();
+                        if (resultado) {
+                            console.log("✅ CRUZAMENTO: Sucesso!");
+                            atualizarDataSessaoNaInterface();
+                        } else {
+                            console.log("ℹ️ CRUZAMENTO: Dados não encontrados");
+                            console.log(
+                                "💡 Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
+                            );
+                        }
+                    } catch (error) {
+                        console.warn(
+                            "⚠️ CRUZAMENTO: Erro controlado:",
+                            error.message
+                        );
+                    }
+                }, 3000); // Delay maior
+
+                return dataValidada;
             }
         }
 
-        if (!textoMinutas) {
-            console.log(
-                "❌ BUSCA: Nenhuma estratégia conseguiu encontrar texto para análise"
-            );
-            return null;
-        }
+        // Segundo padrão: julgamento em [data]
+        const padrao2 =
+            /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
 
-        console.log("🔍 ANÁLISE: Analisando texto das minutas...");
-
-        // 8. PADRÕES DE TEXTO DETECTADOS (CONFORME DOCUMENTAÇÃO)
-        let dadosEncontrados = [];
-
-        // PADRÃO PRINCIPAL DE MINUTAS (CONFORME DOCUMENTAÇÃO)
-        // Exemplo: "Mérito | 29/07/2025 | CAMPUB5"
-        const padraoMinutas =
-            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\|\s*(\d{1,2}\/\d{1,2}\/\d{4})\s*\|\s*([A-Z0-9]+)/gi;
-
-        console.log(
-            "🧪 Testando PADRÃO PRINCIPAL: ([Tipo]) | ([Data]) | ([Órgão])"
-        );
-        let match;
-        while ((match = padraoMinutas.exec(textoMinutas)) !== null) {
-            const tipoJulgamento = match[1].trim();
-            const dataEncontrada = match[2];
-            const orgaoJulgador = match[3];
-
-            console.log(
-                `✅ ENCONTRADO (Principal): ${tipoJulgamento} | ${dataEncontrada} | ${orgaoJulgador}`
-            );
+        const match2 = textoCompleto.match(padrao2);
+        if (match2) {
+            const dataEncontrada = match2[1];
+            console.log(`✅ PADRÃO 2: Data encontrada: ${dataEncontrada}`);
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
-                dadosEncontrados.push({
-                    tipoJulgamento: tipoJulgamento,
-                    statusJulgamento: "Pautado",
-                    dataSessao: dataValidada,
-                    orgaoJulgador: orgaoJulgador,
-                    textoCompleto: match[0],
-                    padrao: "principal",
-                });
+                dataSessaoPautado = dataValidada;
+                console.log(
+                    `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
+                );
+
+                // 🔐 MARCAR PROCESSO COMO PROCESSADO
+                marcarProcessoComoProcessado(processoAtual);
+
+                // Interface inserida automaticamente
+                setTimeout(() => {
+                    inserirDataSessaoNaInterface();
+                }, 500);
+
+                // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo spam de requisições
+
+                return dataValidada;
             }
         }
 
-        // PADRÃO ALTERNATIVO (INCLUÍDO EM PAUTA) - CONFORME DOCUMENTAÇÃO
-        // Exemplo: "Mérito (Incluído em Pauta em 29/07/2025 - CAMPUB5)"
-        const padraoAlternativo =
-            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        // Terceiro padrão: data isolada próxima de palavras-chave
+        const padrao3 =
+            /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i;
 
-        console.log(
-            "🧪 Testando PADRÃO ALTERNATIVO: ([Tipo]) (Incluído em Pauta em [Data] - [Órgão])"
-        );
-        while ((match = padraoAlternativo.exec(textoMinutas)) !== null) {
-            const tipoJulgamento = match[1].trim();
-            const dataEncontrada = match[2];
-            const orgaoJulgador = match[3];
-
-            console.log(
-                `✅ ENCONTRADO (Alternativo): ${tipoJulgamento} | ${dataEncontrada} | ${orgaoJulgador}`
-            );
+        const match3 = textoCompleto.match(padrao3);
+        if (match3) {
+            const dataEncontrada = match3[1];
+            console.log(`✅ PADRÃO 3: Data encontrada: ${dataEncontrada}`);
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
-                dadosEncontrados.push({
-                    tipoJulgamento: tipoJulgamento,
-                    statusJulgamento: "Incluído em Pauta",
-                    dataSessao: dataValidada,
-                    orgaoJulgador: orgaoJulgador,
-                    textoCompleto: match[0],
-                    padrao: "alternativo",
-                });
+                dataSessaoPautado = dataValidada;
+                processoComDataSessao = processoAtual;
+                console.log(
+                    `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
+                );
+
+                // 🔐 MARCAR PROCESSO COMO PROCESSADO
+                marcarProcessoComoProcessado(processoAtual);
+
+                // Interface inserida automaticamente
+                setTimeout(() => {
+                    inserirDataSessaoNaInterface();
+                }, 500);
+
+                // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo múltiplas requisições
+
+                return dataValidada;
             }
         }
 
-        // 9. ANÁLISE E VALIDAÇÃO (CONFORME DOCUMENTAÇÃO)
-        if (dadosEncontrados.length === 0) {
-            console.log(
-                "❌ RESULTADO: Nenhum padrão válido encontrado nas minutas"
-            );
-            return null;
-        }
-
-        // Mostrar validação das datas encontradas
-        dadosEncontrados.forEach((dados, index) => {
-            console.log(
-                `📅 VALIDAÇÃO: Validando data "${dados.dataSessao.dataOriginal}"`
-            );
-            console.log(
-                `✅ VALIDAÇÃO: Data válida confirmada: ${dados.dataSessao.dataFormatada}`
-            );
-        });
-
-        // 10. ARMAZENAMENTO (CONFORME DOCUMENTAÇÃO)
-        const dadosPrincipais = dadosEncontrados[0];
-        dataSessaoPautado = dadosPrincipais.dataSessao;
-        processoComDataSessao = processoAtual;
-
-        dadosCompletosMinutas = {
-            processo: processoAtual,
-            dadosEncontrados: dadosEncontrados,
-            dataPrincipal: dadosPrincipais.dataSessao,
-            orgaoPrincipal: dadosPrincipais.orgaoJulgador,
-            timestamp: Date.now(),
-        };
-        processoComDadosCompletos = processoAtual;
-
-        console.log(
-            `✅ SUCESSO: Data detectada e dados armazenados para processo ${processoAtual}`
-        );
-        console.log(
-            `📊 DADOS: ${dadosEncontrados.length} registro(s) encontrado(s)`
-        );
-        console.log(
-            `📅 DATA PRINCIPAL: ${dadosPrincipais.dataSessao.dataFormatada}`
-        );
-
-        // Marcar processo como processado (conforme cache da documentação)
-        marcarProcessoComoProcessado(processoAtual);
-        console.log(
-            `🔐 MARCADO: Processo ${processoAtual} marcado como processado`
-        );
-
-        // Inserir interface automaticamente (passo final da documentação)
-        setTimeout(() => {
-            inserirDataSessaoNaInterface();
-        }, 500);
-
-        return dataSessaoPautado;
+        console.log("❌ Nenhuma data válida encontrada em todos os padrões");
+        return null;
     }
 
     // Funções utilitárias para gerenciar data da sessão
@@ -7688,89 +6816,151 @@ Timestamp: ${dataSessaoPautado.timestamp}`;
             this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
         });
 
-        // 🎨 INTERFACE SIMPLIFICADA: Sempre mostrar apenas "Processo Pautado" e "Data da Sessão"
-        console.log("🎨 INTERFACE: Usando interface simplificada");
+        // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
+        const dadosCompletos = getDadosCompletosSessionJulgamento();
 
-        // Verificar se há dados completos das minutas para tooltip
-        const dadosMinutas = getDadosCompletosMinutas();
+        if (dadosCompletos) {
+            // Interface RICA com dados completos
+            console.log("🎨 INTERFACE: Usando dados completos da sessão");
+            dataSessaoElement.innerHTML = `
+                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
+                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <span style="font-weight: 600; font-size: 10px; color: #6b7280; line-height: 1;">${
+                        dadosCompletos.orgaoJulgador
+                    }</span>
+                    <span style="font-weight: 700; font-size: 12px; color: #1f2937; line-height: 1;">${
+                        dadosCompletos.dataHoraCompleta
+                    } | ${dadosCompletos.tipoSessao}</span>
+                    <span style="font-weight: 500; font-size: 9px; color: ${
+                        dadosCompletos.statusSessao
+                            .toLowerCase()
+                            .includes("encerrada")
+                            ? "#dc2626"
+                            : "#16a34a"
+                    }; line-height: 1;">${dadosCompletos.statusSessao}</span>
+                </div>
+            `;
 
-        dataSessaoElement.innerHTML = `
-            <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-            </svg>
-            <div style="display: flex; flex-direction: column; gap: 1px;">
-                <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Processo Pautado</span>
-                <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
-            </div>
-        `;
+            // Tooltip com informações completas
+            dataSessaoElement.title = `Dados Completos da Sessão
 
-        // Tooltip básico se não há dados completos
-        dataSessaoElement.title = `Data da Sessão Detectada
+🏛️ Órgão: ${dadosCompletos.orgaoJulgador}
+📅 Data/Hora: ${dadosCompletos.dataHoraCompleta}
+🖥️ Tipo: ${dadosCompletos.tipoSessao}
+📍 Local: ${dadosCompletos.localSessao}
+📋 Status: ${dadosCompletos.statusSessao}
+
+📅 Limites:
+• Pauta: ${dadosCompletos.dataLimitePauta}
+• Mesa: ${dadosCompletos.dataLimiteMesa}
+• Minutas: ${dadosCompletos.dataLimiteMinutas}
+
+🆔 ID: ${dadosCompletos.id}
+Dados obtidos automaticamente pelo eProbe`;
+        } else {
+            // Interface BÁSICA apenas com data detectada
+            console.log("🎨 INTERFACE: Usando dados básicos (apenas data)");
+            dataSessaoElement.innerHTML = `
+                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
+                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Processo Pautado</span>
+                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
+                </div>
+            `;
+
+            // Tooltip básico
+            dataSessaoElement.title = `Data da Sessão Detectada
 
 Data Original: ${dataSessaoPautado.dataOriginal}
 Formatada: ${dataSessaoPautado.dataFormatada}
 Detectada automaticamente pelo eProbe
 
 🖱️ Clique para buscar dados completos da sessão`;
+        }
 
-        // 🔗 ADICIONAR LISTENER DE CLIQUE - Mostrar dados completos das minutas
+        // 🔗 ADICIONAR LISTENER DE CLIQUE - Cruzamento de dados acionado pelo usuário
         dataSessaoElement.addEventListener("click", async function (event) {
             event.preventDefault();
             event.stopPropagation();
 
-            console.log("🖱️ CLIQUE: Usuário clicou na data da sessão");
+            console.log(
+                "🖱️ CLIQUE: Usuário clicou na data da sessão - iniciando cruzamento de dados"
+            );
 
-            // Verificar se há dados completos das minutas
-            const dadosMinutas = getDadosCompletosMinutas();
-            if (dadosMinutas) {
-                console.log("✅ CLIQUE: Mostrando dados completos das minutas");
-                showDadosCompletosMinutas();
-            } else {
-                console.log("ℹ️ CLIQUE: Tentando redetectar dados das minutas");
+            // Verificar se já há dados completos
+            if (getDadosCompletosSessionJulgamento()) {
+                console.log(
+                    "ℹ️ CLIQUE: Dados completos já disponíveis - mostrando informações"
+                );
+                showDadosCompletosSessionJulgamento();
+                return;
+            }
 
-                // Mostrar feedback visual
-                const elementoOriginal = this.innerHTML;
-                this.innerHTML = `
-                    <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                    </svg>
-                    <div style="display: flex; flex-direction: column; gap: 1px;">
-                        <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Buscando dados...</span>
-                        <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
-                    </div>
-                `;
+            // Mostrar feedback visual de carregamento
+            const elementoOriginal = this.innerHTML;
+            this.innerHTML = `
+                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Buscando dados...</span>
+                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
+                </div>
+            `;
 
-                // Adicionar animação de rotação
-                const style = document.createElement("style");
-                style.textContent = `
-                    @keyframes spin {
-                        from { transform: rotate(0deg); }
-                        to { transform: rotate(360deg); }
-                    }
-                `;
-                if (!document.head.querySelector("style[data-eprobe-spin]")) {
-                    style.setAttribute("data-eprobe-spin", "true");
-                    document.head.appendChild(style);
+            // Adicionar animação de rotação
+            const style = document.createElement("style");
+            style.textContent = `
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
                 }
+            `;
+            if (!document.head.querySelector("style[data-eprobe-spin]")) {
+                style.setAttribute("data-eprobe-spin", "true");
+                document.head.appendChild(style);
+            }
 
-                // Tentar redetectar dados
-                setTimeout(() => {
-                    const novosDados = detectarDataSessao();
+            try {
+                // Forçar cruzamento de dados independente do toggle
+                console.log(
+                    "🔄 CLIQUE: Forçando cruzamento de dados da sessão"
+                );
+                const resultado = await cruzarDadosDataSessao(null, true);
 
-                    if (novosDados && getDadosCompletosMinutas()) {
-                        console.log("✅ REDETECÇÃO: Dados encontrados");
-                        showDadosCompletosMinutas();
+                if (resultado) {
+                    console.log(
+                        "✅ CLIQUE: Cruzamento realizado com sucesso - atualizando interface"
+                    );
+                    // A interface será atualizada automaticamente pelo cruzamento
+                    setTimeout(() => {
                         atualizarDataSessaoNaInterface();
-                    } else {
-                        console.log("⚠️ REDETECÇÃO: Nenhum dado encontrado");
-                        // Restaurar conteúdo original
-                        this.innerHTML = elementoOriginal;
-                        alert(
-                            "Não foi possível encontrar dados completos das minutas.\n\nVerifique se você está na página correta:\n'Consulta Processual - Detalhes do Processo'"
-                        );
-                    }
-                }, 1000);
+                    }, 500);
+                } else {
+                    console.log(
+                        "⚠️ CLIQUE: Cruzamento não retornou dados - restaurando interface"
+                    );
+                    // Restaurar conteúdo original
+                    this.innerHTML = elementoOriginal;
+
+                    // Mostrar notificação
+                    alert(
+                        "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido"
+                    );
+                }
+            } catch (error) {
+                console.error("❌ CLIQUE: Erro durante cruzamento:", error);
+                // Restaurar conteúdo original
+                this.innerHTML = elementoOriginal;
+
+                // Mostrar erro
+                alert(`Erro ao buscar dados da sessão:\n${error.message}`);
             }
         });
 
@@ -7865,1368 +7055,498 @@ Detectada automaticamente pelo eProbe
     }
 
     // ========================================
-    // FUNÇÕES PARA DADOS COMPLETOS DAS MINUTAS
+    // FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
     // ========================================
 
     /**
-     * Retorna os dados completos das minutas (se disponíveis)
-     * @returns {Object|null} - Dados das minutas ou null
+     * Busca dados das sessões de julgamento no eProc
+     * @param {string} hash - Hash da página de sessões (opcional)
+     * @returns {Promise<Array>} - Array com dados das sessões
      */
-    function getDadosCompletosMinutas() {
-        if (
-            dadosCompletosMinutas &&
-            processoComDadosCompletos === processoAtual
-        ) {
-            return dadosCompletosMinutas;
+    async function buscarDadosSessoes(hash = null) {
+        console.log("🔍 SESSÕES: Iniciando busca de dados das sessões");
+
+        // 🛡️ VERIFICAR CACHE PRIMEIRO
+        const agora = Date.now();
+        if (cacheResultadoSessoes && agora < cacheValidoAte) {
+            console.log(
+                "📦 SESSÕES: Usando dados do cache (evitando nova requisição)"
+            );
+            return cacheResultadoSessoes;
         }
-        return null;
+
+        // 🛡️ VERIFICAR SE JÁ ESTÁ EM ANDAMENTO
+        if (cruzamentoEmAndamento) {
+            console.log("⏳ SESSÕES: Busca já em andamento, aguardando...");
+            return [];
+        }
+
+        // 🛡️ VERIFICAR LIMITE DE TENTATIVAS
+        if (tentativasCruzamento >= MAX_TENTATIVAS_CRUZAMENTO) {
+            console.log(
+                `🚫 SESSÕES: Limite de ${MAX_TENTATIVAS_CRUZAMENTO} tentativas atingido`
+            );
+            console.log(
+                "💡 SESSÕES: Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
+            );
+            return [];
+        }
+
+        // 🛡️ VERIFICAR DELAY ENTRE TENTATIVAS
+        if (agora - ultimaTentativaCruzamento < DELAY_ENTRE_TENTATIVAS) {
+            const tempoRestante = Math.ceil(
+                (DELAY_ENTRE_TENTATIVAS - (agora - ultimaTentativaCruzamento)) /
+                    1000
+            );
+            console.log(
+                `⏰ SESSÕES: Aguardando ${tempoRestante}s antes da próxima tentativa`
+            );
+            return [];
+        }
+
+        try {
+            // Marcar início da busca
+            cruzamentoEmAndamento = true;
+            tentativasCruzamento++;
+            ultimaTentativaCruzamento = agora;
+
+            console.log(
+                `🔄 SESSÕES: Tentativa ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
+            );
+
+            // Construir URL da página de sessões
+            const baseUrl = window.location.origin;
+            const urlSessoes = hash
+                ? `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar&hash=${hash}`
+                : `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
+
+            console.log(`🌐 SESSÕES: Buscando URL: ${urlSessoes}`);
+
+            // Fazer fetch da página
+            const response = await fetch(urlSessoes, {
+                credentials: "same-origin",
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            const htmlContent = await response.text();
+            console.log("✅ SESSÕES: Página carregada com sucesso");
+
+            // Fazer parse dos dados
+            const dadosSessoes = await parsearDadosSessoes(htmlContent);
+            console.log(
+                `📊 SESSÕES: ${dadosSessoes.length} sessões encontradas`
+            );
+
+            // 📦 ARMAZENAR NO CACHE
+            if (dadosSessoes.length > 0) {
+                cacheResultadoSessoes = dadosSessoes;
+                cacheValidoAte = agora + CACHE_DURATION;
+                console.log(
+                    "📦 SESSÕES: Resultado armazenado no cache por 5 minutos"
+                );
+            }
+
+            return dadosSessoes;
+        } catch (error) {
+            console.error(`❌ SESSÕES: Erro ao buscar dados: ${error.message}`);
+            return [];
+        } finally {
+            // Sempre limpar flag de andamento
+            cruzamentoEmAndamento = false;
+        }
     }
 
     /**
-     * Verifica se há dados completos das minutas disponíveis
+     * Faz parse dos dados das sessões do HTML
+     * @param {string} htmlContent - Conteúdo HTML da página
+     * @returns {Array} - Array com dados estruturados das sessões
+     */
+    async function parsearDadosSessoes(htmlContent) {
+        console.log("🔍 PARSE: Iniciando parse dos dados das sessões");
+
+        try {
+            // Criar parser DOM
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+
+            // 🔍 DEBUG: Verificar estrutura da página
+            console.log("📋 PARSE DEBUG: Analisando estrutura da página...");
+
+            // Verificar se a página foi carregada corretamente
+            const title =
+                doc.querySelector("title")?.textContent || "sem título";
+            console.log(`📋 PARSE DEBUG: Título da página: "${title}"`);
+
+            // Verificar se há redirecionamento para login
+            if (
+                title.toLowerCase().includes("login") ||
+                title.toLowerCase().includes("acesso")
+            ) {
+                console.log(
+                    "❌ PARSE DEBUG: Página de login detectada - sessão expirada"
+                );
+                return [];
+            }
+
+            // Buscar diferentes seletores possíveis para a tabela
+            const seletoresTabela = [
+                "#divInfraAreaTelaD .table-responsive table.table",
+                "#divInfraAreaTelaD table.table",
+                ".table-responsive table.table",
+                "table.table",
+                "#divInfraAreaTelaD table",
+                ".table-responsive table",
+                "table",
+                "#frmLista table",
+                "#divInfraAreaTelaE table",
+            ];
+
+            let tabela = null;
+            let seletorUsado = "";
+
+            for (const seletor of seletoresTabela) {
+                tabela = doc.querySelector(seletor);
+                if (tabela) {
+                    seletorUsado = seletor;
+                    console.log(
+                        `✅ PARSE DEBUG: Tabela encontrada com seletor: "${seletor}"`
+                    );
+                    break;
+                }
+            }
+
+            if (!tabela) {
+                // Debug mais detalhado se não encontrar tabela
+                console.log(
+                    "🔍 PARSE DEBUG: Nenhuma tabela encontrada, analisando estrutura..."
+                );
+
+                // Verificar elementos principais
+                const divInfraAreaTelaD =
+                    doc.querySelector("#divInfraAreaTelaD");
+                const tableResponsive = doc.querySelector(".table-responsive");
+                const allTables = doc.querySelectorAll("table");
+                const allDivs = doc.querySelectorAll("div[id*='Area']");
+
+                console.log(
+                    `📋 PARSE DEBUG: #divInfraAreaTelaD encontrado: ${!!divInfraAreaTelaD}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: .table-responsive encontrado: ${!!tableResponsive}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: Total de tabelas: ${allTables.length}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: Divs com 'Area' no ID: ${allDivs.length}`
+                );
+
+                // Listar todas as tabelas encontradas
+                allTables.forEach((table, index) => {
+                    const tableId = table.id || "sem-id";
+                    const tableClass = table.className || "sem-class";
+                    const rowCount = table.querySelectorAll("tr").length;
+                    console.log(
+                        `📋 PARSE DEBUG: Tabela ${
+                            index + 1
+                        }: id="${tableId}", class="${tableClass}", linhas=${rowCount}`
+                    );
+                });
+
+                // Listar divs com Area no ID
+                allDivs.forEach((div, index) => {
+                    console.log(
+                        `📋 PARSE DEBUG: Div ${index + 1}: id="${
+                            div.id
+                        }", class="${div.className}"`
+                    );
+                });
+
+                // Verificar se há erro específico na página
+                const errorElements = doc.querySelectorAll(
+                    ".alert-danger, .error, .erro, [class*='erro'], [class*='error']"
+                );
+                if (errorElements.length > 0) {
+                    console.log(
+                        "❌ PARSE DEBUG: Elementos de erro encontrados:"
+                    );
+                    errorElements.forEach((error, index) => {
+                        console.log(
+                            `📋 PARSE DEBUG: Erro ${
+                                index + 1
+                            }: "${error.textContent.trim()}"`
+                        );
+                    });
+                }
+
+                console.log(
+                    "❌ PARSE: Tabela de sessões não encontrada em nenhum seletor"
+                );
+                return [];
+            }
+
+            // Buscar todas as linhas de dados (tbody > tr)
+            const linhasSessoes = tabela.querySelectorAll(
+                'tbody tr[id^="tr_"]'
+            );
+            console.log(`📋 PARSE: ${linhasSessoes.length} linhas encontradas`);
+
+            const sessoes = [];
+
+            for (const linha of linhasSessoes) {
+                try {
+                    const sessao = await extrairDadosLinhaSessao(linha);
+                    if (sessao) {
+                        sessoes.push(sessao);
+                    }
+                } catch (error) {
+                    console.warn(
+                        `⚠️ PARSE: Erro ao processar linha: ${error.message}`
+                    );
+                }
+            }
+
+            console.log(
+                `✅ PARSE: ${sessoes.length} sessões processadas com sucesso`
+            );
+            return sessoes;
+        } catch (error) {
+            console.error(`❌ PARSE: Erro no parse: ${error.message}`);
+            return [];
+        }
+    }
+
+    /**
+     * Extrai dados de uma linha específica da tabela de sessões
+     * @param {Element} linha - Elemento tr da linha
+     * @returns {Object|null} - Objeto com dados da sessão ou null
+     */
+    async function extrairDadosLinhaSessao(linha) {
+        try {
+            const id = linha.getAttribute("id");
+            const colunas = linha.querySelectorAll("td");
+
+            if (colunas.length < 8) {
+                console.warn(
+                    `⚠️ LINHA: Linha ${id} tem ${colunas.length} colunas, esperado >= 8`
+                );
+                return null;
+            }
+
+            // Extrair dados conforme a estrutura HTML fornecida
+            const orgaoJulgador = colunas[1]?.textContent?.trim() || "";
+            const dataHoraSessao = colunas[2]?.textContent?.trim() || "";
+            const tipoSessao = colunas[3]?.textContent?.trim() || "";
+            const localSessao = colunas[4]?.textContent?.trim() || "";
+            const dataLimitePauta = colunas[5]?.textContent?.trim() || "";
+            const dataLimiteMesa = colunas[6]?.textContent?.trim() || "";
+            const dataLimiteMinutas = colunas[7]?.textContent?.trim() || "";
+            const statusSessao = colunas[8]?.textContent?.trim() || "";
+
+            // Extrair só a data da string "03/06/2025 14:00"
+            const dataMatch = dataHoraSessao.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+            const dataSessao = dataMatch ? dataMatch[1] : "";
+
+            // Extrair só o horário
+            const horaMatch = dataHoraSessao.match(/(\d{1,2}:\d{2})/);
+            const horaSessao = horaMatch ? horaMatch[1] : "";
+
+            const sessao = {
+                id: id,
+                orgaoJulgador: orgaoJulgador,
+                dataSessao: dataSessao,
+                horaSessao: horaSessao,
+                dataHoraCompleta: dataHoraSessao,
+                tipoSessao: tipoSessao,
+                localSessao: localSessao,
+                dataLimitePauta: dataLimitePauta,
+                dataLimiteMesa: dataLimiteMesa,
+                dataLimiteMinutas: dataLimiteMinutas,
+                statusSessao: statusSessao,
+                // Dados adicionais
+                dataDetectada: new Date(),
+                validData: !!dataSessao,
+            };
+
+            console.log(
+                `📋 LINHA: Sessão extraída - ${orgaoJulgador} em ${dataSessao}`
+            );
+            return sessao;
+        } catch (error) {
+            console.error(`❌ LINHA: Erro ao extrair dados: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Busca sessão específica por data
+     * @param {string} dataProcurada - Data no formato DD/MM/AAAA
+     * @param {string} hash - Hash da página (opcional)
+     * @returns {Promise<Object|null>} - Dados da sessão encontrada ou null
+     */
+    async function buscarSessaoPorData(dataProcurada, hash = null) {
+        console.log(`🎯 BUSCA: Procurando sessão para data: ${dataProcurada}`);
+
+        try {
+            // Buscar todas as sessões
+            const sessoes = await buscarDadosSessoes(hash);
+
+            if (sessoes.length === 0) {
+                console.log("❌ BUSCA: Nenhuma sessão encontrada na listagem");
+                return null;
+            }
+
+            // Procurar sessão com a data específica
+            const sessaoEncontrada = sessoes.find(
+                (sessao) => sessao.dataSessao === dataProcurada
+            );
+
+            if (sessaoEncontrada) {
+                console.log(`✅ BUSCA: Sessão encontrada!`);
+                console.log(
+                    `📋 BUSCA: ${sessaoEncontrada.orgaoJulgador} - ${sessaoEncontrada.dataHoraCompleta}`
+                );
+
+                // Armazenar na variável global
+                dadosCompletosSessionJulgamento = sessaoEncontrada;
+
+                return sessaoEncontrada;
+            } else {
+                console.log(
+                    `❌ BUSCA: Nenhuma sessão encontrada para a data ${dataProcurada}`
+                );
+
+                // Log das datas disponíveis para debug
+                const datasDisponiveis = sessoes
+                    .map((s) => s.dataSessao)
+                    .filter((d) => d);
+                console.log(
+                    `📅 BUSCA: Datas disponíveis: ${datasDisponiveis.join(
+                        ", "
+                    )}`
+                );
+
+                return null;
+            }
+        } catch (error) {
+            console.error(`❌ BUSCA: Erro na busca: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Realiza cruzamento automático da data detectada com os dados das sessões
+     * @param {string} hash - Hash da página (opcional)
+     * @returns {Promise<boolean>} - true se encontrou e cruzou dados
+     */
+    async function cruzarDadosDataSessao(
+        hash = null,
+        forcarRequisicao = false
+    ) {
+        console.log("🔄 CRUZAMENTO: Iniciando cruzamento de dados da sessão");
+
+        // � VERIFICAR SE REQUISIÇÕES AUTOMÁTICAS ESTÃO DESABILITADAS
+        if (REQUISICOES_AUTOMATICAS_DESABILITADAS) {
+            console.log(
+                "🚫 CRUZAMENTO: Requisições automáticas desabilitadas globalmente"
+            );
+            console.log(
+                "💡 Para habilitar: window.SENT1_AUTO.habilitarRequisicoes()"
+            );
+            return false;
+        }
+
+        // �🔐 VERIFICAÇÃO DUPLA: Processo atual deve estar marcado como processado
+        if (!processoAtual) {
+            console.log("❌ CRUZAMENTO: Processo atual não identificado");
+            return false;
+        }
+
+        if (!processoJaFoiProcessado(processoAtual)) {
+            console.log(
+                `❌ CRUZAMENTO: Processo ${processoAtual} não foi marcado como processado`
+            );
+            return false;
+        }
+
+        if (!hasDataSessaoPautado()) {
+            console.log(
+                "❌ CRUZAMENTO: Nenhuma data de sessão detectada para cruzar"
+            );
+            return false;
+        }
+
+        const dataFormatada = dataSessaoPautado.dataFormatada;
+        console.log(
+            `🎯 CRUZAMENTO: Buscando dados para: ${dataFormatada} (Processo: ${processoAtual})`
+        );
+
+        try {
+            const sessaoEncontrada = await buscarSessaoPorData(
+                dataFormatada,
+                hash
+            );
+
+            if (sessaoEncontrada) {
+                console.log("✅ CRUZAMENTO: Dados cruzados com sucesso!");
+
+                // Atualizar interface se estiver sendo exibida
+                setTimeout(() => {
+                    atualizarDataSessaoNaInterface();
+                }, 500);
+
+                return true;
+            } else {
+                console.log("❌ CRUZAMENTO: Não foi possível cruzar os dados");
+                return false;
+            }
+        } catch (error) {
+            console.error(
+                `❌ CRUZAMENTO: Erro no cruzamento: ${error.message}`
+            );
+            return false;
+        }
+    }
+
+    /**
+     * Retorna os dados completos da sessão (se disponíveis)
+     * @returns {Object|null} - Dados da sessão ou null
+     */
+    function getDadosCompletosSessionJulgamento() {
+        return dadosCompletosSessionJulgamento;
+    }
+
+    /**
+     * Verifica se há dados completos da sessão disponíveis
      * @returns {boolean} - true se há dados disponíveis
      */
-    function hasDadosCompletosMinutas() {
-        return (
-            dadosCompletosMinutas !== null &&
-            processoComDadosCompletos === processoAtual
-        );
+    function hasDadosCompletosSessionJulgamento() {
+        return dadosCompletosSessionJulgamento !== null;
     }
 
     /**
-     * Reseta os dados completos das minutas
+     * Reseta os dados completos da sessão
      */
-    function resetDadosCompletosMinutas() {
-        console.log("🔄 RESET: Limpando dados completos das minutas");
-        dadosCompletosMinutas = null;
-        processoComDadosCompletos = null;
+    function resetDadosCompletosSessionJulgamento() {
+        console.log("🔄 RESET: Limpando dados completos da sessão");
+        dadosCompletosSessionJulgamento = null;
     }
 
     /**
-     * Mostra informações completas das minutas em modal moderno
+     * Mostra informações completas da sessão
      */
-    function showDadosCompletosMinutas() {
-        if (!hasDadosCompletosMinutas()) {
-            const msg =
-                "❌ Nenhum dado completo das minutas foi detectado ainda.";
-            console.log(msg);
-            alert(msg);
-            return null;
-        }
-
-        const dados = dadosCompletosMinutas;
-
-        // Remover modal anterior se existir
-        const existing = document.getElementById("dados-sessao-modal");
-        if (existing) {
-            existing.remove();
-        }
-
-        const modal = document.createElement("div");
-        modal.id = "dados-sessao-modal";
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100010;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
-        `;
-
-        // Gerar conteúdo dos detalhes (simplificado - sem texto verboso das minutas)
-        let detalhesHtml = "";
-        dados.dadosEncontrados.forEach((item, index) => {
-            detalhesHtml += `
-                <div style="margin-bottom: 16px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
-                    <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
-                        <div style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0;">
-                            ${index + 1}
-                        </div>
-                        ${item.tipoJulgamento}
-                    </div>
-                    
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            <strong>Data:</strong> ${
-                                item.dataSessao.dataFormatada
-                            }
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <path d="M10 18v-7"/>
-                                <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
-                                <path d="M14 18v-7"/>
-                                <path d="M18 18v-7"/>
-                                <path d="M3 22h18"/>
-                                <path d="M6 18v-7"/>
-                            </svg>
-                            <strong>Órgão:</strong> ${item.orgaoJulgador}
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: rgb(243, 246, 249);">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="m9 12 2 2 4-4"/>
-                            </svg>
-                            <strong>Status:</strong> ${item.statusJulgamento}
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        modal.innerHTML = `
-            <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 800px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
-                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
-                    <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                            <line x1="16" y1="2" x2="16" y2="6"/>
-                            <line x1="8" y1="2" x2="8" y2="6"/>
-                            <line x1="3" y1="10" x2="21" y2="10"/>
-                        </svg>
-                        Dados Completos da Sessão
-                    </h2>
-                </div>
-                
-                <div style="margin-bottom: 20px; padding: 16px; background: rgb(32, 39, 51); border-radius: 8px; border: 1px solid rgba(82, 82, 82, 0.3);">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                                <polyline points="14,2 14,8 20,8"/>
-                            </svg>
-                            <div>
-                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">PROCESSO</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600; font-family: monospace;">${
-                                    dados.processo
-                                }</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-                                <line x1="16" y1="2" x2="16" y2="6"/>
-                                <line x1="8" y1="2" x2="8" y2="6"/>
-                                <line x1="3" y1="10" x2="21" y2="10"/>
-                            </svg>
-                            <div>
-                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">DATA PRINCIPAL</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
-                                    dados.dataPrincipal.dataFormatada
-                                }</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <path d="M10 18v-7"/>
-                                <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
-                                <path d="M14 18v-7"/>
-                                <path d="M18 18v-7"/>
-                                <path d="M3 22h18"/>
-                                <path d="M6 18v-7"/>
-                            </svg>
-                            <div>
-                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">ÓRGÃO PRINCIPAL</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
-                                    dados.orgaoPrincipal
-                                }</div>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                            </svg>
-                            <div>
-                                <div style="font-size: 11px; color: rgb(136, 152, 181); font-weight: 500;">TOTAL DE REGISTROS</div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); font-weight: 600;">${
-                                    dados.dadosEncontrados.length
-                                }</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div style="margin-bottom: 20px;">
-                    <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(243, 246, 249)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
-                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
-                        </svg>
-                        <h3 style="margin: 0; color: rgb(243, 246, 249); font-size: 16px; font-weight: 600;">Detalhes dos Registros</h3>
-                    </div>
-                    ${detalhesHtml}
-                </div>
-
-                ${gerarAcordeaoMinutas()}
-
-                <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
-                    <button id="close-dados-modal" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m18 6-12 12"/>
-                            <path d="m6 6 12 12"/>
-                        </svg>
-                        Fechar
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Eventos
-        const closeBtn = modal.querySelector("#close-dados-modal");
-
-        // Hover no botão fechar
-        closeBtn.addEventListener("mouseenter", () => {
-            closeBtn.style.backgroundColor = "#91433d";
-            closeBtn.style.borderColor = "#91433d";
-        });
-
-        closeBtn.addEventListener("mouseleave", () => {
-            closeBtn.style.backgroundColor = "rgb(32, 39, 51)";
-            closeBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
-        });
-
-        // Fechar modal
-        closeBtn.addEventListener("click", () => {
-            modal.remove();
-        });
-
-        modal.addEventListener("click", (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-
-        // Log simplificado dos detalhes para console (sem texto verboso)
-        dados.dadosEncontrados.forEach((item, index) => {
-            const detalhes = `
-    ${index + 1}. ${item.tipoJulgamento}
-       📅 Data: ${item.dataSessao.dataFormatada}
-       🏛️ Órgão: ${item.orgaoJulgador}
-       📝 Status: ${item.statusJulgamento}`;
-            console.log(detalhes);
-        });
-
-        const info = `📋 DADOS COMPLETOS DAS MINUTAS:
-    
-    📄 Processo: ${dados.processo}
-    📅 Data Principal: ${dados.dataPrincipal.dataFormatada}
-    🏛️ Órgão Principal: ${dados.orgaoPrincipal}
-    📊 Total de Registros: ${dados.dadosEncontrados.length}
-    
-    DETALHES:`;
-
-        console.log(info);
-
-        return dados;
-    }
-
-    // ========================================
-    // FUNÇÕES GLOBAIS ESPECÍFICAS - MINUTAS
-    // ========================================
-
-    // Função global para obter texto da Ementa (ACÓRDÃO)
-    function MinutaEmentaCapaProcesso() {
-        if (!hasDadosCompletosMinutasTexto()) {
-            console.log("❌ EMENTA: Nenhum dado de minutas disponível");
-            return null;
-        }
-
-        const dados = getDadosCompletosMinutasTexto();
-        const ementasEncontradas = [];
-
-        dados.minutas.forEach((minuta, index) => {
-            if (minuta.acorda) {
-                ementasEncontradas.push({
-                    minutaId: minuta.id,
-                    index: index + 1,
-                    texto: minuta.acorda,
-                    url: minuta.url,
-                });
-            }
-        });
-
-        if (ementasEncontradas.length === 0) {
-            console.log("❌ EMENTA: Nenhuma ementa encontrada nas minutas");
-            return null;
-        }
-
-        console.log(
-            `✅ EMENTA: ${ementasEncontradas.length} ementa(s) encontrada(s)`
-        );
-
-        // Se há apenas uma ementa, retornar o texto diretamente
-        if (ementasEncontradas.length === 1) {
-            console.log(
-                "📄 EMENTA (única):",
-                ementasEncontradas[0].texto.substring(0, 200) + "..."
-            );
-            return ementasEncontradas[0].texto;
-        }
-
-        // Se há múltiplas ementas, retornar array com todas
-        console.log("📄 EMENTAS (múltiplas):");
-        ementasEncontradas.forEach((ementa, i) => {
-            console.log(
-                `   ${i + 1}. Minuta ${
-                    ementa.minutaId
-                }: ${ementa.texto.substring(0, 100)}...`
-            );
-        });
-
-        return ementasEncontradas;
-    }
-
-    // Função global para obter texto do Voto (RELATÓRIO/VOTO)
-    function MinutaRelatorioVotoCapaProcesso() {
-        if (!hasDadosCompletosMinutasTexto()) {
-            console.log("❌ VOTO: Nenhum dado de minutas disponível");
-            return null;
-        }
-
-        const dados = getDadosCompletosMinutasTexto();
-        const votosEncontrados = [];
-
-        dados.minutas.forEach((minuta, index) => {
-            if (minuta.relatorioVoto) {
-                votosEncontrados.push({
-                    minutaId: minuta.id,
-                    index: index + 1,
-                    texto: minuta.relatorioVoto,
-                    url: minuta.url,
-                });
-            }
-        });
-
-        if (votosEncontrados.length === 0) {
-            console.log(
-                "❌ VOTO: Nenhum relatório/voto encontrado nas minutas"
-            );
-            return null;
-        }
-
-        console.log(
-            `✅ VOTO: ${votosEncontrados.length} relatório(s)/voto(s) encontrado(s)`
-        );
-
-        // Se há apenas um voto, retornar o texto diretamente
-        if (votosEncontrados.length === 1) {
-            console.log(
-                "📝 VOTO (único):",
-                votosEncontrados[0].texto.substring(0, 200) + "..."
-            );
-            return votosEncontrados[0].texto;
-        }
-
-        // Se há múltiplos votos, retornar array com todos
-        console.log("📝 VOTOS (múltiplos):");
-        votosEncontrados.forEach((voto, i) => {
-            console.log(
-                `   ${i + 1}. Minuta ${voto.minutaId}: ${voto.texto.substring(
-                    0,
-                    100
-                )}...`
-            );
-        });
-
-        return votosEncontrados;
-    }
-
-    // ========================================
-    // FUNÇÃO PARA GERAR ACORDEÃO DAS MINUTAS NO MODAL
-    // ========================================
-
-    function gerarAcordeaoMinutas() {
-        // Verificar se há dados das minutas texto
-        if (!hasDadosCompletosMinutasTexto()) {
-            return ""; // Não exibir seção se não há dados
-        }
-
-        const dadosMinutas = getDadosCompletosMinutasTexto();
-
-        // Consolidar textos de todas as minutas
-        let acordaoCompleto = "";
-        let relatorioVotoCompleto = "";
-
-        dadosMinutas.minutas.forEach((minuta, index) => {
-            if (minuta.acorda) {
-                acordaoCompleto += `\n\n=== MINUTA ${index + 1} (ID: ${
-                    minuta.id
-                }) ===\n\n${minuta.acorda}`;
-            }
-            if (minuta.relatorioVoto) {
-                relatorioVotoCompleto += `\n\n=== MINUTA ${index + 1} (ID: ${
-                    minuta.id
-                }) ===\n\n${minuta.relatorioVoto}`;
-            }
-        });
-
-        // Se não há textos, não mostrar seção
-        if (!acordaoCompleto && !relatorioVotoCompleto) {
-            return "";
-        }
-
-        return `
-            <div style="margin-bottom: 20px;">
-                <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgb(243, 246, 249)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                        <polyline points="14,2 14,8 20,8"/>
-                    </svg>
-                    <h3 style="margin: 0; color: rgb(243, 246, 249); font-size: 16px; font-weight: 600;">Textos das Minutas</h3>
-                </div>
-
-                ${
-                    acordaoCompleto
-                        ? `
-                <div class="eprobe-accordion" style="margin-bottom: 12px; background: rgb(32, 39, 51); border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; overflow: hidden;">
-                    <div class="eprobe-accordion-header" onclick="toggleAccordion('acordao')" style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s ease;">
-                        <svg id="acordao-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;">
-                            <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M10 18v-7"/>
-                            <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
-                            <path d="M14 18v-7"/>
-                            <path d="M18 18v-7"/>
-                            <path d="M3 22h18"/>
-                            <path d="M6 18v-7"/>
-                        </svg>
-                        ACÓRDÃO
-                    </div>
-                    <div id="acordao-content" class="eprobe-accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgb(47, 52, 61);">
-                        <div style="padding: 16px; font-size: 13px; color: rgb(243, 246, 249); line-height: 1.5; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border-top: 1px solid rgba(82, 82, 82, 0.3);">
-                            ${acordaoCompleto.trim()}
-                        </div>
-                    </div>
-                </div>
-                `
-                        : ""
-                }
-
-                ${
-                    relatorioVotoCompleto
-                        ? `
-                <div class="eprobe-accordion" style="background: rgb(32, 39, 51); border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; overflow: hidden;">
-                    <div class="eprobe-accordion-header" onclick="toggleAccordion('relatorio')" style="background: rgb(19, 67, 119); color: rgb(243, 246, 249); padding: 12px 16px; cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s ease;">
-                        <svg id="relatorio-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.2s ease;">
-                            <path d="m9 18 6-6-6-6"/>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                            <polyline points="14,2 14,8 20,8"/>
-                        </svg>
-                        RELATÓRIO/VOTO
-                    </div>
-                    <div id="relatorio-content" class="eprobe-accordion-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease; background: rgb(47, 52, 61);">
-                        <div style="padding: 16px; font-size: 13px; color: rgb(243, 246, 249); line-height: 1.5; white-space: pre-wrap; max-height: 400px; overflow-y: auto; border-top: 1px solid rgba(82, 82, 82, 0.3);">
-                            ${relatorioVotoCompleto.trim()}
-                        </div>
-                    </div>
-                </div>
-                `
-                        : ""
-                }
-            </div>
-        `;
-    }
-
-    // Função para controlar expansão do acordeão
-    window.toggleAccordion = function (type) {
-        const content = document.getElementById(`${type}-content`);
-        const icon = document.getElementById(`${type}-icon`);
-
-        if (!content || !icon) return;
-
-        const isExpanded =
-            content.style.maxHeight && content.style.maxHeight !== "0px";
-
-        if (isExpanded) {
-            // Recolher
-            content.style.maxHeight = "0px";
-            icon.style.transform = "rotate(0deg)";
-        } else {
-            // Expandir
-            content.style.maxHeight = "450px"; // Altura máxima fixa
-            icon.style.transform = "rotate(90deg)";
-        }
-    };
-
-    // ========================================
-    // EXTRAÇÃO DE MINUTAS DETALHADAS (ACÓRDÃO E RELATÓRIO/VOTO)
-    // ========================================
-
-    // Função para detectar links de minutas na página
-    function detectarLinksMinutas() {
-        console.log("🔍 MINUTAS: Iniciando detecção de links de minutas");
-
-        // Verificar se está na página correta
-        const h1Element = document.querySelector("h1");
-        if (
-            !h1Element ||
-            h1Element.textContent.trim() !==
-                "Consulta Processual - Detalhes do Processo"
-        ) {
-            console.log(
-                "❌ MINUTAS: Não está na página 'Consulta Processual - Detalhes do Processo'"
-            );
-            return [];
-        }
-
-        // Buscar tabela de minutas
-        const tabelaMinutas = document.querySelector(
-            'table.infraTable[id^="tblMinutas"]'
-        );
-        if (!tabelaMinutas) {
-            console.log("❌ MINUTAS: Tabela de minutas não encontrada");
-            return [];
-        }
-
-        console.log(
-            "✅ MINUTAS: Tabela de minutas encontrada:",
-            tabelaMinutas.id
-        );
-
-        // Buscar links com onclick contendo 'minuta_inteiro_teor'
-        const linksMinutas = tabelaMinutas.querySelectorAll(
-            'a[onclick*="minuta_inteiro_teor"]'
-        );
-        console.log(
-            `🔍 MINUTAS: ${linksMinutas.length} links de minutas encontrados`
-        );
-
-        const minutasEncontradas = [];
-
-        linksMinutas.forEach((link, index) => {
-            const onclick = link.getAttribute("onclick") || "";
-            const idMinutaMatch = onclick.match(/id_minuta=([^'&]+)/);
-
-            if (idMinutaMatch) {
-                const idMinuta = idMinutaMatch[1];
-                const textoLink = link.textContent.trim();
-
-                // Construir URL completa da minuta
-                const baseUrl =
-                    window.location.origin +
-                    window.location.pathname.replace(/[^/]*$/, "");
-                const urlMinuta =
-                    baseUrl +
-                    "controlador.php?acao=minuta_inteiro_teor&acao_origem=processo_selecionar&acao_retorno=processo_selecionar&id_minuta=" +
-                    idMinuta;
-
-                minutasEncontradas.push({
-                    id: idMinuta,
-                    texto: textoLink,
-                    url: urlMinuta,
-                    element: link,
-                    index: index + 1,
-                });
-
-                console.log(
-                    `✅ MINUTAS: Minuta ${
-                        index + 1
-                    } - ID: ${idMinuta}, Texto: "${textoLink}"`
-                );
-            }
-        });
-
-        console.log(
-            `📊 MINUTAS: Total de ${minutasEncontradas.length} minutas válidas detectadas`
-        );
-        return minutasEncontradas;
-    }
-
-    // Função para extrair textos de uma página de minuta específica
-    async function processarPaginaMinuta(urlMinuta, minutaInfo) {
-        console.log(
-            `🔍 MINUTAS: Processando minuta ${minutaInfo.id} - ${minutaInfo.texto}`
-        );
-
-        return new Promise((resolve) => {
-            // Criar iframe oculto para carregar a página da minuta
-            const iframe = document.createElement("iframe");
-            iframe.style.cssText =
-                "position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0;";
-            iframe.src = urlMinuta;
-
-            let timeoutId;
-            let resolved = false;
-
-            const cleanup = () => {
-                if (timeoutId) clearTimeout(timeoutId);
-                if (iframe.parentNode) {
-                    iframe.parentNode.removeChild(iframe);
-                }
-            };
-
-            const resolveOnce = (result) => {
-                if (!resolved) {
-                    resolved = true;
-                    cleanup();
-                    resolve(result);
-                }
-            };
-
-            // Timeout de 15 segundos
-            timeoutId = setTimeout(() => {
-                console.log(
-                    `⏰ MINUTAS: Timeout na extração da minuta ${minutaInfo.id}`
-                );
-                resolveOnce({
-                    id: minutaInfo.id,
-                    acorda: null,
-                    relatorioVoto: null,
-                    erro: "Timeout no carregamento",
-                    url: urlMinuta,
-                });
-            }, 15000);
-
-            iframe.onload = () => {
-                try {
-                    console.log(
-                        `✅ MINUTAS: Iframe carregado para minuta ${minutaInfo.id}`
-                    );
-
-                    const iframeDoc =
-                        iframe.contentDocument || iframe.contentWindow.document;
-
-                    // Aguardar o formulário estar disponível
-                    setTimeout(() => {
-                        try {
-                            const form = iframeDoc.querySelector(
-                                "#frmVisualizarInteiroTeor"
-                            );
-                            if (!form) {
-                                console.log(
-                                    `❌ MINUTAS: Formulário frmVisualizarInteiroTeor não encontrado na minuta ${minutaInfo.id}`
-                                );
-                                resolveOnce({
-                                    id: minutaInfo.id,
-                                    acorda: null,
-                                    relatorioVoto: null,
-                                    erro: "Formulário não encontrado",
-                                    url: urlMinuta,
-                                });
-                                return;
-                            }
-
-                            console.log(
-                                `✅ MINUTAS: Formulário encontrado na minuta ${minutaInfo.id}`
-                            );
-
-                            // Extrair texto da EMENTA (ACÓRDÃO)
-                            const secaoEmenta = form.querySelector(
-                                'section[data-nome_apresentacao="Ementa"]'
-                            );
-                            const textoEmenta = secaoEmenta
-                                ? (
-                                      secaoEmenta.innerText ||
-                                      secaoEmenta.textContent ||
-                                      ""
-                                  ).trim()
-                                : null;
-
-                            // Extrair texto do VOTO (RELATÓRIO/VOTO)
-                            const secaoVoto = form.querySelector(
-                                'section[data-nome_apresentacao="Voto"]'
-                            );
-                            const textoVoto = secaoVoto
-                                ? (
-                                      secaoVoto.innerText ||
-                                      secaoVoto.textContent ||
-                                      ""
-                                  ).trim()
-                                : null;
-
-                            console.log(
-                                `📄 MINUTAS: Minuta ${
-                                    minutaInfo.id
-                                } - Ementa: ${
-                                    textoEmenta
-                                        ? "ENCONTRADA"
-                                        : "NÃO ENCONTRADA"
-                                }, Voto: ${
-                                    textoVoto ? "ENCONTRADO" : "NÃO ENCONTRADO"
-                                }`
-                            );
-
-                            resolveOnce({
-                                id: minutaInfo.id,
-                                acorda: textoEmenta || null,
-                                relatorioVoto: textoVoto || null,
-                                erro: null,
-                                url: urlMinuta,
-                                timestamp: Date.now(),
-                            });
-                        } catch (error) {
-                            console.log(
-                                `❌ MINUTAS: Erro ao processar conteúdo da minuta ${minutaInfo.id}:`,
-                                error
-                            );
-                            resolveOnce({
-                                id: minutaInfo.id,
-                                acorda: null,
-                                relatorioVoto: null,
-                                erro: error.message,
-                                url: urlMinuta,
-                            });
-                        }
-                    }, 2000); // Aguardar 2 segundos para carregamento completo
-                } catch (error) {
-                    console.log(
-                        `❌ MINUTAS: Erro ao acessar iframe da minuta ${minutaInfo.id}:`,
-                        error
-                    );
-                    resolveOnce({
-                        id: minutaInfo.id,
-                        acorda: null,
-                        relatorioVoto: null,
-                        erro: "Erro de acesso ao iframe: " + error.message,
-                        url: urlMinuta,
-                    });
-                }
-            };
-
-            iframe.onerror = () => {
-                console.log(
-                    `❌ MINUTAS: Erro ao carregar iframe da minuta ${minutaInfo.id}`
-                );
-                resolveOnce({
-                    id: minutaInfo.id,
-                    acorda: null,
-                    relatorioVoto: null,
-                    erro: "Erro no carregamento do iframe",
-                    url: urlMinuta,
-                });
-            };
-
-            // Adicionar iframe ao DOM
-            document.body.appendChild(iframe);
-        });
-    }
-
-    // Função principal para extrair dados detalhados das minutas
-    async function extrairDadosMinutasDetalhadas() {
-        console.log(
-            "🚀 MINUTAS: Iniciando extração de dados detalhados das minutas"
-        );
-
-        // Verificar se já temos dados para este processo
-        if (hasDadosCompletosMinutasTexto()) {
-            console.log("✅ MINUTAS: Dados já disponíveis para este processo");
-            // Detectar links de minutas
-            const linksMinutas = detectarLinksMinutas();
-            if (linksMinutas.length === 0) {
-                console.log(
-                    "❌ MINUTAS: Nenhuma minuta encontrada para extração"
-                );
-                return null;
-            }
-
-            console.log(
-                `🔍 MINUTAS: Processando ${linksMinutas.length} minutas encontradas`
-            );
-
-            // Processar minutas em paralelo (máximo 2 simultâneas para não sobrecarregar)
-            const resultados = [];
-            const maxConcorrencia = 2;
-
-            for (let i = 0; i < linksMinutas.length; i += maxConcorrencia) {
-                const lote = linksMinutas.slice(i, i + maxConcorrencia);
-                console.log(
-                    `🔄 MINUTAS: Processando lote ${
-                        Math.floor(i / maxConcorrencia) + 1
-                    } (${lote.length} minutas)`
-                );
-
-                const promessasLote = lote.map((minuta) =>
-                    processarPaginaMinuta(minuta.url, minuta)
-                );
-                const resultadosLote = await Promise.all(promessasLote);
-
-                resultados.push(...resultadosLote);
-
-                // Aguardar 1 segundo entre lotes para não sobrecarregar o servidor
-                if (i + maxConcorrencia < linksMinutas.length) {
-                    await new Promise((resolve) => setTimeout(resolve, 1000));
-                }
-            }
-
-            console.log(
-                "📊 MINUTAS: Processamento concluído, consolidando dados..."
-            );
-
-            // Consolidar resultados
-            const minutasValidas = resultados.filter(
-                (r) => r.acorda || r.relatorioVoto
-            );
-            const minutasComErro = resultados.filter((r) => r.erro);
-
-            console.log(
-                `✅ MINUTAS: ${minutasValidas.length} minutas com dados válidos`
-            );
-            console.log(
-                `❌ MINUTAS: ${minutasComErro.length} minutas com erro`
-            );
-
-            // Criar estrutura de dados global
-            dadosCompletosMinutasTexto = {
-                processo: processoAtual,
-                minutas: resultados,
-                resumo: {
-                    totalMinutas: resultados.length,
-                    minutasValidas: minutasValidas.length,
-                    minutasComErro: minutasComErro.length,
-                    temAcordao: resultados.some((r) => r.acorda),
-                    temRelatorioVoto: resultados.some((r) => r.relatorioVoto),
-                },
-                timestamp: Date.now(),
-            };
-
-            processoComDadosMinutasTexto = processoAtual;
-
-            console.log(
-                "🎉 MINUTAS: Dados detalhados das minutas extraídos e armazenados com sucesso!"
-            );
-            console.log(
-                "📄 MINUTAS: Resumo:",
-                dadosCompletosMinutasTexto.resumo
-            );
-
-            return dadosCompletosMinutasTexto;
-        }
-
-        // ========================================
-        // FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
-        // ========================================
-
-        /**
-         * Busca dados das sessões de julgamento no eProc
-         * @param {string} hash - Hash da página de sessões (opcional)
-         * @returns {Promise<Array>} - Array com dados das sessões
-         */
-        async function buscarDadosSessoes(hash = null) {
-            console.log("🔍 SESSÕES: Iniciando busca de dados das sessões");
-
-            // 🛡️ VERIFICAR CACHE PRIMEIRO
-            const agora = Date.now();
-            if (cacheResultadoSessoes && agora < cacheValidoAte) {
-                console.log(
-                    "📦 SESSÕES: Usando dados do cache (evitando nova requisição)"
-                );
-                return cacheResultadoSessoes;
-            }
-
-            // 🛡️ VERIFICAR SE JÁ ESTÁ EM ANDAMENTO
-            if (cruzamentoEmAndamento) {
-                console.log("⏳ SESSÕES: Busca já em andamento, aguardando...");
-                return [];
-            }
-
-            // 🛡️ VERIFICAR LIMITE DE TENTATIVAS
-            if (tentativasCruzamento >= MAX_TENTATIVAS_CRUZAMENTO) {
-                console.log(
-                    `🚫 SESSÕES: Limite de ${MAX_TENTATIVAS_CRUZAMENTO} tentativas atingido`
-                );
-                console.log(
-                    "💡 SESSÕES: Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
-                );
-                return [];
-            }
-
-            // 🛡️ VERIFICAR DELAY ENTRE TENTATIVAS
-            if (agora - ultimaTentativaCruzamento < DELAY_ENTRE_TENTATIVAS) {
-                const tempoRestante = Math.ceil(
-                    (DELAY_ENTRE_TENTATIVAS -
-                        (agora - ultimaTentativaCruzamento)) /
-                        1000
-                );
-                console.log(
-                    `⏰ SESSÕES: Aguardando ${tempoRestante}s antes da próxima tentativa`
-                );
-                return [];
-            }
-
-            try {
-                // Marcar início da busca
-                cruzamentoEmAndamento = true;
-                tentativasCruzamento++;
-                ultimaTentativaCruzamento = agora;
-
-                console.log(
-                    `🔄 SESSÕES: Tentativa ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
-                );
-
-                // Construir URL da página de sessões
-                const baseUrl = window.location.origin;
-                const urlSessoes = hash
-                    ? `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar&hash=${hash}`
-                    : `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
-
-                console.log(`🌐 SESSÕES: Buscando URL: ${urlSessoes}`);
-
-                // Fazer fetch da página
-                const response = await fetch(urlSessoes, {
-                    credentials: "same-origin",
-                    headers: {
-                        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(
-                        `HTTP ${response.status}: ${response.statusText}`
-                    );
-                }
-
-                const htmlContent = await response.text();
-                console.log("✅ SESSÕES: Página carregada com sucesso");
-
-                // Fazer parse dos dados
-                const dadosSessoes = await parsearDadosSessoes(htmlContent);
-                console.log(
-                    `📊 SESSÕES: ${dadosSessoes.length} sessões encontradas`
-                );
-
-                // 📦 ARMAZENAR NO CACHE
-                if (dadosSessoes.length > 0) {
-                    cacheResultadoSessoes = dadosSessoes;
-                    cacheValidoAte = agora + CACHE_DURATION;
-                    console.log(
-                        "📦 SESSÕES: Resultado armazenado no cache por 5 minutos"
-                    );
-                }
-
-                return dadosSessoes;
-            } catch (error) {
-                console.error(
-                    `❌ SESSÕES: Erro ao buscar dados: ${error.message}`
-                );
-                return [];
-            } finally {
-                // Sempre limpar flag de andamento
-                cruzamentoEmAndamento = false;
-            }
-        }
-
-        /**
-         * Faz parse dos dados das sessões do HTML
-         * @param {string} htmlContent - Conteúdo HTML da página
-         * @returns {Array} - Array com dados estruturados das sessões
-         */
-        async function parsearDadosSessoes(htmlContent) {
-            console.log("🔍 PARSE: Iniciando parse dos dados das sessões");
-
-            try {
-                // Criar parser DOM
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, "text/html");
-
-                // 🔍 DEBUG: Verificar estrutura da página
-                console.log(
-                    "📋 PARSE DEBUG: Analisando estrutura da página..."
-                );
-
-                // Verificar se a página foi carregada corretamente
-                const title =
-                    doc.querySelector("title")?.textContent || "sem título";
-                console.log(`📋 PARSE DEBUG: Título da página: "${title}"`);
-
-                // Verificar se há redirecionamento para login
-                if (
-                    title.toLowerCase().includes("login") ||
-                    title.toLowerCase().includes("acesso")
-                ) {
-                    console.log(
-                        "❌ PARSE DEBUG: Página de login detectada - sessão expirada"
-                    );
-                    return [];
-                }
-
-                // Buscar diferentes seletores possíveis para a tabela
-                const seletoresTabela = [
-                    "#divInfraAreaTelaD .table-responsive table.table",
-                    "#divInfraAreaTelaD table.table",
-                    ".table-responsive table.table",
-                    "table.table",
-                    "#divInfraAreaTelaD table",
-                    ".table-responsive table",
-                    "table",
-                    "#frmLista table",
-                    "#divInfraAreaTelaE table",
-                ];
-
-                let tabela = null;
-                let seletorUsado = "";
-
-                for (const seletor of seletoresTabela) {
-                    tabela = doc.querySelector(seletor);
-                    if (tabela) {
-                        seletorUsado = seletor;
-                        console.log(
-                            `✅ PARSE DEBUG: Tabela encontrada com seletor: "${seletor}"`
-                        );
-                        break;
-                    }
-                }
-
-                if (!tabela) {
-                    // Debug mais detalhado se não encontrar tabela
-                    console.log(
-                        "🔍 PARSE DEBUG: Nenhuma tabela encontrada, analisando estrutura..."
-                    );
-
-                    // Verificar elementos principais
-                    const divInfraAreaTelaD =
-                        doc.querySelector("#divInfraAreaTelaD");
-                    const tableResponsive =
-                        doc.querySelector(".table-responsive");
-                    const allTables = doc.querySelectorAll("table");
-                    const allDivs = doc.querySelectorAll("div[id*='Area']");
-
-                    console.log(
-                        `📋 PARSE DEBUG: #divInfraAreaTelaD encontrado: ${!!divInfraAreaTelaD}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: .table-responsive encontrado: ${!!tableResponsive}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: Total de tabelas: ${allTables.length}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: Divs com 'Area' no ID: ${allDivs.length}`
-                    );
-
-                    // Listar todas as tabelas encontradas
-                    allTables.forEach((table, index) => {
-                        const tableId = table.id || "sem-id";
-                        const tableClass = table.className || "sem-class";
-                        const rowCount = table.querySelectorAll("tr").length;
-                        console.log(
-                            `📋 PARSE DEBUG: Tabela ${
-                                index + 1
-                            }: id="${tableId}", class="${tableClass}", linhas=${rowCount}`
-                        );
-                    });
-
-                    // Listar divs com Area no ID
-                    allDivs.forEach((div, index) => {
-                        console.log(
-                            `📋 PARSE DEBUG: Div ${index + 1}: id="${
-                                div.id
-                            }", class="${div.className}"`
-                        );
-                    });
-
-                    // Verificar se há erro específico na página
-                    const errorElements = doc.querySelectorAll(
-                        ".alert-danger, .error, .erro, [class*='erro'], [class*='error']"
-                    );
-                    if (errorElements.length > 0) {
-                        console.log(
-                            "❌ PARSE DEBUG: Elementos de erro encontrados:"
-                        );
-                        errorElements.forEach((error, index) => {
-                            console.log(
-                                `📋 PARSE DEBUG: Erro ${
-                                    index + 1
-                                }: "${error.textContent.trim()}"`
-                            );
-                        });
-                    }
-
-                    console.log(
-                        "❌ PARSE: Tabela de sessões não encontrada em nenhum seletor"
-                    );
-                    return [];
-                }
-
-                // Buscar todas as linhas de dados (tbody > tr)
-                const linhasSessoes = tabela.querySelectorAll(
-                    'tbody tr[id^="tr_"]'
-                );
-                console.log(
-                    `📋 PARSE: ${linhasSessoes.length} linhas encontradas`
-                );
-
-                const sessoes = [];
-
-                for (const linha of linhasSessoes) {
-                    try {
-                        const sessao = await extrairDadosLinhaSessao(linha);
-                        if (sessao) {
-                            sessoes.push(sessao);
-                        }
-                    } catch (error) {
-                        console.warn(
-                            `⚠️ PARSE: Erro ao processar linha: ${error.message}`
-                        );
-                    }
-                }
-
-                console.log(
-                    `✅ PARSE: ${sessoes.length} sessões processadas com sucesso`
-                );
-                return sessoes;
-            } catch (error) {
-                console.error(`❌ PARSE: Erro no parse: ${error.message}`);
-                return [];
-            }
-        }
-
-        /**
-         * Extrai dados de uma linha específica da tabela de sessões
-         * @param {Element} linha - Elemento tr da linha
-         * @returns {Object|null} - Objeto com dados da sessão ou null
-         */
-        async function extrairDadosLinhaSessao(linha) {
-            try {
-                const id = linha.getAttribute("id");
-                const colunas = linha.querySelectorAll("td");
-
-                if (colunas.length < 8) {
-                    console.warn(
-                        `⚠️ LINHA: Linha ${id} tem ${colunas.length} colunas, esperado >= 8`
-                    );
-                    return null;
-                }
-
-                // Extrair dados conforme a estrutura HTML fornecida
-                const orgaoJulgador = colunas[1]?.textContent?.trim() || "";
-                const dataHoraSessao = colunas[2]?.textContent?.trim() || "";
-                const tipoSessao = colunas[3]?.textContent?.trim() || "";
-                const localSessao = colunas[4]?.textContent?.trim() || "";
-                const dataLimitePauta = colunas[5]?.textContent?.trim() || "";
-                const dataLimiteMesa = colunas[6]?.textContent?.trim() || "";
-                const dataLimiteMinutas = colunas[7]?.textContent?.trim() || "";
-                const statusSessao = colunas[8]?.textContent?.trim() || "";
-
-                // Extrair só a data da string "03/06/2025 14:00"
-                const dataMatch = dataHoraSessao.match(
-                    /(\d{1,2}\/\d{1,2}\/\d{4})/
-                );
-                const dataSessao = dataMatch ? dataMatch[1] : "";
-
-                // Extrair só o horário
-                const horaMatch = dataHoraSessao.match(/(\d{1,2}:\d{2})/);
-                const horaSessao = horaMatch ? horaMatch[1] : "";
-
-                const sessao = {
-                    id: id,
-                    orgaoJulgador: orgaoJulgador,
-                    dataSessao: dataSessao,
-                    horaSessao: horaSessao,
-                    dataHoraCompleta: dataHoraSessao,
-                    tipoSessao: tipoSessao,
-                    localSessao: localSessao,
-                    dataLimitePauta: dataLimitePauta,
-                    dataLimiteMesa: dataLimiteMesa,
-                    dataLimiteMinutas: dataLimiteMinutas,
-                    statusSessao: statusSessao,
-                    // Dados adicionais
-                    dataDetectada: new Date(),
-                    validData: !!dataSessao,
-                };
-
-                console.log(
-                    `📋 LINHA: Sessão extraída - ${orgaoJulgador} em ${dataSessao}`
-                );
-                return sessao;
-            } catch (error) {
-                console.error(
-                    `❌ LINHA: Erro ao extrair dados: ${error.message}`
-                );
-                return null;
-            }
-        }
-
-        /**
-         * Busca sessão específica por data
-         * @param {string} dataProcurada - Data no formato DD/MM/AAAA
-         * @param {string} hash - Hash da página (opcional)
-         * @returns {Promise<Object|null>} - Dados da sessão encontrada ou null
-         */
-        async function buscarSessaoPorData(dataProcurada, hash = null) {
-            console.log(
-                `🎯 BUSCA: Procurando sessão para data: ${dataProcurada}`
-            );
-
-            try {
-                // Buscar todas as sessões
-                const sessoes = await buscarDadosSessoes(hash);
-
-                if (sessoes.length === 0) {
-                    console.log(
-                        "❌ BUSCA: Nenhuma sessão encontrada na listagem"
-                    );
-                    return null;
-                }
-
-                // Procurar sessão com a data específica
-                const sessaoEncontrada = sessoes.find(
-                    (sessao) => sessao.dataSessao === dataProcurada
-                );
-
-                if (sessaoEncontrada) {
-                    console.log(`✅ BUSCA: Sessão encontrada!`);
-                    console.log(
-                        `📋 BUSCA: ${sessaoEncontrada.orgaoJulgador} - ${sessaoEncontrada.dataHoraCompleta}`
-                    );
-
-                    // Armazenar na variável global
-                    dadosCompletosSessionJulgamento = sessaoEncontrada;
-
-                    return sessaoEncontrada;
-                } else {
-                    console.log(
-                        `❌ BUSCA: Nenhuma sessão encontrada para a data ${dataProcurada}`
-                    );
-
-                    // Log das datas disponíveis para debug
-                    const datasDisponiveis = sessoes
-                        .map((s) => s.dataSessao)
-                        .filter((d) => d);
-                    console.log(
-                        `📅 BUSCA: Datas disponíveis: ${datasDisponiveis.join(
-                            ", "
-                        )}`
-                    );
-
-                    return null;
-                }
-            } catch (error) {
-                console.error(`❌ BUSCA: Erro na busca: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * Realiza cruzamento automático da data detectada com os dados das sessões
-         * @param {string} hash - Hash da página (opcional)
-         * @returns {Promise<boolean>} - true se encontrou e cruzou dados
-         */
-        async function cruzarDadosDataSessao(
-            hash = null,
-            forcarRequisicao = false
-        ) {
-            console.log(
-                "🔄 CRUZAMENTO: Iniciando cruzamento de dados da sessão"
-            );
-
-            // � VERIFICAR SE REQUISIÇÕES AUTOMÁTICAS ESTÃO DESABILITADAS
-            if (REQUISICOES_AUTOMATICAS_DESABILITADAS) {
-                console.log(
-                    "🚫 CRUZAMENTO: Requisições automáticas desabilitadas globalmente"
-                );
-                console.log(
-                    "💡 Para habilitar: window.SENT1_AUTO.habilitarRequisicoes()"
-                );
-                return false;
-            }
-
-            // �🔐 VERIFICAÇÃO DUPLA: Processo atual deve estar marcado como processado
-            if (!processoAtual) {
-                console.log("❌ CRUZAMENTO: Processo atual não identificado");
-                return false;
-            }
-
-            if (!processoJaFoiProcessado(processoAtual)) {
-                console.log(
-                    `❌ CRUZAMENTO: Processo ${processoAtual} não foi marcado como processado`
-                );
-                return false;
-            }
-
-            if (!hasDataSessaoPautado()) {
-                console.log(
-                    "❌ CRUZAMENTO: Nenhuma data de sessão detectada para cruzar"
-                );
-                return false;
-            }
-
-            const dataFormatada = dataSessaoPautado.dataFormatada;
-            console.log(
-                `🎯 CRUZAMENTO: Buscando dados para: ${dataFormatada} (Processo: ${processoAtual})`
-            );
-
-            try {
-                const sessaoEncontrada = await buscarSessaoPorData(
-                    dataFormatada,
-                    hash
-                );
-
-                if (sessaoEncontrada) {
-                    console.log("✅ CRUZAMENTO: Dados cruzados com sucesso!");
-
-                    // Atualizar interface se estiver sendo exibida
-                    setTimeout(() => {
-                        atualizarDataSessaoNaInterface();
-                    }, 500);
-
-                    return true;
-                } else {
-                    console.log(
-                        "❌ CRUZAMENTO: Não foi possível cruzar os dados"
-                    );
-                    return false;
-                }
-            } catch (error) {
-                console.error(
-                    `❌ CRUZAMENTO: Erro no cruzamento: ${error.message}`
-                );
-                return false;
-            }
-        }
-
-        /**
-         * Retorna os dados completos da sessão (se disponíveis)
-         * @returns {Object|null} - Dados da sessão ou null
-         */
-        function getDadosCompletosSessionJulgamento() {
-            return dadosCompletosSessionJulgamento;
-        }
-
-        /**
-         * Verifica se há dados completos da sessão disponíveis
-         * @returns {boolean} - true se há dados disponíveis
-         */
-        function hasDadosCompletosSessionJulgamento() {
-            return dadosCompletosSessionJulgamento !== null;
-        }
-
-        /**
-         * Reseta os dados completos da sessão
-         */
-        function resetDadosCompletosSessionJulgamento() {
-            console.log("🔄 RESET: Limpando dados completos da sessão");
-            dadosCompletosSessionJulgamento = null;
-        }
-
-        /**
-         * Mostra informações completas da sessão
-         */
-        function showDadosCompletosSessionJulgamento() {
-            if (hasDadosCompletosSessionJulgamento()) {
-                const dados = dadosCompletosSessionJulgamento;
-                const info = `📋 DADOS COMPLETOS DA SESSÃO:
+    function showDadosCompletosSessionJulgamento() {
+        if (hasDadosCompletosSessionJulgamento()) {
+            const dados = dadosCompletosSessionJulgamento;
+            const info = `📋 DADOS COMPLETOS DA SESSÃO:
 
 🏛️ Órgão Julgador: ${dados.orgaoJulgador}
 📅 Data da Sessão: ${dados.dataSessao}
@@ -9241,474 +7561,444 @@ Detectada automaticamente pelo eProbe
 
 🆔 ID: ${dados.id}`;
 
-                console.log(info);
-                alert(info);
-                return dados;
-            } else {
-                const msg =
-                    "❌ Nenhum dado completo de sessão foi encontrado ainda.";
-                console.log(msg);
-                alert(msg);
-                return null;
-            }
-        }
-
-        // 🚀 INICIALIZAÇÃO AUTOMÁTICA - Executar automáticamente após carregamento da página
-        function inicializarAutomaticamente() {
-            console.log(
-                "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
-            );
-
-            // Aguardar um pouco para garantir que a página carregou completamente
-            setTimeout(() => {
-                try {
-                    // 1. Detectar data da sessão
-                    if (!hasDataSessaoPautado()) {
-                        console.log(
-                            "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
-                        );
-                        detectarDataSessao();
-                    }
-
-                    // 2. Se detectou data, inserir na interface
-                    if (hasDataSessaoPautado()) {
-                        console.log(
-                            "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
-                        );
-                        inserirDataSessaoNaInterface();
-
-                        // 3. Cruzar dados automaticamente
-                        console.log(
-                            "🔄 INICIALIZAÇÃO: Iniciando cruzamento automático de dados..."
-                        );
-                        cruzarDadosDataSessao()
-                            .then(() => {
-                                console.log(
-                                    "✅ INICIALIZAÇÃO: Processo completo finalizado com sucesso!"
-                                );
-                                // Atualizar interface com dados completos se disponíveis
-                                atualizarDataSessaoNaInterface();
-                            })
-                            .catch((error) => {
-                                console.warn(
-                                    "⚠️ INICIALIZAÇÃO: Erro no cruzamento automático:",
-                                    error
-                                );
-                            });
-                    } else {
-                        console.log(
-                            "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
-                        );
-                    }
-                } catch (error) {
-                    console.error(
-                        "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
-                        error
-                    );
-                }
-            }, 1000); // Aguardar 1 segundo
-        }
-
-        // 🧪 FUNÇÃO DE TESTE - Para validação durante desenvolvimento
-        function testarSistemaCompleto() {
-            console.log(
-                "🧪 TESTE: Iniciando teste completo do sistema de sessões..."
-            );
-
-            return new Promise(async (resolve) => {
-                try {
-                    // 1. Resetar estado
-                    console.log("🔄 TESTE: Resetando estado...");
-                    resetDataSessaoPautado();
-                    resetDadosCompletosSessionJulgamento();
-
-                    // 2. Testar detecção de data
-                    console.log("🔍 TESTE: Testando detecção de data...");
-                    detectarDataSessao();
-
-                    if (hasDataSessaoPautado()) {
-                        console.log("✅ TESTE: Data detectada com sucesso!");
-                        showDataSessaoPautadoInfo();
-
-                        // 3. Testar inserção na interface
-                        console.log(
-                            "🎨 TESTE: Testando inserção na interface..."
-                        );
-                        inserirDataSessaoNaInterface();
-
-                        // 4. Testar cruzamento de dados
-                        console.log(
-                            "🔄 TESTE: Testando cruzamento de dados..."
-                        );
-                        const resultado = await cruzarDadosDataSessao();
-
-                        if (resultado) {
-                            console.log(
-                                "✅ TESTE: Cruzamento realizado com sucesso!"
-                            );
-                            showDadosCompletosSessionJulgamento();
-
-                            // 5. Testar atualização da interface
-                            console.log(
-                                "🎨 TESTE: Testando atualização da interface..."
-                            );
-                            atualizarDataSessaoNaInterface();
-
-                            console.log(
-                                "🎉 TESTE: Teste completo finalizado com SUCESSO!"
-                            );
-                            resolve(true);
-                        } else {
-                            console.log(
-                                "⚠️ TESTE: Cruzamento não encontrou dados"
-                            );
-                            resolve(false);
-                        }
-                    } else {
-                        console.log(
-                            "❌ TESTE: Nenhuma data de sessão detectada"
-                        );
-                        resolve(false);
-                    }
-                } catch (error) {
-                    console.error("❌ TESTE: Erro durante teste:", error);
-                    resolve(false);
-                }
-            });
-        }
-
-        // Adicionar função de teste ao namespace global para debug
-        if (window.SENT1_AUTO) {
-            // Funções principais de teste e debug
-            window.SENT1_AUTO.testarSistemaCompleto = testarSistemaCompleto;
-            window.SENT1_AUTO.debugPaginaSessoes = debugPaginaSessoes;
-            window.SENT1_AUTO.resetControlesRequisicao =
-                resetControlesRequisicao;
-            window.SENT1_AUTO.statusControlesRequisicao =
-                statusControlesRequisicao;
-
-            // 🔐 CONTROLES ÚNICOS POR PROCESSO
-            window.SENT1_AUTO.obterNumeroProcesso = obterNumeroProcesso;
-            window.SENT1_AUTO.obterProcessoAtual = () => processoAtual;
-            window.SENT1_AUTO.listarProcessosProcessados = () =>
-                Array.from(processosJaProcessados);
-            window.SENT1_AUTO.resetProcessosProcessados = () => {
-                processosJaProcessados.clear();
-                cachePorProcesso.clear();
-                processoAtual = null;
-                console.log("🔄 RESET: Controles de processo resetados");
-            };
-            window.SENT1_AUTO.statusProcessos = () => {
-                console.log("🔐 STATUS PROCESSOS:");
-                console.log(
-                    `   Processo atual: ${processoAtual || "não identificado"}`
-                );
-                console.log(
-                    `   Processos processados: ${processosJaProcessados.size}`
-                );
-                console.log(
-                    `   Lista: ${Array.from(processosJaProcessados).join(", ")}`
-                );
-                console.log(
-                    `   Cache por processo: ${cachePorProcesso.size} entradas`
-                );
-            };
-
-            // 🚫 CONTROLES DE REQUISIÇÕES AUTOMÁTICAS
-            window.SENT1_AUTO.statusRequisicoes = () => {
-                console.log("🚫 STATUS REQUISIÇÕES:");
-                console.log(
-                    `   Requisições automáticas: ${
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS
-                            ? "DESABILITADAS"
-                            : "HABILITADAS"
-                    }`
-                );
-                console.log(
-                    `   Tentativas realizadas: ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
-                );
-                console.log(
-                    `   Delay entre tentativas: ${
-                        DELAY_ENTRE_TENTATIVAS / 1000
-                    }s`
-                );
-                console.log(`   Cache válido por: ${CACHE_DURATION / 1000}s`);
-            };
-
-            window.SENT1_AUTO.desabilitarRequisicoes = () => {
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
-                console.log(
-                    "🚫 REQUISIÇÕES: Requisições automáticas desabilitadas"
-                );
-            };
-
-            window.SENT1_AUTO.habilitarRequisicoes = () => {
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-                console.log(
-                    "✅ REQUISIÇÕES: Requisições automáticas habilitadas"
-                );
-                console.log("⚠️ ATENÇÃO: Use com moderação para evitar logout");
-            };
-
-            window.SENT1_AUTO.forcarCruzamento = async () => {
-                console.log(
-                    "🔄 FORÇA: Forçando cruzamento ignorando bloqueios..."
-                );
-                const estadoOriginal = REQUISICOES_AUTOMATICAS_DESABILITADAS;
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-
-                try {
-                    const resultado = await cruzarDadosDataSessao();
-                    console.log(
-                        `🔄 FORÇA: Resultado: ${
-                            resultado ? "SUCESSO" : "FALHA"
-                        }`
-                    );
-                    return resultado;
-                } finally {
-                    REQUISICOES_AUTOMATICAS_DESABILITADAS = estadoOriginal;
-                }
-            };
-
-            console.log(
-                "🧪 TESTE: Função testarSistemaCompleto() disponível em window.SENT1_AUTO"
-            );
-            console.log(
-                "🧪 DEBUG: Função debugPaginaSessoes() disponível em window.SENT1_AUTO"
-            );
-            console.log(
-                "🔐 CONTROLE: Funções de controle único por processo disponíveis em window.SENT1_AUTO"
-            );
-        }
-
-        // 🔍 FUNÇÃO DE DEBUG - Para investigar estrutura da página de sessões
-        async function debugPaginaSessoes() {
-            console.log("🔍 DEBUG: Iniciando debug da página de sessões...");
-
-            try {
-                const baseUrl = window.location.origin;
-                const urlSessoes = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
-
-                console.log(`🌐 DEBUG: Fazendo fetch para: ${urlSessoes}`);
-
-                const response = await fetch(urlSessoes, {
-                    credentials: "same-origin",
-                    headers: {
-                        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                    },
-                });
-
-                if (!response.ok) {
-                    console.error(
-                        `❌ DEBUG: Erro HTTP ${response.status}: ${response.statusText}`
-                    );
-                    return;
-                }
-
-                const htmlContent = await response.text();
-                console.log(
-                    `✅ DEBUG: Página carregada, tamanho: ${htmlContent.length} caracteres`
-                );
-
-                // Fazer parse
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, "text/html");
-
-                // Debug básico
-                const title =
-                    doc.querySelector("title")?.textContent || "sem título";
-                console.log(`📋 DEBUG: Título: "${title}"`);
-
-                // Verificar se foi redirecionado para login
-                if (
-                    title.toLowerCase().includes("login") ||
-                    htmlContent.includes("frmLogin")
-                ) {
-                    console.warn(
-                        "⚠️ DEBUG: Parece que foi redirecionado para página de login!"
-                    );
-                    console.warn(
-                        "💡 DEBUG: Tente acessar a URL manualmente no navegador primeiro"
-                    );
-                    return;
-                }
-
-                // Analisar estrutura
-                const allTables = doc.querySelectorAll("table");
-                console.log(
-                    `📊 DEBUG: ${allTables.length} tabelas encontradas`
-                );
-
-                allTables.forEach((table, index) => {
-                    const id = table.id || "sem-id";
-                    const className = table.className || "sem-class";
-                    const rows = table.querySelectorAll("tr").length;
-                    const hasSessionData =
-                        table.innerHTML.includes("Órgão Julgador") ||
-                        table.innerHTML.includes("Data da Sessão") ||
-                        table.innerHTML.includes("sessao");
-
-                    console.log(`📋 DEBUG: Tabela ${index + 1}:`);
-                    console.log(`  - ID: "${id}"`);
-                    console.log(`  - Class: "${className}"`);
-                    console.log(`  - Linhas: ${rows}`);
-                    console.log(
-                        `  - Parece ter dados de sessão: ${hasSessionData}`
-                    );
-
-                    if (hasSessionData && rows > 1) {
-                        console.log(
-                            `🎯 DEBUG: Esta tabela parece promissora! Analisando mais...`
-                        );
-
-                        // Pegar headers
-                        const headers = Array.from(
-                            table.querySelectorAll("th, thead td")
-                        ).map((th) => th.textContent.trim());
-                        console.log(
-                            `📋 DEBUG: Headers: ${JSON.stringify(headers)}`
-                        );
-
-                        // Pegar algumas linhas de exemplo
-                        const dataRows = table.querySelectorAll("tbody tr");
-                        console.log(
-                            `📋 DEBUG: ${dataRows.length} linhas de dados`
-                        );
-
-                        Array.from(dataRows)
-                            .slice(0, 3)
-                            .forEach((row, rowIndex) => {
-                                const cells = Array.from(
-                                    row.querySelectorAll("td")
-                                ).map((td) => td.textContent.trim());
-                                console.log(
-                                    `📋 DEBUG: Linha ${
-                                        rowIndex + 1
-                                    }: ${JSON.stringify(cells)}`
-                                );
-                            });
-                    }
-                });
-
-                // Salvar HTML para inspeção manual
-                console.log(
-                    "💾 DEBUG: HTML da página salvo em window.debugPageHTML (use console para inspecionar)"
-                );
-                window.debugPageHTML = htmlContent;
-
-                console.log(
-                    "✅ DEBUG: Análise completa! Verifique os logs acima."
-                );
-            } catch (error) {
-                console.error("❌ DEBUG: Erro durante debug:", error);
-            }
-        }
-
-        // 📨 HANDLER DE MENSAGENS - Para comunicação com o popup
-        if (
-            typeof chrome !== "undefined" &&
-            chrome.runtime &&
-            chrome.runtime.onMessage
-        ) {
-            chrome.runtime.onMessage.addListener(function (
-                request,
-                sender,
-                sendResponse
-            ) {
-                console.log("📨 MENSAGEM: Recebida do popup:", request);
-
-                if (request.action === "toggleAutoSessionRequests") {
-                    const enabled = request.enabled;
-
-                    if (enabled) {
-                        console.log(
-                            "🔓 POPUP: Habilitando requisições automáticas de sessão"
-                        );
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-                    } else {
-                        console.log(
-                            "🔒 POPUP: Desabilitando requisições automáticas de sessão"
-                        );
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
-                    }
-
-                    console.log(
-                        `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = ${REQUISICOES_AUTOMATICAS_DESABILITADAS}`
-                    );
-
-                    // Enviar resposta de confirmação
-                    sendResponse({
-                        success: true,
-                        message: enabled
-                            ? "Requisições automáticas habilitadas"
-                            : "Requisições automáticas desabilitadas",
-                        currentState: !REQUISICOES_AUTOMATICAS_DESABILITADAS,
-                    });
-                }
-
-                // Manter o handler para outras mensagens se necessário
-                if (request.action === "toggleSessionDateHighlight") {
-                    console.log(
-                        "🎯 POPUP: Toggle para destaque da data da sessão:",
-                        request.enabled
-                    );
-
-                    // Aqui você pode adicionar a lógica para o destaque da data da sessão
-                    // Por enquanto, apenas confirmar recebimento
-                    sendResponse({
-                        success: true,
-                        message: request.enabled
-                            ? "Destaque ativado"
-                            : "Destaque desativado",
-                    });
-                }
-
-                // Handler para aplicação de temas
-                if (request.action === "applyTheme") {
-                    console.log("🎨 MAIN: Aplicando tema:", request.theme);
-
-                    // Salva o tema no storage e aplica automaticamente
-                    chrome.storage.sync.set(
-                        { selectedTheme: request.theme },
-                        function () {
-                            console.log(
-                                "✅ MAIN: Tema salvo no storage:",
-                                request.theme
-                            );
-
-                            // Chama diretamente a função se ela existir
-                            if (typeof window.applyThemeStyles === "function") {
-                                console.log(
-                                    "🎨 MAIN: Aplicando tema diretamente via função global"
-                                );
-                                window.applyThemeStyles(request.theme);
-                            }
-
-                            sendResponse({
-                                success: true,
-                                message: `Tema ${request.theme} aplicado`,
-                            });
-                        }
-                    );
-                }
-
-                return true; // Indica que a resposta será enviada de forma assíncrona
-            });
-
-            console.log(
-                "📨 HANDLER: Listener de mensagens do popup registrado"
-            );
-        }
-
-        // Executar inicialização automática quando a página carregar
-        if (document.readyState === "loading") {
-            document.addEventListener(
-                "DOMContentLoaded",
-                inicializarAutomaticamente
-            );
+            console.log(info);
+            alert(info);
+            return dados;
         } else {
-            // Se a página já carregou, executar imediatamente
-            inicializarAutomaticamente();
+            const msg =
+                "❌ Nenhum dado completo de sessão foi encontrado ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
         }
     }
-});
+
+    // 🚀 INICIALIZAÇÃO AUTOMÁTICA - Executar automáticamente após carregamento da página
+    function inicializarAutomaticamente() {
+        console.log(
+            "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
+        );
+
+        // Aguardar um pouco para garantir que a página carregou completamente
+        setTimeout(() => {
+            try {
+                // 1. Detectar data da sessão
+                if (!hasDataSessaoPautado()) {
+                    console.log(
+                        "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
+                    );
+                    detectarDataSessao();
+                }
+
+                // 2. Se detectou data, inserir na interface
+                if (hasDataSessaoPautado()) {
+                    console.log(
+                        "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
+                    );
+                    inserirDataSessaoNaInterface();
+
+                    // 3. Cruzar dados automaticamente
+                    console.log(
+                        "🔄 INICIALIZAÇÃO: Iniciando cruzamento automático de dados..."
+                    );
+                    cruzarDadosDataSessao()
+                        .then(() => {
+                            console.log(
+                                "✅ INICIALIZAÇÃO: Processo completo finalizado com sucesso!"
+                            );
+                            // Atualizar interface com dados completos se disponíveis
+                            atualizarDataSessaoNaInterface();
+                        })
+                        .catch((error) => {
+                            console.warn(
+                                "⚠️ INICIALIZAÇÃO: Erro no cruzamento automático:",
+                                error
+                            );
+                        });
+                } else {
+                    console.log(
+                        "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
+                    error
+                );
+            }
+        }, 1000); // Aguardar 1 segundo
+    }
+
+    // 🧪 FUNÇÃO DE TESTE - Para validação durante desenvolvimento
+    function testarSistemaCompleto() {
+        console.log(
+            "🧪 TESTE: Iniciando teste completo do sistema de sessões..."
+        );
+
+        return new Promise(async (resolve) => {
+            try {
+                // 1. Resetar estado
+                console.log("🔄 TESTE: Resetando estado...");
+                resetDataSessaoPautado();
+                resetDadosCompletosSessionJulgamento();
+
+                // 2. Testar detecção de data
+                console.log("🔍 TESTE: Testando detecção de data...");
+                detectarDataSessao();
+
+                if (hasDataSessaoPautado()) {
+                    console.log("✅ TESTE: Data detectada com sucesso!");
+                    showDataSessaoPautadoInfo();
+
+                    // 3. Testar inserção na interface
+                    console.log("🎨 TESTE: Testando inserção na interface...");
+                    inserirDataSessaoNaInterface();
+
+                    // 4. Testar cruzamento de dados
+                    console.log("🔄 TESTE: Testando cruzamento de dados...");
+                    const resultado = await cruzarDadosDataSessao();
+
+                    if (resultado) {
+                        console.log(
+                            "✅ TESTE: Cruzamento realizado com sucesso!"
+                        );
+                        showDadosCompletosSessionJulgamento();
+
+                        // 5. Testar atualização da interface
+                        console.log(
+                            "🎨 TESTE: Testando atualização da interface..."
+                        );
+                        atualizarDataSessaoNaInterface();
+
+                        console.log(
+                            "🎉 TESTE: Teste completo finalizado com SUCESSO!"
+                        );
+                        resolve(true);
+                    } else {
+                        console.log("⚠️ TESTE: Cruzamento não encontrou dados");
+                        resolve(false);
+                    }
+                } else {
+                    console.log("❌ TESTE: Nenhuma data de sessão detectada");
+                    resolve(false);
+                }
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante teste:", error);
+                resolve(false);
+            }
+        });
+    }
+
+    // Adicionar função de teste ao namespace global para debug
+    if (window.SENT1_AUTO) {
+        window.SENT1_AUTO.testarSistemaCompleto = testarSistemaCompleto;
+        window.SENT1_AUTO.debugPaginaSessoes = debugPaginaSessoes;
+        window.SENT1_AUTO.resetControlesRequisicao = resetControlesRequisicao;
+        window.SENT1_AUTO.statusControlesRequisicao = statusControlesRequisicao;
+
+        // 🔐 CONTROLES ÚNICOS POR PROCESSO
+        window.SENT1_AUTO.obterNumeroProcesso = obterNumeroProcesso;
+        window.SENT1_AUTO.obterProcessoAtual = () => processoAtual;
+        window.SENT1_AUTO.listarProcessosProcessados = () =>
+            Array.from(processosJaProcessados);
+        window.SENT1_AUTO.resetProcessosProcessados = () => {
+            processosJaProcessados.clear();
+            cachePorProcesso.clear();
+            processoAtual = null;
+            console.log("🔄 RESET: Controles de processo resetados");
+        };
+        window.SENT1_AUTO.statusProcessos = () => {
+            console.log("🔐 STATUS PROCESSOS:");
+            console.log(
+                `   Processo atual: ${processoAtual || "não identificado"}`
+            );
+            console.log(
+                `   Processos processados: ${processosJaProcessados.size}`
+            );
+            console.log(
+                `   Lista: ${Array.from(processosJaProcessados).join(", ")}`
+            );
+            console.log(
+                `   Cache por processo: ${cachePorProcesso.size} entradas`
+            );
+        };
+
+        // 🚫 CONTROLES DE REQUISIÇÕES AUTOMÁTICAS
+        window.SENT1_AUTO.statusRequisicoes = () => {
+            console.log("🚫 STATUS REQUISIÇÕES:");
+            console.log(
+                `   Requisições automáticas: ${
+                    REQUISICOES_AUTOMATICAS_DESABILITADAS
+                        ? "DESABILITADAS"
+                        : "HABILITADAS"
+                }`
+            );
+            console.log(
+                `   Tentativas realizadas: ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
+            );
+            console.log(
+                `   Delay entre tentativas: ${DELAY_ENTRE_TENTATIVAS / 1000}s`
+            );
+            console.log(`   Cache válido por: ${CACHE_DURATION / 1000}s`);
+        };
+
+        window.SENT1_AUTO.desabilitarRequisicoes = () => {
+            REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
+            console.log(
+                "🚫 REQUISIÇÕES: Requisições automáticas desabilitadas"
+            );
+        };
+
+        window.SENT1_AUTO.habilitarRequisicoes = () => {
+            REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
+            console.log("✅ REQUISIÇÕES: Requisições automáticas habilitadas");
+            console.log("⚠️ ATENÇÃO: Use com moderação para evitar logout");
+        };
+
+        window.SENT1_AUTO.forcarCruzamento = async () => {
+            console.log("🔄 FORÇA: Forçando cruzamento ignorando bloqueios...");
+            const estadoOriginal = REQUISICOES_AUTOMATICAS_DESABILITADAS;
+            REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
+
+            try {
+                const resultado = await cruzarDadosDataSessao();
+                console.log(
+                    `🔄 FORÇA: Resultado: ${resultado ? "SUCESSO" : "FALHA"}`
+                );
+                return resultado;
+            } finally {
+                REQUISICOES_AUTOMATICAS_DESABILITADAS = estadoOriginal;
+            }
+        };
+
+        console.log(
+            "🧪 TESTE: Função testarSistemaCompleto() disponível em window.SENT1_AUTO"
+        );
+        console.log(
+            "🧪 DEBUG: Função debugPaginaSessoes() disponível em window.SENT1_AUTO"
+        );
+        console.log(
+            "🔐 CONTROLE: Funções de controle único por processo disponíveis em window.SENT1_AUTO"
+        );
+    }
+
+    // 🔍 FUNÇÃO DE DEBUG - Para investigar estrutura da página de sessões
+    async function debugPaginaSessoes() {
+        console.log("🔍 DEBUG: Iniciando debug da página de sessões...");
+
+        try {
+            const baseUrl = window.location.origin;
+            const urlSessoes = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
+
+            console.log(`🌐 DEBUG: Fazendo fetch para: ${urlSessoes}`);
+
+            const response = await fetch(urlSessoes, {
+                credentials: "same-origin",
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                },
+            });
+
+            if (!response.ok) {
+                console.error(
+                    `❌ DEBUG: Erro HTTP ${response.status}: ${response.statusText}`
+                );
+                return;
+            }
+
+            const htmlContent = await response.text();
+            console.log(
+                `✅ DEBUG: Página carregada, tamanho: ${htmlContent.length} caracteres`
+            );
+
+            // Fazer parse
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+
+            // Debug básico
+            const title =
+                doc.querySelector("title")?.textContent || "sem título";
+            console.log(`📋 DEBUG: Título: "${title}"`);
+
+            // Verificar se foi redirecionado para login
+            if (
+                title.toLowerCase().includes("login") ||
+                htmlContent.includes("frmLogin")
+            ) {
+                console.warn(
+                    "⚠️ DEBUG: Parece que foi redirecionado para página de login!"
+                );
+                console.warn(
+                    "💡 DEBUG: Tente acessar a URL manualmente no navegador primeiro"
+                );
+                return;
+            }
+
+            // Analisar estrutura
+            const allTables = doc.querySelectorAll("table");
+            console.log(`📊 DEBUG: ${allTables.length} tabelas encontradas`);
+
+            allTables.forEach((table, index) => {
+                const id = table.id || "sem-id";
+                const className = table.className || "sem-class";
+                const rows = table.querySelectorAll("tr").length;
+                const hasSessionData =
+                    table.innerHTML.includes("Órgão Julgador") ||
+                    table.innerHTML.includes("Data da Sessão") ||
+                    table.innerHTML.includes("sessao");
+
+                console.log(`📋 DEBUG: Tabela ${index + 1}:`);
+                console.log(`  - ID: "${id}"`);
+                console.log(`  - Class: "${className}"`);
+                console.log(`  - Linhas: ${rows}`);
+                console.log(
+                    `  - Parece ter dados de sessão: ${hasSessionData}`
+                );
+
+                if (hasSessionData && rows > 1) {
+                    console.log(
+                        `🎯 DEBUG: Esta tabela parece promissora! Analisando mais...`
+                    );
+
+                    // Pegar headers
+                    const headers = Array.from(
+                        table.querySelectorAll("th, thead td")
+                    ).map((th) => th.textContent.trim());
+                    console.log(
+                        `📋 DEBUG: Headers: ${JSON.stringify(headers)}`
+                    );
+
+                    // Pegar algumas linhas de exemplo
+                    const dataRows = table.querySelectorAll("tbody tr");
+                    console.log(`📋 DEBUG: ${dataRows.length} linhas de dados`);
+
+                    Array.from(dataRows)
+                        .slice(0, 3)
+                        .forEach((row, rowIndex) => {
+                            const cells = Array.from(
+                                row.querySelectorAll("td")
+                            ).map((td) => td.textContent.trim());
+                            console.log(
+                                `📋 DEBUG: Linha ${
+                                    rowIndex + 1
+                                }: ${JSON.stringify(cells)}`
+                            );
+                        });
+                }
+            });
+
+            // Salvar HTML para inspeção manual
+            console.log(
+                "💾 DEBUG: HTML da página salvo em window.debugPageHTML (use console para inspecionar)"
+            );
+            window.debugPageHTML = htmlContent;
+
+            console.log("✅ DEBUG: Análise completa! Verifique os logs acima.");
+        } catch (error) {
+            console.error("❌ DEBUG: Erro durante debug:", error);
+        }
+    }
+
+    // 📨 HANDLER DE MENSAGENS - Para comunicação com o popup
+    if (
+        typeof chrome !== "undefined" &&
+        chrome.runtime &&
+        chrome.runtime.onMessage
+    ) {
+        chrome.runtime.onMessage.addListener(function (
+            request,
+            sender,
+            sendResponse
+        ) {
+            console.log("📨 MENSAGEM: Recebida do popup:", request);
+
+            if (request.action === "toggleAutoSessionRequests") {
+                const enabled = request.enabled;
+
+                if (enabled) {
+                    console.log(
+                        "🔓 POPUP: Habilitando requisições automáticas de sessão"
+                    );
+                    REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
+                } else {
+                    console.log(
+                        "🔒 POPUP: Desabilitando requisições automáticas de sessão"
+                    );
+                    REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
+                }
+
+                console.log(
+                    `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = ${REQUISICOES_AUTOMATICAS_DESABILITADAS}`
+                );
+
+                // Enviar resposta de confirmação
+                sendResponse({
+                    success: true,
+                    message: enabled
+                        ? "Requisições automáticas habilitadas"
+                        : "Requisições automáticas desabilitadas",
+                    currentState: !REQUISICOES_AUTOMATICAS_DESABILITADAS,
+                });
+            }
+
+            // Manter o handler para outras mensagens se necessário
+            if (request.action === "toggleSessionDateHighlight") {
+                console.log(
+                    "🎯 POPUP: Toggle para destaque da data da sessão:",
+                    request.enabled
+                );
+
+                // Aqui você pode adicionar a lógica para o destaque da data da sessão
+                // Por enquanto, apenas confirmar recebimento
+                sendResponse({
+                    success: true,
+                    message: request.enabled
+                        ? "Destaque ativado"
+                        : "Destaque desativado",
+                });
+            }
+
+            // Handler para aplicação de temas
+            if (request.action === "applyTheme") {
+                const theme = request.theme;
+                console.log(
+                    "🎨 MAIN: Aplicando tema recebido do popup:",
+                    theme
+                );
+
+                // Verificar se a função applyThemeStyles está disponível (do themeApply.js)
+                if (typeof window.applyThemeStyles === "function") {
+                    window.applyThemeStyles(theme);
+                    sendResponse({
+                        success: true,
+                        message: `Tema ${theme} aplicado com sucesso`,
+                    });
+                } else {
+                    console.error(
+                        "❌ MAIN: Função applyThemeStyles não encontrada"
+                    );
+                    sendResponse({
+                        success: false,
+                        message:
+                            "Erro: função de aplicação de tema não disponível",
+                    });
+                }
+            }
+
+            return true; // Indica que a resposta será enviada de forma assíncrona
+        });
+
+        console.log("📨 HANDLER: Listener de mensagens do popup registrado");
+    }
+
+    // Executar inicialização automática quando a página carregar
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            inicializarAutomaticamente
+        );
+    } else {
+        // Se a página já carregou, executar imediatamente
+        inicializarAutomaticamente();
+    }
+})();

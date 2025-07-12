@@ -1,5 +1,7 @@
 // eProbe Theme Auto-Apply Script
-// Aplica automaticamente o tema salvo quando a página do e    // Escuta mudanças no storage para aplicar temas em tempo real
+// Aplica automaticamente o tema salvo quando a página do eProc carrega
+
+// Escuta mudanças no storage para aplicar temas em tempo real
 if (typeof chrome !== "undefined" && chrome.storage) {
     chrome.storage.onChanged.addListener(function (changes, area) {
         console.log(
@@ -65,78 +67,76 @@ if (typeof chrome !== "undefined" && chrome.storage) {
     });
 }
 
+// Função para aplicar estilos do tema (definida globalmente)
+function applyThemeStyles(themeName) {
+    console.log(`🎨 Aplicando tema ${themeName} automaticamente...`);
+
+    // Remove estilos de tema anteriores
+    const existingThemeStyle = document.getElementById("eprobe-theme-styles");
+    if (existingThemeStyle) {
+        existingThemeStyle.remove();
+    }
+
+    // Define as cores dos temas
+    const themeColors = {
+        blue: {
+            navbar: "linear-gradient(to left, #0d1c2c, #007ebd)",
+            name: "Azul",
+        },
+        dark: {
+            navbar: "linear-gradient(to left, #1a1a1a, #696363)",
+            name: "Escuro",
+        },
+        light: {
+            navbar: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+            name: "Claro",
+        },
+        violet: {
+            navbar: "linear-gradient(to left, #6b46c1, #4c1d95)",
+            name: "Violeta",
+        },
+    };
+
+    const theme = themeColors[themeName];
+    if (!theme) {
+        console.log(`❌ Tema ${themeName} não encontrado`);
+        return;
+    }
+
+    // Cria elemento de estilo
+    const styleElement = document.createElement("style");
+    styleElement.id = "eprobe-theme-styles";
+    styleElement.textContent = `
+        /* eProbe Theme: ${theme.name} */
+        #navbar.navbar.bg-instancia {
+            background-image: ${theme.navbar} !important;
+            transition: background-image 0.3s ease !important;
+        }
+        
+        .navbar.bg-instancia {
+            background-image: ${theme.navbar} !important;
+            transition: background-image 0.3s ease !important;
+        }
+        
+        /* Para compatibilidade com diferentes versões do eProc */
+        nav.navbar.bg-instancia,
+        .navbar.text-white.bg-instancia,
+        .navbar.text-white.d-xl-flex.bg-instancia {
+            background-image: ${theme.navbar} !important;
+            transition: background-image 0.3s ease !important;
+        }
+    `;
+
+    // Adiciona o estilo ao head da página
+    document.head.appendChild(styleElement);
+
+    console.log(`✅ Tema ${theme.name} aplicado automaticamente!`);
+}
+
 (function () {
     "use strict";
 
     console.log("🎨 eProbe Theme Script carregado");
-
-    // Função para aplicar estilos do tema
-    function applyThemeStyles(themeName) {
-        console.log(`🎨 Aplicando tema ${themeName} automaticamente...`);
-
-        // Remove estilos de tema anteriores
-        const existingThemeStyle = document.getElementById(
-            "eprobe-theme-styles"
-        );
-        if (existingThemeStyle) {
-            existingThemeStyle.remove();
-        }
-
-        // Define as cores dos temas
-        const themeColors = {
-            blue: {
-                navbar: "linear-gradient(to left, #0d1c2c, #007ebd)",
-                name: "Azul",
-            },
-            dark: {
-                navbar: "linear-gradient(to left, #1a1a1a, #696363)",
-                name: "Escuro",
-            },
-            light: {
-                navbar: "linear-gradient(to top, #7BC6CC, #BE93C5)",
-                name: "Claro",
-            },
-            violet: {
-                navbar: "linear-gradient(to left, #6b46c1, #4c1d95)",
-                name: "Violeta",
-            },
-        };
-
-        const theme = themeColors[themeName];
-        if (!theme) {
-            console.log(`❌ Tema ${themeName} não encontrado`);
-            return;
-        }
-
-        // Cria elemento de estilo
-        const styleElement = document.createElement("style");
-        styleElement.id = "eprobe-theme-styles";
-        styleElement.textContent = `
-            /* eProbe Theme: ${theme.name} */
-            #navbar.navbar.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-            
-            .navbar.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-            
-            /* Para compatibilidade com diferentes versões do eProc */
-            nav.navbar.bg-instancia,
-            .navbar.text-white.bg-instancia,
-            .navbar.text-white.d-xl-flex.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-        `;
-
-        // Adiciona o estilo ao head da página
-        document.head.appendChild(styleElement);
-
-        console.log(`✅ Tema ${theme.name} aplicado automaticamente!`);
-    }
 
     // Função para verificar e aplicar tema salvo
     function loadAndApplyTheme() {
