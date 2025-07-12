@@ -1,997 +1,972 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>eProbe - Automação Inteligente para o Sistema eProc/TJSC</title>
-        <meta
-            name="description"
-            content="Extensão Chrome que automatiza detecção de documentos, extração de texto e análise de dados do sistema eProc/TJSC com IA integrada."
-        />
-        <link rel="icon" type="image/png" href="src/icon16.png" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
-            rel="stylesheet"
-        />
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-        <style>
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eProbe - Automação Inteligente para o Sistema eproc/TJSC</title>
+    <meta name="description"
+        content="Extensão Chrome que automatiza detecção de documentos, extração de texto e análise de dados do sistema eproc/TJSC com IA integrada." />
+    <link rel="icon" type="image/png" href="src/icon16.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
-            html {
-                scroll-behavior: smooth;
-                -webkit-font-smoothing: antialiased;
-                -moz-osx-font-smoothing: grayscale;
-            }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-            :root {
-                --primary-blue: #007ebd;
-                --primary-dark: #0d1c2c;
-                --accent-light: #7bc6cc;
-                --accent-purple: #be93c5;
-                --text-light: #f8fafc;
-                --text-dark: #1e293b;
-                --gray-100: #f1f5f9;
-                --gray-800: #1e293b;
-                --gradient-primary: linear-gradient(
-                    135deg,
+        html {
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        :root {
+            --primary-blue: #007ebd;
+            --primary-dark: #0d1c2c;
+            --accent-light: #7bc6cc;
+            --accent-purple: #be93c5;
+            --text-light: #f8fafc;
+            --text-dark: #1e293b;
+            --gray-100: #f1f5f9;
+            --gray-800: #1e293b;
+            --gradient-primary: linear-gradient(135deg,
                     var(--primary-dark),
-                    var(--primary-blue)
-                );
-                --gradient-accent: linear-gradient(
-                    135deg,
+                    var(--primary-blue));
+            --gradient-accent: linear-gradient(135deg,
                     var(--accent-light),
-                    var(--accent-purple)
-                );
-                --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-                --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
-            }
+                    var(--accent-purple));
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
 
-            body {
-                font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-                line-height: 1.6;
-                color: var(--text-dark);
-                overflow-x: hidden;
-                scroll-behavior: smooth;
-            }
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
 
-            /* Header */
-            header {
-                background: var(--gradient-primary);
-                color: var(--text-light);
-                position: fixed;
-                top: 0;
-                width: 100%;
-                z-index: 1000;
-                -webkit-backdrop-filter: blur(10px);
-                backdrop-filter: blur(10px);
-                box-shadow: var(--shadow);
-            }
+        /* Header */
+        header {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+        }
 
-            nav {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 1rem 2rem;
-                max-width: 1200px;
-                margin: 0 auto;
-            }
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-            .logo {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                font-size: 1.5rem;
-                font-weight: 500;
-                font-family: "Exo 2", "Segoe UI", Tahoma, Geneva, Verdana,
-                    sans-serif;
-            }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.5rem;
+            font-weight: 500;
+            font-family: "Exo 2", "Segoe UI", Tahoma, Geneva, Verdana,
+                sans-serif;
+        }
 
-            .logo img {
-                width: 32px;
-                height: 32px;
-            }
+        .logo img {
+            width: 32px;
+            height: 32px;
+        }
 
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-light);
+        }
+
+        .cta-button {
+            background: var(--gradient-accent);
+            color: var(--text-dark);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px) translateZ(0);
+            box-shadow: var(--shadow);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 8rem 2rem 4rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff08" points="0,1000 1000,0 1000,1000"/></svg>');
+            background-size: cover;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg,
+                    var(--text-light),
+                    var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-buttons .btn-primary {
+            background: var(--gradient-accent);
+            color: var(--text-dark);
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-buttons .btn-secondary {
+            background: transparent;
+            color: var(--text-light);
+            border: 2px solid var(--text-light);
+            font-size: 1.1rem;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        /* Features Section */
+        .features {
+            padding: 6rem 2rem;
+            background: var(--gray-100);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .section-title p {
+            font-size: 1.2rem;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px) translateZ(0);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .feature-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-accent);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-light);
+            font-size: 1.5rem;
+        }
+
+        .feature-icon i {
+            width: 24px;
+            height: 24px;
+            stroke-width: 2;
+        }
+
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+
+        .feature-card p {
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        /* Demo Section */
+        .demo {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .demo-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .demo-text h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text-dark);
+        }
+
+        .demo-text p {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+
+        .demo-features {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .demo-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .demo-features li::before {
+            content: "";
+            width: 1.2rem;
+            height: 1.2rem;
+            display: inline-block;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23007ebd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E") no-repeat center;
+            background-size: contain;
+        }
+
+        .demo-video {
+            background: var(--gray-100);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+        }
+
+        .demo-placeholder {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 4rem 2rem;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* Stats Section */
+        .stats {
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            padding: 4rem 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Installation Section */
+        .installation {
+            padding: 6rem 2rem;
+            background: var(--gray-100);
+        }
+
+        .install-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .install-step {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+        }
+
+        .install-step::before {
+            content: attr(data-step);
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-primary);
+            color: var(--text-light);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .install-step h3 {
+            margin: 1rem 0;
+            color: var(--text-dark);
+            font-size: 1.3rem;
+        }
+
+        .install-step p {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--text-dark);
+            color: var(--text-light);
+            padding: 3rem 2rem 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--accent-light);
+        }
+
+        .footer-section a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-light);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #334155;
+            color: #94a3b8;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
             .nav-links {
-                display: flex;
-                list-style: none;
-                gap: 2rem;
-            }
-
-            .nav-links a {
-                color: var(--text-light);
-                text-decoration: none;
-                font-weight: 500;
-                transition: color 0.3s ease;
-            }
-
-            .nav-links a:hover {
-                color: var(--accent-light);
-            }
-
-            .cta-button {
-                background: var(--gradient-accent);
-                color: var(--text-dark);
-                padding: 0.75rem 1.5rem;
-                border: none;
-                border-radius: 8px;
-                font-weight: 600;
-                text-decoration: none;
-                transition: all 0.3s ease;
-                cursor: pointer;
-            }
-
-            .cta-button:hover {
-                transform: translateY(-2px) translateZ(0);
-                box-shadow: var(--shadow);
-            }
-
-            /* Hero Section */
-            .hero {
-                background: var(--gradient-primary);
-                color: var(--text-light);
-                padding: 8rem 2rem 4rem;
-                text-align: center;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .hero::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="%23ffffff08" points="0,1000 1000,0 1000,1000"/></svg>');
-                background-size: cover;
-            }
-
-            .hero-content {
-                position: relative;
-                z-index: 1;
-                max-width: 800px;
-                margin: 0 auto;
+                display: none;
             }
 
             .hero h1 {
-                font-size: 3.5rem;
-                font-weight: 700;
-                margin-bottom: 1rem;
-                background: linear-gradient(
-                    45deg,
-                    var(--text-light),
-                    var(--accent-light)
-                );
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-
-            .hero p {
-                font-size: 1.25rem;
-                margin-bottom: 2rem;
-                opacity: 0.9;
+                font-size: 2.5rem;
             }
 
             .hero-buttons {
-                display: flex;
-                gap: 1rem;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            .hero-buttons .btn-primary {
-                background: var(--gradient-accent);
-                color: var(--text-dark);
-                font-size: 1.1rem;
-                padding: 1rem 2rem;
-                border-radius: 12px;
-                font-weight: 600;
-                box-shadow: var(--shadow);
-            }
-
-            .hero-buttons .btn-secondary {
-                background: transparent;
-                color: var(--text-light);
-                border: 2px solid var(--text-light);
-                font-size: 1.1rem;
-                padding: 1rem 2rem;
-                border-radius: 12px;
-                font-weight: 600;
-            }
-
-            /* Features Section */
-            .features {
-                padding: 6rem 2rem;
-                background: var(--gray-100);
-            }
-
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-
-            .section-title {
-                text-align: center;
-                margin-bottom: 4rem;
-            }
-
-            .section-title h2 {
-                font-size: 2.5rem;
-                font-weight: 700;
-                margin-bottom: 1rem;
-                color: var(--text-dark);
-            }
-
-            .section-title p {
-                font-size: 1.2rem;
-                color: #64748b;
-                max-width: 600px;
-                margin: 0 auto;
-            }
-
-            .features-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-                gap: 2rem;
-            }
-
-            .feature-card {
-                background: white;
-                padding: 2rem;
-                border-radius: 16px;
-                box-shadow: var(--shadow);
-                transition: all 0.3s ease;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .feature-card:hover {
-                transform: translateY(-5px) translateZ(0);
-                box-shadow: var(--shadow-lg);
-            }
-
-            .feature-card::before {
-                content: "";
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                height: 4px;
-                background: var(--gradient-accent);
-            }
-
-            .feature-icon {
-                width: 60px;
-                height: 60px;
-                background: var(--gradient-primary);
-                border-radius: 12px;
-                display: flex;
+                flex-direction: column;
                 align-items: center;
-                justify-content: center;
-                margin-bottom: 1.5rem;
-                color: var(--text-light);
-                font-size: 1.5rem;
-            }
-
-            .feature-icon i {
-                width: 24px;
-                height: 24px;
-                stroke-width: 2;
-            }
-
-            .feature-card h3 {
-                font-size: 1.5rem;
-                font-weight: 600;
-                margin-bottom: 1rem;
-                color: var(--text-dark);
-            }
-
-            .feature-card p {
-                color: #64748b;
-                line-height: 1.7;
-            }
-
-            /* Demo Section */
-            .demo {
-                padding: 6rem 2rem;
-                background: white;
             }
 
             .demo-content {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 4rem;
-                align-items: center;
-            }
-
-            .demo-text h2 {
-                font-size: 2.5rem;
-                font-weight: 700;
-                margin-bottom: 1.5rem;
-                color: var(--text-dark);
-            }
-
-            .demo-text p {
-                font-size: 1.1rem;
-                color: #64748b;
-                margin-bottom: 2rem;
-                line-height: 1.7;
-            }
-
-            .demo-features {
-                list-style: none;
-                margin-bottom: 2rem;
-            }
-
-            .demo-features li {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                margin-bottom: 1rem;
-                font-weight: 500;
-            }
-
-            .demo-features li::before {
-                content: "";
-                width: 1.2rem;
-                height: 1.2rem;
-                display: inline-block;
-                background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23007ebd' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3C/svg%3E")
-                    no-repeat center;
-                background-size: contain;
-            }
-
-            .demo-video {
-                background: var(--gray-100);
-                border-radius: 16px;
-                padding: 2rem;
-                text-align: center;
-                box-shadow: var(--shadow);
-            }
-
-            .demo-placeholder {
-                background: var(--gradient-primary);
-                color: var(--text-light);
-                padding: 4rem 2rem;
-                border-radius: 12px;
-                font-size: 1.2rem;
-                font-weight: 600;
-            }
-
-            /* Stats Section */
-            .stats {
-                background: var(--gradient-primary);
-                color: var(--text-light);
-                padding: 4rem 2rem;
-            }
-
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 2rem;
-                max-width: 800px;
-                margin: 0 auto;
-            }
-
-            .stat-item {
-                text-align: center;
-            }
-
-            .stat-number {
-                font-size: 3rem;
-                font-weight: 700;
-                margin-bottom: 0.5rem;
-                background: var(--gradient-accent);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-
-            .stat-label {
-                font-size: 1.1rem;
-                opacity: 0.9;
-            }
-
-            /* Installation Section */
-            .installation {
-                padding: 6rem 2rem;
-                background: var(--gray-100);
-            }
-
-            .install-steps {
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-                gap: 2rem;
-                margin-top: 3rem;
-            }
-
-            .install-step {
-                background: white;
-                padding: 2rem;
-                border-radius: 16px;
-                box-shadow: var(--shadow);
-                text-align: center;
-                position: relative;
-            }
-
-            .install-step::before {
-                content: attr(data-step);
-                position: absolute;
-                top: -15px;
-                left: 50%;
-                transform: translateX(-50%);
-                background: var(--gradient-primary);
-                color: var(--text-light);
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 700;
-                font-size: 1.2rem;
-            }
-
-            .install-step h3 {
-                margin: 1rem 0;
-                color: var(--text-dark);
-                font-size: 1.3rem;
-            }
-
-            .install-step p {
-                color: #64748b;
-                line-height: 1.6;
-            }
-
-            /* Footer */
-            footer {
-                background: var(--text-dark);
-                color: var(--text-light);
-                padding: 3rem 2rem 1rem;
-            }
-
-            .footer-content {
-                max-width: 1200px;
-                margin: 0 auto;
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                grid-template-columns: 1fr;
                 gap: 2rem;
             }
 
-            .footer-section h3 {
-                margin-bottom: 1rem;
-                color: var(--accent-light);
+            nav {
+                padding: 1rem;
             }
 
-            .footer-section a {
-                color: #94a3b8;
-                text-decoration: none;
-                display: block;
-                margin-bottom: 0.5rem;
-                transition: color 0.3s ease;
+            .hero {
+                padding: 6rem 1rem 3rem;
             }
+        }
 
-            .footer-section a:hover {
-                color: var(--accent-light);
-            }
-
-            .footer-bottom {
-                text-align: center;
-                padding-top: 2rem;
-                margin-top: 2rem;
-                border-top: 1px solid #334155;
-                color: #94a3b8;
-            }
-
-            /* Responsive */
-            @media (max-width: 768px) {
-                .nav-links {
-                    display: none;
-                }
-
-                .hero h1 {
-                    font-size: 2.5rem;
-                }
-
-                .hero-buttons {
-                    flex-direction: column;
-                    align-items: center;
-                }
-
-                .demo-content {
-                    grid-template-columns: 1fr;
-                    gap: 2rem;
-                }
-
-                nav {
-                    padding: 1rem;
-                }
-
-                .hero {
-                    padding: 6rem 1rem 3rem;
-                }
-            }
-
-            /* Animations */
-            @keyframes fadeInUp {
-                from {
-                    opacity: 0;
-                    transform: translateY(30px);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateY(0);
-                }
-            }
-
-            .animate-on-scroll {
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
                 opacity: 0;
                 transform: translateY(30px);
-                transition: all 0.6s ease;
-                will-change: transform, opacity;
             }
 
-            .animate-on-scroll.visible {
+            to {
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
 
-            .demo-subtitle {
-                opacity: 0.8;
-            }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.6s ease;
+            will-change: transform, opacity;
+        }
 
-            .demo-video-icon {
-                font-size: 2rem;
-                margin-bottom: 1rem;
-                display: block;
-            }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-            .footer-description {
-                text-align: justify;
-            }
+        .demo-subtitle {
+            opacity: 0.8;
+        }
 
-            /* Utilities */
-            .text-center {
-                text-align: center;
-            }
-            .text-gradient {
-                background: var(--gradient-accent);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-            }
-        </style>
-    </head>
-    <body>
-        <!-- Header -->
-        <header>
-            <nav>
-                <div class="logo">
-                    <img src="src/iconmain.png" alt="eProbe Logo" />
-                    <span>eProbe</span>
-                </div>
-                <ul class="nav-links">
-                    <li><a href="#features">Funcionalidades</a></li>
-                    <li><a href="#demo">Demo</a></li>
-                    <li><a href="#installation">Instalação</a></li>
-                    <li><a href="#docs">Documentação</a></li>
-                </ul>
-                <a href="#installation" class="cta-button">Instalar Agora</a>
-            </nav>
-        </header>
+        .demo-video-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
 
-        <!-- Hero Section -->
-        <section class="hero">
-            <div class="hero-content">
-                <h1>Automatize o eProc com IA</h1>
+        .footer-description {
+            text-align: justify;
+        }
+
+        /* Utilities */
+        .text-center {
+            text-align: center;
+        }
+
+        .text-gradient {
+            background: var(--gradient-accent);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                <img src="src/iconmain.png" alt="eProbe Logo" />
+                <span>eProbe</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#features">Funcionalidades</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="#installation">Instalação</a></li>
+                <li><a href="#docs">Documentação</a></li>
+            </ul>
+            <a href="#installation" class="cta-button">Instalar Agora</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Automatize o eproc com IA</h1>
+            <p>
+                Extensão de navegador inteligente que personaliza e revoluciona o trabalho com
+                documentos no sistema eproc/TJSC. Detecção
+                automática, extração de texto e análise com IA integrada.
+            </p>
+            <div class="hero-buttons">
+                <a href="#installation" class="btn-primary cta-button">Instalar Extensão</a>
+                <a href="#demo" class="btn-secondary cta-button">Ver Demonstração</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-title animate-on-scroll">
+                <h2>
+                    Funcionalidades
+                    <span class="text-gradient">Inteligentes</span>
+                </h2>
                 <p>
-                    Extensão Chrome inteligente que revoluciona o trabalho com
-                    documentos jurídicos no sistema eProc/TJSC. Detecção
-                    automática, extração de texto e análise com IA integrada.
-                </p>
-                <div class="hero-buttons">
-                    <a href="#installation" class="btn-primary cta-button"
-                        >Instalar Extensão</a
-                    >
-                    <a href="#demo" class="btn-secondary cta-button"
-                        >Ver Demonstração</a
-                    >
-                </div>
-            </div>
-        </section>
-
-        <!-- Features Section -->
-        <section id="features" class="features">
-            <div class="container">
-                <div class="section-title animate-on-scroll">
-                    <h2>
-                        Funcionalidades
-                        <span class="text-gradient">Inteligentes</span>
-                    </h2>
-                    <p>
-                        Desenvolvido especificamente para o sistema eProc/TJSC
-                        com foco em produtividade e precisão
-                    </p>
-                </div>
-
-                <div class="features-grid">
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="search"></i>
-                        </div>
-                        <h3>Detecção Automática</h3>
-                        <p>
-                            Identifica automaticamente documentos relevantes
-                            (SENT1, INIC1) e extrai dados de sessões das minutas
-                            do processo com precisão.
-                        </p>
-                    </div>
-
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="file-text"></i>
-                        </div>
-                        <h3>Extração de Texto Avançada</h3>
-                        <p>
-                            Suporte completo para documentos PDF e HTML com
-                            múltiplas estratégias de extração e limpeza
-                            inteligente de conteúdo.
-                        </p>
-                    </div>
-
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="bot"></i>
-                        </div>
-                        <h3>Integração com IA</h3>
-                        <p>
-                            Envio direto para ChatGPT/Perplexity com prefixos
-                            otimizados para análise jurídica e processamento
-                            inteligente.
-                        </p>
-                    </div>
-
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="calendar-days"></i>
-                        </div>
-                        <h3>Dados de Sessão</h3>
-                        <p>
-                            Extração automática de datas de julgamento, órgãos
-                            julgadores e status das sessões diretamente das
-                            minutas.
-                        </p>
-                    </div>
-
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="file-stack"></i>
-                        </div>
-                        <h3>Minutas Detalhadas</h3>
-                        <p>
-                            Acesso automatizado aos textos completos de acórdãos
-                            e relatórios/votos com interface intuitiva e
-                            expansível.
-                        </p>
-                    </div>
-
-                    <div class="feature-card animate-on-scroll">
-                        <div class="feature-icon">
-                            <i data-lucide="palette"></i>
-                        </div>
-                        <h3>Temas Personalizáveis</h3>
-                        <p>
-                            4 temas visuais (Azul, Escuro, Claro, Violeta) para
-                            personalizar a experiência no sistema eProc.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Demo Section -->
-        <section id="demo" class="demo">
-            <div class="container">
-                <div class="demo-content">
-                    <div class="demo-text animate-on-scroll">
-                        <h2>
-                            Veja o eProbe em
-                            <span class="text-gradient">Ação</span>
-                        </h2>
-                        <p>
-                            Transforme sua produtividade com automação
-                            inteligente. O eProbe integra-se perfeitamente ao
-                            sistema eProc, oferecendo funcionalidades avançadas
-                            sem alterar a interface original.
-                        </p>
-
-                        <ul class="demo-features">
-                            <li>Detecção automática em tempo real</li>
-                            <li>Interface integrada e não-intrusiva</li>
-                            <li>Processamento em segundo plano</li>
-                            <li>Cache inteligente por processo</li>
-                            <li>Funções de debug e monitoramento</li>
-                            <li>Controle de requisições para segurança</li>
-                        </ul>
-
-                        <a
-                            href="https://github.com/alexandre-css/eProbe"
-                            class="cta-button"
-                            >Ver no GitHub</a
-                        >
-                    </div>
-
-                    <div class="demo-video animate-on-scroll">
-                        <div class="demo-placeholder">
-                            <i data-lucide="video" class="demo-video-icon"></i>
-                            Demonstração em Vídeo<br />
-                            <small class="demo-subtitle"
-                                >Em breve: vídeo completo das
-                                funcionalidades</small
-                            >
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="stats">
-            <div class="container">
-                <div class="stats-grid">
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">8000+</div>
-                        <div class="stat-label">Linhas de Código</div>
-                    </div>
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">15+</div>
-                        <div class="stat-label">Funções Principais</div>
-                    </div>
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">4</div>
-                        <div class="stat-label">Temas Visuais</div>
-                    </div>
-                    <div class="stat-item animate-on-scroll">
-                        <div class="stat-number">100%</div>
-                        <div class="stat-label">Open Source</div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Installation Section -->
-        <section id="installation" class="installation">
-            <div class="container">
-                <div class="section-title animate-on-scroll">
-                    <h2>
-                        Instalação <span class="text-gradient">Simples</span>
-                    </h2>
-                    <p>
-                        Configure o eProbe em menos de 5 minutos e comece a
-                        automatizar seu trabalho
-                    </p>
-                </div>
-
-                <div class="install-steps">
-                    <div class="install-step animate-on-scroll" data-step="1">
-                        <h3>Download</h3>
-                        <p>
-                            Baixe o código-fonte do projeto eProbe do
-                            repositório GitHub oficial.
-                        </p>
-                    </div>
-
-                    <div class="install-step animate-on-scroll" data-step="2">
-                        <h3>Chrome Extensions</h3>
-                        <p>
-                            Abra o Chrome/Edge, vá para chrome://extensions/ ou
-                            edge://extensions/e ative o "Modo desenvolvedor".
-                        </p>
-                    </div>
-
-                    <div class="install-step animate-on-scroll" data-step="3">
-                        <h3>Carregar Extensão</h3>
-                        <p>
-                            Clique em "Carregar sem compactação" e selecione a
-                            pasta do eProbe.
-                        </p>
-                    </div>
-
-                    <div class="install-step animate-on-scroll" data-step="4">
-                        <h3>Pronto!</h3>
-                        <p>
-                            Navegue para o eProc e veja o botão "Resumir
-                            Documento" integrado na página.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer>
-            <div class="footer-content">
-                <div class="footer-section">
-                    <h3>eProbe</h3>
-                    <p class="footer-description">
-                        Automação inteligente para o sistema eProc/TJSC.
-                        Desenvolvido com foco em produtividade e precisão para
-                        servidores do Poder Judiciário.
-                    </p>
-                </div>
-
-                <div class="footer-section">
-                    <h3>Links Úteis</h3>
-                    <a href="README.md">Documentação</a>
-                    <a href="PRIVACY_POLICY.md">Política de Privacidade</a>
-                    <a href="https://github.com/alexandre-css/eProbe"
-                        >Código Fonte</a
-                    >
-                    <a href="https://github.com/alexandre-css/eProbe/issues"
-                        >Reportar Bug</a
-                    >
-                </div>
-
-                <div class="footer-section">
-                    <h3>Recursos</h3>
-                    <a href="src/md/BUSCA_DADOS_SESSAO.md">Sistema de Busca</a>
-                    <a href="src/md/EXTRACAO_MINUTAS_DETALHADAS.md"
-                        >Extração de Minutas</a
-                    >
-                    <a href="#demo">Demonstração</a>
-                    <a href="#features">Funcionalidades</a>
-                </div>
-
-                <div class="footer-section">
-                    <h3>Desenvolvimento</h3>
-                    <a href="https://github.com/alexandre-css"
-                        >Alexandre Claudino Simas Santos</a
-                    >
-                    <a href="mailto:alexandress@tjsc.jus.br"
-                        >alexandress@tjsc.jus.br</a
-                    >
-                    <p>
-                        Versão: 1.0.0-beta<br />Última atualização: Julho de
-                        2025
-                    </p>
-                </div>
-            </div>
-
-            <div class="footer-bottom">
-                <p>
-                    &copy; 2025 eProbe. Projeto open source desenvolvido para o
-                    sistema eProc/TJSC.
+                    Desenvolvido especificamente para o sistema eproc/TJSC
+                    com foco em produtividade e precisão
                 </p>
             </div>
-        </footer>
 
-        <script>
-            // Smooth scrolling for navigation links
-            document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
-                anchor.addEventListener("click", function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(
-                        this.getAttribute("href")
-                    );
-                    if (target) {
-                        target.scrollIntoView({
-                            behavior: "smooth",
-                            block: "start",
-                        });
-                    }
-                });
+            <div class="features-grid">
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="search"></i>
+                    </div>
+                    <h3>Detecção Automática</h3>
+                    <p>
+                        Identifica automaticamente documentos relevantes
+                        (sentença, inicial, recurso) e extrai dados
+                        do processo com precisão.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="file-text"></i>
+                    </div>
+                    <h3>Extração de Texto Avançada</h3>
+                    <p>
+                        Suporte completo para documentos PDF e HTML com
+                        múltiplas estratégias de extração e limpeza
+                        inteligente de conteúdo.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="bot"></i>
+                    </div>
+                    <h3>Integração com IA</h3>
+                    <p>
+                        Envio direto para IA com prefixos
+                        otimizados para análise jurídica e processamento
+                        inteligente.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="calendar-days"></i>
+                    </div>
+                    <h3>Dados de Sessão</h3>
+                    <p>
+                        Extração automática de datas de julgamento, órgãos
+                        julgadores e status das sessões diretamente das
+                        minutas.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="file-stack"></i>
+                    </div>
+                    <h3>Minutas Detalhadas</h3>
+                    <p>
+                        Acesso automatizado aos textos completos de acórdãos
+                        e relatórios/votos com interface intuitiva e
+                        expansível.
+                    </p>
+                </div>
+
+                <div class="feature-card animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="palette"></i>
+                    </div>
+                    <h3>Temas Personalizáveis</h3>
+                    <p>
+                        temas visuais para personalizar
+                        a experiência no sistema eproc.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="demo">
+        <div class="container">
+            <div class="demo-content">
+                <div class="demo-text animate-on-scroll">
+                    <h2>
+                        Veja o eProbe em
+                        <span class="text-gradient">Ação</span>
+                    </h2>
+                    <p>
+                        Transforme sua produtividade com automação
+                        inteligente. O eProbe integra-se perfeitamente ao
+                        sistema eproc, oferecendo funcionalidades avançadas
+                        sem alterar a interface original.
+                    </p>
+
+                    <ul class="demo-features">
+                        <li>Detecção automática em tempo real</li>
+                        <li>Interface integrada e não-intrusiva</li>
+                        <li>Processamento em segundo plano</li>
+                        <li>Cache inteligente por processo</li>
+                        <li>Funções de debug e monitoramento</li>
+                        <li>Controle de requisições para segurança</li>
+                    </ul>
+
+                    <a href="https://github.com/alexandre-css/eProbe" class="cta-button">Ver no GitHub</a>
+                </div>
+
+                <div class="demo-video animate-on-scroll">
+                    <div class="demo-placeholder">
+                        <i data-lucide="video" class="demo-video-icon"></i>
+                        Demonstração em Vídeo<br />
+                        <small class="demo-subtitle">Em breve: vídeo completo das
+                            funcionalidades</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-item animate-on-scroll">
+                    <div class="stat-number">9000+</div>
+                    <div class="stat-label">Linhas de Código</div>
+                </div>
+                <div class="stat-item animate-on-scroll">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Funções Principais</div>
+                </div>
+                <div class="stat-item animate-on-scroll">
+                    <div class="stat-number">4</div>
+                    <div class="stat-label">Temas Visuais</div>
+                </div>
+                <div class="stat-item animate-on-scroll">
+                    <div class="stat-number">100%</div>
+                    <div class="stat-label">Open Source</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" class="installation">
+        <div class="container">
+            <div class="section-title animate-on-scroll">
+                <h2>
+                    Instalação <span class="text-gradient">Simples</span>
+                </h2>
+                <p>
+                    Configure o eProbe em menos de 5 minutos e comece a
+                    automatizar seu trabalho
+                </p>
+            </div>
+
+            <div class="install-steps">
+                <div class="install-step animate-on-scroll" data-step="1">
+                    <h3>Download</h3>
+                    <p>
+                        Baixe o código-fonte do projeto eProbe do
+                        repositório GitHub oficial.
+                    </p>
+                </div>
+
+                <div class="install-step animate-on-scroll" data-step="2">
+                    <h3>Chrome Extensions</h3>
+                    <p>
+                        Abra o Chrome/Edge, vá para chrome://extensions/ ou
+                        edge://extensions/e ative o "Modo desenvolvedor".
+                    </p>
+                </div>
+
+                <div class="install-step animate-on-scroll" data-step="3">
+                    <h3>Carregar Extensão</h3>
+                    <p>
+                        Clique em "Carregar sem compactação" e selecione a
+                        pasta do eProbe.
+                    </p>
+                </div>
+
+                <div class="install-step animate-on-scroll" data-step="4">
+                    <h3>Pronto!</h3>
+                    <p>
+                        Navegue para o eproc e veja o botão "Resumir
+                        Documento" integrado na página.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>eProbe</h3>
+                <p class="footer-description">
+                    Automação inteligente para o sistema eproc/TJSC.
+                    Desenvolvido com foco em produtividade e precisão para
+                    servidores do Poder Judiciário de Santa Catarina.
+                </p>
+            </div>
+
+            <div class="footer-section">
+                <h3>Links Úteis</h3>
+                <a href="README.md">Documentação</a>
+                <a href="PRIVACY_POLICY.md">Política de Privacidade</a>
+                <a href="https://github.com/alexandre-css/eProbe">Código Fonte</a>
+                <a href="https://github.com/alexandre-css/eProbe/issues">Reportar Bug</a>
+            </div>
+
+            <div class="footer-section">
+                <h3>Recursos</h3>
+                <a href="src/md/BUSCA_DADOS_SESSAO.md">Sistema de Busca</a>
+                <a href="src/md/EXTRACAO_MINUTAS_DETALHADAS.md">Extração de Minutas</a>
+                <a href="#demo">Demonstração</a>
+                <a href="#features">Funcionalidades</a>
+            </div>
+
+            <div class="footer-section">
+                <h3>Desenvolvimento</h3>
+                <a href="https://github.com/alexandre-css">Alexandre Claudino Simas Santos</a>
+                <a href="mailto:alexandress@tjsc.jus.br">alexandress@tjsc.jus.br</a>
+                <p>
+                    Versão: 1.0.0-beta<br />Última atualização: Julho de
+                    2025
+                </p>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>
+                &copy; 2025 eProbe. Projeto open source desenvolvido para o
+                sistema eproc/TJSC.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+            anchor.addEventListener("click", function (e) {
+                e.preventDefault();
+                const target = document.querySelector(
+                    this.getAttribute("href")
+                );
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                    });
+                }
             });
+        });
 
-            // Animate elements on scroll
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: "0px 0px -50px 0px",
-            };
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px",
+        };
 
-            const observer = new IntersectionObserver((entries) => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                    // Unobserve after animation for better performance
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll(".animate-on-scroll").forEach((el) => {
+            observer.observe(el);
+        });
+
+        // Counter animation for stats
+        function animateCounter(element, target, duration = 2000) {
+            let start = 0;
+            const increment = target / (duration / 16);
+
+            function updateCounter() {
+                start += increment;
+                if (start < target) {
+                    element.textContent =
+                        Math.floor(start) +
+                        (element.textContent.includes("%") ? "%" : "");
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    element.textContent =
+                        target +
+                        (element.textContent.includes("%") ? "%" : "");
+                }
+            }
+
+            updateCounter();
+        }
+
+        // Animate counters when stats section is visible
+        const statsObserver = new IntersectionObserver(
+            (entries) => {
                 entries.forEach((entry) => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add("visible");
-                        // Unobserve after animation for better performance
-                        observer.unobserve(entry.target);
+                        const statNumbers =
+                            entry.target.querySelectorAll(".stat-number");
+                        statNumbers.forEach((stat) => {
+                            const text = stat.textContent;
+                            const number = parseInt(
+                                text.replace(/\D/g, "")
+                            );
+                            const hasPlus = text.includes("+");
+                            const hasPercent = text.includes("%");
+
+                            stat.textContent =
+                                "0" + (hasPercent ? "%" : "");
+                            animateCounter(stat, number);
+
+                            setTimeout(() => {
+                                stat.textContent =
+                                    number +
+                                    (hasPlus ? "+" : "") +
+                                    (hasPercent ? "%" : "");
+                            }, 2100);
+                        });
+                        statsObserver.unobserve(entry.target);
                     }
                 });
-            }, observerOptions);
+            },
+            { threshold: 0.5 }
+        );
 
-            document.querySelectorAll(".animate-on-scroll").forEach((el) => {
-                observer.observe(el);
+        const statsSection = document.querySelector(".stats");
+        if (statsSection) {
+            statsObserver.observe(statsSection);
+        }
+
+        // Add floating animation to feature cards
+        document
+            .querySelectorAll(".feature-card")
+            .forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
             });
 
-            // Counter animation for stats
-            function animateCounter(element, target, duration = 2000) {
-                let start = 0;
-                const increment = target / (duration / 16);
+        // Mobile menu toggle (for future enhancement)
+        const mobileMenuToggle = () => {
+            // Implementation for mobile menu if needed
+        };
 
-                function updateCounter() {
-                    start += increment;
-                    if (start < target) {
-                        element.textContent =
-                            Math.floor(start) +
-                            (element.textContent.includes("%") ? "%" : "");
-                        requestAnimationFrame(updateCounter);
-                    } else {
-                        element.textContent =
-                            target +
-                            (element.textContent.includes("%") ? "%" : "");
-                    }
-                }
+        // Smooth scroll behavior optimization
+        document.documentElement.style.scrollBehavior = "smooth";
 
-                updateCounter();
-            }
-
-            // Animate counters when stats section is visible
-            const statsObserver = new IntersectionObserver(
-                (entries) => {
-                    entries.forEach((entry) => {
-                        if (entry.isIntersecting) {
-                            const statNumbers =
-                                entry.target.querySelectorAll(".stat-number");
-                            statNumbers.forEach((stat) => {
-                                const text = stat.textContent;
-                                const number = parseInt(
-                                    text.replace(/\D/g, "")
-                                );
-                                const hasPlus = text.includes("+");
-                                const hasPercent = text.includes("%");
-
-                                stat.textContent =
-                                    "0" + (hasPercent ? "%" : "");
-                                animateCounter(stat, number);
-
-                                setTimeout(() => {
-                                    stat.textContent =
-                                        number +
-                                        (hasPlus ? "+" : "") +
-                                        (hasPercent ? "%" : "");
-                                }, 2100);
-                            });
-                            statsObserver.unobserve(entry.target);
-                        }
-                    });
-                },
-                { threshold: 0.5 }
-            );
-
-            const statsSection = document.querySelector(".stats");
-            if (statsSection) {
-                statsObserver.observe(statsSection);
-            }
-
-            // Add floating animation to feature cards
-            document
-                .querySelectorAll(".feature-card")
-                .forEach((card, index) => {
-                    card.style.animationDelay = `${index * 0.1}s`;
-                });
-
-            // Mobile menu toggle (for future enhancement)
-            const mobileMenuToggle = () => {
-                // Implementation for mobile menu if needed
-            };
-
-            // Smooth scroll behavior optimization
-            document.documentElement.style.scrollBehavior = "smooth";
-
-            // Log eProbe information to console for developers
-            console.log(`
-🔍 eProbe - Automação Inteligente para eProc/TJSC
+        // Log eProbe information to console for developers
+        console.log(`
+🔍 eProbe - Automação Inteligente para eproc/TJSC
 📊 Versão: 1.0.0
 🚀 Desenvolvido por: Alexandre Claudino Simas Santos
 📄 Documentação: README.md
-🔗 GitHub: https://github.com/alexandre-css
+🔗 GitHub: https://github.com/alexandre-css/eProbe
+🌐 Landing Page: https://e-probe.vercel.app/
 
 Funcionalidades principais:
 ✅ Detecção automática de documentos (SENT1, INIC1)
@@ -1004,8 +979,9 @@ Funcionalidades principais:
 ✅ Funções de debug avançadas
         `);
 
-            // Initialize Lucide icons
-            lucide.createIcons();
-        </script>
-    </body>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
 </html>

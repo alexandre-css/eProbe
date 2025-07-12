@@ -1,10 +1,10 @@
 {
     "manifest_version": 3,
-    "name": "eProbe - Automação ePROC",
+    "name": "eProbe - Automação eproc",
     "version": "1.0.0",
-    "description": "Extensão para advogados e servidores do TJSC: detecta automaticamente documentos SENT1 e INIC1 no eProc, extrai texto e facilita a criação de resumos para capa do processo digital.",
-    "author": "eProbe Team",
-    "homepage_url": "https://github.com/seu-usuario/eProbe",
+    "description": "Extensão para servidores do TJSC: detecta automaticamente documentos no eproc, extrai texto e facilita a criação de resumos por inteligência artificial.",
+    "author": "Alexandre Claudino Simas Santos",
+    "homepage_url": "https://e-probe.vercel.app/",
 
     "permissions": ["activeTab", "storage", "tabs", "clipboardWrite"],
 
@@ -28,7 +28,7 @@
 
     "action": {
         "default_popup": "src/popup.html",
-        "default_title": "eProbe - Automação ePROC"
+        "default_title": "eProbe - Automação eproc"
     },
 
     "icons": {

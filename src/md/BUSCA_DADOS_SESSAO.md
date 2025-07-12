@@ -1,5 +1,7 @@
 # Busca por Dados da Sessão - eProbe
 
+**🌐 Project Landing Page**: https://e-probe.vercel.app/
+
 ## Visão Geral
 
 O sistema de detecção de dados da sessão no eProbe é responsável por extrair automaticamente informações sobre datas de sessões judiciais a partir das minutas dos processos no sistema eProc/TJSC. Esta funcionalidade é crucial para automatizar o acompanhamento de pautas de julgamento.

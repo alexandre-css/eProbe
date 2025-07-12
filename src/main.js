@@ -3084,41 +3084,16 @@ ${texto}`;
         const referenceElement = targetInfo.referenceElement;
 
         console.log(" Container encontrado, criando botão integrado...");
-        const button = document.createElement("button");
-        button.id = "documento-relevante-auto-button";
-        button.innerHTML = `
+        const button = criarInfraButtonPrimary(
+            "documento-relevante-auto-button",
+            `
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
  <rect width="18" height="18" x="3" y="3" rx="2"/>
  <path d="m9 8 6 4-6 4Z"/>
  </svg>
  Resumir Documento
- `;
-        button.className = "infraButton btn-primary";
-
-        // Aplicar apenas a cor azul personalizada
-        button.style.backgroundColor = "#134377";
-        button.style.borderColor = "#134377";
-
-        // Adicionar eventos para hover e focus
-        button.addEventListener("mouseenter", () => {
-            button.style.backgroundColor = "#0f3a66";
-            button.style.borderColor = "#0f3a66";
-        });
-
-        button.addEventListener("mouseleave", () => {
-            button.style.backgroundColor = "#134377";
-            button.style.borderColor = "#134377";
-        });
-
-        button.addEventListener("focus", () => {
-            button.style.backgroundColor = "#0f3a66";
-            button.style.borderColor = "#0f3a66";
-        });
-
-        button.addEventListener("blur", () => {
-            button.style.backgroundColor = "#134377";
-            button.style.borderColor = "#134377";
-        });
+ `
+        );
 
         // Adicionar espaçamento quando posicionado ao lado do PDPJ
         if (insertMethod === "beforePDPJ") {
@@ -5310,6 +5285,11 @@ ${texto}`;
         // Funções de debug
         debugDeteccaoDataSessao,
         forcarDeteccaoDataSessao,
+        // Funções de interface reutilizável
+        criarBotaoEleganteeProc,
+        botaoBrancoCapaProcesso,
+        criarInfraButtonPrimary,
+        botaoAzuleProc,
     };
 
     // 🔍 FUNÇÕES DE DEBUG
@@ -6783,38 +6763,11 @@ Timestamp: ${dataSessaoPautado.timestamp}`;
             return true;
         }
 
-        // Criar elemento para exibir a data da sessão
-        const dataSessaoElement = document.createElement("div");
-        dataSessaoElement.id = "eprobe-data-sessao";
-        dataSessaoElement.className = "col-auto mr-2";
-        dataSessaoElement.style.cssText = `
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid #d1d5db;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background-color: #f8fafc;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            white-space: nowrap;
-            max-width: fit-content;
-        `;
-
-        // Adicionar efeitos hover
-        dataSessaoElement.addEventListener("mouseenter", function () {
-            this.style.backgroundColor = "#e1f5fe";
-            this.style.borderColor = "#3b82f6";
-            this.style.boxShadow = "0 4px 8px 0 rgba(59, 130, 246, 0.1)";
-        });
-
-        dataSessaoElement.addEventListener("mouseleave", function () {
-            this.style.backgroundColor = "#f8fafc";
-            this.style.borderColor = "#d1d5db";
-            this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
-        });
+        // Criar elemento usando a função reutilizável
+        const dataSessaoElement = criarBotaoEleganteeProc(
+            "eprobe-data-sessao",
+            "col-auto mr-2"
+        );
 
         // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
         const dadosCompletos = getDadosCompletosSessionJulgamento();

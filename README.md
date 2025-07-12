@@ -2,6 +2,8 @@
 
 Extensão para Chrome que automatiza a detecção, extração e processamento de documentos judiciais no sistema eProc do TJSC.
 
+**🌐 Landing Page**: https://e-probe.vercel.app/
+
 ## 🎯 Funcionalidades
 
 -   **Detecção automática**: Identifica documentos SENT1 e INIC1 nas páginas do eProc

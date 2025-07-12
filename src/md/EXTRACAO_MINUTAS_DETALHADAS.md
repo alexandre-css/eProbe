@@ -1,5 +1,7 @@
 # 📋 Extração de Minutas Detalhadas - eProbe
 
+**🌐 Project Landing Page**: https://e-probe.vercel.app/
+
 ## Objetivo
 
 Implementar extração automática de textos detalhados das minutas (ACÓRDÃO e RELATÓRIO/VOTO) para integração ao modal de dados da sessão existente.

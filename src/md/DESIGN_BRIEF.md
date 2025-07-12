@@ -1,5 +1,7 @@
 # eProbe - Design Brief para Assets Visuais
 
+**🌐 Project Landing Page**: https://e-probe.vercel.app/
+
 ## 📋 Resumo Executivo
 
 **Projeto:** eProbe - Extensão Chrome para Automação Jurídica  

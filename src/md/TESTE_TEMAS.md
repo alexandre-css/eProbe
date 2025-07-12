@@ -1,7 +1,5 @@
 # 🧪 TESTE DO SISTEMA DE TEMAS EPROBE
 
-**🌐 Project Landing Page**: https://e-probe.vercel.app/
-
 ## ✅ Status dos Componentes - PROBLEMAS RESOLVIDOS
 
 1. **popup.html** - ✅ Script inline removido (CSP resolvido)
