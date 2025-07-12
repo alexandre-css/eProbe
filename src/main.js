@@ -304,6 +304,41 @@
         return [];
     }
 
+    // Função para salvar lista de separadores removidos
+    function salvarSeparadoresRemovidos(removidos) {
+        try {
+            const chave = "eprobe_separadores_removidos";
+            localStorage.setItem(chave, JSON.stringify(removidos));
+            console.log(
+                "🗑️ LOCALIZADORES: Lista de removidos salva no localStorage"
+            );
+        } catch (error) {
+            console.error("❌ LOCALIZADORES: Erro ao salvar removidos:", error);
+        }
+    }
+
+    // Função para carregar lista de separadores removidos
+    function carregarSeparadoresRemovidos() {
+        try {
+            const chave = "eprobe_separadores_removidos";
+            const dados = localStorage.getItem(chave);
+            if (dados) {
+                const removidos = JSON.parse(dados);
+                console.log(
+                    "📂 LOCALIZADORES: Separadores removidos carregados:",
+                    removidos.length
+                );
+                return removidos;
+            }
+        } catch (error) {
+            console.error(
+                "❌ LOCALIZADORES: Erro ao carregar removidos:",
+                error
+            );
+        }
+        return [];
+    }
+
     // Função para detectar e processar página "Meus Localizadores"
     function detectarPaginaLocalizadores() {
         const currentUrl = window.location.href;
@@ -351,11 +386,20 @@
 
         // Restaurar separadores salvos
         restaurarSeparadores(tabela);
-    }
-
-    // Função para restaurar separadores salvos
+    } // Função para restaurar separadores salvos
     function restaurarSeparadores(tabela) {
         console.log("🔄 LOCALIZADORES: Restaurando separadores salvos");
+
+        // Verificar se já existem separadores na página para evitar duplicação
+        const separadoresExistentes = tabela.querySelectorAll(
+            ".eprobe-divisor-linha"
+        );
+        if (separadoresExistentes.length > 0) {
+            console.log(
+                "ℹ️ LOCALIZADORES: Separadores já existem na página, evitando duplicação"
+            );
+            return;
+        }
 
         const separadoresSalvos = carregarSeparadores();
 
@@ -390,11 +434,24 @@
                 linhaReferencia = linhasOriginais[separadorData.posicao - 1];
             }
 
-            // Criar o separador
-            criarDivisorEditavel(tabela, linhaReferencia, separadorData.texto);
-            console.log(
-                `✅ LOCALIZADORES: Separador "${separadorData.texto}" restaurado na posição ${separadorData.posicao}`
+            // Criar o separador com flag de restauração para evitar salvar novamente
+            const separadorCriado = criarDivisorEditavel(
+                tabela,
+                linhaReferencia,
+                separadorData.texto,
+                true
             );
+
+            // Adicionar ID do separador salvo ao elemento restaurado
+            if (separadorCriado) {
+                separadorCriado.setAttribute(
+                    "data-separador-id",
+                    separadorData.id
+                );
+                console.log(
+                    `✅ LOCALIZADORES: Separador "${separadorData.texto}" restaurado na posição ${separadorData.posicao}`
+                );
+            }
         });
 
         console.log(
@@ -448,13 +505,15 @@
     function criarDivisorEditavel(
         tabela,
         linhaPosicao,
-        textoInicial = "Seção"
+        textoInicial = "Seção",
+        isRestoracao = false
     ) {
         console.log("📝 LOCALIZADORES: Criando divisor editável");
         console.log("🔧 DEBUG: Parâmetros recebidos:", {
             tabela,
             linhaPosicao,
             textoInicial,
+            isRestoracao,
         });
 
         if (!tabela) {
@@ -506,7 +565,7 @@
         // Criar ícone do separador
         const iconeSeparador = document.createElement("span");
         iconeSeparador.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal" style="margin-right: 4px; vertical-align: middle;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal" style="margin-right: 2px; vertical-align: middle;">
                 <path d="m16 16-4 4-4-4"/>
                 <path d="M3 12h18"/>
                 <path d="m8 8 4-4 4 4"/>
@@ -528,7 +587,39 @@
             min-width: 100px;
             display: inline-block;
             text-align: center;
+            transition: background-color 0.2s ease;
         `;
+
+        // Adicionar eventos para edição
+        tituloEditavel.addEventListener("focus", function () {
+            this.style.backgroundColor = "#f3f4f6";
+            this.style.borderRadius = "4px";
+            this.style.padding = "2px 6px";
+        });
+
+        tituloEditavel.addEventListener("blur", function () {
+            this.style.backgroundColor = "transparent";
+            this.style.padding = "0";
+
+            // Salvar alteração na persistência
+            salvarAlteracaoSeparador(linhaDivisor, this.textContent.trim());
+        });
+
+        tituloEditavel.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                this.blur(); // Força o blur para salvar
+            }
+            if (e.key === "Escape") {
+                e.preventDefault();
+                this.textContent = textoInicial; // Restaura valor original
+                this.blur();
+            }
+        });
+
+        // Adicionar tooltip com instruções
+        tituloEditavel.title =
+            "Clique para editar o nome do separador\n• Enter: Salvar\n• Escape: Cancelar";
 
         // Criar botão para remover divisor (discreto, só aparece no hover)
         const botaoRemover = document.createElement("button");
@@ -594,9 +685,8 @@
 
         console.log("✅ LOCALIZADORES: Divisor criado com sucesso");
 
-        // Salvar separador na persistência (se não for uma restauração)
-        if (arguments.length <= 3) {
-            // Se não foi chamado durante restauração
+        // Salvar separador na persistência (apenas se não for uma restauração)
+        if (!isRestoracao) {
             salvarSeparadorNaPersistencia(
                 linhaDivisor,
                 textoInicial,
@@ -667,13 +757,39 @@
         );
     }
 
+    // Função para salvar alteração no texto do separador
+    function salvarAlteracaoSeparador(linhaDivisor, novoTexto) {
+        const separadorId = linhaDivisor.getAttribute("data-separador-id");
+        if (!separadorId || !novoTexto) return;
+
+        const separadoresSalvos = carregarSeparadores();
+        const separadorIndex = separadoresSalvos.findIndex(
+            (sep) => sep.id == separadorId
+        );
+
+        if (separadorIndex !== -1) {
+            separadoresSalvos[separadorIndex].texto = novoTexto;
+            separadoresSalvos[separadorIndex].modificadoEm =
+                new Date().toISOString();
+
+            salvarSeparadores(separadoresSalvos);
+            console.log(
+                `📝 LOCALIZADORES: Separador ${separadorId} atualizado para: "${novoTexto}"`
+            );
+        }
+    }
+
     // Função para limpar todos os separadores salvos (útil para debug/reset)
     function limparTodosSeparadores() {
         try {
             const chave = "eprobe_separadores_localizadores";
+            const chaveRemovidos = "eprobe_separadores_removidos";
+
             localStorage.removeItem(chave);
+            localStorage.removeItem(chaveRemovidos);
+
             console.log(
-                "🧹 LOCALIZADORES: Todos os separadores foram limpos do localStorage"
+                "🧹 LOCALIZADORES: Todos os separadores e lista de removidos foram limpos do localStorage"
             );
 
             // Remover também do DOM se estiver na página
@@ -6064,6 +6180,10 @@ ${texto}`;
         carregarSeparadores: carregarSeparadores,
         restaurarSeparadores: restaurarSeparadores,
         limparTodosSeparadores: limparTodosSeparadores,
+        salvarAlteracaoSeparador: salvarAlteracaoSeparador,
+        // Funções para gerenciar separadores removidos
+        salvarSeparadoresRemovidos: salvarSeparadoresRemovidos,
+        carregarSeparadoresRemovidos: carregarSeparadoresRemovidos,
         // Espaço reservado para futuras funções:
         // processarEmLote: null,
         // criarDashboard: null,
@@ -8729,3 +8849,295 @@ Detectada automaticamente pelo eProbe
         inicializarAutomaticamente();
     }
 })();
+
+// 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
+// Funções expostas globalmente para personalizar botões (fora da IIFE)
+
+// Configurações de temas para botões
+const TEMAS_BOTOES_EPROC = {
+    elegante: {
+        backgroundColor: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        color: "#ffffff",
+        border: "1px solid #5a67d8",
+        borderRadius: "8px",
+        boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
+        transition: "all 0.3s ease",
+        hover: {
+            transform: "translateY(-2px)",
+            boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
+        },
+        focus: {
+            boxShadow: "0 0 0 3px rgba(102, 126, 234, 0.3)",
+            outline: "none",
+        },
+    },
+    minimalista: {
+        backgroundColor: "#f8f9fa",
+        color: "#495057",
+        border: "1px solid #dee2e6",
+        borderRadius: "4px",
+        boxShadow: "none",
+        transition: "all 0.2s ease",
+        hover: {
+            backgroundColor: "#e9ecef",
+            borderColor: "#adb5bd",
+        },
+        focus: {
+            borderColor: "#80bdff",
+            boxShadow: "0 0 0 0.2rem rgba(0, 123, 255, 0.25)",
+        },
+    },
+    escuro: {
+        backgroundColor: "#343a40",
+        color: "#ffffff",
+        border: "1px solid #495057",
+        borderRadius: "6px",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        transition: "all 0.3s ease",
+        hover: {
+            backgroundColor: "#495057",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.25)",
+        },
+        focus: {
+            boxShadow: "0 0 0 3px rgba(52, 58, 64, 0.3)",
+        },
+    },
+    colorido: {
+        backgroundColor:
+            "linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3)",
+        color: "#ffffff",
+        border: "none",
+        borderRadius: "12px",
+        boxShadow: "0 4px 15px rgba(255, 107, 107, 0.3)",
+        transition: "all 0.3s ease",
+        hover: {
+            transform: "scale(1.05)",
+            boxShadow: "0 6px 20px rgba(255, 107, 107, 0.4)",
+        },
+    },
+    profissional: {
+        backgroundColor: "#007ebd",
+        color: "#ffffff",
+        border: "1px solid #006ba6",
+        borderRadius: "4px",
+        boxShadow: "0 2px 4px rgba(0, 126, 189, 0.2)",
+        transition: "all 0.2s ease",
+        hover: {
+            backgroundColor: "#006ba6",
+            boxShadow: "0 4px 8px rgba(0, 126, 189, 0.3)",
+        },
+        focus: {
+            boxShadow: "0 0 0 3px rgba(0, 126, 189, 0.3)",
+        },
+    },
+};
+
+// Função principal para aplicar estilo personalizado aos botões
+window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
+    console.log(`🎨 BOTÕES: Aplicando tema "${tema}" aos botões do eProc`);
+
+    // Verificar se o tema existe
+    if (!TEMAS_BOTOES_EPROC[tema]) {
+        console.warn(
+            `⚠️ BOTÕES: Tema "${tema}" não encontrado. Temas disponíveis:`,
+            Object.keys(TEMAS_BOTOES_EPROC)
+        );
+        tema = "elegante"; // Fallback para tema padrão
+    }
+
+    const configuracaoTema = { ...TEMAS_BOTOES_EPROC[tema], ...opcoes };
+
+    // Seletores para todos os tipos de botões do eProc
+    const seletoresBotoes = [
+        ".bootstrap-styles .btn",
+        ".bootstrap-styles .eproc-button",
+        ".bootstrap-styles .eproc-button-primary",
+        ".bootstrap-styles .infraButton",
+        ".bootstrap-styles .infraButton.btn-primary",
+        ".bootstrap-styles .infraButton.eproc-button-primary",
+        ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado",
+        'button[class*="infra"]',
+        'input[type="button"]',
+        'input[type="submit"]',
+        'button[onclick*="abrirVisualizacao"]',
+        'button[onclick*="processo"]',
+    ];
+
+    // Remover estilo anterior se existir
+    const estiloAnterior = document.getElementById(
+        "eprobe-estilo-botoes-eproc"
+    );
+    if (estiloAnterior) {
+        estiloAnterior.remove();
+    }
+
+    // Criar novo estilo
+    const estiloElemento = document.createElement("style");
+    estiloElemento.id = "eprobe-estilo-botoes-eproc";
+
+    // Gerar CSS baseado na configuração do tema
+    let css = `
+        /* 🎨 eProbe - Estilo Personalizado dos Botões do eProc - Tema: ${tema} */
+        
+        /* Estilo base dos botões */
+        ${seletoresBotoes.join(", ")} {
+            background: ${configuracaoTema.backgroundColor} !important;
+            color: ${configuracaoTema.color} !important;
+            border: ${configuracaoTema.border} !important;
+            border-radius: ${configuracaoTema.borderRadius} !important;
+            box-shadow: ${configuracaoTema.boxShadow} !important;
+            transition: ${configuracaoTema.transition} !important;
+            font-weight: 500 !important;
+            cursor: pointer !important;
+        }
+    `;
+
+    // Adicionar estilos de hover se definidos
+    if (configuracaoTema.hover) {
+        const hoverProps = Object.entries(configuracaoTema.hover)
+            .map(
+                ([prop, value]) =>
+                    `${prop
+                        .replace(/([A-Z])/g, "-$1")
+                        .toLowerCase()}: ${value} !important;`
+            )
+            .join("\n                ");
+
+        css += `
+        /* Estilo hover */
+        ${seletoresBotoes.map((s) => `${s}:hover`).join(", ")} {
+            ${hoverProps}
+        }
+        `;
+    }
+
+    // Adicionar estilos de focus se definidos
+    if (configuracaoTema.focus) {
+        const focusProps = Object.entries(configuracaoTema.focus)
+            .map(
+                ([prop, value]) =>
+                    `${prop
+                        .replace(/([A-Z])/g, "-$1")
+                        .toLowerCase()}: ${value} !important;`
+            )
+            .join("\n                ");
+
+        css += `
+        /* Estilo focus */
+        ${seletoresBotoes.map((s) => `${s}:focus`).join(", ")} {
+            ${focusProps}
+        }
+        `;
+    }
+
+    // Adicionar estilos para estados ativos
+    css += `
+        /* Estilo active */
+        ${seletoresBotoes.map((s) => `${s}:active`).join(", ")} {
+            transform: translateY(1px) !important;
+            box-shadow: ${configuracaoTema.boxShadow?.replace(
+                /\d+px/g,
+                "2px"
+            )} !important;
+        }
+        
+        /* Estilo disabled */
+        ${seletoresBotoes.map((s) => `${s}:disabled`).join(", ")} {
+            opacity: 0.6 !important;
+            cursor: not-allowed !important;
+            transform: none !important;
+        }
+    `;
+
+    estiloElemento.textContent = css;
+    document.head.appendChild(estiloElemento);
+
+    // Salvar preferência no localStorage
+    try {
+        localStorage.setItem("eprobe_tema_botoes_eproc", tema);
+        localStorage.setItem(
+            "eprobe_opcoes_botoes_eproc",
+            JSON.stringify(opcoes)
+        );
+    } catch (error) {
+        console.warn("⚠️ BOTÕES: Erro ao salvar preferências:", error);
+    }
+
+    console.log(
+        `✅ BOTÕES: Tema "${tema}" aplicado com sucesso a todos os botões do eProc`
+    );
+
+    // Retornar informações sobre a aplicação
+    return {
+        tema: tema,
+        botoesAfetados: document.querySelectorAll(seletoresBotoes.join(", "))
+            .length,
+        configuracao: configuracaoTema,
+    };
+};
+
+// Função para restaurar tema salvo
+window.restaurarTemaBotoesEproc = function () {
+    try {
+        const temaSalvo = localStorage.getItem("eprobe_tema_botoes_eproc");
+        const opcoesSalvas = localStorage.getItem("eprobe_opcoes_botoes_eproc");
+
+        if (temaSalvo) {
+            const opcoes = opcoesSalvas ? JSON.parse(opcoesSalvas) : {};
+            window.aplicarEstiloBotoesEproc(temaSalvo, opcoes);
+            console.log(
+                `🔄 BOTÕES: Tema salvo "${temaSalvo}" restaurado automaticamente`
+            );
+            return true;
+        }
+    } catch (error) {
+        console.warn("⚠️ BOTÕES: Erro ao restaurar tema salvo:", error);
+    }
+    return false;
+};
+
+// Função para resetar estilos para o padrão do eProc
+window.resetarBotoesEproc = function () {
+    const estiloPersonalizado = document.getElementById(
+        "eprobe-estilo-botoes-eproc"
+    );
+    if (estiloPersonalizado) {
+        estiloPersonalizado.remove();
+        localStorage.removeItem("eprobe_tema_botoes_eproc");
+        localStorage.removeItem("eprobe_opcoes_botoes_eproc");
+        console.log("🔄 BOTÕES: Estilos resetados para o padrão do eProc");
+        return true;
+    }
+    return false;
+};
+
+// Função para listar temas disponíveis
+window.listarTemasBotoesEproc = function () {
+    console.log(
+        "🎨 BOTÕES: Temas disponíveis:",
+        Object.keys(TEMAS_BOTOES_EPROC)
+    );
+    return Object.keys(TEMAS_BOTOES_EPROC);
+};
+
+// Função para aplicar tema personalizado
+window.criarTemaPersonalizadoBotoes = function (nome, configuracao) {
+    if (!nome || !configuracao) {
+        console.warn(
+            "⚠️ BOTÕES: Nome e configuração são obrigatórios para criar tema personalizado"
+        );
+        return false;
+    }
+
+    TEMAS_BOTOES_EPROC[nome] = configuracao;
+    console.log(`✅ BOTÕES: Tema personalizado "${nome}" criado com sucesso`);
+    return true;
+};
+
+// Auto-aplicar tema salvo quando a página carregar
+setTimeout(() => {
+    if (!window.restaurarTemaBotoesEproc()) {
+        // Se não há tema salvo, aplicar tema padrão elegante
+        // window.aplicarEstiloBotoesEproc('elegante');
+    }
+}, 1000);
