@@ -1,6 +1,35 @@
 // eProbe Theme Auto-Apply Script
 // Aplica automaticamente o tema salvo quando a página do eProc carrega
 
+/*
+========================================
+FUNCIONALIDADES DE STATUS DE SESSÃO
+========================================
+
+O eProbe agora detecta automaticamente o status da sessão do processo:
+
+📋 STATUS DETECTADOS:
+• "Processo Pautado" - Incluído em Pauta em [data]
+• "Processo Julgado" - Julgado em Pauta em [data] 
+• "Processo Retirado de Pauta" - Retirado em Pauta em [data]
+
+🎨 INTERFACE DINÂMICA:
+• Cores automáticas baseadas no status:
+  - Azul (#3b82f6) para Pautado
+  - Verde (#16a34a) para Julgado
+  - Vermelho (#dc2626) para Retirado
+
+🔍 FUNÇÕES DE DEBUG:
+• window.SENT1_AUTO.debugDeteccaoStatusSessao() - Detectar status manualmente
+• window.SENT1_AUTO.debugStatusSessao() - Mostrar informações do status
+• window.SENT1_AUTO.getStatusSessao() - Obter dados do status atual
+
+⚙️ IMPLEMENTAÇÃO:
+• Detecção automática via regex nas minutas do processo
+• Fallback para detecção padrão se status específico não for encontrado
+• Interface atualizada automaticamente com cores e textos dinâmicos
+*/
+
 // Escuta mudanças no storage para aplicar temas em tempo real
 if (typeof chrome !== "undefined" && chrome.storage) {
     chrome.storage.onChanged.addListener(function (changes, area) {

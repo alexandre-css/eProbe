@@ -1,6 +1,49 @@
 // Content script automatizado para DocumentosRelevantes
-(function () {
+// 🔧 VERSÃO CORRIGIDA PARA MICROSOFT EDGE
+(async function () {
     "use strict";
+
+    // 🔧 AGUARDAR APIS DE EXTENSÃO (CORREÇÃO PARA EDGE)
+    function aguardarAPIsExtensao() {
+        return new Promise((resolve) => {
+            if (typeof chrome !== "undefined" && chrome.runtime) {
+                console.log("✅ INIT: APIs de extensão já disponíveis");
+                resolve(true);
+                return;
+            }
+
+            let tentativas = 0;
+            const maxTentativas = 50; // 5 segundos máximo
+
+            function verificar() {
+                tentativas++;
+
+                if (typeof chrome !== "undefined" && chrome.runtime) {
+                    console.log(
+                        `✅ INIT: APIs disponíveis após ${tentativas * 100}ms`
+                    );
+                    resolve(true);
+                    return;
+                }
+
+                if (tentativas >= maxTentativas) {
+                    console.log(
+                        "⚠️ INIT: Continuando sem APIs de extensão (pode afetar funcionalidades)"
+                    );
+                    resolve(false);
+                    return;
+                }
+
+                setTimeout(verificar, 100);
+            }
+
+            verificar();
+        });
+    }
+
+    // Aguardar APIs antes de continuar
+    await aguardarAPIsExtensao();
+    console.log("🚀 INIT: Iniciando eProbe após APIs ficarem prontas...");
 
     // Armazenar a data da sessão quando detectada
     let dataSessaoPautado = null;
@@ -6096,6 +6139,88 @@ ${texto}`;
         return criarInfraButtonPrimary(id, innerHTML);
     }
 
+    // 🧪 FUNÇÃO EXPERIMENTAL - Detecção de data da sessão com Semantic Kernel
+    async function detectarDataSessaoExperimental() {
+        console.log(
+            "🧪 EXPERIMENTAL: Iniciando detecção de data da sessão com Semantic Kernel"
+        );
+
+        try {
+            // Verificar se o Semantic Kernel está disponível
+            if (typeof window.eProbeSemanticKernel !== "undefined") {
+                console.log(
+                    "🤖 Semantic Kernel disponível - tentando detecção inteligente"
+                );
+
+                const textoCompleto =
+                    document.body.innerText || document.body.textContent || "";
+
+                // Usar o Semantic Kernel para detecção inteligente
+                const resultadoIA =
+                    await window.eProbeSemanticKernel.detectarDataSessao(
+                        textoCompleto
+                    );
+
+                if (resultadoIA && resultadoIA.dataEncontrada) {
+                    console.log(
+                        "✅ EXPERIMENTAL: Data detectada via IA:",
+                        resultadoIA.dataFormatada
+                    );
+
+                    // Validar a data detectada
+                    if (validarDataBrasileira(resultadoIA.dataFormatada)) {
+                        // Salvar resultado usando a mesma estrutura da função original
+                        dataSessaoPautado = {
+                            dataOriginal: resultadoIA.dataFormatada,
+                            dataFormatada: resultadoIA.dataFormatada,
+                            contextoEncontrado:
+                                resultadoIA.contexto || "Detectado via IA",
+                            metodoDeteccao: "semantic-kernel",
+                            confianca: resultadoIA.confianca || 0.8,
+                        };
+
+                        processoComDataSessao = processoAtual;
+                        console.log(
+                            "✅ EXPERIMENTAL: Data da sessão salva via Semantic Kernel"
+                        );
+
+                        return dataSessaoPautado;
+                    } else {
+                        console.log(
+                            "❌ EXPERIMENTAL: Data detectada via IA não é válida:",
+                            resultadoIA.dataFormatada
+                        );
+                    }
+                } else {
+                    console.log(
+                        "⚠️ EXPERIMENTAL: Semantic Kernel não encontrou data da sessão"
+                    );
+                }
+            } else {
+                console.log(
+                    "❌ EXPERIMENTAL: Semantic Kernel não está disponível"
+                );
+            }
+
+            // Fallback para método tradicional
+            console.log(
+                "🔄 EXPERIMENTAL: Usando fallback para método tradicional"
+            );
+            return detectarDataSessao();
+        } catch (error) {
+            console.error(
+                "🚨 EXPERIMENTAL: Erro na detecção experimental:",
+                error
+            );
+
+            // Fallback para método tradicional em caso de erro
+            console.log(
+                "🔄 EXPERIMENTAL: Fallback para método tradicional devido a erro"
+            );
+            return detectarDataSessao();
+        }
+    }
+
     // Inicializar
     init();
 
@@ -6148,6 +6273,8 @@ ${texto}`;
         // Funções de debug
         debugDeteccaoDataSessao,
         forcarDeteccaoDataSessao,
+        // Função experimental com Semantic Kernel
+        detectarDataSessaoExperimental,
         // Funções de interface reutilizável
         criarBotaoEleganteeProc,
         botaoBrancoCapaProcesso,
@@ -6157,11 +6284,26 @@ ${texto}`;
         detectarPaginaLocalizadores,
         processarTabelaLocalizadores,
         destacarLocalizadoresUrgentes,
+        // Funções de status de sessão
+        detectarStatusSessao,
+        detectarDataSessaoComStatus,
+        obterTextoCardPorStatus,
+        obterCorCardPorStatus,
+        getStatusSessao,
+        hasStatusSessao,
+        resetStatusSessao,
+        showStatusSessaoInfo,
     };
 
     // 🔍 FUNÇÕES DE DEBUG
     window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
     window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
+    // 🔍 FUNÇÕES DE DEBUG PARA STATUS
+    window.SENT1_AUTO.debugDeteccaoStatusSessao = detectarStatusSessao;
+    window.SENT1_AUTO.debugStatusSessao = showStatusSessaoInfo;
+    window.SENT1_AUTO.testarSistemaStatusSessao = testarSistemaStatusSessao;
+    window.SENT1_AUTO.debugPadroesStatusSessao = debugPadroesStatusSessao;
+    window.SENT1_AUTO.forcarStatusSessao = forcarStatusSessao;
 
     // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
     // Estrutura preparada para futuras funcionalidades da página de localizadores
@@ -6415,6 +6557,202 @@ ${texto}`;
         } else {
             console.log("❌ FORÇA: Falha na inserção do card");
             return false;
+        }
+    }
+
+    // ========================================
+    // FUNÇÕES DE DETECÇÃO DE STATUS DE SESSÃO
+    // ========================================
+
+    /**
+     * Detecta o status da sessão baseado nas minutas do processo
+     * Analisa os padrões: "Incluído em Pauta", "Julgado em Pauta", "Retirado em Pauta"
+     * @returns {Object|null} - Objeto com status e data, ou null se não encontrado
+     */
+    function detectarStatusSessao() {
+        console.log("🔍 STATUS: Iniciando detecção do status da sessão");
+
+        try {
+            // Buscar todo o texto da página
+            const textoCompleto = document.body.innerText;
+
+            // Padrões para detectar diferentes status de sessão
+            const padroes = [
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Pautado",
+                    descricao: "Processo Pautado",
+                },
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Julgado",
+                    descricao: "Processo Julgado",
+                },
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                    descricao: "Processo Retirado de Pauta",
+                },
+            ];
+
+            // Tentar cada padrão
+            for (const padrao of padroes) {
+                const match = textoCompleto.match(padrao.regex);
+                if (match && match.length > 0) {
+                    // Resetar lastIndex para nova busca
+                    padrao.regex.lastIndex = 0;
+                    const detalhes = padrao.regex.exec(textoCompleto);
+
+                    if (detalhes) {
+                        const tipoProcesso = detalhes[1]?.trim();
+                        const dataEncontrada = detalhes[2];
+                        const orgao = detalhes[3];
+
+                        console.log(`✅ STATUS: ${padrao.status} encontrado`);
+                        console.log(`📋 Tipo: ${tipoProcesso}`);
+                        console.log(`📅 Data: ${dataEncontrada}`);
+                        console.log(`🏛️ Órgão: ${orgao}`);
+
+                        // Validar data
+                        const dataValidada =
+                            validarDataBrasileira(dataEncontrada);
+                        if (dataValidada) {
+                            return {
+                                status: padrao.status,
+                                descricao: padrao.descricao,
+                                tipoProcesso: tipoProcesso,
+                                data: dataValidada,
+                                orgao: orgao,
+                                textoCompleto: detalhes[0],
+                            };
+                        }
+                    }
+                }
+            }
+
+            console.log("❌ STATUS: Nenhum status de sessão detectado");
+            return null;
+        } catch (error) {
+            console.error("❌ STATUS: Erro na detecção do status:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Retorna o texto do card baseado no status da sessão
+     * @param {Object} statusSessao - Objeto com informações do status
+     * @returns {string} - Texto para exibir no card
+     */
+    function obterTextoCardPorStatus(statusSessao) {
+        if (!statusSessao) {
+            return "Processo Pautado"; // Fallback padrão
+        }
+
+        switch (statusSessao.status) {
+            case "Pautado":
+                return "Processo Pautado";
+            case "Julgado":
+                return "Processo Julgado";
+            case "Retirado":
+                return "Processo Retirado de Pauta";
+            default:
+                return "Processo Pautado";
+        }
+    }
+
+    /**
+     * Retorna a cor do card baseado no status da sessão
+     * @param {Object} statusSessao - Objeto com informações do status
+     * @returns {string} - Cor em formato hex
+     */
+    function obterCorCardPorStatus(statusSessao) {
+        if (!statusSessao) {
+            return "#3b82f6"; // Azul padrão
+        }
+
+        switch (statusSessao.status) {
+            case "Pautado":
+                return "#3b82f6"; // Azul para pautado
+            case "Julgado":
+                return "#16a34a"; // Verde para julgado
+            case "Retirado":
+                return "#dc2626"; // Vermelho para retirado
+            default:
+                return "#3b82f6";
+        }
+    }
+
+    /**
+     * Atualiza a função principal de detecção para incluir status
+     * @returns {Object|null} - Dados da sessão com status
+     */
+    function detectarDataSessaoComStatus() {
+        console.log("🔍 SESSÃO+STATUS: Detectando data e status da sessão");
+
+        // Primeiro detectar o status
+        const statusSessao = detectarStatusSessao();
+
+        if (statusSessao) {
+            console.log(
+                `✅ SESSÃO+STATUS: Status detectado: ${statusSessao.status}`
+            );
+
+            // Se encontrou status, usar a data do status
+            dataSessaoPautado = statusSessao.data;
+            processoComDataSessao = processoAtual;
+
+            // Adicionar informações de status à data
+            dataSessaoPautado.statusSessao = statusSessao;
+
+            return statusSessao;
+        } else {
+            // Fallback para detecção original sem status específico
+            console.log(
+                "ℹ️ SESSÃO+STATUS: Status específico não encontrado, usando detecção padrão"
+            );
+            return detectarDataSessao();
+        }
+    }
+
+    // Funções auxiliares para gerenciar status de sessão
+    function getStatusSessao() {
+        return dataSessaoPautado?.statusSessao || null;
+    }
+
+    function hasStatusSessao() {
+        return (
+            dataSessaoPautado?.statusSessao !== null &&
+            dataSessaoPautado?.statusSessao !== undefined
+        );
+    }
+
+    function resetStatusSessao() {
+        if (dataSessaoPautado) {
+            delete dataSessaoPautado.statusSessao;
+        }
+        console.log("🔄 STATUS: Status da sessão resetado");
+    }
+
+    function showStatusSessaoInfo() {
+        const status = getStatusSessao();
+        if (status) {
+            const info = `📋 STATUS DA SESSÃO DETECTADO:
+                
+    Status: ${status.status}
+    Descrição: ${status.descricao}
+    Tipo do Processo: ${status.tipoProcesso}
+    Data: ${status.data.dataFormatada}
+    Órgão: ${status.orgao}
+    Texto Completo: ${status.textoCompleto}`;
+
+            console.log(info);
+            alert(info);
+            return status;
+        } else {
+            const msg = "❌ Nenhum status de sessão foi detectado ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
         }
     }
 
@@ -7441,7 +7779,34 @@ ${texto}`;
             resetDataSessaoPautado();
         }
 
-        // Buscar em todo o texto da página
+        // 🎯 PRIORIDADE 1: Detectar com status específico primeiro
+        const statusDetectado = detectarStatusSessao();
+        if (statusDetectado) {
+            console.log(
+                `✅ SUCESSO COM STATUS: ${statusDetectado.status} detectado`
+            );
+
+            dataSessaoPautado = statusDetectado.data;
+            dataSessaoPautado.statusSessao = statusDetectado;
+            processoComDataSessao = processoAtual;
+
+            console.log(
+                `✅ SUCESSO: Data da sessão detectada com status para processo ${processoAtual}: ${statusDetectado.data.dataFormatada}`
+            );
+
+            // 🔐 MARCAR PROCESSO COMO PROCESSADO
+            marcarProcessoComoProcessado(processoAtual);
+
+            // Interface inserida automaticamente
+            setTimeout(() => {
+                inserirDataSessaoNaInterface();
+            }, 500);
+
+            return dataSessaoPautado;
+        }
+
+        // FALLBACK: Buscar em todo o texto da página com padrões genéricos
+        console.log("🔍 FALLBACK: Tentando padrões genéricos de data");
         const textoCompleto = document.body.innerText;
 
         // Primeiro padrão: buscar por texto que contém data da sessão
@@ -7710,25 +8075,49 @@ Dados obtidos automaticamente pelo eProbe`;
         } else {
             // Interface BÁSICA apenas com data detectada
             console.log("🎨 INTERFACE: Usando dados básicos (apenas data)");
+
+            // 🎯 DETECTAR STATUS DA SESSÃO PARA INTERFACE DINÂMICA
+            const statusSessao = getStatusSessao();
+            const textoCard = obterTextoCardPorStatus(statusSessao);
+            const corCard = obterCorCardPorStatus(statusSessao);
+
+            console.log(
+                `🎨 INTERFACE: Usando status "${
+                    statusSessao?.status || "padrão"
+                }" para o card`
+            );
+
             dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <svg style="width: 16px; height: 16px; color: ${corCard}; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                     <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
                     <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
                 </svg>
                 <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Processo Pautado</span>
+                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">${textoCard}</span>
                     <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
                 </div>
             `;
 
-            // Tooltip básico
-            dataSessaoElement.title = `Data da Sessão Detectada
+            // Tooltip dinâmico baseado no status
+            let tooltipBase = `Data da Sessão Detectada
 
 Data Original: ${dataSessaoPautado.dataOriginal}
 Formatada: ${dataSessaoPautado.dataFormatada}
-Detectada automaticamente pelo eProbe
+Detectada automaticamente pelo eProbe`;
+
+            if (statusSessao) {
+                tooltipBase += `
+
+📋 Status: ${statusSessao.status}
+📄 Tipo: ${statusSessao.tipoProcesso}
+🏛️ Órgão: ${statusSessao.orgao}`;
+            }
+
+            tooltipBase += `
 
 🖱️ Clique para buscar dados completos da sessão`;
+
+            dataSessaoElement.title = tooltipBase;
         }
 
         // 🔗 ADICIONAR LISTENER DE CLIQUE - Cruzamento de dados acionado pelo usuário
@@ -8828,6 +9217,55 @@ Detectada automaticamente pelo eProbe
                         success: false,
                         message:
                             "Erro: função de aplicação de tema não disponível",
+                    });
+                }
+            }
+
+            // Handler para temas de botões
+            if (request.action === "applyButtonTheme") {
+                const theme = request.theme;
+                console.log(
+                    "💼 MAIN: Aplicando tema de botão recebido do popup:",
+                    theme
+                );
+
+                // Verificar se a função aplicarEstiloBotoesEproc está disponível
+                if (typeof window.aplicarEstiloBotoesEproc === "function") {
+                    try {
+                        if (theme === "reset") {
+                            // Reset para padrão do sistema
+                            window.resetarBotoesEproc();
+                            sendResponse({
+                                success: true,
+                                message:
+                                    "Botões resetados para o padrão do sistema",
+                            });
+                        } else {
+                            // Aplicar tema específico
+                            window.aplicarEstiloBotoesEproc(theme);
+                            sendResponse({
+                                success: true,
+                                message: `Tema "${theme}" aplicado aos botões`,
+                            });
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ MAIN: Erro ao aplicar tema de botão:",
+                            error
+                        );
+                        sendResponse({
+                            success: false,
+                            message: `Erro ao aplicar tema: ${error.message}`,
+                        });
+                    }
+                } else {
+                    console.error(
+                        "❌ MAIN: Funções de tema de botão não encontradas"
+                    );
+                    sendResponse({
+                        success: false,
+                        message:
+                            "Erro: funções de tema de botão não disponíveis",
                     });
                 }
             }

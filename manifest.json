@@ -12,7 +12,8 @@
         "https://eproc1g.tjsc.jus.br/*",
         "https://eproc2g.tjsc.jus.br/*",
         "https://fonts.googleapis.com/*",
-        "https://fonts.gstatic.com/*"
+        "https://fonts.gstatic.com/*",
+        "https://api.openai.com/*"
     ],
 
     "content_scripts": [
@@ -21,7 +22,7 @@
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ],
-            "js": ["src/main.js", "src/themeApply.js"],
+            "js": ["src/main.js", "src/themeApply.js", "src/semanticKernel.js"],
             "run_at": "document_end"
         }
     ],
@@ -32,14 +33,14 @@
     },
 
     "icons": {
-        "16": "src/icon16.png",
-        "48": "src/icon48.png",
-        "128": "src/icon128.png"
+        "16": "assets/icon16.png",
+        "48": "assets/icon48.png",
+        "128": "assets/icon128.png"
     },
 
     "web_accessible_resources": [
         {
-            "resources": ["src/icons.css"],
+            "resources": ["assets/icons.css", "src/semanticKernel.js"],
             "matches": [
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"

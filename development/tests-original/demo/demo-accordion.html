@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demonstração - eProbe Acordeão de Configurações</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+
+        .demo-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #0f1419;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .demo-title {
+            text-align: center;
+            margin-bottom: 24px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .popup-preview {
+            background: #0f1419;
+            border: 1px solid #2a3441;
+            border-radius: 12px;
+            width: 100%;
+            min-height: 500px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .note strong {
+            color: #64b5f6;
+        }
+
+        .version {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🔧 eProbe - Nova Interface</h1>
+
+        <div class="popup-preview">
+            <iframe src="../../src/popup.html" width="100%" height="500" frameborder="0"
+                title="Popup da Extensão eProbe">
+            </iframe>
+        </div>
+
+        <div class="note">
+            <strong>🎉 Nova Interface Acordeão</strong><br>
+
+            • <strong>Organização Melhorada:</strong> Todas as configurações agora estão organizadas em um acordeão
+            intuitivo<br><br>
+
+            • <strong>Temas de Interface:</strong> 4 temas para personalizar a interface do eProc (azul, escuro, claro,
+            violeta)<br><br>
+
+            • <strong>Temas de Botões:</strong> 5 estilos predefinidos para personalizar os botões da extensão
+            (elegante, profissional, minimalista, escuro, colorido)<br><br>
+
+            • <strong>Configurações Centralizadas:</strong> Controles para requisições automáticas e destaque de data em
+            um só lugar<br><br>
+
+            • <strong>Interface Responsiva:</strong> Design adaptável que funciona bem em diferentes tamanhos de tela
+        </div>
+
+        <div class="version">
+            eProbe v2.0 - Sistema de Configurações Avançado
+        </div>
+    </div>
+</body>
+
+</html>

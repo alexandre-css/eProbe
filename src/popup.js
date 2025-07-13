@@ -19,13 +19,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Remove estado ativo de todos os botões
         for (var i = 0; i < buttons.length; i++) {
-            buttons[i].classList.remove("text-white");
-            buttons[i].classList.remove("underline");
+            buttons[i].classList.remove("theme-active");
         }
 
         // Adiciona estado ativo ao botão selecionado
-        buttons[index].classList.add("text-white");
-        buttons[index].classList.add("underline");
+        buttons[index].classList.add("theme-active");
 
         // Aplica o tema selecionado
         var theme = buttons[index].getAttribute("data-theme");
@@ -304,28 +302,212 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Inicialização padrão - mostrar status inicial
-    showStatus(
-        `<div style="text-align: center; font-size: 11px; line-height: 1.3; color: rgba(255,255,255,0.7);">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 1px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                <circle cx="12" cy="12" r="10"/>
-                <path d="M9.17 14.83a4 4 0 1 0 0-5.66"/>
-            </svg>
-            <span>Alexandre Claudino Simas Santos</span>
-        </div>
-        <div style="display: flex; align-items: center; justify-content: center; gap: 4px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-                <path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/>
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-            </svg>
-            <span>alexandress@tjsc.jus.br</span>
-        </div>
-    </div>`,
-        "info",
-        false,
-        true
-    );
+    // ============================================
+    // ACORDEÃO DE CONFIGURAÇÕES
+    // ============================================
+
+    // Funcionalidade do acordeão
+    function initConfigAccordion() {
+        console.log("🔍 POPUP: Iniciando configuração do acordeão...");
+
+        const configHeader = document.querySelector(".config-header");
+        const configContent = document.querySelector(".config-content");
+        const configChevron = document.querySelector(".config-chevron");
+
+        console.log("🔍 POPUP: Elementos encontrados:", {
+            header: !!configHeader,
+            content: !!configContent,
+            chevron: !!configChevron,
+            headerElement: configHeader,
+            contentElement: configContent,
+            chevronElement: configChevron,
+        });
+
+        if (!configHeader || !configContent || !configChevron) {
+            console.warn("⚠️ POPUP: Elementos do acordeão não encontrados");
+            console.warn(
+                "⚠️ POPUP: Verificar se os IDs config-header, config-content e config-chevron existem no HTML"
+            );
+            return;
+        }
+
+        configHeader.addEventListener("click", function () {
+            console.log("👆 POPUP: Click detectado no header do acordeão!");
+            const isExpanded = configContent.classList.contains("expanded");
+            console.log("🔍 POPUP: Estado atual - expanded:", isExpanded);
+
+            if (isExpanded) {
+                // Fechar acordeão
+                configContent.classList.remove("expanded");
+                configHeader.classList.remove("active");
+                configChevron.classList.remove("rotated");
+                console.log("📤 POPUP: Acordeão fechado");
+            } else {
+                // Abrir acordeão
+                configContent.classList.add("expanded");
+                configHeader.classList.add("active");
+                configChevron.classList.add("rotated");
+                console.log("📥 POPUP: Acordeão aberto");
+            }
+        });
+
+        console.log(
+            "✅ POPUP: Acordeão de configurações inicializado com sucesso"
+        );
+    }
+
+    // ============================================
+    // TEMAS DE BOTÕES
+    // ============================================
+
+    // Aplicar tema de botão
+    function applyButtonTheme(themeName) {
+        // Salvar tema no storage
+        chrome.storage.sync.set(
+            { selectedButtonTheme: themeName },
+            function () {
+                console.log(`💼 POPUP: Tema de botão salvo: ${themeName}`);
+            }
+        );
+
+        // Enviar mensagem para content script aplicar o tema
+        chrome.tabs.query(
+            { active: true, currentWindow: true },
+            function (tabs) {
+                if (tabs[0]) {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id,
+                        {
+                            action: "applyButtonTheme",
+                            theme: themeName,
+                        },
+                        function (response) {
+                            if (chrome.runtime.lastError) {
+                                console.log(
+                                    "ℹ️ POPUP: Página não é do eProc ou não tem content script ativo"
+                                );
+                            } else {
+                                console.log(
+                                    "✅ POPUP: Comando de tema de botão enviado"
+                                );
+                            }
+                        }
+                    );
+                }
+            }
+        );
+
+        // Atualizar visual do seletor
+        updateButtonThemeSelector(themeName);
+    }
+
+    // Atualizar seletor visual de tema de botão
+    function updateButtonThemeSelector(activeTheme) {
+        const options = document.querySelectorAll(".button-theme-option");
+
+        options.forEach((option) => {
+            if (
+                activeTheme === "reset" &&
+                option.classList.contains("reset-button-theme")
+            ) {
+                option.classList.add("active");
+            } else if (activeTheme !== "reset") {
+                const themeName = option.getAttribute("data-button-theme");
+                if (themeName === activeTheme) {
+                    option.classList.add("active");
+                } else {
+                    option.classList.remove("active");
+                }
+            } else {
+                option.classList.remove("active");
+            }
+        });
+    }
+
+    // Inicializar temas de botões
+    function initButtonThemes() {
+        const buttonThemeOptions = document.querySelectorAll(
+            ".button-theme-option"
+        );
+
+        buttonThemeOptions.forEach((option) => {
+            option.addEventListener("click", function () {
+                // Verificar se é o botão de reset
+                if (this.classList.contains("reset-button-theme")) {
+                    // Reset dos temas de botões
+                    applyButtonTheme("reset");
+                } else {
+                    // Pegar tema do atributo data-button-theme
+                    const themeName = this.getAttribute("data-button-theme");
+                    if (themeName) {
+                        // Aplicar tema específico
+                        applyButtonTheme(themeName);
+                    }
+                }
+            });
+        });
+
+        // Carregar tema salvo
+        chrome.storage.sync.get(["selectedButtonTheme"], function (result) {
+            const savedButtonTheme = result.selectedButtonTheme || "reset";
+            updateButtonThemeSelector(savedButtonTheme);
+            console.log(
+                `🎨 POPUP: Tema de botão carregado: ${savedButtonTheme}`
+            );
+        });
+
+        console.log("✅ POPUP: Seletores de tema de botão inicializados");
+    }
+
+    // ============================================
+    // INICIALIZAÇÃO COMPLETA
+    // ============================================
+
+    // Função para garantir que os elementos existem antes de inicializar
+    function waitForElements() {
+        const maxAttempts = 10;
+        let attempts = 0;
+
+        function tryInit() {
+            attempts++;
+            console.log(
+                `🔄 POPUP: Tentativa de inicialização ${attempts}/${maxAttempts}`
+            );
+
+            const configHeader = document.querySelector(".config-header");
+            const buttonsContainer =
+                document.querySelector("#buttons_container");
+
+            if (configHeader && buttonsContainer) {
+                console.log(
+                    "✅ POPUP: Elementos encontrados, inicializando..."
+                );
+                initConfigAccordion();
+                initButtonThemes();
+                console.log("✅ POPUP: Inicialização completa bem-sucedida");
+            } else {
+                console.log("⏳ POPUP: Elementos não encontrados ainda...", {
+                    configHeader: !!configHeader,
+                    buttonsContainer: !!buttonsContainer,
+                });
+
+                if (attempts < maxAttempts) {
+                    setTimeout(tryInit, 100);
+                } else {
+                    console.error(
+                        "❌ POPUP: Falha na inicialização após",
+                        maxAttempts,
+                        "tentativas"
+                    );
+                }
+            }
+        }
+
+        tryInit();
+    }
+
+    // Inicializar com verificação de elementos
+    waitForElements();
 
     console.log("✅ POPUP: Listeners de configuração e tema registrados");
 });

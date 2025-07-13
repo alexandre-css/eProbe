@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>eProbe - Teste de Contraste</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="src/popup.css" />
+    <style>
+        /* Estilos de teste para simular diferentes temas */
+        .theme-test-container {
+            padding: 20px;
+            margin: 20px 0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .theme-test-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .btn-test-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧪 Teste de Contraste - eProbe</h1>
+
+    <div class="theme-test-container">
+        <div class="theme-test-title">Tema Padrão (Azul)</div>
+        <div class="btn-test-row">
+            <button class="btn primary">Botão Primário</button>
+            <button class="btn success">Botão Sucesso</button>
+            <button class="btn danger">Botão Perigo</button>
+        </div>
+    </div>
+
+    <div class="theme-test-container" style="background: #1a1a1a; color: white;">
+        <div class="theme-test-title" style="color: white;">Tema Escuro</div>
+        <div class="btn-test-row">
+            <button class="btn primary">Botão Primário</button>
+            <button class="btn success">Botão Sucesso</button>
+            <button class="btn danger">Botão Perigo</button>
+        </div>
+    </div>
+
+    <div class="theme-test-container" style="background: #f8f9fa; color: #333;">
+        <div class="theme-test-title">Tema Claro</div>
+        <div class="btn-test-row">
+            <button class="btn primary">Botão Primário</button>
+            <button class="btn success">Botão Sucesso</button>
+            <button class="btn danger">Botão Perigo</button>
+        </div>
+    </div>
+
+    <div class="theme-test-container" style="background: linear-gradient(135deg, #6b46c1, #4c1d95); color: white;">
+        <div class="theme-test-title" style="color: white;">Tema Violeta</div>
+        <div class="btn-test-row">
+            <button class="btn primary">Botão Primário</button>
+            <button class="btn success">Botão Sucesso</button>
+            <button class="btn danger">Botão Perigo</button>
+        </div>
+    </div>
+
+    <div class="theme-test-container">
+        <div class="theme-test-title">Teste de Interações</div>
+        <div class="btn-test-row">
+            <button class="btn primary" onmouseover="this.style.transform='scale(1.05)'"
+                onmouseout="this.style.transform='scale(1)'">
+                Hover Test
+            </button>
+            <button class="btn success"
+                onclick="this.textContent = this.textContent === 'Clicado!' ? 'Click Test' : 'Clicado!'">
+                Click Test
+            </button>
+            <button class="btn danger" onfocus="this.style.outline='3px solid rgba(220, 53, 69, 0.25)'"
+                onblur="this.style.outline='none'">
+                Focus Test
+            </button>
+        </div>
+    </div>
+
+    <div class="theme-test-container">
+        <div class="theme-test-title">Status Indicators</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div class="status info">ℹ️ Informação - Contraste adequado para leitura</div>
+            <div class="status success">✅ Sucesso - Verde com contraste otimizado</div>
+            <div class="status error">❌ Erro - Vermelho com boa legibilidade</div>
+            <div class="status warning">⚠️ Aviso - Amarelo com texto escuro</div>
+        </div>
+    </div>
+
+    <script>
+        // Simular aplicação de temas dinamicamente
+        function testTheme(themeName) {
+            document.documentElement.className = `theme-${themeName}`;
+            console.log(`🎨 Tema aplicado: ${themeName}`);
+        }
+
+        // Adicionar botões de teste de tema
+        const testButtons = document.createElement('div');
+        testButtons.innerHTML = `
+            <div class="theme-test-container">
+                <div class="theme-test-title">Teste de Temas Dinâmicos</div>
+                <div class="btn-test-row">
+                    <button onclick="testTheme('blue')" style="background: #007ebd; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Azul</button>
+                    <button onclick="testTheme('dark')" style="background: #1a1a1a; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Escuro</button>
+                    <button onclick="testTheme('light')" style="background: #f8f9fa; color: #333; padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; cursor: pointer;">Claro</button>
+                    <button onclick="testTheme('violet')" style="background: #6b46c1; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer;">Violeta</button>
+                </div>
+                <small style="color: #666; font-style: italic;">Clique nos botões acima para testar a aplicação dinâmica dos temas</small>
+            </div>
+        `;
+        document.body.appendChild(testButtons);
+
+        console.log('🧪 Página de teste carregada. Use os botões para testar diferentes temas.');
+        console.log('✅ Contraste dos botões deve permanecer adequado em todos os temas.');
+    </script>
+</body>
+
+</html>

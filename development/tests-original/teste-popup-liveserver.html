@@ -4,16 +4,44 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>eProbe - Automação Completa</title>
+    <title>eProbe - Teste Popup Live Server</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet" />
-    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="../src/popup.css" />
+    <style>
+        /* Ajustes específicos para Live Server */
+        body {
+            margin: 20px auto;
+            max-width: 380px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            overflow: visible;
+        }
+
+        /* Mock do chrome.storage para Live Server */
+        .live-server-note {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            z-index: 10000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+    </style>
 </head>
 
 <body>
+    <!-- Nota para Live Server -->
+    <div class="live-server-note">
+        🔴 Live Server - Funcionalidades limitadas
+    </div>
     <div class="header">
         <h1>
             <img class="icon icon-large" src="../assets/iconmain.png" alt="eProbe" />
@@ -219,8 +247,172 @@
         </div>
     </div>
 
+    <script>
+        // Mock do chrome.storage para Live Server
+        const mockStorage = {
+            sync: {
+                get: function (keys, callback) {
+                    // Simula valores padrão
+                    const defaults = {
+                        selectedTheme: 'blue',
+                        'highlight-session-date': true,
+                        'auto-session-requests': false,
+                        selectedButtonTheme: 'profissional'
+                    };
 
-    <script src="popup.js"></script>
+                    if (typeof keys === 'string') {
+                        callback({ [keys]: defaults[keys] });
+                    } else if (Array.isArray(keys)) {
+                        const result = {};
+                        keys.forEach(key => {
+                            result[key] = defaults[key];
+                        });
+                        callback(result);
+                    } else {
+                        callback(defaults);
+                    }
+                },
+                set: function (data, callback) {
+                    console.log('📦 Mock Storage SET:', data);
+                    if (callback) callback();
+                }
+            }
+        };
+
+        // Disponibiliza globalmente para simular extensão
+        window.chrome = { storage: mockStorage };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 LIVE SERVER: Popup inicializado');
+
+            // ============================================
+            // FUNCIONALIDADE DO ACCORDION
+            // ============================================
+            function initConfigAccordion() {
+                console.log('🔍 LIVE SERVER: Iniciando configuração do acordeão...');
+
+                const configHeader = document.querySelector('.config-header');
+                const configContent = document.querySelector('.config-content');
+                const configChevron = document.querySelector('.config-chevron');
+
+                console.log('🔍 LIVE SERVER: Elementos encontrados:', {
+                    header: !!configHeader,
+                    content: !!configContent,
+                    chevron: !!configChevron
+                });
+
+                if (!configHeader || !configContent || !configChevron) {
+                    console.warn('⚠️ LIVE SERVER: Elementos do acordeão não encontrados');
+                    return;
+                }
+
+                configHeader.addEventListener('click', function () {
+                    console.log('👆 LIVE SERVER: Click detectado no header do acordeão!');
+                    const isExpanded = configContent.classList.contains('expanded');
+                    console.log('🔍 LIVE SERVER: Estado atual - expanded:', isExpanded);
+
+                    if (isExpanded) {
+                        // Fechar acordeão
+                        configContent.classList.remove('expanded');
+                        configHeader.classList.remove('active');
+                        configChevron.classList.remove('rotated');
+                        console.log('📤 LIVE SERVER: Acordeão fechado');
+                    } else {
+                        // Abrir acordeão
+                        configContent.classList.add('expanded');
+                        configHeader.classList.add('active');
+                        configChevron.classList.add('rotated');
+                        console.log('📥 LIVE SERVER: Acordeão aberto');
+                    }
+                });
+
+                console.log('✅ LIVE SERVER: Acordeão de configurações inicializado com sucesso');
+            }
+
+            // ============================================
+            // FUNCIONALIDADE DOS TEMAS DE INTERFACE
+            // ============================================
+            function initThemeButtons() {
+                const buttons = document.querySelectorAll('#buttons_container button');
+
+                buttons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const theme = this.getAttribute('data-theme');
+                        console.log('🎨 LIVE SERVER: Tema selecionado:', theme);
+
+                        // Remove active de todos
+                        buttons.forEach(btn => btn.classList.remove('active'));
+                        // Adiciona active no clicado
+                        this.classList.add('active');
+
+                        // Simula mudança de tema (sem chrome.storage real)
+                        console.log('🎨 LIVE SERVER: Aplicando tema', theme);
+                    });
+                });
+
+                // Define azul como ativo por padrão
+                const blueButton = document.querySelector('button[data-theme="blue"]');
+                if (blueButton) {
+                    blueButton.classList.add('active');
+                }
+            }
+
+            // ============================================
+            // FUNCIONALIDADE DOS TEMAS DE BOTÕES
+            // ============================================
+            function initButtonThemes() {
+                const options = document.querySelectorAll('.button-theme-option');
+
+                options.forEach(option => {
+                    option.addEventListener('click', function () {
+                        const theme = this.getAttribute('data-button-theme');
+                        console.log('🔘 LIVE SERVER: Tema de botão selecionado:', theme);
+
+                        // Remove active de todos
+                        options.forEach(opt => opt.classList.remove('active'));
+
+                        if (theme) {
+                            // Adiciona active no clicado (se não for reset)
+                            this.classList.add('active');
+                        }
+                    });
+                });
+
+                // Define profissional como ativo por padrão
+                const professionalButton = document.querySelector('[data-button-theme="profissional"]');
+                if (professionalButton) {
+                    professionalButton.classList.add('active');
+                }
+            }
+
+            // ============================================
+            // FUNCIONALIDADE DOS TOGGLES
+            // ============================================
+            function initToggles() {
+                const toggles = document.querySelectorAll('.switch input');
+
+                toggles.forEach(toggle => {
+                    toggle.addEventListener('change', function () {
+                        console.log('🔄 LIVE SERVER: Toggle alterado:', this.id, '=', this.checked);
+                    });
+                });
+
+                // Define valores padrão
+                document.getElementById('highlight-session-date').checked = true;
+                document.getElementById('auto-session-requests').checked = false;
+            }
+
+            // ============================================
+            // INICIALIZAÇÃO
+            // ============================================
+            initConfigAccordion();
+            initThemeButtons();
+            initButtonThemes();
+            initToggles();
+
+            console.log('✅ LIVE SERVER: Todas as funcionalidades inicializadas');
+        });
+    </script>
 </body>
 
 </html>

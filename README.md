@@ -38,6 +38,22 @@ Extensão para Chrome que automatiza a detecção, extração e processamento de
     - Copiar para área de transferência
 4. **Cole** o texto em ChatGPT, Claude ou outra IA para gerar resumo
 
+## 🎨 Demonstração
+
+Para visualizar todas as funcionalidades da interface:
+
+-   **Demonstração Completa**: Abra o arquivo `tests/demonstracao.html` no navegador
+-   **Testes Específicos**: Arquivos de teste estão disponíveis na pasta `tests/demo/`
+-   **Live Server**: Use `tests/teste-popup-liveserver.html` para testes interativos
+
+A demonstração inclui:
+
+-   Interface completa do popup
+-   Sistema de acordeão de configurações
+-   4 temas de interface (azul, escuro, claro, violeta)
+-   5 temas de botões personalizáveis
+-   Controles de configuração avançados
+
 ## 📋 Requisitos
 
 -   Google Chrome 88+
