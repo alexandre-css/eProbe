@@ -11786,6 +11786,24 @@ setTimeout(() => {
 // ============================================
 // INSERÇÃO DE ELEMENTOS NA NAVBAR DO EPROC
 // ============================================
+// Remover APENAS estilos CSS anteriores, NÃO elementos HTML
+const estilosAnteriores = document.querySelectorAll(
+    "style[data-eprobe-navbar-alignment]"
+);
+estilosAnteriores.forEach((estilo) => {
+    estilo.remove();
+    console.log("🧹 NAVBAR: Removido estilo CSS anterior de correção");
+});
+
+// IMPORTANTE: NÃO remover o elemento #eprobe-navbar-element
+const elemento = document.getElementById("eprobe-navbar-element");
+if (elemento) {
+    console.log("✅ NAVBAR: Elemento eProbe preservado durante limpeza");
+}
+
+// ============================================
+// INSERÇÃO DE ELEMENTOS NA NAVBAR DO EPROC
+// ============================================
 
 /**
  * Insere um elemento personalizado na navbar do eProc
@@ -11846,30 +11864,102 @@ function inserirElementoNavbarEproc() {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 40px;
-        min-width: 40px;
+        height: 50px;
+        min-width: 50px;
+        opacity: 1;
     `;
+
+    // 🎨 CSS simples: Customizar txtUnderline + corrigir ícones específicos desalinhados
+    const css = `
+        #txtUnderline { color: #495057 !important; }
+        
+        /* 🎯 CORREÇÃO ESPECÍFICA: Ícones navbar desalinhados com padding: 0 */
+        i.material-icons.navbar-icons[style*="padding: 0"] {
+            padding: 6px 8px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+        }
+        
+        /* 🎯 AJUSTE VERTICAL: Ícones home e all_inbox descer um pouco */
+        i.material-icons.navbar-icons[style*="padding: 0"]:not([title]):has-text("home"),
+        i.material-icons.navbar-icons[title="Meus Localizadores"][style*="padding: 0"] {
+            margin-top: 5px !important;
+            padding: 6px 8px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+        }
+    `;
+    const styleElement = document.createElement("style");
+    styleElement.textContent = css;
+    document.head.appendChild(styleElement);
+
+    // 🎯 CORREÇÃO VIA JAVASCRIPT: Para ícones específicos que CSS não consegue selecionar por conteúdo
+    setTimeout(() => {
+        // Lista de ícones para corrigir alinhamento
+        const iconesParaCorrigir = [
+            "home",
+            "all_inbox",
+            "looks_one",
+            "looks_two",
+            "looks_3",
+        ];
+
+        iconesParaCorrigir.forEach((nomeIcone) => {
+            const icone = Array.from(
+                document.querySelectorAll(
+                    'i.material-icons.navbar-icons[style*="padding: 0"]'
+                )
+            ).find((el) => el.textContent.trim() === nomeIcone);
+
+            if (icone) {
+                // Aplicar margin-top apenas para home e all_inbox
+                const marginTop =
+                    nomeIcone === "home" || nomeIcone === "all_inbox"
+                        ? "margin-top: 5px !important;"
+                        : "";
+
+                icone.style.cssText += `
+                    ${marginTop}
+                    padding: 6px 8px !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    vertical-align: middle !important;
+                    line-height: 1 !important;
+                `;
+                console.log(
+                    `🎯 NAVBAR: Ícone "${nomeIcone}" corrigido via JavaScript${
+                        marginTop ? " (com ajuste vertical)" : ""
+                    }`
+                );
+            }
+        });
+    }, 100);
 
     // Criar elemento de imagem
     const logoImg = document.createElement("img");
     logoImg.src = chrome.runtime.getURL("assets/40x.png");
     logoImg.alt = "eProbe";
     logoImg.style.cssText = `
-        width: 20px;
-        height: 20px;
+        width: 40px;
+        height: 40px;
         object-fit: contain;
-        filter: brightness(1);
-        transition: filter 0.2s ease;
         vertical-align: middle;
     `;
 
-    // Adicionar hover simples (apenas filter)
+    // Adicionar hover igual ao jus.br (opacidade)
     addPassiveEventListener(customElement, "mouseenter", function () {
-        logoImg.style.filter = "brightness(0.7)";
+        customElement.style.opacity = "0.7";
     });
 
     addPassiveEventListener(customElement, "mouseleave", function () {
-        logoImg.style.filter = "brightness(1)";
+        customElement.style.opacity = "1";
     });
 
     // Logo PNG em vez de texto
@@ -12041,3 +12131,101 @@ if (document.readyState === "loading") {
 } else {
     inicializarNavbarOtimizada();
 }
+
+/**
+ * Monitora o elemento eProbe na navbar para garantir que não seja removido
+ */
+function monitorarElementoEprobe() {
+    console.log("👁️ NAVBAR: Iniciando monitoramento do elemento eProbe");
+
+    // Verificar periodicamente se o elemento ainda existe
+    setInterval(() => {
+        const elemento = document.getElementById("eprobe-navbar-element");
+        const navbar = document.querySelector("nav#navbar");
+
+        if (navbar && !elemento) {
+            console.log("⚠️ NAVBAR: Elemento eProbe removido, restaurando...");
+            inserirElementoNavbarEproc();
+        }
+    }, 5000); // Verificar a cada 5 segundos
+}
+
+// Iniciar monitoramento do elemento eProbe na navbar
+monitorarElementoEprobe();
+
+/**
+ * FUNÇÃO GLOBAL: Força a exibição do elemento eProbe
+ */
+window.forcarElementoEprobeNavbar = function () {
+    console.log("🔧 NAVBAR: Forçando exibição do elemento eProbe");
+
+    // Primeiro, remover se existir
+    const elementoExistente = document.getElementById("eprobe-navbar-element");
+    if (elementoExistente) {
+        elementoExistente.remove();
+    }
+
+    // Inserir novamente
+    const sucesso = inserirElementoNavbarEproc();
+
+    if (sucesso) {
+        // Garantir visibilidade com CSS direto
+        setTimeout(() => {
+            const elemento = document.getElementById("eprobe-navbar-element");
+            if (elemento) {
+                elemento.style.display = "flex !important";
+                elemento.style.visibility = "visible !important";
+                elemento.style.opacity = "1 !important";
+                console.log("✅ NAVBAR: Elemento eProbe forçado a ser visível");
+            }
+        }, 100);
+    }
+
+    return sucesso;
+};
+
+// Expor no namespace para debug
+window.SENT1_AUTO = window.SENT1_AUTO || {};
+window.SENT1_AUTO.forcarElementoEprobeNavbar =
+    window.forcarElementoEprobeNavbar;
+
+// 🚨 EXECUÇÃO IMEDIATA: Tentar restaurar elemento eProbe perdido
+setTimeout(() => {
+    const elemento = document.getElementById("eprobe-navbar-element");
+    if (!elemento && document.querySelector("nav#navbar")) {
+        console.log(
+            "🚨 NAVBAR: Elemento eProbe não encontrado! Tentando restaurar..."
+        );
+        window.forcarElementoEprobeNavbar();
+    } else if (elemento) {
+        console.log("✅ NAVBAR: Elemento eProbe encontrado e funcionando");
+    }
+}, 1000);
+
+// 🔄 SEGUNDA TENTATIVA: Se ainda não funcionou
+setTimeout(() => {
+    const elemento = document.getElementById("eprobe-navbar-element");
+    if (!elemento && document.querySelector("nav#navbar")) {
+        console.log(
+            "🚨 NAVBAR: Segunda tentativa de restaurar elemento eProbe..."
+        );
+        inserirElementoNavbarEproc();
+
+        // Forçar visibilidade com CSS direto
+        setTimeout(() => {
+            const el = document.getElementById("eprobe-navbar-element");
+            if (el) {
+                el.style.cssText += `
+                    display: flex !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: relative !important;
+                    z-index: 10 !important;
+                `;
+                console.log(
+                    "✅ NAVBAR: Elemento eProbe restaurado com CSS forçado"
+                );
+            }
+        }, 200);
+    }
+}, 3000);
