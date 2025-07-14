@@ -34,6 +34,7 @@
 
     "icons": {
         "16": "assets/16x.png",
+        "40": "assets/40x.png",
         "48": "assets/48x.png",
         "128": "assets/128x.png"
     },
@@ -44,6 +45,7 @@
                 "assets/icons.css",
                 "assets/eP.png",
                 "assets/40x.png",
+                "assets/48x.png",
                 "src/semanticKernel.js"
             ],
             "matches": [

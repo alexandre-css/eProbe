@@ -1,4 +1,4 @@
-// Content script automatizado para DocumentosRelevantes
+﻿// Content script automatizado para DocumentosRelevantes
 // 🔧 VERSÃO CORRIGIDA PARA MICROSOFT EDGE
 (async function () {
     "use strict";
@@ -3911,8 +3911,7 @@ ${texto}`;
 
                 // Criar um wrapper para melhor alinhamento na barra de comandos
                 const buttonWrapper = document.createElement("span");
-                buttonWrapper.style.cssText =
-                    "margin-right: 8px; display: inline-block;";
+                buttonWrapper.style.cssText = "display: inline-block;";
                 buttonWrapper.appendChild(button);
 
                 // Inserir o wrapper antes do botão Download Completo
@@ -4261,17 +4260,14 @@ ${texto}`;
             while (parent && parent !== document.body) {
                 const styles = window.getComputedStyle(parent);
 
-                // Verificar se é um container flexível ou que permita posicionamento
+                // Verificar se é um container que permita posicionamento (SEM verificação d-flex)
                 if (
                     styles.display === "flex" ||
-                    parent.classList.contains("navbar") ||
                     parent.classList.contains("header") ||
-                    parent.classList.contains("d-flex") ||
-                    parent.tagName === "NAV" ||
                     parent.tagName === "HEADER"
                 ) {
                     console.log(
-                        " Container da navbar/header encontrado para PDPJ:",
+                        " Container de header encontrado para PDPJ:",
                         parent
                     );
 
@@ -4294,45 +4290,20 @@ ${texto}`;
             };
         }
 
-        // Prioridade 2: Buscar containers da navbar/header
-        const navbarSelectors = [
-            ".navbar",
-            ".nav",
-            ".header",
-            ".top-bar",
-            '[class*="navbar"]',
-            '[class*="header"]',
-            '[class*="top-bar"]',
-        ];
+        // Prioridade 2: REMOVIDO - Não buscar na navbar para evitar interferências
+        // A navbar agora é gerenciada exclusivamente por gerenciarNavbarEprobe()
+        console.log(
+            "ℹ️ BUTTON: Pulando busca na navbar para evitar interferências"
+        );
 
-        for (const selector of navbarSelectors) {
-            const container = document.querySelector(selector);
-            if (container) {
-                const rect = container.getBoundingClientRect();
-                // Verificar se está na parte superior da página
-                if (rect.top < 100 && rect.width > 300) {
-                    console.log(
-                        ` Container navbar encontrado com seletor: ${selector}`
-                    );
-                    return { container: container, insertMethod: "append" };
-                }
-            }
-        }
-
-        // Prioridade 3: Lista atualizada de seletores com foco no eProc
+        // Prioridade 3: Lista atualizada de seletores com foco no eProc (SEM elementos d-flex que podem interferir na navbar)
         const containerSelectors = [
             "#divInfraBarraComandosSuperior", // Barra de comandos superior do eProc
             ".infraBarraComandos", // Barra de comandos geral do eProc
             "#frmProcessoLista", // Formulário da lista de processos
-            ".d-flex.w-100.justify-content-between",
-            ".d-flex.justify-content-between",
-            ".d-flex.w-100",
-            '[class*="d-flex"][class*="justify-content-between"]',
             ".toolbar",
             ".action-bar",
             ".header-actions",
-            ".page-header .d-flex",
-            ".container-fluid .d-flex",
             "#barraComandos",
             ".infra-barra-comandos",
         ];
@@ -4345,9 +4316,8 @@ ${texto}`;
             }
         }
 
-        // Fallback: buscar containers que possam ser adequados
+        // Fallback: buscar containers específicos (SEM d-flex que pode interferir na navbar)
         const fallbackSelectors = [
-            'div[class*="d-flex"]',
             'div[class*="toolbar"]',
             'div[class*="header"]',
             'div[class*="action"]',
@@ -5833,128 +5803,50 @@ ${texto}`;
         return "";
     }
 
-    // Observador de mudanças na página para detectar navegação SPA
+    // Observador de mudanças na página - VERSÃO SEGURA (sem criação de botões)
     function setupPageObserver() {
         let lastUrl = window.location.href;
-        let lastButtonCheck = 0;
-        const BUTTON_CHECK_COOLDOWN = 2000; // 2 segundos de cooldown
 
-        // Observar mudanças no DOM
+        // Observar mudanças no DOM apenas para logging (SEM criação de botões)
         const observer = new MutationObserver((mutations) => {
             const currentUrl = window.location.href;
-            const now = Date.now();
 
             // Verificar se a URL mudou (navegação SPA)
             if (currentUrl !== lastUrl) {
-                console.log(" Navegação detectada:", currentUrl);
+                console.log("🌐 NAVEGAÇÃO: URL mudou para:", currentUrl);
                 lastUrl = currentUrl;
-
-                // Recriar botão após navegação apenas em páginas válidas
-                setTimeout(() => {
-                    if (
-                        !document.getElementById("sent1-auto-button") &&
-                        isValidPageForButton()
-                    ) {
-                        console.log(" Recriando botão após navegação...");
-                        createAutomationButton();
-                    }
-                }, 1500);
+                // REMOVIDO: createAutomationButton() - previne interferência na navbar
             }
 
-            // Verificar se o botão ainda existe no DOM com cooldown
-            if (now - lastButtonCheck > BUTTON_CHECK_COOLDOWN) {
-                const buttonExists =
-                    document.getElementById("sent1-auto-button");
-                if (!buttonExists && isValidPageForButton()) {
-                    console.log(" Botão removido do DOM, recriando...");
-                    lastButtonCheck = now;
-                    setTimeout(createAutomationButton, 500);
-                }
-            }
+            // REMOVIDO: Verificação e recriação de botões - previne interferência na navbar
         });
 
         // Configurar observador com menor frequência
         observer.observe(document.body, {
             childList: true,
-            subtree: false, // Mudado para false para reduzir overhead
+            subtree: false,
             attributes: false,
         });
 
-        // Observar mudanças de URL via popstate
-        window.addEventListener("popstate", () => {
-            setTimeout(() => {
-                console.log(" Popstate detectado, verificando botão...");
-                if (
-                    !document.getElementById("sent1-auto-button") &&
-                    isValidPageForButton()
-                ) {
-                    createAutomationButton();
-                } else if (!isValidPageForButton()) {
-                    console.log(" Página atual não é válida para o botão");
-                }
-            }, 1000);
-        });
+        console.log(
+            "✅ PAGE OBSERVER: Configurado sem interferência na navbar"
+        );
     }
 
     // Inicialização
+    // Inicialização - MODIFICADO para não interferir na navbar
     function init() {
         log(" Iniciando content script automatizado");
         console.log(" Resumir Documento: Script iniciado");
 
-        // Configurar observador de página
+        // Configurar observador de página (VERSÃO SEGURA - sem criação de botões)
         setupPageObserver();
 
-        // Criar botão após a página carregar
-        if (document.readyState === "loading") {
-            document.addEventListener(
-                "DOMContentLoaded",
-                createAutomationButton
-            );
-        } else {
-            createAutomationButton();
-        }
+        console.log(
+            "ℹ️ INIT: Criação automática de botões DESABILITADA para proteger a navbar"
+        );
 
-        // Criar botão também após um delay para garantir
-        setTimeout(createAutomationButton, 1000);
-
-        // Tentar novamente após mais tempo para SPAs
-        setTimeout(() => {
-            if (
-                !document.getElementById("sent1-auto-button") &&
-                !document.getElementById("documento-relevante-auto-button")
-            ) {
-                console.log(" Segunda tentativa de criação do botão...");
-                createAutomationButton();
-            }
-        }, 3000);
-
-        // Tentativa final com botão flutuante forçado se necessário
-        setTimeout(() => {
-            if (
-                !document.getElementById("sent1-auto-button") &&
-                !document.getElementById("documento-relevante-auto-button")
-            ) {
-                console.log(
-                    " Terceira tentativa - verificando critérios para criação do botão..."
-                );
-                if (shouldShowIntegratedButton()) {
-                    console.log(" Tentando criar botão integrado...");
-                    createAutomationButton();
-                } else if (shouldShowFloatingButton()) {
-                    console.log(" Tentando criar botão flutuante...");
-                    createFloatingButton();
-                } else {
-                    console.log(
-                        " Página não atende critérios para nenhum botão"
-                    );
-                }
-            }
-        }, 5000);
-
-        // Debug do botão
-        debugButtonStatus();
-
-        // Tentar detectar data da sessão após a página carregar completamente
+        // Manter apenas detecção de data da sessão que não interfere na navbar
         setTimeout(() => {
             console.log(
                 "🔍 Tentando detectar data da sessão automaticamente..."
@@ -5999,7 +5891,7 @@ ${texto}`;
             }
         }, 10000);
 
-        // 📋 DETECÇÃO E PROCESSAMENTO DA PÁGINA DE LOCALIZADORES
+        // 📋 DETECÇÃO E PROCESSAMENTO DA PÁGINA DE LOCALIZADORES (MANTIDA - não interfere na navbar)
         setTimeout(() => {
             detectarPaginaLocalizadores();
         }, 1000);
@@ -6220,7 +6112,7 @@ ${texto}`;
         }
     }
 
-    // Inicializar
+    // Inicializar - VERSÃO SEGURA (sem interferência na navbar)
     init();
 
     // Expor funções para debug manual
@@ -6291,9 +6183,7 @@ ${texto}`;
         hasStatusSessao,
         resetStatusSessao,
         showStatusSessaoInfo,
-        // Funções da navbar
-        inserirElementoNavbarEproc,
-        removerElementoNavbarEproc,
+        // Funções da navbar foram centralizadas em gerenciarNavbarEprobe()
     };
 
     // 🔍 FUNÇÕES DE DEBUG
@@ -11306,6 +11196,26 @@ function aplicarCSSMaterialDesign() {
 // Aplicar CSS imediatamente
 aplicarCSSMaterialDesign();
 
+// 🚀 CSS ULTRA-PRIORITÁRIO: Aplicação no topo do script para máxima velocidade
+(function aplicarCSSUltraPrioritario() {
+    const style = document.createElement("style");
+    style.id = "eprobe-css-ultra-prioritario";
+    style.textContent = `
+        /* 🚀 ULTRA-PRIORITÁRIO: Aplicação instantânea para zero FOUC */
+        nav#navbar, nav#navbar .d-none.d-md-flex {
+            align-items: center !important;
+        }
+        .d-none.d-md-flex {
+            align-items: center !important;
+        }
+        /* Otimização de renderização */
+        nav#navbar * {
+            vertical-align: middle;
+        }
+    `;
+    document.documentElement.appendChild(style);
+})();
+
 // 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
 // Funções expostas globalmente para personalizar botões (fora da IIFE)
 
@@ -11319,7 +11229,6 @@ const TEMAS_BOTOES_EPROC = {
         boxShadow: "0 4px 15px rgba(102, 126, 234, 0.3)",
         transition: "all 0.3s ease",
         hover: {
-            transform: "translateY(-2px)",
             boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
         },
         focus: {
@@ -11453,20 +11362,20 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
 
     const configuracaoTema = { ...TEMAS_BOTOES_EPROC[tema], ...opcoes };
 
-    // Seletores para todos os tipos de botões do eProc (EXCLUINDO botões de pesquisa)
+    // Seletores para todos os tipos de botões do eProc (EXCLUINDO botões de pesquisa E navbar)
     const seletoresBotoes = [
-        ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .infraButton:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .infraButton.btn-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .infraButton.eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
-        'button[class*="infra"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
-        'input[type="button"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
-        'input[type="submit"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
-        'button[onclick*="abrirVisualizacao"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
-        'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
+        ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .infraButton:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .infraButton.btn-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .infraButton.eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)",
+        'button[class*="infra"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)',
+        'input[type="button"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)',
+        'input[type="submit"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)',
+        'button[onclick*="abrirVisualizacao"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)',
+        'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *)',
     ];
 
     // Remover estilo anterior se existir
@@ -11484,6 +11393,11 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
     // Gerar CSS baseado na configuração do tema
     let css = `
         /* 🎨 eProbe - Estilo Personalizado dos Botões do eProc - Tema: ${tema} */
+        
+        /* 🎯 SINCRONIZAÇÃO: Elemento txtUnderline do eProc com mesma cor dos botões */
+        #txtUnderline {
+            color: ${configuracaoTema.color} !important;
+        }
         
         /* Estilo base dos botões */
         ${seletoresBotoes.join(", ")} {
@@ -11538,15 +11452,6 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
 
     // Adicionar estilos para estados ativos
     css += `
-        /* Estilo active */
-        ${seletoresBotoes.map((s) => `${s}:active`).join(", ")} {
-            transform: translateY(1px) !important;
-            box-shadow: ${configuracaoTema.boxShadow?.replace(
-                /\d+px/g,
-                "2px"
-            )} !important;
-        }
-        
         /* Estilo disabled */
         ${seletoresBotoes.map((s) => `${s}:disabled`).join(", ")} {
             opacity: 0.6 !important;
@@ -11589,104 +11494,21 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
         `;
     }
 
-    // Adicionar proteção específica para botões de pesquisa
+    // Adicionar proteção específica para botões de pesquisa E navbar
     css += `
-    
-    /* 🛡️ PROTEÇÃO: Botões de pesquisa do eProc devem manter estilos originais */
-    .btn-pesquisar,
-    .btn-pesquisar-nova-janela,
-    .search-button,
-    button[class*="btn-pesquisar"],
-    .input-group-btn .btn-pesquisar,
-    .input-group-btn .btn-pesquisar-nova-janela,
-    .input-group-btn .search-button {
-        background: unset !important;
-        background-color: unset !important;
-        background-image: unset !important;
-        border: unset !important;
-        border-color: unset !important;
-        border-radius: unset !important;
-        color: unset !important;
-        box-shadow: unset !important;
-        text-shadow: unset !important;
-        transition: unset !important;
-        transform: unset !important;
-        font-weight: unset !important;
-        cursor: unset !important;
-        padding: unset !important;
-        margin: unset !important;
-        font-size: unset !important;
-        font-family: unset !important;
+
+    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */
+    .d-none.d-md-flex {
+        align-items: center !important;
     }
-    
-    /* Proteção para pseudo-elementos dos botões de pesquisa */
-    .btn-pesquisar::before,
-    .btn-pesquisar::after,
-    .btn-pesquisar-nova-janela::before,
-    .btn-pesquisar-nova-janela::after,
-    .search-button::before,
-    .search-button::after,
-    button[class*="btn-pesquisar"]::before,
-    button[class*="btn-pesquisar"]::after,
-    .input-group-btn .btn-pesquisar::before,
-    .input-group-btn .btn-pesquisar::after,
-    .input-group-btn .btn-pesquisar-nova-janela::before,
-    .input-group-btn .btn-pesquisar-nova-janela::after,
-    .input-group-btn .search-button::before,
-    .input-group-btn .search-button::after {
-        content: unset !important;
-        background: unset !important;
-        background-color: unset !important;
-        background-image: unset !important;
-        display: unset !important;
-        position: unset !important;
-        top: unset !important;
-        left: unset !important;
-        right: unset !important;
-        bottom: unset !important;
-        width: unset !important;
-        height: unset !important;
-        border: unset !important;
-        border-radius: unset !important;
-        box-shadow: unset !important;
-        opacity: unset !important;
-        z-index: unset !important;
-        transform: unset !important;
-        transition: unset !important;
-    }
-    
-    /* Proteção para estados hover, focus e active dos botões de pesquisa */
-    .btn-pesquisar:hover,
-    .btn-pesquisar:focus,
-    .btn-pesquisar:active,
-    .btn-pesquisar-nova-janela:hover,
-    .btn-pesquisar-nova-janela:focus,
-    .btn-pesquisar-nova-janela:active,
-    .search-button:hover,
-    .search-button:focus,
-    .search-button:active,
-    button[class*="btn-pesquisar"]:hover,
-    button[class*="btn-pesquisar"]:focus,
-    button[class*="btn-pesquisar"]:active,
-    .input-group-btn .btn-pesquisar:hover,
-    .input-group-btn .btn-pesquisar:focus,
-    .input-group-btn .btn-pesquisar:active,
-    .input-group-btn .btn-pesquisar-nova-janela:hover,
-    .input-group-btn .btn-pesquisar-nova-janela:focus,
-    .input-group-btn .btn-pesquisar-nova-janela:active,
-    .input-group-btn .search-button:hover,
-    .input-group-btn .search-button:focus,
-    .input-group-btn .search-button:active {
-        background: unset !important;
-        background-color: unset !important;
-        background-image: unset !important;
-        border: unset !important;
-        border-color: unset !important;
-        color: unset !important;
-        box-shadow: unset !important;
-        text-shadow: unset !important;
-        transform: unset !important;
-        opacity: unset !important;
+
+    /* 🛡️ PESQUISA ULTRA-MINIMAL: Resetar tudo com all: unset */
+    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,
+    button[class*="btn-pesquisar"], .input-group-btn .btn,
+    .btn-pesquisar::before, .btn-pesquisar::after,
+    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,
+    .search-button::before, .search-button::after {
+        all: unset !important;
     }
     `;
 
@@ -11783,449 +11605,102 @@ setTimeout(() => {
     }
 }, 1000);
 
-// ============================================
-// INSERÇÃO DE ELEMENTOS NA NAVBAR DO EPROC
-// ============================================
-// Remover APENAS estilos CSS anteriores, NÃO elementos HTML
-const estilosAnteriores = document.querySelectorAll(
-    "style[data-eprobe-navbar-alignment]"
-);
-estilosAnteriores.forEach((estilo) => {
-    estilo.remove();
-    console.log("🧹 NAVBAR: Removido estilo CSS anterior de correção");
-});
+// 🚀 APLICAÇÃO IMEDIATA DE CSS CRÍTICO PARA NAVBAR
+// Aplicar regras essenciais da navbar INSTANTANEAMENTE para evitar FOUC
+(function aplicarCSSCriticoNavbar() {
+    const cssInstantaneo = document.createElement("style");
+    cssInstantaneo.id = "eprobe-css-critico-navbar";
+    cssInstantaneo.textContent = `
+        /* 🚀 CSS CRÍTICO: Aplicação instantânea para evitar FOUC */
+        .d-none.d-md-flex {
+            align-items: center !important;
+        }
+        
+        /* Preparação para elemento da navbar */
+        nav#navbar {
+            align-items: center !important;
+        }
+    `;
 
-// IMPORTANTE: NÃO remover o elemento #eprobe-navbar-element
-const elemento = document.getElementById("eprobe-navbar-element");
-if (elemento) {
-    console.log("✅ NAVBAR: Elemento eProbe preservado durante limpeza");
-}
+    // Inserir IMEDIATAMENTE no head
+    (document.head || document.documentElement).appendChild(cssInstantaneo);
+    console.log("🚀 NAVBAR: CSS crítico aplicado instantaneamente");
+})();
 
 // ============================================
-// INSERÇÃO DE ELEMENTOS NA NAVBAR DO EPROC
+// FUNÇÕES DE NAVBAR REMOVIDAS - CENTRALIZADAS EM gerenciarNavbarEprobe()
 // ============================================
+//
+// 🗑️ REMOVIDAS:
+// - inserirElementoNavbarEproc()
+// - removerElementoNavbarEproc()
+// - forcarElementoEprobeNavbar()
+// - carregarFonteExo2() [removida - desnecessária na versão minimalista]
+//
+// ✅ ÚNICA FUNÇÃO ATIVA: window.gerenciarNavbarEprobe()
+//
+
+// ============================================
+// GERENCIADOR CENTRALIZADO DA NAVBAR - FUNÇÃO ÚNICA
+// ============================================
+//
+// 🎯 ARQUITETURA LIMPA:
+// ✅ CSS unificado: Uma única regra CSS consolida todos os estilos (linha ~11800)
+// ✅ JavaScript centralizado: Uma única função gerencia toda a lógica
+// ✅ Observer unificado: Um só MutationObserver para detecção
+// ✅ Monitoramento simples: Um único setInterval para manutenção
+// ✅ Zero duplicação: Todas as funções antigas foram removidas
+//
+// Esta função substitui todas as funções anteriores:
+// - tentarInserirElementoNavbar()
+// - inicializarNavbarOtimizada()
+// - aplicarEstilosNavbarInstantaneos()
+// - executarOtimizacoesImediatas()
+// - monitorarElementoEprobe()
+// - navbarObserver + navbarStyleObserver
+// - múltiplos setTimeout/setInterval duplicados
 
 /**
- * Insere um elemento personalizado na navbar do eProc
- * baseado no design do Figma - logo PNG "eP" simples e transparente
- *
- * VERSÃO ATUALIZADA - LOGO PNG:
- * ✅ Logo "eP" em formato PNG em vez de texto
- * ✅ Imagem carregada via chrome.runtime.getURL()
- * ✅ Hover com filter brightness
- * ✅ Fundo transparente conforme Figma
- * ✅ Sem gradientes, sombras ou efeitos extras
- * ✅ Proteção contra duplicação
- *
- * @returns {boolean} - Sucesso da inserção
+ * 🎯 NAVBAR ULTRA-MINIMAL: 6 linhas CORRIGIDA + APLICAÇÃO INSTANTÂNEA
  */
-function inserirElementoNavbarEproc() {
-    console.log("🔍 NAVBAR: Tentando inserir elemento personalizado na navbar");
-
-    // PROTEÇÃO REFORÇADA: Remover qualquer elemento existente primeiro
-    const elementoExistente = document.getElementById("eprobe-navbar-element");
-    if (elementoExistente) {
-        console.log(
-            "🗑️ NAVBAR: Removendo elemento existente para evitar duplicação"
+window.gerenciarNavbarEprobe = function () {
+    if (window.navbarEprobeInicializada) return;
+    window.navbarEprobeInicializada = true;
+    const inserir = () => {
+        const p = document.querySelector(
+            'nav#navbar a[href*="pdpj/marketplace_redirecionar"]'
         );
-        elementoExistente.remove();
-    }
-
-    // Buscar a navbar principal
-    const navbar = document.querySelector("nav#navbar");
-    if (!navbar) {
-        console.log("❌ NAVBAR: Navbar principal não encontrada");
-        return false;
-    }
-
-    // Buscar o link do Portal jus.br
-    const portalLink = navbar.querySelector(
-        'a[href*="pdpj/marketplace_redirecionar"]'
-    );
-    if (!portalLink) {
-        console.log("❌ NAVBAR: Link do Portal jus.br não encontrado");
-        return false;
-    }
-
-    // Criar elemento personalizado com imagem PNG
-    const customElement = document.createElement("a");
-    customElement.id = "eprobe-navbar-element";
-    customElement.href = "https://e-probe.vercel.app/";
-    customElement.target = "_blank";
-    customElement.className = "d-flex align-items-center navbar-eprobe-icon";
-    customElement.setAttribute("data-notification", "");
-    customElement.style.cssText = `
-        padding: 6px 10px;
-        margin-right: 6px;
-        border-right: 1px solid rgba(255, 255, 255, 0.2);
-        text-decoration: none;
-        transition: opacity 0.2s ease;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        height: 50px;
-        min-width: 50px;
-        opacity: 1;
-    `;
-
-    // 🎨 CSS simples: Customizar txtUnderline + corrigir ícones específicos desalinhados
-    const css = `
-        #txtUnderline { color: #495057 !important; }
-        
-        /* 🎯 CORREÇÃO ESPECÍFICA: Ícones navbar desalinhados com padding: 0 */
-        i.material-icons.navbar-icons[style*="padding: 0"] {
-            padding: 6px 8px !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            vertical-align: middle !important;
-            line-height: 1 !important;
-        }
-        
-        /* 🎯 AJUSTE VERTICAL: Ícones home e all_inbox descer um pouco */
-        i.material-icons.navbar-icons[style*="padding: 0"]:not([title]):has-text("home"),
-        i.material-icons.navbar-icons[title="Meus Localizadores"][style*="padding: 0"] {
-            margin-top: 5px !important;
-            padding: 6px 8px !important;
-            display: inline-flex !important;
-            align-items: center !important;
-            justify-content: center !important;
-            vertical-align: middle !important;
-            line-height: 1 !important;
-        }
-    `;
-    const styleElement = document.createElement("style");
-    styleElement.textContent = css;
-    document.head.appendChild(styleElement);
-
-    // 🎯 CORREÇÃO VIA JAVASCRIPT: Para ícones específicos que CSS não consegue selecionar por conteúdo
-    setTimeout(() => {
-        // Lista de ícones para corrigir alinhamento
-        const iconesParaCorrigir = [
-            "home",
-            "all_inbox",
-            "looks_one",
-            "looks_two",
-            "looks_3",
-        ];
-
-        iconesParaCorrigir.forEach((nomeIcone) => {
-            const icone = Array.from(
-                document.querySelectorAll(
-                    'i.material-icons.navbar-icons[style*="padding: 0"]'
-                )
-            ).find((el) => el.textContent.trim() === nomeIcone);
-
-            if (icone) {
-                // Aplicar margin-top apenas para home e all_inbox
-                const marginTop =
-                    nomeIcone === "home" || nomeIcone === "all_inbox"
-                        ? "margin-top: 5px !important;"
-                        : "";
-
-                icone.style.cssText += `
-                    ${marginTop}
-                    padding: 6px 8px !important;
-                    display: inline-flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    vertical-align: middle !important;
-                    line-height: 1 !important;
-                `;
-                console.log(
-                    `🎯 NAVBAR: Ícone "${nomeIcone}" corrigido via JavaScript${
-                        marginTop ? " (com ajuste vertical)" : ""
-                    }`
-                );
-            }
+        if (!p || document.getElementById("eprobe-navbar-element")) return;
+        const a = Object.assign(document.createElement("a"), {
+            id: "eprobe-navbar-element",
+            href: "https://e-probe.vercel.app/",
+            target: "_blank",
+            innerHTML: `<img src="${chrome.runtime.getURL(
+                "assets/40x.png"
+            )}" style="width:40px;height:40px">`,
         });
-    }, 100);
+        a.style.cssText =
+            "padding:5px 6px;text-decoration:none;display:flex;align-items:center;height:50px";
+        p.parentNode.insertBefore(a, p);
 
-    // Criar elemento de imagem
-    const logoImg = document.createElement("img");
-    logoImg.src = chrome.runtime.getURL("assets/40x.png");
-    logoImg.alt = "eProbe";
-    logoImg.style.cssText = `
-        width: 40px;
-        height: 40px;
-        object-fit: contain;
-        vertical-align: middle;
-    `;
-
-    // Adicionar hover igual ao jus.br (opacidade)
-    addPassiveEventListener(customElement, "mouseenter", function () {
-        customElement.style.opacity = "0.7";
-    });
-
-    addPassiveEventListener(customElement, "mouseleave", function () {
-        customElement.style.opacity = "1";
-    });
-
-    // Logo PNG em vez de texto
-    customElement.appendChild(logoImg);
-
-    // Inserir o elemento antes do link do Portal jus.br
-    portalLink.parentNode.insertBefore(customElement, portalLink);
-
-    console.log("✅ NAVBAR: Elemento personalizado inserido com sucesso");
-    return true;
-}
-
-/**
- * Remove o elemento personalizado da navbar
- */
-function removerElementoNavbarEproc() {
-    console.log("🗑️ NAVBAR: Tentando remover elemento personalizado da navbar");
-
-    const elemento = document.getElementById("eprobe-navbar-element");
-    if (elemento) {
-        elemento.remove();
-        console.log("✅ NAVBAR: Elemento personalizado removido da navbar");
-        return true;
-    } else {
-        console.log(
-            "ℹ️ NAVBAR: Elemento personalizado não encontrado na navbar"
-        );
-        return false;
-    }
-}
-
-// Função para carregar a fonte Exo 2 com verificação e fallback - OTIMIZADA
-function carregarFonteExo2() {
-    // Verificar se a fonte já foi carregada
-    if (document.querySelector('link[href*="Exo+2"]')) {
-        console.log("✅ FONTE: Exo 2 já carregada anteriormente");
-        return Promise.resolve();
-    }
-
-    return new Promise((resolve) => {
-        const linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.href =
-            "https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap";
-
-        // Adicionar listener para verificar quando a fonte carrega
-        linkElement.onload = () => {
-            console.log("✅ FONTE: Exo 2 carregada com sucesso");
-            resolve();
-        };
-
-        linkElement.onerror = () => {
-            console.warn("⚠️ FONTE: Erro ao carregar Exo 2, usando fallback");
-            resolve();
-        };
-
-        document.head.appendChild(linkElement);
-        console.log("🔄 FONTE: Carregando Exo 2 do Google Fonts...");
-
-        // Resolve após 50ms mesmo se onload não disparar (fallback rápido)
-        setTimeout(resolve, 50);
-    });
-}
-
-// ============================================
-// INICIALIZAÇÃO OTIMIZADA DA NAVBAR - SEM DELAY
-// ============================================
-
-// Função para tentar inserir o elemento logo que a navbar estiver disponível
-function tentarInserirElementoNavbar() {
-    const navbar = document.querySelector("nav#navbar");
-    const portalLink = navbar?.querySelector(
-        'a[href*="pdpj/marketplace_redirecionar"]'
-    );
-
-    if (
-        navbar &&
-        portalLink &&
-        !document.getElementById("eprobe-navbar-element")
-    ) {
-        console.log(
-            "🎯 NAVBAR: Navbar detectada, inserindo elemento imediatamente"
-        );
-        inserirElementoNavbarEproc();
-        return true;
-    }
-    return false;
-}
-
-// Observer para detectar quando a navbar é adicionada ao DOM
-const navbarObserver = new MutationObserver((mutations) => {
-    for (const mutation of mutations) {
-        if (mutation.type === "childList") {
-            for (const node of mutation.addedNodes) {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    // Verificar se o node é a navbar ou contém a navbar
-                    if (node.matches && node.matches("nav#navbar")) {
-                        if (tentarInserirElementoNavbar()) {
-                            navbarObserver.disconnect();
-                            return;
-                        }
-                    }
-                    // Verificar se a navbar foi adicionada dentro do node
-                    const navbar =
-                        node.querySelector && node.querySelector("nav#navbar");
-                    if (navbar) {
-                        if (tentarInserirElementoNavbar()) {
-                            navbarObserver.disconnect();
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-    }
-});
-
-// Variável de controle para evitar inicializações múltiplas da navbar
-let navbarJaInicializada = false;
-
-// Inicializar inserção do elemento navbar de forma otimizada
-async function inicializarNavbarOtimizada() {
-    // Proteção contra múltiplas execuções
-    if (navbarJaInicializada) {
-        console.log("ℹ️ NAVBAR: Já foi inicializada, ignorando nova tentativa");
-        return;
-    }
-    navbarJaInicializada = true;
-
-    console.log("🚀 NAVBAR: Iniciando inserção otimizada sem delay");
-
-    // Carregar fonte em paralelo (sem aguardar)
-    carregarFonteExo2().catch((err) =>
-        console.warn("⚠️ FONTE: Erro ao carregar", err)
-    );
-
-    // Tentar inserir imediatamente se a navbar já estiver disponível
-    if (tentarInserirElementoNavbar()) {
-        console.log("✅ NAVBAR: Elemento inserido imediatamente");
-        return;
-    }
-
-    // Se não conseguiu inserir, usar observer para detectar quando navbar aparecer
-    navbarObserver.observe(document.body, {
-        childList: true,
-        subtree: true,
-    });
-
-    // Fallback: tentar inserir após um breve delay se o observer não funcionar
-    setTimeout(() => {
-        if (!document.getElementById("eprobe-navbar-element")) {
-            console.log("🔄 NAVBAR: Fallback - tentando inserir após delay");
-            if (tentarInserirElementoNavbar()) {
-                navbarObserver.disconnect();
-            }
-        }
-    }, 500);
-
-    // Cleanup: desconectar observer após 5 segundos para evitar vazamento de memória
-    setTimeout(() => {
-        navbarObserver.disconnect();
-        console.log("🧹 NAVBAR: Observer desconectado por timeout");
-    }, 5000);
-}
-
-// Executar inicialização otimizada imediatamente
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", inicializarNavbarOtimizada);
-} else {
-    inicializarNavbarOtimizada();
-}
-
-/**
- * Monitora o elemento eProbe na navbar para garantir que não seja removido
- */
-function monitorarElementoEprobe() {
-    console.log("👁️ NAVBAR: Iniciando monitoramento do elemento eProbe");
-
-    // Verificar periodicamente se o elemento ainda existe
-    setInterval(() => {
-        const elemento = document.getElementById("eprobe-navbar-element");
+        // 🚀 APLICAR ESTILOS CRÍTICOS IMEDIATAMENTE APÓS INSERÇÃO
         const navbar = document.querySelector("nav#navbar");
-
-        if (navbar && !elemento) {
-            console.log("⚠️ NAVBAR: Elemento eProbe removido, restaurando...");
-            inserirElementoNavbarEproc();
+        if (navbar) {
+            navbar.style.alignItems = "center";
         }
-    }, 5000); // Verificar a cada 5 segundos
-}
-
-// Iniciar monitoramento do elemento eProbe na navbar
-monitorarElementoEprobe();
-
-/**
- * FUNÇÃO GLOBAL: Força a exibição do elemento eProbe
- */
-window.forcarElementoEprobeNavbar = function () {
-    console.log("🔧 NAVBAR: Forçando exibição do elemento eProbe");
-
-    // Primeiro, remover se existir
-    const elementoExistente = document.getElementById("eprobe-navbar-element");
-    if (elementoExistente) {
-        elementoExistente.remove();
-    }
-
-    // Inserir novamente
-    const sucesso = inserirElementoNavbarEproc();
-
-    if (sucesso) {
-        // Garantir visibilidade com CSS direto
-        setTimeout(() => {
-            const elemento = document.getElementById("eprobe-navbar-element");
-            if (elemento) {
-                elemento.style.display = "flex !important";
-                elemento.style.visibility = "visible !important";
-                elemento.style.opacity = "1 !important";
-                console.log("✅ NAVBAR: Elemento eProbe forçado a ser visível");
-            }
-        }, 100);
-    }
-
-    return sucesso;
+        const flexContainer = document.querySelector(".d-none.d-md-flex");
+        if (flexContainer) {
+            flexContainer.style.alignItems = "center";
+        }
+    };
+    document.querySelector("nav#navbar")
+        ? inserir()
+        : new MutationObserver(
+              () =>
+                  document.querySelector("nav#navbar") &&
+                  (inserir(), this.disconnect())
+          ).observe(document.body, { childList: 1, subtree: 1 });
 };
 
-// Expor no namespace para debug
-window.SENT1_AUTO = window.SENT1_AUTO || {};
-window.SENT1_AUTO.forcarElementoEprobeNavbar =
-    window.forcarElementoEprobeNavbar;
-
-// 🚨 EXECUÇÃO IMEDIATA: Tentar restaurar elemento eProbe perdido
-setTimeout(() => {
-    const elemento = document.getElementById("eprobe-navbar-element");
-    if (!elemento && document.querySelector("nav#navbar")) {
-        console.log(
-            "🚨 NAVBAR: Elemento eProbe não encontrado! Tentando restaurar..."
-        );
-        window.forcarElementoEprobeNavbar();
-    } else if (elemento) {
-        console.log("✅ NAVBAR: Elemento eProbe encontrado e funcionando");
-    }
-}, 1000);
-
-// 🔄 SEGUNDA TENTATIVA: Se ainda não funcionou
-setTimeout(() => {
-    const elemento = document.getElementById("eprobe-navbar-element");
-    if (!elemento && document.querySelector("nav#navbar")) {
-        console.log(
-            "🚨 NAVBAR: Segunda tentativa de restaurar elemento eProbe..."
-        );
-        inserirElementoNavbarEproc();
-
-        // Forçar visibilidade com CSS direto
-        setTimeout(() => {
-            const el = document.getElementById("eprobe-navbar-element");
-            if (el) {
-                el.style.cssText += `
-                    display: flex !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    position: relative !important;
-                    z-index: 10 !important;
-                `;
-                console.log(
-                    "✅ NAVBAR: Elemento eProbe restaurado com CSS forçado"
-                );
-            }
-        }, 200);
-    }
-}, 3000);
+// 🚀 EXECUÇÃO IMEDIATA - Sem delay para máxima velocidade
+window.gerenciarNavbarEprobe();

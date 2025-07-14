@@ -1,0 +1,47 @@
+# Chrome Extension Ignore File
+# Arquivos e pastas que NUNCA devem ser incluídos na extensão
+
+# Arquivos de chave privada e certificados
+*.pem
+*.p12
+*.key
+*.crt
+
+# Pasta private completa
+private/
+private/*
+
+# Arquivos de desenvolvimento
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Pasta de builds antigos
+build/
+builds/
+
+# Scripts de desenvolvimento
+package_for_chrome_store.ps1
+*.ps1
+
+# Documentação desnecessária para usuários
+src/md/
+docs/
+documentation/
+
+# Arquivos git
+.git/
+.gitignore
+
+# Arquivos de backup
+*.bak
+*.backup
+*~
+
+# Pasta de exemplos
+examples/
+
+# Arquivos de configuração do VS Code
+.vscode/
+*.code-workspace
