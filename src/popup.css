@@ -268,7 +268,7 @@ body {
     border: 1px solid rgb(var(--color-neutral-600) / 0.3);
     border-radius: var(--border-radius);
     padding: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
     box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
     transition: var(--transition-base);
 }
@@ -392,7 +392,6 @@ body {
 .btn.danger:active {
     background: #bd2130 !important;
     color: #ffffff !important;
-    transform: translateY(0);
 }
 
 /* Focus states modernos com contraste aprimorado */
@@ -1104,16 +1103,12 @@ body {
 .footer {
     margin-top: auto;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(
-        135deg,
-        rgba(255, 255, 255, 0.02) 0%,
-        rgba(255, 255, 255, 0.05) 100%
-    );
     -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
 .footer-content {
+    margin-top: 20px;
     padding: 12px 16px;
     text-align: center;
 }
@@ -1199,7 +1194,7 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 16px 20px;
+    padding: 20px 20px;
     cursor: pointer;
     background: rgb(var(--color-background-alt));
     transition: all 0.3s ease;
@@ -1256,12 +1251,12 @@ body {
 
 .config-content.expanded {
     max-height: 1000px; /* Valor alto para permitir expansão completa */
-    padding: 0 0 20px 0;
+    padding: 0 0 0px 0;
 }
 
 /* Seções de Configuração */
 .config-section {
-    padding: 20px 20px 0 20px;
+    padding: 20px 20px 20px 20px;
     border-bottom: 1px solid rgb(var(--color-background-alt3));
 }
 
@@ -1310,7 +1305,7 @@ body {
 }
 
 .button-theme-option:hover {
-    background: rgb(var(--color-background-alt4));
+    background: rgb(var(--color-primary-600) / 0.1);
     border-color: rgb(var(--color-primary-600) / 0.3);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgb(var(--color-background) / 0.2);
@@ -1357,9 +1352,33 @@ body {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.button-theme-preview.colorido {
-    background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
-    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+/* TEMPORARIAMENTE DESABILITADO - Tema Material
+.button-theme-preview.material {
+    background: #e0e0e0;
+    box-shadow: 1px 2px 4px -2px rgba(0, 0, 0, 0.53);
+}
+*/
+
+/* Estilos específicos para previews dos temas de interface */
+.button-theme-preview.blue {
+    background: linear-gradient(135deg, #134377 0%, #1e5aa8 100%);
+    box-shadow: 0 2px 8px rgba(19, 67, 119, 0.3);
+}
+
+.button-theme-preview.dark {
+    background: linear-gradient(135deg, #0d1c2c 0%, #1a2332 100%);
+    box-shadow: 0 2px 8px rgba(13, 28, 44, 0.4);
+}
+
+.button-theme-preview.light {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-theme-preview.violet {
+    background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
+    box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
 }
 
 .button-theme-preview.reset {
@@ -1385,6 +1404,42 @@ body {
 .reset-button-theme:hover .button-theme-preview.reset {
     border-color: rgb(var(--color-danger-600));
     color: rgb(var(--color-danger-600));
+}
+
+/* Reset para temas de interface */
+.reset-interface-theme {
+    color: rgb(var(--color-text-muted)) !important;
+}
+
+.reset-interface-theme:hover {
+    color: rgb(var(--color-danger-600)) !important;
+}
+
+.reset-interface-theme .button-theme-preview.reset {
+    border: 1px dashed rgb(var(--color-text-muted));
+}
+
+.reset-interface-theme:hover .button-theme-preview.reset {
+    border-color: rgb(var(--color-danger-600));
+    color: rgb(var(--color-danger-600));
+}
+
+/* Reset para temas de interface - estado ativo */
+.reset-interface-theme.theme-active {
+    border-color: rgb(var(--color-success-600)) !important;
+    background: rgb(var(--color-success-600) / 0.1) !important;
+    color: rgb(var(--color-success-600)) !important;
+}
+
+.reset-interface-theme.theme-active .button-theme-preview.reset {
+    border-color: rgb(var(--color-success-600)) !important;
+    color: rgb(var(--color-success-600)) !important;
+    background: rgb(var(--color-success-600) / 0.1) !important;
+}
+
+.reset-interface-theme.theme-active:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgb(var(--color-success-600) / 0.3);
 }
 
 /* ============================================
@@ -1419,25 +1474,6 @@ body {
     .config-chevron {
         right: 16px;
     }
-}
-
-/* Indicador de tema ativo para temas de botões */
-.button-theme-option.active::after {
-    content: "✓";
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    background: rgb(var(--color-primary-600));
-    color: white;
-    font-size: 10px;
-    font-weight: bold;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Animações suaves */
@@ -1515,7 +1551,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgb(var(--color-background-alt3));
+    background: rgb(var(--color-primary-600));
     transition: 0.3s ease;
     border-radius: 24px;
     border: 1px solid rgb(var(--color-neutral-600) / 0.3);
@@ -1579,6 +1615,7 @@ input:checked + .slider:hover {
     transition: all 0.3s ease;
     position: relative;
     overflow: hidden;
+    color: transparent;
 }
 
 /* Tema Azul */
@@ -1610,11 +1647,10 @@ input:checked + .slider:hover {
 
 #buttons_container button.active,
 #buttons_container button.theme-active {
-    border-color: white;
+    border-color: rgb(var(--color-primary-600));
     box-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
     transform: scale(1.05);
-    color: white !important;
-    text-decoration: underline;
+    color: transparent;
 }
 
 #buttons_container button::after {
@@ -1637,21 +1673,205 @@ input:checked + .slider:hover {
 }
 
 /* ============================================
-   UTILITY CLASSES
+   EXCLUSÕES DE TEMAS DE BOTÕES - eProc
    ============================================ */
 
-.flex {
-    display: flex;
+/* Excluir botões de pesquisa do eProc dos temas de botões */
+.btn-pesquisar-nova-janela,
+.btn-pesquisar,
+.search-button,
+button[class*="btn-pesquisar"],
+button.btn.btn-link.btn-pesquisar-nova-janela,
+button.btn.btn-link.btn-pesquisar,
+.input-group-btn .btn-pesquisar-nova-janela,
+.input-group-btn .btn-pesquisar,
+.input-group-btn .search-button {
+    /* Forçar estilos originais do eProc */
+    background: unset !important;
+    background-color: unset !important;
+    background-image: unset !important;
+    border: unset !important;
+    border-color: unset !important;
+    border-radius: unset !important;
+    color: unset !important;
+    font-family: unset !important;
+    font-size: unset !important;
+    font-weight: unset !important;
+    padding: unset !important;
+    margin: unset !important;
+    box-shadow: unset !important;
+    text-shadow: unset !important;
+    transition: unset !important;
+    transform: unset !important;
+    opacity: unset !important;
+    outline: unset !important;
+    cursor: unset !important;
+    position: unset !important;
+    z-index: unset !important;
+    display: unset !important;
+    flex: unset !important;
+    align-items: unset !important;
+    justify-content: unset !important;
+    text-align: unset !important;
+    vertical-align: unset !important;
+    line-height: unset !important;
+    letter-spacing: unset !important;
+    text-decoration: unset !important;
+    text-transform: unset !important;
+    white-space: unset !important;
+    word-wrap: unset !important;
+    overflow: unset !important;
+    min-width: unset !important;
+    min-height: unset !important;
+    max-width: unset !important;
+    max-height: unset !important;
+    width: unset !important;
+    height: unset !important;
 }
 
-.justify-center {
-    justify-content: center;
+/* Excluir pseudo-elementos dos botões de pesquisa */
+.btn-pesquisar-nova-janela::before,
+.btn-pesquisar-nova-janela::after,
+.btn-pesquisar::before,
+.btn-pesquisar::after,
+.search-button::before,
+.search-button::after,
+button[class*="btn-pesquisar"]::before,
+button[class*="btn-pesquisar"]::after,
+button.btn.btn-link.btn-pesquisar-nova-janela::before,
+button.btn.btn-link.btn-pesquisar-nova-janela::after,
+button.btn.btn-link.btn-pesquisar::before,
+button.btn.btn-link.btn-pesquisar::after,
+.input-group-btn .btn-pesquisar-nova-janela::before,
+.input-group-btn .btn-pesquisar-nova-janela::after,
+.input-group-btn .btn-pesquisar::before,
+.input-group-btn .btn-pesquisar::after,
+.input-group-btn .search-button::before,
+.input-group-btn .search-button::after {
+    content: unset !important;
+    background: unset !important;
+    background-color: unset !important;
+    background-image: unset !important;
+    display: unset !important;
+    position: unset !important;
+    top: unset !important;
+    left: unset !important;
+    right: unset !important;
+    bottom: unset !important;
+    width: unset !important;
+    height: unset !important;
+    border: unset !important;
+    border-radius: unset !important;
+    box-shadow: unset !important;
+    opacity: unset !important;
+    z-index: unset !important;
+    transform: unset !important;
+    transition: unset !important;
 }
 
-.underline {
-    text-decoration: underline;
+/* Estados hover e focus dos botões de pesquisa */
+.btn-pesquisar-nova-janela:hover,
+.btn-pesquisar-nova-janela:focus,
+.btn-pesquisar-nova-janela:active,
+.btn-pesquisar:hover,
+.btn-pesquisar:focus,
+.btn-pesquisar:active,
+.search-button:hover,
+.search-button:focus,
+.search-button:active,
+button[class*="btn-pesquisar"]:hover,
+button[class*="btn-pesquisar"]:focus,
+button[class*="btn-pesquisar"]:active,
+button.btn.btn-link.btn-pesquisar-nova-janela:hover,
+button.btn.btn-link.btn-pesquisar-nova-janela:focus,
+button.btn.btn-link.btn-pesquisar-nova-janela:active,
+button.btn.btn-link.btn-pesquisar:hover,
+button.btn.btn-link.btn-pesquisar:focus,
+button.btn.btn-link.btn-pesquisar:active,
+.input-group-btn .btn-pesquisar-nova-janela:hover,
+.input-group-btn .btn-pesquisar-nova-janela:focus,
+.input-group-btn .btn-pesquisar-nova-janela:active,
+.input-group-btn .btn-pesquisar:hover,
+.input-group-btn .btn-pesquisar:focus,
+.input-group-btn .btn-pesquisar:active,
+.input-group-btn .search-button:hover,
+.input-group-btn .search-button:focus,
+.input-group-btn .search-button:active {
+    background: unset !important;
+    background-color: unset !important;
+    background-image: unset !important;
+    border: unset !important;
+    border-color: unset !important;
+    color: unset !important;
+    box-shadow: unset !important;
+    text-shadow: unset !important;
+    transform: unset !important;
+    opacity: unset !important;
+    outline: unset !important;
 }
 
-.hidden {
-    display: none !important;
+/* Pseudo-elementos dos estados hover e focus */
+.btn-pesquisar-nova-janela:hover::before,
+.btn-pesquisar-nova-janela:hover::after,
+.btn-pesquisar-nova-janela:focus::before,
+.btn-pesquisar-nova-janela:focus::after,
+.btn-pesquisar-nova-janela:active::before,
+.btn-pesquisar-nova-janela:active::after,
+.btn-pesquisar:hover::before,
+.btn-pesquisar:hover::after,
+.btn-pesquisar:focus::before,
+.btn-pesquisar:focus::after,
+.btn-pesquisar:active::before,
+.btn-pesquisar:active::after,
+.search-button:hover::before,
+.search-button:hover::after,
+.search-button:focus::before,
+.search-button:focus::after,
+.search-button:active::before,
+.search-button:active::after,
+button[class*="btn-pesquisar"]:hover::before,
+button[class*="btn-pesquisar"]:hover::after,
+button[class*="btn-pesquisar"]:focus::before,
+button[class*="btn-pesquisar"]:focus::after,
+button[class*="btn-pesquisar"]:active::before,
+button[class*="btn-pesquisar"]:active::after,
+button.btn.btn-link.btn-pesquisar-nova-janela:hover::before,
+button.btn.btn-link.btn-pesquisar-nova-janela:hover::after,
+button.btn.btn-link.btn-pesquisar-nova-janela:focus::before,
+button.btn.btn-link.btn-pesquisar-nova-janela:focus::after,
+button.btn.btn-link.btn-pesquisar-nova-janela:active::before,
+button.btn.btn-link.btn-pesquisar-nova-janela:active::after,
+button.btn.btn-link.btn-pesquisar:hover::before,
+button.btn.btn-link.btn-pesquisar:hover::after,
+button.btn.btn-link.btn-pesquisar:focus::before,
+button.btn.btn-link.btn-pesquisar:focus::after,
+button.btn.btn-link.btn-pesquisar:active::before,
+button.btn.btn-link.btn-pesquisar:active::after,
+.input-group-btn .btn-pesquisar-nova-janela:hover::before,
+.input-group-btn .btn-pesquisar-nova-janela:hover::after,
+.input-group-btn .btn-pesquisar-nova-janela:focus::before,
+.input-group-btn .btn-pesquisar-nova-janela:focus::after,
+.input-group-btn .btn-pesquisar-nova-janela:active::before,
+.input-group-btn .btn-pesquisar-nova-janela:active::after,
+.input-group-btn .btn-pesquisar:hover::before,
+.input-group-btn .btn-pesquisar:hover::after,
+.input-group-btn .btn-pesquisar:focus::before,
+.input-group-btn .btn-pesquisar:focus::after,
+.input-group-btn .btn-pesquisar:active::before,
+.input-group-btn .btn-pesquisar:active::after,
+.input-group-btn .search-button:hover::before,
+.input-group-btn .search-button:hover::after,
+.input-group-btn .search-button:focus::before,
+.input-group-btn .search-button:focus::after,
+.input-group-btn .search-button:active::before,
+.input-group-btn .search-button:active::after {
+    content: unset !important;
+    background: unset !important;
+    background-color: unset !important;
+    background-image: unset !important;
+    display: unset !important;
 }
+
+/* ============================================
+   FIM EXCLUSÕES DE TEMAS DE BOTÕES - eProc
+   ============================================ */

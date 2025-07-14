@@ -8,7 +8,7 @@ Esta pasta contém todos os recursos visuais e arquivos de estilo da extensão e
 
 -   `icon16.png` - Ícone 16x16px (barra do navegador)
 -   `icon48.png` - Ícone 48x48px (página de extensões)
--   `icon128.png` - Ícone 128x128px (Chrome Web Store)
+-   `icon128.png` - Ícone 128x128px (Edge Add-ons Store)
 -   `iconmain.png` - Ícone principal da aplicação
 
 ### Estilos de Ícones
@@ -21,7 +21,7 @@ Esta pasta contém todos os recursos visuais e arquivos de estilo da extensão e
 
 -   **16x16**: Para barra de ferramentas do navegador
 -   **48x48**: Para página de gerenciamento de extensões
--   **128x128**: Para Chrome Web Store e detalhes da extensão
+-   **128x128**: Para Edge Add-ons Store e detalhes da extensão
 
 ### Formatos Suportados
 

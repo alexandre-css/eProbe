@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "eProbe - Automação eproc",
-    "version": "1.0.0",
-    "description": "Extensão para servidores do TJSC: detecta automaticamente documentos no eproc, extrai texto e facilita a criação de resumos por inteligência artificial.",
+    "name": "eProbe - Automação eProc TJSC",
+    "version": "1.0.1",
+    "description": "Extensão para servidores do TJSC: detecta documentos no eProc, extrai texto, organiza localizadores e facilita resumos com IA.",
     "author": "Alexandre Claudino Simas Santos",
     "homepage_url": "https://e-probe.vercel.app/",
 
@@ -13,7 +13,7 @@
         "https://eproc2g.tjsc.jus.br/*",
         "https://fonts.googleapis.com/*",
         "https://fonts.gstatic.com/*",
-        "https://api.openai.com/*"
+        "https://api.perplexity.ai/*"
     ],
 
     "content_scripts": [

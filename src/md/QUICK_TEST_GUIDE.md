@@ -5,7 +5,7 @@
 ### 1. Carregar a Extensão
 
 ```
-1. Abra Chrome → chrome://extensions/
+1. Abra Edge → edge://extensions/
 2. Ative "Modo desenvolvedor"
 3. "Carregar sem compactação" → selecione pasta c:\eProbe
 4. Verifique se aparece "eProbe - Automação eproc"
@@ -100,7 +100,7 @@ window.eProbeSemanticKernel.reset();
 
 ```
 - Extensão não carregou o semanticKernel.js
-- Recarregue a extensão no chrome://extensions/
+- Recarregue a extensão no edge://extensions/
 ```
 
 ### Erro: "API Key não encontrada"

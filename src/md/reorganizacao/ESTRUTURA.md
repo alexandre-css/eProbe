@@ -96,5 +96,5 @@ Se algum caminho estiver quebrado após a reorganização:
 
 1. Verifique as referências em `manifest.json`
 2. Confirme caminhos em `popup.html`
-3. Teste a extensão no Chrome
+3. Teste a extensão no Edge
 4. Valide demos no Live Server

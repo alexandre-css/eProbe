@@ -28,7 +28,7 @@ Esta implementação experimental adiciona capacidades de IA ao eProbe usando co
 
 ### Pré-requisitos
 
-1. Extensão eProbe carregada no Chrome
+1. Extensão eProbe carregada no Edge
 2. API key do OpenAI configurada no popup da extensão
 3. Página do eProc com informações de sessão aberta
 

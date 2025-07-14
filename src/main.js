@@ -6293,6 +6293,9 @@ ${texto}`;
         hasStatusSessao,
         resetStatusSessao,
         showStatusSessaoInfo,
+        // Funções da navbar
+        inserirElementoNavbarEproc,
+        removerElementoNavbarEproc,
     };
 
     // 🔍 FUNÇÕES DE DEBUG
@@ -6752,6 +6755,281 @@ ${texto}`;
             const msg = "❌ Nenhum status de sessão foi detectado ainda.";
             console.log(msg);
             alert(msg);
+            return null;
+        }
+    }
+
+    // ========================================
+    // FUNÇÕES DE TESTE E DEBUG PARA STATUS DE SESSÃO
+    // ========================================
+
+    /**
+     * Testa o sistema completo de detecção de status de sessão
+     * @returns {Object} - Resultado do teste com informações detalhadas
+     */
+    function testarSistemaStatusSessao() {
+        console.log("🧪 TESTE: Iniciando teste completo do sistema de status");
+
+        try {
+            // 1. Verificar se há data de sessão detectada
+            const temDataSessao = hasDataSessaoPautado();
+            console.log(
+                `📊 Data de sessão detectada: ${temDataSessao ? "SIM" : "NÃO"}`
+            );
+
+            if (temDataSessao) {
+                const dadosSessao = getDataSessaoPautado();
+                console.log(`📅 Data: ${dadosSessao.dataFormatada}`);
+            }
+
+            // 2. Testar detecção de status
+            const statusDetectado = detectarStatusSessao();
+            console.log(
+                `🎯 Status detectado: ${statusDetectado ? "SIM" : "NÃO"}`
+            );
+
+            if (statusDetectado) {
+                console.log(`📋 Status: ${statusDetectado.status}`);
+                console.log(`📝 Descrição: ${statusDetectado.descricao}`);
+                console.log(`📅 Data: ${statusDetectado.data.dataFormatada}`);
+                console.log(`🏛️ Órgão: ${statusDetectado.orgao}`);
+            }
+
+            // 3. Testar funções de texto e cor
+            const textoCard = obterTextoCardPorStatus(statusDetectado);
+            const corCard = obterCorCardPorStatus(statusDetectado);
+
+            console.log(`🎨 Texto do card: "${textoCard}"`);
+            console.log(`🎨 Cor do card: ${corCard}`);
+
+            // 4. Verificar interface
+            const cardExiste = document.getElementById("eprobe-data-sessao");
+            console.log(`🖼️ Card na interface: ${cardExiste ? "SIM" : "NÃO"}`);
+
+            const resultado = {
+                temDataSessao,
+                statusDetectado,
+                textoCard,
+                corCard,
+                cardExiste: !!cardExiste,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+
+            console.log("✅ TESTE: Sistema testado com sucesso!");
+            return resultado;
+        } catch (error) {
+            console.error("❌ TESTE: Erro durante o teste:", error);
+            return {
+                erro: error.message,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+        }
+    }
+
+    /**
+     * Debug dos padrões de busca para status de sessão
+     * Mostra quais padrões estão encontrando matches no texto da página
+     */
+    function debugPadroesStatusSessao() {
+        console.log("🔍 DEBUG: Analisando padrões de status de sessão");
+
+        try {
+            // Obter texto completo da página
+            const textoCompleto = document.body.innerText;
+            console.log(
+                `📄 Texto da página: ${textoCompleto.length} caracteres`
+            );
+
+            // Padrões a serem testados
+            const padroes = [
+                {
+                    nome: "Incluído em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Pautado",
+                },
+                {
+                    nome: "Julgado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Julgado",
+                },
+                {
+                    nome: "Retirado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                },
+            ];
+
+            let encontrados = 0;
+
+            // Testar cada padrão
+            padroes.forEach((padrao, index) => {
+                console.log(
+                    `\n🔍 Testando padrão ${index + 1}: ${padrao.nome}`
+                );
+
+                // Resetar regex
+                padrao.regex.lastIndex = 0;
+
+                const matches = textoCompleto.match(padrao.regex);
+
+                if (matches && matches.length > 0) {
+                    encontrados++;
+                    console.log(
+                        `✅ MATCH ENCONTRADO! (${matches.length} ocorrência${
+                            matches.length > 1 ? "s" : ""
+                        })`
+                    );
+
+                    matches.forEach((match, i) => {
+                        console.log(`   ${i + 1}. "${match}"`);
+                    });
+
+                    // Tentar extrair detalhes do primeiro match
+                    padrao.regex.lastIndex = 0;
+                    const detalhes = padrao.regex.exec(textoCompleto);
+                    if (detalhes) {
+                        console.log(`   📋 Tipo: ${detalhes[1]?.trim()}`);
+                        console.log(`   📅 Data: ${detalhes[2]}`);
+                        console.log(`   🏛️ Órgão: ${detalhes[3]}`);
+                    }
+                } else {
+                    console.log(`❌ Nenhum match encontrado`);
+                }
+            });
+
+            console.log(
+                `\n📊 RESUMO: ${encontrados} padrão${
+                    encontrados !== 1 ? "ões" : ""
+                } encontrado${encontrados !== 1 ? "s" : ""}`
+            );
+
+            // Buscar por texto relacionado a sessão
+            const termosRelacionados = [
+                "Incluído em Pauta",
+                "Julgado em Pauta",
+                "Retirado em Pauta",
+                "sessão",
+                "julgamento",
+                "pauta",
+            ];
+
+            console.log("\n🔍 Buscando termos relacionados:");
+            termosRelacionados.forEach((termo) => {
+                const regex = new RegExp(termo, "gi");
+                const matches = textoCompleto.match(regex);
+                console.log(
+                    `   "${termo}": ${matches ? matches.length : 0} ocorrência${
+                        matches && matches.length !== 1 ? "s" : ""
+                    }`
+                );
+            });
+
+            return {
+                totalPadroes: padroes.length,
+                padroesEncontrados: encontrados,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+        } catch (error) {
+            console.error("❌ DEBUG: Erro durante debug dos padrões:", error);
+            return { erro: error.message };
+        }
+    }
+
+    /**
+     * Força a detecção de um status específico (para testes)
+     * @param {string} tipoStatus - "pautado", "julgado" ou "retirado"
+     * @returns {Object|null} - Objeto com status forçado ou null se inválido
+     */
+    function forcarStatusSessao(tipoStatus = "pautado") {
+        console.log(`🚀 FORÇA: Forçando status "${tipoStatus}"`);
+
+        try {
+            const statusValidos = {
+                pautado: {
+                    status: "Pautado",
+                    descricao: "Processo Pautado",
+                    cor: "#134377",
+                },
+                julgado: {
+                    status: "Julgado",
+                    descricao: "Processo Julgado",
+                    cor: "#16a34a",
+                },
+                retirado: {
+                    status: "Retirado",
+                    descricao: "Processo Retirado de Pauta",
+                    cor: "#dc2626",
+                },
+            };
+
+            const tipoLower = tipoStatus.toLowerCase();
+
+            if (!statusValidos[tipoLower]) {
+                console.error(
+                    `❌ FORÇA: Status "${tipoStatus}" inválido. Use: pautado, julgado ou retirado`
+                );
+                return null;
+            }
+
+            const config = statusValidos[tipoLower];
+            const dataAtual = new Date();
+            const dataFormatada = dataAtual.toLocaleDateString("pt-BR");
+
+            // Criar objeto de status forçado
+            const statusForcado = {
+                status: config.status,
+                descricao: config.descricao,
+                tipoProcesso: "Teste Forçado",
+                data: {
+                    dataFormatada: dataFormatada,
+                    dataObject: dataAtual,
+                },
+                orgao: "TESTE",
+                textoCompleto: `Teste Forçado (${config.status} em Pauta em ${dataFormatada} - TESTE)`,
+                forcado: true,
+            };
+
+            console.log(
+                `✅ FORÇA: Status "${config.status}" criado artificialmente`
+            );
+            console.log(`📅 Data: ${dataFormatada}`);
+            console.log(`🎨 Cor: ${config.cor}`);
+
+            // Testar funções relacionadas
+            const textoCard = obterTextoCardPorStatus(statusForcado);
+            const corCard = obterCorCardPorStatus(statusForcado);
+
+            console.log(`🎨 Texto do card: "${textoCard}"`);
+            console.log(`🎨 Cor do card: ${corCard}`);
+
+            // Opcionalmente atualizar a interface se houver data de sessão
+            if (hasDataSessaoPautado()) {
+                console.log("🖼️ Atualizando interface com status forçado...");
+
+                // Salvar dados temporariamente
+                const dadosOriginais = dataSessaoPautado;
+
+                // Aplicar status forçado
+                if (dataSessaoPautado) {
+                    dataSessaoPautado.statusSessao = statusForcado;
+                }
+
+                // Tentar atualizar interface
+                const sucesso = atualizarDataSessaoNaInterface();
+                console.log(
+                    `🖼️ Interface atualizada: ${sucesso ? "SIM" : "NÃO"}`
+                );
+
+                // Restaurar dados originais após 5 segundos
+                setTimeout(() => {
+                    dataSessaoPautado = dadosOriginais;
+                    console.log("🔄 FORÇA: Dados originais restaurados");
+                }, 5000);
+            }
+
+            return statusForcado;
+        } catch (error) {
+            console.error("❌ FORÇA: Erro ao forçar status:", error);
             return null;
         }
     }
@@ -7976,14 +8254,7 @@ ${texto}`;
 
     function showDataSessaoPautadoInfo() {
         if (hasDataSessaoPautado()) {
-            const info = `📅 DATA DA SESSÃO DETECTADA:
-            
-Data Original: ${dataSessaoPautado.dataOriginal}
-Data Formatada: ${dataSessaoPautado.dataFormatada}
-Dia: ${dataSessaoPautado.dia}
-Mês: ${dataSessaoPautado.mes}  
-Ano: ${dataSessaoPautado.ano}
-Timestamp: ${dataSessaoPautado.timestamp}`;
+            const info = `Clique para mais informações`;
 
             console.log(info);
             alert(info);
@@ -8099,23 +8370,7 @@ Dados obtidos automaticamente pelo eProbe`;
             `;
 
             // Tooltip dinâmico baseado no status
-            let tooltipBase = `Data da Sessão Detectada
-
-Data Original: ${dataSessaoPautado.dataOriginal}
-Formatada: ${dataSessaoPautado.dataFormatada}
-Detectada automaticamente pelo eProbe`;
-
-            if (statusSessao) {
-                tooltipBase += `
-
-📋 Status: ${statusSessao.status}
-📄 Tipo: ${statusSessao.tipoProcesso}
-🏛️ Órgão: ${statusSessao.orgao}`;
-            }
-
-            tooltipBase += `
-
-🖱️ Clique para buscar dados completos da sessão`;
+            let tooltipBase = `Clique para mais informações`;
 
             dataSessaoElement.title = tooltipBase;
         }
@@ -9340,19 +9595,69 @@ const TEMAS_BOTOES_EPROC = {
             boxShadow: "0 0 0 3px rgba(52, 58, 64, 0.3)",
         },
     },
-    colorido: {
-        backgroundColor:
-            "linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3)",
-        color: "#ffffff",
+    /* TEMPORARIAMENTE DESABILITADO - Tema Material
+    material: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: "1",
+        textDecoration: "none",
+        color: "#3e505b",
+        fontSize: "15px",
+        borderRadius: "5px",
+        width: "200px",
+        height: "40px",
+        fontWeight: "bold",
+        position: "relative",
+        transition: "0.3s",
+        boxShadow: "1px 2px 4px -2px rgba(0, 0, 0, 0.53)",
+        overflow: "hidden",
+        backgroundColor: "#e0e0e0",
         border: "none",
-        borderRadius: "12px",
-        boxShadow: "0 4px 15px rgba(255, 107, 107, 0.3)",
-        transition: "all 0.3s ease",
         hover: {
-            transform: "scale(1.05)",
-            boxShadow: "0 6px 20px rgba(255, 107, 107, 0.4)",
+            backgroundColor: "#f2f2f2",
+        },
+        // Pseudo-elementos serão aplicados via CSS dinâmico
+        beforeAfter: {
+            display: "block",
+            height: "2px",
+            width: "100%",
+            position: "absolute",
+            left: "0",
+    },
+    /* TEMPORARIAMENTE DESABILITADO - Tema Material
+    material: {
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        lineHeight: "1",
+        textDecoration: "none",
+        color: "#3e505b",
+        fontSize: "15px",
+        borderRadius: "5px",
+        width: "200px",
+        height: "40px",
+        fontWeight: "bold",
+        position: "relative",
+        transition: "0.3s",
+        boxShadow: "1px 2px 4px -2px rgba(0, 0, 0, 0.53)",
+        overflow: "hidden",
+        backgroundColor: "#e0e0e0",
+        border: "none",
+        hover: {
+            backgroundColor: "#f2f2f2",
+        },
+        beforeAfter: {
+            display: "block",
+            height: "2px",
+            width: "100%",
+            position: "absolute",
+            left: "0",
+            background: "#144CFF",
+            transition: ".3s",
         },
     },
+    */
     profissional: {
         backgroundColor: "#007ebd",
         color: "#ffffff",
@@ -9385,20 +9690,20 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
 
     const configuracaoTema = { ...TEMAS_BOTOES_EPROC[tema], ...opcoes };
 
-    // Seletores para todos os tipos de botões do eProc
+    // Seletores para todos os tipos de botões do eProc (EXCLUINDO botões de pesquisa)
     const seletoresBotoes = [
-        ".bootstrap-styles .btn",
-        ".bootstrap-styles .eproc-button",
-        ".bootstrap-styles .eproc-button-primary",
-        ".bootstrap-styles .infraButton",
-        ".bootstrap-styles .infraButton.btn-primary",
-        ".bootstrap-styles .infraButton.eproc-button-primary",
-        ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado",
-        'button[class*="infra"]',
-        'input[type="button"]',
-        'input[type="submit"]',
-        'button[onclick*="abrirVisualizacao"]',
-        'button[onclick*="processo"]',
+        ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .infraButton:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .infraButton.btn-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .infraButton.eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)",
+        'button[class*="infra"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
+        'input[type="button"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
+        'input[type="submit"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
+        'button[onclick*="abrirVisualizacao"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
+        'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button)',
     ];
 
     // Remover estilo anterior se existir
@@ -9485,6 +9790,141 @@ window.aplicarEstiloBotoesEproc = function (tema = "elegante", opcoes = {}) {
             cursor: not-allowed !important;
             transform: none !important;
         }
+    `;
+
+    // Lógica especial para o tema "material" - adicionar pseudo-elementos
+    if (tema === "material") {
+        css += `
+        /* 🛡️ PROTEÇÃO ANTI-INJEÇÃO EPROC: Bloquear estilos inline para tema Material */
+        ${seletoresBotoes.join(", ")} {
+            background: inherit !important;
+            width: auto !important;
+            display: inline-block !important;
+        }
+        
+        /* Tema Material - Pseudo-elementos ::before e ::after */
+        ${seletoresBotoes.map((s) => `${s}::before`).join(", ")},
+        ${seletoresBotoes.map((s) => `${s}::after`).join(", ")} {
+            content: "" !important;
+            display: block !important;
+            height: 2px !important;
+            width: 100% !important;
+            position: absolute !important;
+            left: 0 !important;
+            background: #ada5a5 !important;
+            transition: .3s !important;
+            z-index: 1 !important;
+        }
+        
+        ${seletoresBotoes.map((s) => `${s}::before`).join(", ")} {
+            top: 0 !important;
+        }
+        
+        ${seletoresBotoes.map((s) => `${s}::after`).join(", ")} {
+            bottom: 0 !important;
+        }
+        `;
+    }
+
+    // Adicionar proteção específica para botões de pesquisa
+    css += `
+    
+    /* 🛡️ PROTEÇÃO: Botões de pesquisa do eProc devem manter estilos originais */
+    .btn-pesquisar,
+    .btn-pesquisar-nova-janela,
+    .search-button,
+    button[class*="btn-pesquisar"],
+    .input-group-btn .btn-pesquisar,
+    .input-group-btn .btn-pesquisar-nova-janela,
+    .input-group-btn .search-button {
+        background: unset !important;
+        background-color: unset !important;
+        background-image: unset !important;
+        border: unset !important;
+        border-color: unset !important;
+        border-radius: unset !important;
+        color: unset !important;
+        box-shadow: unset !important;
+        text-shadow: unset !important;
+        transition: unset !important;
+        transform: unset !important;
+        font-weight: unset !important;
+        cursor: unset !important;
+        padding: unset !important;
+        margin: unset !important;
+        font-size: unset !important;
+        font-family: unset !important;
+    }
+    
+    /* Proteção para pseudo-elementos dos botões de pesquisa */
+    .btn-pesquisar::before,
+    .btn-pesquisar::after,
+    .btn-pesquisar-nova-janela::before,
+    .btn-pesquisar-nova-janela::after,
+    .search-button::before,
+    .search-button::after,
+    button[class*="btn-pesquisar"]::before,
+    button[class*="btn-pesquisar"]::after,
+    .input-group-btn .btn-pesquisar::before,
+    .input-group-btn .btn-pesquisar::after,
+    .input-group-btn .btn-pesquisar-nova-janela::before,
+    .input-group-btn .btn-pesquisar-nova-janela::after,
+    .input-group-btn .search-button::before,
+    .input-group-btn .search-button::after {
+        content: unset !important;
+        background: unset !important;
+        background-color: unset !important;
+        background-image: unset !important;
+        display: unset !important;
+        position: unset !important;
+        top: unset !important;
+        left: unset !important;
+        right: unset !important;
+        bottom: unset !important;
+        width: unset !important;
+        height: unset !important;
+        border: unset !important;
+        border-radius: unset !important;
+        box-shadow: unset !important;
+        opacity: unset !important;
+        z-index: unset !important;
+        transform: unset !important;
+        transition: unset !important;
+    }
+    
+    /* Proteção para estados hover, focus e active dos botões de pesquisa */
+    .btn-pesquisar:hover,
+    .btn-pesquisar:focus,
+    .btn-pesquisar:active,
+    .btn-pesquisar-nova-janela:hover,
+    .btn-pesquisar-nova-janela:focus,
+    .btn-pesquisar-nova-janela:active,
+    .search-button:hover,
+    .search-button:focus,
+    .search-button:active,
+    button[class*="btn-pesquisar"]:hover,
+    button[class*="btn-pesquisar"]:focus,
+    button[class*="btn-pesquisar"]:active,
+    .input-group-btn .btn-pesquisar:hover,
+    .input-group-btn .btn-pesquisar:focus,
+    .input-group-btn .btn-pesquisar:active,
+    .input-group-btn .btn-pesquisar-nova-janela:hover,
+    .input-group-btn .btn-pesquisar-nova-janela:focus,
+    .input-group-btn .btn-pesquisar-nova-janela:active,
+    .input-group-btn .search-button:hover,
+    .input-group-btn .search-button:focus,
+    .input-group-btn .search-button:active {
+        background: unset !important;
+        background-color: unset !important;
+        background-image: unset !important;
+        border: unset !important;
+        border-color: unset !important;
+        color: unset !important;
+        box-shadow: unset !important;
+        text-shadow: unset !important;
+        transform: unset !important;
+        opacity: unset !important;
+    }
     `;
 
     estiloElemento.textContent = css;
@@ -9579,3 +10019,106 @@ setTimeout(() => {
         // window.aplicarEstiloBotoesEproc('elegante');
     }
 }, 1000);
+
+// ============================================
+// INSERÇÃO DE ELEMENTOS NA NAVBAR DO EPROC
+// ============================================
+
+/**
+ * Insere um elemento personalizado na navbar do eProc
+ * ao lado esquerdo do link do Portal jus.br
+ */
+function inserirElementoNavbarEproc() {
+    console.log("🔍 NAVBAR: Tentando inserir elemento personalizado na navbar");
+
+    // Buscar a navbar principal
+    const navbar = document.querySelector("nav#navbar");
+    if (!navbar) {
+        console.log("❌ NAVBAR: Navbar principal não encontrada");
+        return false;
+    }
+
+    // Buscar o link do Portal jus.br
+    const portalLink = navbar.querySelector(
+        'a[href*="pdpj/marketplace_redirecionar"]'
+    );
+    if (!portalLink) {
+        console.log("❌ NAVBAR: Link do Portal jus.br não encontrado");
+        return false;
+    }
+
+    // Verificar se o elemento já existe
+    if (document.getElementById("eprobe-navbar-element")) {
+        console.log("ℹ️ NAVBAR: Elemento personalizado já existe na navbar");
+        return true;
+    }
+
+    // Criar elemento personalizado baseado no design do Figma - SIMPLES
+    const customElement = document.createElement("a");
+    customElement.id = "eprobe-navbar-element";
+    customElement.href = "https://e-probe.vercel.app/";
+    customElement.target = "_blank";
+    customElement.className =
+        "d-flex mr-2 align-items-center navbar-eprobe-icon";
+    customElement.setAttribute("data-notification", "");
+    customElement.style.cssText = `
+        padding-right: 10px; 
+        padding-left: 9px; 
+        border-right: 2px solid whitesmoke;
+        text-decoration: none;
+        color: white;
+        font-family: 'Exo 2', sans-serif;
+        font-size: 16px;
+        font-weight: 500;
+    `;
+
+    // Conteúdo simples: apenas | eP em branco
+    customElement.innerHTML = `| eP`;
+
+    // Inserir o elemento antes do link do Portal jus.br
+    portalLink.parentNode.insertBefore(customElement, portalLink);
+
+    console.log("✅ NAVBAR: Elemento personalizado inserido com sucesso");
+    return true;
+}
+
+/**
+ * Remove o elemento personalizado da navbar
+ */
+function removerElementoNavbarEproc() {
+    console.log("🗑️ NAVBAR: Tentando remover elemento personalizado da navbar");
+
+    const elemento = document.getElementById("eprobe-navbar-element");
+    if (elemento) {
+        elemento.remove();
+        console.log("✅ NAVBAR: Elemento personalizado removido da navbar");
+        return true;
+    } else {
+        console.log(
+            "ℹ️ NAVBAR: Elemento personalizado não encontrado na navbar"
+        );
+        return false;
+    }
+}
+
+// Função para carregar a fonte Exo 2
+function carregarFonteExo2() {
+    // Verificar se a fonte já foi carregada
+    if (document.querySelector('link[href*="Exo+2"]')) {
+        return;
+    }
+
+    const linkElement = document.createElement("link");
+    linkElement.rel = "stylesheet";
+    linkElement.href =
+        "https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap";
+    document.head.appendChild(linkElement);
+}
+
+// Inserir automaticamente quando a página carregar
+setTimeout(() => {
+    carregarFonteExo2();
+    setTimeout(() => {
+        inserirElementoNavbarEproc();
+    }, 500); // Aguardar um pouco para a fonte carregar
+}, 2000); // Aguardar 2 segundos para garantir que a navbar está carregada

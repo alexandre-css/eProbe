@@ -6,7 +6,7 @@ console.log("⚡ TESTE RÁPIDO - Status de Sessão");
 // Verificar se o namespace existe
 if (typeof window.SENT1_AUTO === "undefined") {
     console.error("❌ window.SENT1_AUTO não carregado!");
-    console.log("🔧 Recarregue a extensão em chrome://extensions/");
+    console.log("🔧 Recarregue a extensão em edge://extensions/");
 } else {
     console.log("✅ window.SENT1_AUTO carregado");
 

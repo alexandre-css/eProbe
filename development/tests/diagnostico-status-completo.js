@@ -13,7 +13,7 @@ if (typeof window.SENT1_AUTO === "undefined") {
     console.log("1. Verifique se a extensão eProbe está ativa");
     console.log("2. Recarregue a página do eProc");
     console.log("3. Verifique se você está em uma página válida do eProc");
-    console.log("4. Abra chrome://extensions/ e recarregue a extensão");
+    console.log("4. Abra edge://extensions/ e recarregue a extensão");
 } else {
     console.log("✅ window.SENT1_AUTO encontrado");
 

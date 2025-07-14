@@ -4,7 +4,7 @@
 if (typeof window.SENT1_AUTO === "undefined") {
     console.error("❌ EXTENSÃO NÃO CARREGADA!");
     console.log("🔧 FAÇA ISSO:");
-    console.log("1. Vá para chrome://extensions/");
+    console.log("1. Vá para edge://extensions/");
     console.log("2. Clique no ícone reload (↻) da extensão eProbe");
     console.log("3. Recarregue esta página do eProc");
     console.log("4. Aguarde 10 segundos e tente novamente");

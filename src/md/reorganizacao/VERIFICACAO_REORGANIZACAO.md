@@ -88,10 +88,10 @@ tests/
 
 ## ✅ Testes Recomendados
 
-1. **Carregar extensão no Chrome**:
+1. **Carregar extensão no Edge**:
 
     ```
-    chrome://extensions/ → Carregar sem compactação → Selecionar pasta c:\eProbe
+    edge://extensions/ → Carregar sem compactação → Selecionar pasta c:\eProbe
     ```
 
 2. **Verificar popup**: Clicar no ícone da extensão e testar acordeão

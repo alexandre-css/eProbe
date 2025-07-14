@@ -29,7 +29,7 @@ Criamos uma implementação **controlada e específica** do Microsoft Semantic K
 ### 1. Recarregar Extensão
 
 ```
-Chrome → chrome://extensions/ → Recarregar eProbe
+Edge → edge://extensions/ → Recarregar eProbe
 ```
 
 ### 2. Testar Funcionalidade Básica

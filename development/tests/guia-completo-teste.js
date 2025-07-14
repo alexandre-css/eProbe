@@ -8,8 +8,8 @@ console.log("=".repeat(60));
 // PASSO 1: RECARREGAR A EXTENSÃO
 // ========================================
 console.log("\n📋 PASSO 1: Recarregar a extensão eProbe");
-console.log("1. Abra uma nova aba no Chrome");
-console.log("2. Digite: chrome://extensions/");
+console.log("1. Abra uma nova aba no Edge");
+console.log("2. Digite: edge://extensions/");
 console.log("3. Encontre a extensão 'eProbe'");
 console.log("4. Clique no ícone de reload (↻) na extensão");
 console.log("5. Aguarde alguns segundos");
@@ -82,7 +82,7 @@ console.log("\n📋 SOLUÇÃO DE PROBLEMAS COMUNS:");
 console.log("");
 console.log("❌ PROBLEMA: 'window.SENT1_AUTO não carregado'");
 console.log("🔧 SOLUÇÕES:");
-console.log("   1. Recarregue a extensão em chrome://extensions/");
+console.log("   1. Recarregue a extensão em edge://extensions/");
 console.log("   2. Feche e abra novamente a aba do eProc");
 console.log("   3. Aguarde 5-10 segundos após carregar a página");
 console.log("   4. Verifique se você está em uma página válida do eProc");

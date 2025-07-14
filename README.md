@@ -1,24 +1,24 @@
-# eProbe - Automação ePROC
+# eProbe - Automação eProc TJSC
 
-Extensão para Chrome que automatiza a detecção, extração e processamento de documentos judiciais no sistema eProc do TJSC.
+Extensão do Chrome que automatiza a detecção, extração e processamento de documentos judiciais no sistema eProc do TJSC.
 
 **🌐 Landing Page**: https://e-probe.vercel.app/
 
-## 🎯 Funcionalidades
+## 🎯 Funcionalidades Principais
 
 -   **Detecção automática**: Identifica documentos SENT1 e INIC1 nas páginas do eProc
--   **Extração de texto**: Extrai conteúdo de sentenças e petições automaticamente
--   **Cópia inteligente**: Copia texto com formatação adequada para análise por IA
--   **Interface moderna**: Botões integrados à interface do eProc
--   **Segurança**: Não coleta dados pessoais, processamento 100% local
+-   **Extração de texto**: Extrai conteúdo de sentenças e petições (HTML e PDF)
+-   **Organização inteligente**: Separadores personalizáveis para localizadores
+-   **IA opcional**: Integração com Perplexity para resumos automáticos
+-   **Sistema de temas**: Interface personalizable integrada ao eProc
+-   **Cache inteligente**: Evita requisições desnecessárias ao sistema
+-   **Privacidade**: Processamento local prioritário, conformidade com LGPD
 
-## 🔧 Instalação
+## � Disponibilidade
 
-### Via Chrome Web Store (Recomendado)
+### Chrome Web Store (Oficial)
 
-1. Acesse a Chrome Web Store
-2. Pesquise por "eProbe"
-3. Clique em "Adicionar ao Chrome"
+🔄 **Em revisão** - Em breve disponível na loja oficial do Chrome
 
 ### Instalação Manual (Desenvolvimento)
 
@@ -35,8 +35,29 @@ Extensão para Chrome que automatiza a detecção, extração e processamento de
 3. **Aguarde** a extensão processar automaticamente:
     - Detectar documentos disponíveis
     - Extrair texto do documento
-    - Copiar para área de transferência
-4. **Cole** o texto em ChatGPT, Claude ou outra IA para gerar resumo
+    - Opcionalmente gerar resumo via IA
+4. **Use** o texto extraído para análise processual
+
+## 🛡️ Privacidade e Segurança
+
+### ✅ Conformidade Total
+
+-   **Chrome Web Store**: Todas as políticas seguidas rigorosamente
+-   **LGPD**: Conformidade com Lei Geral de Proteção de Dados
+-   **Manifest V3**: Tecnologia mais segura e moderna
+
+### 🔒 Proteção de Dados
+
+-   **Processamento local**: Dados permanecem no seu dispositivo
+-   **API opcional**: Perplexity usada apenas com consentimento explícito
+-   **Sem coleta desnecessária**: Apenas dados necessários para funcionalidade
+-   **Controle total**: Usuário decide quando e como usar cada recurso
+
+### 📋 Transparência
+
+-   **Código aberto**: Todo o funcionamento é auditável
+-   **Política clara**: Disponível em `PRIVACY_POLICY.md`
+-   **Documentação completa**: Análise de conformidade em `CHROME_STORE_COMPLIANCE_REPORT.md`
 
 ## 🎨 Demonstração
 
@@ -56,7 +77,7 @@ A demonstração inclui:
 
 ## 📋 Requisitos
 
--   Google Chrome 88+
+-   Microsoft Edge 88+
 -   Acesso ao sistema eProc do TJSC
 -   Permissões para:
     -   Acessar páginas do eProc
