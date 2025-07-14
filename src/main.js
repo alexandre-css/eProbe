@@ -3,6 +3,46 @@
 (async function () {
     "use strict";
 
+    // ===== CORREÇÃO GLOBAL PARA EVENT LISTENERS PASSIVOS =====
+    // Aplicar no início para prevenir violações de performance
+    (function corrigirEventListenersGlobalmente() {
+        const originalAddEventListener = EventTarget.prototype.addEventListener;
+
+        EventTarget.prototype.addEventListener = function (
+            type,
+            listener,
+            options
+        ) {
+            const passiveEvents = [
+                "scroll",
+                "wheel",
+                "touchstart",
+                "touchmove",
+                "touchend",
+                "mouseenter",
+                "mouseleave",
+                "mouseover",
+                "mouseout",
+                "mousedown",
+                "mouseup",
+            ];
+
+            if (passiveEvents.includes(type)) {
+                if (typeof options === "boolean") {
+                    options = { capture: options, passive: true };
+                } else if (typeof options === "object" && options !== null) {
+                    options.passive = true;
+                } else {
+                    options = { passive: true };
+                }
+            }
+
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+
+        console.log("✅ PERFORMANCE: Event listeners automaticamente passivos");
+    })();
+
     // 🔧 AGUARDAR APIS DE EXTENSÃO (CORREÇÃO PARA EDGE)
     function aguardarAPIsExtensao() {
         return new Promise((resolve) => {
@@ -44,6 +84,11 @@
     // Aguardar APIs antes de continuar
     await aguardarAPIsExtensao();
     console.log("🚀 INIT: Iniciando eProbe após APIs ficarem prontas...");
+
+    // 🌐 VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO - DECLARADAS NO TOPO
+    var TipoJulgamentoProcessoPautado = null;
+    var StatusJulgamento = null;
+    var DataSessao = null;
 
     // Armazenar a data da sessão quando detectada
     let dataSessaoPautado = null;
@@ -1984,7 +2029,7 @@
  </div>
  <div style="display:flex;align-items:center;gap:8px;">
  <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1em;height:1em;color:#e57373;"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
- <span style="color:var(--color-text-main);">Baixar PDF e usar ChatGPT com upload</span>
+ <span style="color:var(--color-text-main);">Baixar PDF e usar Perplexity com upload</span>
  </div>
  </div>
  <div style="display:flex;gap:12px;justify-content:flex-end;">
@@ -2031,7 +2076,7 @@
                     "PDF detectado!\n\n" +
                         "Para processar este documento:\n" +
                         "1. Clique com botão direito → 'Salvar como'\n" +
-                        "2. Abra ChatGPT, Claude ou Gemini\n" +
+                        "2. Abra Perplexity, Claude ou Gemini\n" +
                         "3. Faça upload do arquivo PDF\n" +
                         "4. Solicite um resumo do documento\n\n" +
                         "Esta é a forma mais confiável para PDFs!",
@@ -2049,7 +2094,7 @@
                     " PDF detectado mas elemento não acessível!\n\n" +
                         "Solução:\n" +
                         "1. Baixe o PDF manualmente\n" +
-                        "2. Use ChatGPT/Claude com upload do arquivo\n\n" +
+                        "2. Use Perplexity/Claude com upload do arquivo\n\n" +
                         " Limitação técnica do navegador.",
                     "warning"
                 );
@@ -2098,7 +2143,7 @@
                     "Possível PDF detectado!\n\n" +
                         "Se este é um documento PDF:\n" +
                         "1. Recarregue a página e tente novamente\n" +
-                        "2. Ou baixe o PDF e use ChatGPT com upload\n\n" +
+                        "2. Ou baixe o PDF e use Perplexity com upload\n\n" +
                         "Se for HTML: verifique se o documento carregou completamente",
                     "warning"
                 );
@@ -2394,7 +2439,7 @@
             .trim();
     }
 
-    // Copiar texto para clipboard com prefixo do ChatGPT
+    // Copiar texto para clipboard com prefixo para IA
     async function copyToClipboardWithPrefix(texto) {
         try {
             const prefixo = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
@@ -2517,7 +2562,7 @@ DOCUMENTO:
                 ` Texto copiado com prefixo (${textoCompleto.length} caracteres)`
             );
             showNotification(
-                ` Texto copiado com prefixo!\n${textoCompleto.length} caracteres prontos para o ChatGPT`,
+                ` Texto copiado com prefixo!\n${textoCompleto.length} caracteres prontos para IA`,
                 "success"
             );
             return true;
@@ -2529,7 +2574,7 @@ DOCUMENTO:
     }
 
     // Enviar texto diretamente para Perplexity usando API
-    async function sendToChatGPT(texto) {
+    async function sendToPerplexity(texto) {
         const requestId = Date.now().toString();
 
         try {
@@ -2741,50 +2786,15 @@ ${texto}`;
         log(" Executando fallback para método manual");
         const copied = await copyToClipboardWithPrefix(texto);
         if (copied) {
-            setTimeout(() => {
-                autoOpenChatGPT();
-                showNotification(
-                    " Texto copiado! Cole no ChatGPT (Ctrl+V)",
-                    "info"
-                );
-            }, 500);
+            showNotification(
+                " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)",
+                "info"
+            );
         } else {
             log(" Falha ao copiar texto no fallback");
             showNotification(" Falha ao copiar texto", "error");
         }
         return false;
-    }
-
-    // Fallback: Abrir ChatGPT manualmente com clipboard
-    function autoOpenChatGPT() {
-        log(" Abrindo ChatGPT...");
-        showNotification("Abrindo ChatGPT...", "info");
-
-        try {
-            const url = "https://chatgpt.com/";
-            const chatWindow = window.open(url, "_blank");
-
-            if (chatWindow) {
-                log(" ChatGPT aberto com sucesso");
-                setTimeout(() => {
-                    try {
-                        chatWindow.focus();
-                        log(" ChatGPT focado");
-                    } catch (e) {
-                        log(" Não foi possível focar na janela:", e);
-                    }
-                }, 1000);
-            } else {
-                log(" Falha ao abrir ChatGPT - popup bloqueado?");
-                showNotification(
-                    " Não foi possível abrir ChatGPT. Verifique se popups estão bloqueados.",
-                    "error"
-                );
-            }
-        } catch (error) {
-            log(" Erro ao abrir ChatGPT:", error);
-            showNotification(" Erro ao abrir ChatGPT", "error");
-        }
     }
 
     // Gerenciar chave API
@@ -3024,7 +3034,7 @@ ${texto}`;
                     menu.remove();
                     const texto = await autoExtractText();
                     if (texto) {
-                        await sendToChatGPT(texto);
+                        await sendToPerplexity(texto);
                     }
                 }
             );
@@ -3046,14 +3056,11 @@ ${texto}`;
                                 texto
                             );
                             if (copied) {
-                                log(" Texto copiado, abrindo ChatGPT...");
-                                setTimeout(() => {
-                                    autoOpenChatGPT();
-                                    showNotification(
-                                        " Texto copiado! Cole no ChatGPT (Ctrl+V)",
-                                        "success"
-                                    );
-                                }, 500);
+                                log(" Texto copiado para uso em IA...");
+                                showNotification(
+                                    " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)",
+                                    "success"
+                                );
                             } else {
                                 log(
                                     " Falha ao copiar texto no método manual direto"
@@ -3171,7 +3178,7 @@ ${texto}`;
                         menu.remove();
                         const texto = await autoExtractText();
                         if (texto) {
-                            await sendToChatGPT(texto);
+                            await sendToPerplexity(texto);
                         }
                     }
                 );
@@ -3193,14 +3200,11 @@ ${texto}`;
                                     texto
                                 );
                                 if (copied) {
-                                    log(" Texto copiado, abrindo ChatGPT...");
-                                    setTimeout(() => {
-                                        autoOpenChatGPT();
-                                        showNotification(
-                                            " Texto copiado! Cole no ChatGPT (Ctrl+V)",
-                                            "success"
-                                        );
-                                    }, 500);
+                                    log(" Texto copiado para uso em IA...");
+                                    showNotification(
+                                        " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)",
+                                        "success"
+                                    );
                                 } else {
                                     log(
                                         " Falha ao copiar texto no método manual direto"
@@ -3541,7 +3545,7 @@ ${texto}`;
             } else if (pageType === "documento_especifico") {
                 const texto = await autoExtractText();
                 if (texto) {
-                    const apiSent = await sendToChatGPT(texto);
+                    const apiSent = await sendToPerplexity(texto);
 
                     if (!apiSent) {
                         log(
@@ -3554,13 +3558,10 @@ ${texto}`;
 
                         const copied = await copyToClipboardWithPrefix(texto);
                         if (copied) {
-                            setTimeout(() => {
-                                autoOpenChatGPT();
-                                showNotification(
-                                    " Texto copiado! Cole no ChatGPT (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
-                                    "success"
-                                );
-                            }, 2000);
+                            showNotification(
+                                " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
+                                "success"
+                            );
                         }
                     }
                 }
@@ -5397,7 +5398,7 @@ ${texto}`;
  <li>Ou aguarde a renovação dos créditos</li>
  </ol>
  
- <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar no ChatGPT web.</p>
+ <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar em Perplexity web.</p>
  </div>
 
  <div style="text-align: center;">
@@ -5835,10 +5836,13 @@ ${texto}`;
     // Observador de mudanças na página para detectar navegação SPA
     function setupPageObserver() {
         let lastUrl = window.location.href;
+        let lastButtonCheck = 0;
+        const BUTTON_CHECK_COOLDOWN = 2000; // 2 segundos de cooldown
 
         // Observar mudanças no DOM
         const observer = new MutationObserver((mutations) => {
             const currentUrl = window.location.href;
+            const now = Date.now();
 
             // Verificar se a URL mudou (navegação SPA)
             if (currentUrl !== lastUrl) {
@@ -5853,31 +5857,26 @@ ${texto}`;
                     ) {
                         console.log(" Recriando botão após navegação...");
                         createAutomationButton();
-                    } else if (!isValidPageForButton()) {
-                        console.log(" Nova página não é válida para o botão");
                     }
                 }, 1500);
             }
 
-            // Verificar se o botão ainda existe no DOM
-            const buttonExists = document.getElementById("sent1-auto-button");
-            if (!buttonExists) {
-                // Verificar se a página é válida antes de recriar o botão
-                if (isValidPageForButton()) {
+            // Verificar se o botão ainda existe no DOM com cooldown
+            if (now - lastButtonCheck > BUTTON_CHECK_COOLDOWN) {
+                const buttonExists =
+                    document.getElementById("sent1-auto-button");
+                if (!buttonExists && isValidPageForButton()) {
                     console.log(" Botão removido do DOM, recriando...");
+                    lastButtonCheck = now;
                     setTimeout(createAutomationButton, 500);
-                } else {
-                    console.log(
-                        " Página não é válida para o botão, não recriando"
-                    );
                 }
             }
         });
 
-        // Configurar observador
+        // Configurar observador com menor frequência
         observer.observe(document.body, {
             childList: true,
-            subtree: true,
+            subtree: false, // Mudado para false para reduzir overhead
             attributes: false,
         });
 
@@ -6230,8 +6229,7 @@ ${texto}`;
         autoOpenDocumentoRelevante,
         autoExtractText,
         copyToClipboard,
-        sendToChatGPT,
-        autoOpenChatGPT,
+        sendToPerplexity,
         detectPageType,
         isValidPageForButton,
         findDocumentosRelevantes,
@@ -6303,10 +6301,31 @@ ${texto}`;
     window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
     // 🔍 FUNÇÕES DE DEBUG PARA STATUS
     window.SENT1_AUTO.debugDeteccaoStatusSessao = detectarStatusSessao;
+    window.SENT1_AUTO.debugPadraoRetirado = debugPadraoRetirado;
+    window.SENT1_AUTO.debugStatusCompleto = debugStatusCompleto;
+    window.SENT1_AUTO.forcarAtualizacaoStatus = forcarAtualizacaoStatus;
+    window.SENT1_AUTO.testarCasoRetirado = testarCasoRetirado;
     window.SENT1_AUTO.debugStatusSessao = showStatusSessaoInfo;
     window.SENT1_AUTO.testarSistemaStatusSessao = testarSistemaStatusSessao;
     window.SENT1_AUTO.debugPadroesStatusSessao = debugPadroesStatusSessao;
     window.SENT1_AUTO.forcarStatusSessao = forcarStatusSessao;
+    window.SENT1_AUTO.encontrarTextoRetirado = encontrarTextoRetirado;
+    window.SENT1_AUTO.forcarDeteccaoCompleta = forcarDeteccaoCompleta;
+
+    // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
+    window.SENT1_AUTO.getTipoJulgamentoProcessoPautado =
+        getTipoJulgamentoProcessoPautado;
+    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado =
+        setTipoJulgamentoProcessoPautado;
+    window.SENT1_AUTO.getStatusJulgamento = getStatusJulgamento;
+    window.SENT1_AUTO.setStatusJulgamento = setStatusJulgamento;
+    window.SENT1_AUTO.getDataSessao = getDataSessao;
+    window.SENT1_AUTO.setDataSessao = setDataSessao;
+    window.SENT1_AUTO.resetDadosGlobaisSessao = resetDadosGlobaisSessao;
+    window.SENT1_AUTO.showDadosGlobaisSessao = showDadosGlobaisSessao;
+    window.SENT1_AUTO.examinarEstruturaHTMLDados = examinarEstruturaHTMLDados;
+    window.SENT1_AUTO.buscarPadroesEspecificosImagens =
+        buscarPadroesEspecificosImagens;
 
     // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
     // Estrutura preparada para futuras funcionalidades da página de localizadores
@@ -6564,8 +6583,377 @@ ${texto}`;
     }
 
     // ========================================
-    // FUNÇÕES DE DETECÇÃO DE STATUS DE SESSÃO
+    // VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO
     // ========================================
+
+    // ========================================
+    // FUNÇÕES DE ANÁLISE DE ESTRUTURA HTML
+    // ========================================
+
+    /**
+     * 🔍 FUNÇÃO PARA EXAMINAR ESTRUTURA HTML DOS DADOS
+     * Analisa a estrutura específica dos dados de minutas conforme aparece no DOM
+     */
+    function examinarEstruturaHTMLDados() {
+        console.log("🔍 EXAME: Analisando estrutura HTML dos dados de minutas");
+
+        // 1. Procurar por elementos com padrão imgMinutas_
+        const elementosImgMinutas = document.querySelectorAll(
+            '[id*="imgMinutas_"]'
+        );
+        console.log(
+            `📊 EXAME: Encontrados ${elementosImgMinutas.length} elementos imgMinutas_`
+        );
+
+        elementosImgMinutas.forEach((img, index) => {
+            console.log(`📷 IMG ${index + 1}:`, {
+                id: img.id,
+                src: img.src,
+                style: img.getAttribute("style"),
+                parent: img.parentElement?.tagName,
+                parentId: img.parentElement?.id,
+            });
+        });
+
+        // 2. Procurar por elementos com padrão carregandoMinutas_
+        const elementosCarregando = document.querySelectorAll(
+            '[id*="carregandoMinutas_"]'
+        );
+        console.log(
+            `⏳ EXAME: Encontrados ${elementosCarregando.length} elementos carregandoMinutas_`
+        );
+
+        elementosCarregando.forEach((elem, index) => {
+            console.log(`⏳ CARREGANDO ${index + 1}:`, {
+                id: elem.id,
+                tagName: elem.tagName,
+                innerHTML: elem.innerHTML.substring(0, 200) + "...",
+                style: elem.getAttribute("style"),
+            });
+        });
+
+        // 3. Procurar por elementos relacionados a minutas
+        const elementosMinutas = document.querySelectorAll(
+            '[id*="Minutas"], [class*="minutas"]'
+        );
+        console.log(
+            `📋 EXAME: Encontrados ${elementosMinutas.length} elementos relacionados a minutas`
+        );
+
+        elementosMinutas.forEach((elem, index) => {
+            console.log(`📋 MINUTAS ${index + 1}:`, {
+                id: elem.id,
+                className: elem.className,
+                tagName: elem.tagName,
+                textContent: elem.textContent?.substring(0, 100) + "...",
+            });
+        });
+
+        // 4. Procurar especificamente pelo fieldset #fldMinutas
+        const fieldsetMinutas = document.getElementById("fldMinutas");
+        if (fieldsetMinutas) {
+            console.log("📁 FIELDSET #fldMinutas encontrado:");
+            console.log(
+                "   innerHTML:",
+                fieldsetMinutas.innerHTML.substring(0, 500) + "..."
+            );
+            console.log(
+                "   textContent:",
+                fieldsetMinutas.textContent?.substring(0, 200) + "..."
+            );
+
+            // Analisar filhos diretos
+            const filhosDirectos = Array.from(fieldsetMinutas.children);
+            console.log(`👶 FILHOS DIRETOS (${filhosDirectos.length}):`);
+            filhosDirectos.forEach((filho, index) => {
+                console.log(
+                    `   ${index + 1}. ${filho.tagName}#${
+                        filho.id || "sem-id"
+                    }.${filho.className || "sem-classe"}`
+                );
+            });
+        } else {
+            console.log("❌ FIELDSET #fldMinutas NÃO encontrado");
+        }
+
+        // 5. Procurar por URLs com padrão /emf2wls/image/
+        const elementosEmf2wls = document.querySelectorAll(
+            '[src*="/emf2wls/image/"], [href*="/emf2wls/image/"]'
+        );
+        console.log(
+            `🖼️ EXAME: Encontrados ${elementosEmf2wls.length} elementos com /emf2wls/image/`
+        );
+
+        elementosEmf2wls.forEach((elem, index) => {
+            console.log(`🖼️ EMF2WLS ${index + 1}:`, {
+                tagName: elem.tagName,
+                src: elem.src || elem.href,
+                id: elem.id,
+                parentId: elem.parentElement?.id,
+            });
+        });
+
+        // 6. Verificar se há textos que contêm padrões de data e status
+        const textoCompleto = document.body.innerText;
+        const padroesRelevantes = [
+            /Incluído em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
+            /Julgado em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
+            /Retirado em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
+        ];
+
+        console.log(
+            "🎯 EXAME: Procurando padrões de status no texto da página:"
+        );
+        padroesRelevantes.forEach((padrao, index) => {
+            const matches = textoCompleto.match(padrao);
+            if (matches) {
+                console.log(
+                    `   Padrão ${index + 1}: ${matches.length} ocorrências`
+                );
+                matches.slice(0, 3).forEach((match, i) => {
+                    console.log(`      ${i + 1}. "${match}"`);
+                });
+            }
+        });
+
+        return {
+            imgMinutas: elementosImgMinutas.length,
+            carregandoMinutas: elementosCarregando.length,
+            elementosMinutas: elementosMinutas.length,
+            fieldsetMinutas: !!fieldsetMinutas,
+            emf2wlsElements: elementosEmf2wls.length,
+        };
+    }
+
+    /**
+     * 🕵️ FUNÇÃO PARA BUSCAR PADRÕES ESPECÍFICOS DAS IMAGENS
+     * Procura especificamente pelos elementos e padrões mostrados nas capturas de tela
+     */
+    function buscarPadroesEspecificosImagens() {
+        console.log(
+            "🕵️ BUSCA: Procurando padrões específicos das imagens fornecidas"
+        );
+
+        // 1. Buscar elementos com IDs numéricos longos (como nas imagens)
+        const elementosComIDsNumericos = document.querySelectorAll(
+            '[id*="32175467189847165351355856"], [id*="3217424566125742584153747693"]'
+        );
+        console.log(
+            `🔢 BUSCA: Encontrados ${elementosComIDsNumericos.length} elementos com IDs numéricos longos`
+        );
+
+        elementosComIDsNumericos.forEach((elem, index) => {
+            console.log(`🔢 ELEMENTO ${index + 1}:`, {
+                id: elem.id,
+                tagName: elem.tagName,
+                src: elem.src || "N/A",
+                parentId: elem.parentElement?.id,
+                nextSibling:
+                    elem.nextSibling?.textContent?.substring(0, 50) || "N/A",
+            });
+        });
+
+        // 2. Buscar especificamente imagens com src="/emf2wls/image/gif"
+        const imagensEmf2wls = document.querySelectorAll(
+            'img[src*="/emf2wls/image/gif"]'
+        );
+        console.log(
+            `🖼️ BUSCA: Encontradas ${imagensEmf2wls.length} imagens emf2wls/gif`
+        );
+
+        imagensEmf2wls.forEach((img, index) => {
+            console.log(`🖼️ IMAGEM ${index + 1}:`, {
+                id: img.id,
+                src: img.src,
+                style: img.getAttribute("style"),
+                width: img.style.width,
+                height: img.style.height,
+                opacity: img.style.opacity,
+                contextoPai:
+                    img.parentElement?.innerHTML?.substring(0, 100) + "...",
+            });
+
+            // Verificar se há texto próximo que contenha informações de sessão
+            const elementoPai = img.parentElement;
+            if (elementoPai) {
+                const textoContexto = elementoPai.textContent || "";
+                const padroesRelevantes = [
+                    /Mérito.*Retirado.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
+                    /Mérito.*Incluído.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
+                    /Mérito.*Julgado.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
+                ];
+
+                padroesRelevantes.forEach((padrao, pIndex) => {
+                    if (padrao.test(textoContexto)) {
+                        console.log(
+                            `   ✅ Padrão ${
+                                pIndex + 1
+                            } encontrado no contexto:`,
+                            textoContexto.match(padrao)[0]
+                        );
+                    }
+                });
+            }
+        });
+
+        // 3. Buscar elementos com onclick contendo "harliamentorHTML"
+        const elementosComHarliament = document.querySelectorAll(
+            '[onclick*="harliamentorHTML"]'
+        );
+        console.log(
+            `🏛️ BUSCA: Encontrados ${elementosComHarliament.length} elementos com harliamentorHTML`
+        );
+
+        elementosComHarliament.forEach((elem, index) => {
+            console.log(`🏛️ HARLIAMENT ${index + 1}:`, {
+                tagName: elem.tagName,
+                onclick: elem.getAttribute("onclick"),
+                id: elem.id,
+                textContent: elem.textContent?.substring(0, 100) + "...",
+            });
+        });
+
+        // 4. Buscar especificamente pelo padrão "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)"
+        const textoCompleto = document.body.innerText;
+        const padraoEspecifico =
+            /Mérito\s*\(Retirado\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchesEspecificos = textoCompleto.match(padraoEspecifico);
+
+        console.log(
+            "🎯 BUSCA: Procurando padrão específico 'Mérito (Retirado em Pauta em...':"
+        );
+        if (matchesEspecificos) {
+            console.log(
+                `   ✅ Encontradas ${matchesEspecificos.length} ocorrências:`
+            );
+            matchesEspecificos.forEach((match, index) => {
+                console.log(`      ${index + 1}. "${match}"`);
+            });
+        } else {
+            console.log("   ❌ Padrão específico não encontrado");
+        }
+
+        // 5. Buscar por todos os elementos que contêm texto relacionado a datas de sessão
+        const elementosComDatasSessao = [];
+        document.querySelectorAll("*").forEach((elem) => {
+            const texto = elem.textContent || "";
+            if (
+                /\d{2}\/\d{2}\/\d{4}.*(?:CAMPUB|TJSC)/i.test(texto) &&
+                elem.children.length === 0
+            ) {
+                elementosComDatasSessao.push({
+                    elemento: elem,
+                    texto: texto.trim(),
+                    tagName: elem.tagName,
+                    id: elem.id,
+                    className: elem.className,
+                });
+            }
+        });
+
+        console.log(
+            `📅 BUSCA: Encontrados ${elementosComDatasSessao.length} elementos com datas de sessão:`
+        );
+        elementosComDatasSessao.slice(0, 5).forEach((item, index) => {
+            console.log(
+                `   ${index + 1}. ${item.tagName}#${
+                    item.id
+                }: "${item.texto.substring(0, 80)}..."`
+            );
+        });
+
+        return {
+            elementosIDsNumericos: elementosComIDsNumericos.length,
+            imagensEmf2wls: imagensEmf2wls.length,
+            elementosHarliament: elementosComHarliament.length,
+            padraoEspecificoEncontrado: !!matchesEspecificos,
+            quantidadeMatchesEspecificos: matchesEspecificos?.length || 0,
+            elementosComDatasSessao: elementosComDatasSessao.length,
+        };
+    }
+
+    // ========================================
+    // FUNÇÕES GLOBAIS PARA GERENCIAMENTO DOS DADOS
+    // ========================================
+
+    /**
+     * Função global para obter o tipo de julgamento
+     * @returns {string|null} - Tipo do julgamento (ex: "Mérito", "Embargos de Declaração")
+     */
+    function getTipoJulgamentoProcessoPautado() {
+        return TipoJulgamentoProcessoPautado;
+    }
+
+    /**
+     * Função global para definir o tipo de julgamento
+     * @param {string} tipo - Tipo do julgamento
+     */
+    function setTipoJulgamentoProcessoPautado(tipo) {
+        TipoJulgamentoProcessoPautado = tipo;
+        console.log("📋 TIPO: Tipo de julgamento definido:", tipo);
+    }
+
+    /**
+     * Função global para obter o status do julgamento
+     * @returns {string|null} - Status do julgamento (ex: "Julgado em Pauta", "Retirado em Pauta")
+     */
+    function getStatusJulgamento() {
+        return StatusJulgamento;
+    }
+
+    /**
+     * Função global para definir o status do julgamento
+     * @param {string} status - Status do julgamento
+     */
+    function setStatusJulgamento(status) {
+        StatusJulgamento = status;
+        console.log("📊 STATUS: Status de julgamento definido:", status);
+    }
+
+    /**
+     * Função global para obter a data da sessão
+     * @returns {string|null} - Data da sessão (ex: "10/04/2025")
+     */
+    function getDataSessao() {
+        return DataSessao;
+    }
+
+    /**
+     * Função global para definir a data da sessão
+     * @param {string} data - Data da sessão
+     */
+    function setDataSessao(data) {
+        DataSessao = data;
+        console.log("📅 DATA: Data da sessão definida:", data);
+    }
+
+    /**
+     * Função para resetar todos os dados globais da sessão
+     */
+    function resetDadosGlobaisSessao() {
+        TipoJulgamentoProcessoPautado = null;
+        StatusJulgamento = null;
+        DataSessao = null;
+        console.log(
+            "🔄 RESET: Todos os dados globais da sessão foram resetados"
+        );
+    }
+
+    /**
+     * Função para mostrar todos os dados globais da sessão
+     */
+    function showDadosGlobaisSessao() {
+        console.log("📊 DADOS GLOBAIS DA SESSÃO:");
+        console.log("   Tipo de Julgamento:", TipoJulgamentoProcessoPautado);
+        console.log("   Status do Julgamento:", StatusJulgamento);
+        console.log("   Data da Sessão:", DataSessao);
+
+        return {
+            tipoJulgamento: TipoJulgamentoProcessoPautado,
+            statusJulgamento: StatusJulgamento,
+            dataSessao: DataSessao,
+        };
+    }
 
     /**
      * Detecta o status da sessão baseado nas minutas do processo
@@ -6576,35 +6964,88 @@ ${texto}`;
         console.log("🔍 STATUS: Iniciando detecção do status da sessão");
 
         try {
-            // Buscar todo o texto da página
-            const textoCompleto = document.body.innerText;
+            // 1. Buscar especificamente no fieldset #fldMinutas
+            const fieldsetMinutas = document.getElementById("fldMinutas");
+            let textoCompleto = "";
 
-            // Padrões para detectar diferentes status de sessão
+            if (fieldsetMinutas) {
+                // Buscar em todos os elementos dentro do fieldset
+                const elementosTexto = fieldsetMinutas.querySelectorAll("*");
+                const textosEncontrados = [];
+
+                elementosTexto.forEach((elemento) => {
+                    const texto =
+                        elemento.innerText || elemento.textContent || "";
+                    if (texto.trim()) {
+                        textosEncontrados.push(texto.trim());
+                    }
+                });
+
+                textoCompleto = textosEncontrados.join(" ");
+                console.log("🎯 STATUS: Buscando no fieldset #fldMinutas");
+                console.log(
+                    `📝 Texto completo das minutas (${textoCompleto.length} chars):`,
+                    textoCompleto.substring(0, 300) + "..."
+                );
+
+                // Procurar padrões específicos nos textos encontrados
+                textosEncontrados.forEach((texto, index) => {
+                    if (
+                        /(?:Incluído|Julgado|Retirado)\s+em\s+Pauta/i.test(
+                            texto
+                        )
+                    ) {
+                        console.log(`🎯 TEXTO RELEVANTE ${index + 1}:`, texto);
+                    }
+                });
+            } else {
+                console.log("❌ STATUS: Fieldset #fldMinutas não encontrado");
+                // Fallback para página completa
+                textoCompleto = document.body.innerText;
+                console.log("⚠️ STATUS: Usando página completa como fallback");
+            }
+
+            if (!textoCompleto || textoCompleto.trim() === "") {
+                console.log("❌ STATUS: Nenhum texto encontrado para análise");
+                return null;
+            }
+
+            // Padrões para detectar diferentes status de sessão - REORDENADOS para priorizar "Retirado"
             const padroes = [
                 {
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                    status: "Pautado",
-                    descricao: "Processo Pautado",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                    statusCompleto: "Retirado em Pauta",
+                    descricao: "Processo Retirado de Pauta",
                 },
                 {
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
                     status: "Julgado",
+                    statusCompleto: "Julgado em Pauta",
                     descricao: "Processo Julgado",
                 },
                 {
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                    status: "Retirado",
-                    descricao: "Processo Retirado de Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Pautado",
+                    statusCompleto: "Incluído em Pauta",
+                    descricao: "Processo Pautado",
                 },
             ];
 
-            // Tentar cada padrão
+            // Tentar cada padrão - com logs detalhados
             for (const padrao of padroes) {
+                console.log(`🔍 Testando padrão: ${padrao.status}`);
+
+                // Reset regex lastIndex antes do match
+                padrao.regex.lastIndex = 0;
                 const match = textoCompleto.match(padrao.regex);
+                console.log(`   Match resultado:`, match);
+
                 if (match && match.length > 0) {
                     // Resetar lastIndex para nova busca
                     padrao.regex.lastIndex = 0;
                     const detalhes = padrao.regex.exec(textoCompleto);
+                    console.log(`   Detalhes extraídos:`, detalhes);
 
                     if (detalhes) {
                         const tipoProcesso = detalhes[1]?.trim();
@@ -6620,7 +7061,12 @@ ${texto}`;
                         const dataValidada =
                             validarDataBrasileira(dataEncontrada);
                         if (dataValidada) {
-                            return {
+                            // SALVAR NAS FUNÇÕES GLOBAIS
+                            setTipoJulgamentoProcessoPautado(tipoProcesso);
+                            setStatusJulgamento(padrao.statusCompleto);
+                            setDataSessao(dataEncontrada);
+
+                            const resultado = {
                                 status: padrao.status,
                                 descricao: padrao.descricao,
                                 tipoProcesso: tipoProcesso,
@@ -6628,12 +7074,41 @@ ${texto}`;
                                 orgao: orgao,
                                 textoCompleto: detalhes[0],
                             };
+
+                            console.log(
+                                "🎯 STATUS: Resultado final:",
+                                resultado
+                            );
+                            console.log(
+                                "💾 GLOBAIS: Dados salvos nas funções globais"
+                            );
+                            return resultado;
                         }
                     }
                 }
             }
 
             console.log("❌ STATUS: Nenhum status de sessão detectado");
+
+            // Debug adicional - verificar se há palavras-chave
+            const palavrasChave = ["retirado", "julgado", "incluído"];
+            palavrasChave.forEach((palavra) => {
+                if (new RegExp(palavra, "i").test(textoCompleto)) {
+                    console.log(
+                        `🔍 DEBUG: Palavra "${palavra}" encontrada no texto`
+                    );
+                    const contextos = textoCompleto.match(
+                        new RegExp(`(.{0,30}${palavra}.{0,30})`, "gi")
+                    );
+                    if (contextos) {
+                        console.log(
+                            `📝 Contextos de "${palavra}":`,
+                            contextos.slice(0, 2)
+                        );
+                    }
+                }
+            });
+
             return null;
         } catch (error) {
             console.error("❌ STATUS: Erro na detecção do status:", error);
@@ -6657,7 +7132,7 @@ ${texto}`;
             case "Julgado":
                 return "Processo Julgado";
             case "Retirado":
-                return "Processo Retirado de Pauta";
+                return "Processo retirado de pauta";
             default:
                 return "Processo Pautado";
         }
@@ -6762,6 +7237,125 @@ ${texto}`;
     // ========================================
     // FUNÇÕES DE TESTE E DEBUG PARA STATUS DE SESSÃO
     // ========================================
+
+    // 🧪 FUNÇÃO DE DEBUG COMPLETA PARA VERIFICAR STATUS
+    function debugStatusCompleto() {
+        console.log("🧪 DEBUG STATUS COMPLETO: Verificando detecção de status");
+
+        // 1. Verificar se há data da sessão armazenada
+        console.log("📊 ESTADO ATUAL:");
+        console.log("   Data sessão pautado:", dataSessaoPautado);
+        console.log("   Processo atual:", processoAtual);
+        console.log("   Processo com data:", processoComDataSessao);
+
+        // 2. Executar detecção de status
+        console.log("🔍 EXECUTANDO DETECÇÃO:");
+        const statusDetectado = detectarStatusSessao();
+        console.log("   Status detectado:", statusDetectado);
+
+        // 3. Verificar status armazenado
+        console.log("💾 STATUS ARMAZENADO:");
+        const statusArmazenado = getStatusSessao();
+        console.log("   Status via getStatusSessao():", statusArmazenado);
+
+        // 4. Verificar texto na página
+        const textoCompleto = document.body.innerText;
+        console.log("📝 VERIFICAÇÕES DE TEXTO:");
+
+        // Procurar por diferentes padrões
+        const padroes = [
+            { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
+            { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
+            { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
+        ];
+
+        padroes.forEach((padrao) => {
+            const encontrado = textoCompleto.match(padrao.regex);
+            if (encontrado) {
+                console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
+            } else {
+                console.log(`   ❌ ${padrao.nome}: não encontrado`);
+            }
+        });
+
+        // 5. Testar padrão completo de exemplo
+        const padraoCompleto =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\((?:Incluído|Julgado|Retirado)\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchCompleto = textoCompleto.match(padraoCompleto);
+        console.log("🎯 PADRÃO COMPLETO:", matchCompleto);
+
+        // 6. Simular chamada da interface
+        console.log("🎨 SIMULAÇÃO INTERFACE:");
+        const textoCard = obterTextoCardPorStatus(statusArmazenado);
+        const corCard = obterCorCardPorStatus(statusArmazenado);
+        console.log(`   Texto do card: "${textoCard}"`);
+        console.log(`   Cor do card: ${corCard}`);
+
+        return {
+            statusDetectado,
+            statusArmazenado,
+            textoCard,
+            corCard,
+            temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
+        };
+    }
+
+    // 🧪 FUNÇÃO DE DEBUG ESPECÍFICA PARA TESTAR PADRÃO "RETIRADO"
+    function debugPadraoRetirado() {
+        console.log(
+            "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
+        );
+
+        // Texto de exemplo fornecido pelo usuário
+        const textoTeste = "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de teste: "${textoTeste}"`);
+
+        // Testar o padrão regex específico
+        const padraoRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoTeste.match(padraoRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            // Resetar lastIndex para nova busca
+            padraoRetirado.lastIndex = 0;
+            const detalhes = padraoRetirado.exec(textoTeste);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                console.log("✅ SUCESSO:");
+                console.log(`   Tipo: ${detalhes[1]?.trim()}`);
+                console.log(`   Data: ${detalhes[2]}`);
+                console.log(`   Órgão: ${detalhes[3]}`);
+                console.log(`   Texto completo: ${detalhes[0]}`);
+            }
+        } else {
+            console.log("❌ FALHA: Padrão não encontrou match");
+        }
+
+        // Testar também com o texto completo da página atual
+        const textoCompleto = document.body.innerText;
+        console.log("🔍 Testando na página atual...");
+
+        const matchPagina = textoCompleto.match(padraoRetirado);
+        if (matchPagina) {
+            console.log("✅ Encontrado na página:", matchPagina);
+        } else {
+            console.log("❌ Não encontrado na página atual");
+        }
+
+        // Procurar por qualquer texto similar
+        const buscaRetirado = /retirado\s+em\s+pauta/i;
+        const encontrouRetirado = textoCompleto.match(buscaRetirado);
+        if (encontrouRetirado) {
+            console.log("🔍 Texto 'retirado em pauta' encontrado na página");
+        } else {
+            console.log(
+                "❌ Texto 'retirado em pauta' NÃO encontrado na página"
+            );
+        }
+    }
 
     /**
      * Testa o sistema completo de detecção de status de sessão
@@ -7032,6 +7626,404 @@ ${texto}`;
             console.error("❌ FORÇA: Erro ao forçar status:", error);
             return null;
         }
+    }
+
+    /**
+     * Força uma nova detecção de status e atualização do card
+     */
+    function forcarAtualizacaoStatus() {
+        console.log("🔄 FORÇA: Forçando atualização do status da sessão");
+
+        try {
+            // 1. Re-detectar status
+            const novoStatus = detectarStatusSessao();
+            console.log("🔍 Novo status detectado:", novoStatus);
+
+            // 2. Atualizar dados se há sessão
+            if (hasDataSessaoPautado() && novoStatus) {
+                dataSessaoPautado.statusSessao = novoStatus;
+                console.log("✅ Status atualizado nos dados da sessão");
+            }
+
+            // 3. Forçar atualização da interface
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                console.log("🗑️ Removendo card existente");
+                cardExistente.remove();
+            }
+
+            // 4. Re-inserir com novo status
+            setTimeout(() => {
+                const sucesso = inserirDataSessaoNaInterface();
+                if (sucesso) {
+                    console.log("✅ Card atualizado com novo status");
+                } else {
+                    console.log("❌ Falha ao re-inserir card");
+                }
+            }, 100);
+
+            return novoStatus;
+        } catch (error) {
+            console.error("❌ Erro ao forçar atualização de status:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Testa especificamente o caso "Retirado em Pauta"
+     */
+    function testarCasoRetirado() {
+        console.log("🧪 TESTE: Testando caso específico 'Retirado em Pauta'");
+
+        // Texto de exemplo do usuário
+        const textoExemplo =
+            "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de exemplo: "${textoExemplo}"`);
+
+        // Testar regex específico
+        const regexRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoExemplo.match(regexRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            regexRetirado.lastIndex = 0;
+            const detalhes = regexRetirado.exec(textoExemplo);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                const resultado = {
+                    tipo: detalhes[1]?.trim(),
+                    data: detalhes[2],
+                    orgao: detalhes[3],
+                    status: "Retirado",
+                    descricao: "Processo Retirado de Pauta",
+                };
+
+                console.log("✅ RESULTADO:", resultado);
+
+                // Testar cores e textos
+                const textoCard = obterTextoCardPorStatus({
+                    status: "Retirado",
+                });
+                const corCard = obterCorCardPorStatus({ status: "Retirado" });
+
+                console.log(`🎨 Texto do card: "${textoCard}"`);
+                console.log(`🎨 Cor do card: ${corCard}`);
+
+                return resultado;
+            }
+        } else {
+            console.log("❌ FALHA: Regex não funcionou com o texto de exemplo");
+        }
+
+        // Buscar na seção específica das minutas
+        console.log("🔍 Procurando na seção de minutas...");
+        const minutasElement = document.getElementById("fldMinutas");
+        if (minutasElement) {
+            const textoMinutas =
+                minutasElement.innerText || minutasElement.textContent || "";
+            console.log(
+                `📝 Texto das minutas encontrado (${textoMinutas.length} chars):`,
+                textoMinutas.substring(0, 200) + "..."
+            );
+
+            const matchMinutas = textoMinutas.match(regexRetirado);
+            if (matchMinutas) {
+                console.log(
+                    "✅ Padrão 'Retirado' encontrado nas minutas:",
+                    matchMinutas
+                );
+
+                // Simular detecção correta
+                regexRetirado.lastIndex = 0;
+                const detalhesMinutas = regexRetirado.exec(textoMinutas);
+                if (detalhesMinutas) {
+                    const resultadoMinutas = {
+                        tipo: detalhesMinutas[1]?.trim(),
+                        data: detalhesMinutas[2],
+                        orgao: detalhesMinutas[3],
+                        status: "Retirado",
+                        descricao: "Processo Retirado de Pauta",
+                    };
+                    console.log("✅ RESULTADO DAS MINUTAS:", resultadoMinutas);
+                    return resultadoMinutas;
+                }
+            } else {
+                console.log("❌ Padrão 'Retirado' não encontrado nas minutas");
+
+                // Verificar padrões mais simples
+                if (/retirado/i.test(textoMinutas)) {
+                    console.log("⚠️ Palavra 'retirado' encontrada nas minutas");
+                    console.log(
+                        "📝 Contexto:",
+                        textoMinutas.match(/(.{0,50}retirado.{0,50})/gi)
+                    );
+                }
+            }
+        } else {
+            console.log("❌ Elemento #fldMinutas não encontrado");
+        }
+
+        // Verificar em toda a página como fallback
+        console.log("🔍 Testando na página completa...");
+        const textoCompleto = document.body.innerText;
+        const matchPagina = textoCompleto.match(regexRetirado);
+
+        if (matchPagina) {
+            console.log("✅ Encontrado padrão 'Retirado' na página");
+        } else {
+            console.log("❌ Padrão 'Retirado' não encontrado na página");
+
+            // Verificar se há pelo menos a palavra "retirado"
+            if (/retirado/i.test(textoCompleto)) {
+                console.log(
+                    "⚠️ Palavra 'retirado' encontrada, mas não no padrão esperado"
+                );
+                const contextosRetirado = textoCompleto.match(
+                    /(.{0,80}retirado.{0,80})/gi
+                );
+                if (contextosRetirado) {
+                    console.log(
+                        "📝 Contextos encontrados:",
+                        contextosRetirado.slice(0, 3)
+                    );
+                }
+            } else {
+                console.log("❌ Palavra 'retirado' não encontrada na página");
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Debug completo do status da sessão
+     */
+    function debugStatusCompleto() {
+        console.log("🧪 DEBUG STATUS COMPLETO: Verificando detecção de status");
+
+        // 1. Verificar estado atual
+        console.log("📊 ESTADO ATUAL:");
+        console.log("   Data sessão pautado:", dataSessaoPautado);
+        console.log("   Processo atual:", processoAtual);
+        console.log("   Processo com data:", processoComDataSessao);
+
+        // 2. Executar detecção de status
+        console.log("🔍 EXECUTANDO DETECÇÃO:");
+        const statusDetectado = detectarStatusSessao();
+        console.log("   Status detectado:", statusDetectado);
+
+        // 3. Verificar status armazenado
+        console.log("💾 STATUS ARMAZENADO:");
+        const statusArmazenado = getStatusSessao();
+        console.log("   Status via getStatusSessao():", statusArmazenado);
+
+        // 4. Verificar texto na página
+        const textoCompleto = document.body.innerText;
+        console.log("📝 VERIFICAÇÕES DE TEXTO:");
+
+        // Procurar por diferentes padrões
+        const padroes = [
+            { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
+            { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
+            { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
+        ];
+
+        padroes.forEach((padrao) => {
+            const encontrado = textoCompleto.match(padrao.regex);
+            if (encontrado) {
+                console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
+            } else {
+                console.log(`   ❌ ${padrao.nome}: não encontrado`);
+            }
+        });
+
+        // 5. Simular chamada da interface
+        console.log("🎨 SIMULAÇÃO INTERFACE:");
+        const textoCard = obterTextoCardPorStatus(statusArmazenado);
+        const corCard = obterCorCardPorStatus(statusArmazenado);
+        console.log(`   Texto do card: "${textoCard}"`);
+        console.log(`   Cor do card: ${corCard}`);
+
+        return {
+            statusDetectado,
+            statusArmazenado,
+            textoCard,
+            corCard,
+            temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
+        };
+    }
+
+    /**
+     * Debug do padrão específico "Retirado"
+     */
+    function debugPadraoRetirado() {
+        console.log(
+            "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
+        );
+
+        // Texto de exemplo fornecido pelo usuário
+        const textoTeste = "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de teste: "${textoTeste}"`);
+
+        // Testar o padrão regex específico
+        const padraoRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoTeste.match(padraoRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            // Resetar lastIndex para nova busca
+            padraoRetirado.lastIndex = 0;
+            const detalhes = padraoRetirado.exec(textoTeste);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                console.log("✅ SUCESSO:");
+                console.log(`   Tipo: ${detalhes[1]?.trim()}`);
+                console.log(`   Data: ${detalhes[2]}`);
+                console.log(`   Órgão: ${detalhes[3]}`);
+                console.log(`   Texto completo: ${detalhes[0]}`);
+            }
+        } else {
+            console.log("❌ FALHA: Padrão não encontrou match");
+        }
+
+        // Testar também com o texto completo da página atual
+        const textoCompleto = document.body.innerText;
+        console.log("🔍 Testando na página atual...");
+
+        const matchPagina = textoCompleto.match(padraoRetirado);
+        if (matchPagina) {
+            console.log("✅ Encontrado na página:", matchPagina);
+        } else {
+            console.log("❌ Não encontrado na página atual");
+        }
+
+        // Procurar por qualquer texto similar
+        const buscaRetirado = /retirado\s+em\s+pauta/i;
+        const encontrouRetirado = textoCompleto.match(buscaRetirado);
+        if (encontrouRetirado) {
+            console.log("🔍 Texto 'retirado em pauta' encontrado na página");
+        } else {
+            console.log(
+                "❌ Texto 'retirado em pauta' NÃO encontrado na página"
+            );
+        }
+    }
+
+    /**
+     * Função para procurar texto específico "Retirado em Pauta" em toda a página
+     */
+    function encontrarTextoRetirado() {
+        console.log(
+            "🔍 BUSCA: Procurando texto 'Retirado em Pauta' em toda a página"
+        );
+
+        // 1. Buscar em elementos específicos primeiro
+        const seletores = [
+            "#fldMinutas",
+            "#divInfraAreaProcesso",
+            "#conteudoMinutas",
+            ".infraEventoDescricao",
+            "[id*='minutas']",
+            "[class*='minutas']",
+        ];
+
+        seletores.forEach((seletor) => {
+            const elemento = document.querySelector(seletor);
+            if (elemento) {
+                const texto = elemento.innerText || elemento.textContent || "";
+                if (/retirado\s+em\s+pauta/i.test(texto)) {
+                    console.log(
+                        `✅ ENCONTRADO em ${seletor}:`,
+                        texto.substring(0, 200)
+                    );
+
+                    // Buscar o padrão específico
+                    const regex =
+                        /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+                    const match = texto.match(regex);
+                    if (match) {
+                        console.log(
+                            `🎯 PADRÃO ENCONTRADO em ${seletor}:`,
+                            match
+                        );
+                    }
+                } else {
+                    console.log(`❌ Não encontrado em ${seletor}`);
+                }
+            } else {
+                console.log(`❌ Elemento ${seletor} não existe`);
+            }
+        });
+
+        // 2. Buscar em toda a página
+        const textoCompleto = document.body.innerText;
+        const matches = textoCompleto.match(
+            /(.{0,100}retirado\s+em\s+pauta.{0,100})/gi
+        );
+        if (matches) {
+            console.log("🔍 CONTEXTOS 'Retirado em Pauta' na página:");
+            matches.forEach((match, index) => {
+                console.log(`   ${index + 1}: ${match}`);
+            });
+        } else {
+            console.log(
+                "❌ Texto 'Retirado em Pauta' não encontrado na página"
+            );
+        }
+
+        // 3. Testar regex completo na página
+        const regexCompleto =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchCompleto = textoCompleto.match(regexCompleto);
+        if (matchCompleto) {
+            console.log("✅ REGEX COMPLETO funcionou:", matchCompleto);
+        } else {
+            console.log("❌ REGEX COMPLETO não encontrou nada");
+        }
+
+        return {
+            encontrouTexto: matches ? true : false,
+            contextos: matches || [],
+            matchRegex: matchCompleto || [],
+        };
+    }
+
+    /**
+     * Força uma re-detecção completa com logging detalhado
+     */
+    function forcarDeteccaoCompleta() {
+        console.log("🔄 FORÇA: Iniciando detecção completa com debug");
+
+        // 1. Procurar texto primeiro
+        encontrarTextoRetirado();
+
+        // 2. Executar detecção normal
+        const statusDetectado = detectarStatusSessao();
+        console.log("🎯 Status detectado:", statusDetectado);
+
+        // 3. Forçar atualização se necessário
+        if (statusDetectado) {
+            // Atualizar dados globais
+            if (hasDataSessaoPautado()) {
+                dataSessaoPautado.statusSessao = statusDetectado;
+                console.log("✅ Dados globais atualizados");
+            }
+
+            // Re-inserir interface
+            forcarAtualizacaoStatus();
+        } else {
+            console.log(
+                "❌ Nenhum status detectado - verifique se a página contém dados de sessão"
+            );
+        }
+
+        return statusDetectado;
     }
 
     // ========================================
@@ -7427,7 +8419,7 @@ ${texto}`;
             " Extração automática não foi possível!\n\n" +
                 "Métodos alternativos:\n" +
                 "1. Selecione o texto manualmente no PDF (Ctrl+A, Ctrl+C)\n" +
-                "2. Baixe o PDF e use ChatGPT/Claude com upload\n" +
+                "2. Baixe o PDF e use Perplexity/Claude com upload\n" +
                 "3. Use ferramenta de conversão PDF para texto\n\n" +
                 " Alguns PDFs têm proteções que impedem extração automática.",
             "warning"
@@ -7566,7 +8558,7 @@ ${texto}`;
             document.body.removeChild(link);
 
             showNotification(
-                "Download iniciado! Use o arquivo com ChatGPT/Claude.",
+                "Download iniciado! Use o arquivo com Perplexity/Claude.",
                 "info"
             );
         } catch (downloadError) {
@@ -8098,6 +9090,19 @@ ${texto}`;
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
+                // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
+                const statusDetectadoFallback = detectarStatusSessao();
+                if (statusDetectadoFallback) {
+                    console.log(
+                        `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
+                    );
+                    dataValidada.statusSessao = statusDetectadoFallback;
+                } else {
+                    console.log(
+                        "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
+                    );
+                }
+
                 dataSessaoPautado = dataValidada;
                 processoComDataSessao = processoAtual;
                 console.log(
@@ -8146,6 +9151,19 @@ ${texto}`;
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
+                // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
+                const statusDetectadoFallback = detectarStatusSessao();
+                if (statusDetectadoFallback) {
+                    console.log(
+                        `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
+                    );
+                    dataValidada.statusSessao = statusDetectadoFallback;
+                } else {
+                    console.log(
+                        "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
+                    );
+                }
+
                 dataSessaoPautado = dataValidada;
                 console.log(
                     `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
@@ -8176,6 +9194,19 @@ ${texto}`;
 
             const dataValidada = validarDataBrasileira(dataEncontrada);
             if (dataValidada) {
+                // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
+                const statusDetectadoFallback = detectarStatusSessao();
+                if (statusDetectadoFallback) {
+                    console.log(
+                        `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
+                    );
+                    dataValidada.statusSessao = statusDetectadoFallback;
+                } else {
+                    console.log(
+                        "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
+                    );
+                }
+
                 dataSessaoPautado = dataValidada;
                 processoComDataSessao = processoAtual;
                 console.log(
@@ -8458,6 +9489,11 @@ Dados obtidos automaticamente pelo eProbe`;
         // Inserir o elemento no container
         targetContainer.appendChild(dataSessaoElement);
 
+        // 🎨 Card Material Design será criado apenas uma vez pela inicialização
+        console.log(
+            "ℹ️ INTERFACE: Card Material Design gerenciado pela inicialização"
+        );
+
         console.log(
             `✅ INSERIR: Data da sessão inserida na interface: ${dataSessaoPautado.dataFormatada}`
         );
@@ -8485,11 +9521,27 @@ Dados obtidos automaticamente pelo eProbe`;
     function atualizarDataSessaoNaInterface() {
         console.log("🔄 ATUALIZAR: Atualizando data da sessão na interface");
 
-        // Remover elemento existente
+        // Verificar se já existe na interface antes de remover
+        const elementoExistente = document.getElementById(
+            "eprobe-data-sessao-pautado"
+        );
+        if (!elementoExistente) {
+            console.log("ℹ️ ATUALIZAR: Elemento não existe, criando novo");
+            return inserirDataSessaoNaInterface();
+        }
+
+        // Remover elemento existente apenas se necessário
         removerDataSessaoDaInterface();
 
         // Inserir elemento atualizado
-        return inserirDataSessaoNaInterface();
+        const resultado = inserirDataSessaoNaInterface();
+
+        // NÃO atualizar card Material Design automaticamente para evitar sobreposição
+        console.log(
+            "ℹ️ ATUALIZAR: Card Material Design mantido para evitar sobreposição"
+        );
+
+        return resultado;
     }
 
     // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
@@ -9543,6 +10595,717 @@ Dados obtidos automaticamente pelo eProbe`;
     }
 })();
 
+// ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
+
+/**
+ * Helper para adicionar event listeners com opção passive quando apropriado
+ * Previne violações de performance no console
+ */
+function addPassiveEventListener(element, event, handler, options = {}) {
+    const passiveEvents = [
+        "scroll",
+        "wheel",
+        "touchstart",
+        "touchmove",
+        "touchend",
+        "mouseenter",
+        "mouseleave",
+        "mousedown",
+        "mouseup",
+        "mouseover",
+        "mouseout",
+    ];
+
+    if (passiveEvents.includes(event)) {
+        options.passive = true;
+    }
+
+    element.addEventListener(event, handler, options);
+}
+
+// ===== CONTROLE DE ESTADO DOS CARDS =====
+
+/**
+ * Estado global para controle dos cards Material Design
+ */
+let materialDesignState = {
+    cardAtivo: null,
+    ultimaDeteccao: null,
+    timeoutAtualizar: null,
+    evitarRecriacaoCard: false,
+};
+
+/**
+ * Verifica se deve recriar o card ou apenas atualizar
+ */
+function deveRecriarCard(novosDados) {
+    if (!materialDesignState.cardAtivo) return true;
+
+    if (!materialDesignState.ultimaDeteccao) return true;
+
+    // Se os dados mudaram significativamente, recriar
+    const dadosAtuais = materialDesignState.ultimaDeteccao;
+    if (dadosAtuais.status !== novosDados.status) return true;
+    if (dadosAtuais.data?.dataFormatada !== novosDados.data?.dataFormatada)
+        return true;
+
+    return false;
+}
+
+/**
+ * Controle inteligente de criação/atualização de cards
+ */
+function gerenciarCardMaterialDesign(dadosSessao) {
+    // Evitar múltiplas atualizações simultâneas
+    if (materialDesignState.evitarRecriacaoCard) {
+        console.log("🔒 MATERIAL: Recriação temporariamente bloqueada");
+        return;
+    }
+
+    materialDesignState.evitarRecriacaoCard = true;
+
+    // Liberar bloqueio após 1 segundo
+    setTimeout(() => {
+        materialDesignState.evitarRecriacaoCard = false;
+    }, 1000);
+
+    if (deveRecriarCard(dadosSessao)) {
+        console.log("🔄 MATERIAL: Dados mudaram, recriando card");
+        atualizarCardMaterialDesign(dadosSessao);
+        materialDesignState.ultimaDeteccao = dadosSessao;
+        materialDesignState.cardAtivo = true;
+    } else {
+        console.log("ℹ️ MATERIAL: Card já atualizado, mantendo estado");
+    }
+}
+
+// ===== FIM DOS HELPERS =====
+
+// =============================================
+// MATERIAL DESIGN - CARD DE DADOS DE SESSÃO
+// =============================================
+
+/**
+ * Obtém a classe CSS correspondente ao status
+ * @param {string} status - Status da sessão
+ * @returns {string} - Classe CSS correspondente
+ */
+function obterClasseStatusPorTipo(status) {
+    const statusLower = (status || "").toLowerCase();
+
+    if (statusLower.includes("pautado") || statusLower.includes("incluído")) {
+        return "status-pautado";
+    } else if (
+        statusLower.includes("julgado") ||
+        statusLower.includes("decidido")
+    ) {
+        return "status-julgado";
+    } else if (
+        statusLower.includes("retirado") ||
+        statusLower.includes("suspenso")
+    ) {
+        return "status-retirado";
+    }
+
+    return "status-neutro";
+}
+
+/**
+ * Obtém o ícone correspondente ao status
+ * @param {string} status - Status da sessão
+ * @returns {string} - HTML do ícone
+ */
+function obterIconePorStatus(status) {
+    const statusLower = (status || "").toLowerCase();
+
+    if (statusLower.includes("pautado") || statusLower.includes("incluído")) {
+        return '<span class="material-icons">schedule</span>';
+    } else if (
+        statusLower.includes("julgado") ||
+        statusLower.includes("decidido")
+    ) {
+        return '<span class="material-icons">gavel</span>';
+    } else if (
+        statusLower.includes("retirado") ||
+        statusLower.includes("suspenso")
+    ) {
+        return '<span class="material-icons">pause_circle</span>';
+    }
+
+    return '<span class="material-icons">info</span>';
+}
+
+/**
+ * Cria um card Material Design SIMPLIFICADO para exibir dados de sessão
+ * VERSÃO MINIMALISTA - Apenas status e data, com ícones Lucide
+ * @param {Object} dadosSessao - Dados da sessão detectada
+ * @returns {HTMLElement} - Elemento do card criado
+ */
+function criarCardMaterialDesign(dadosSessao) {
+    console.log("🎨 MATERIAL: Criando card minimalista para dados de sessão");
+
+    // Container principal do card
+    const card = document.createElement("div");
+    card.id = "eprobe-data-sessao";
+    card.className = "eprobe-material-card-minimal";
+
+    // Determinar status e cor
+    const status = dadosSessao?.status || "Desconhecido";
+    const statusClass = obterClasseStatusPorTipo(status);
+
+    // Determinar ícone baseado no status (CSS icons)
+    let iconeClass = "eprobe-icon-info";
+    if (status.toLowerCase().includes("julgado"))
+        iconeClass = "eprobe-icon-check";
+    else if (status.toLowerCase().includes("pautado"))
+        iconeClass = "eprobe-icon-info";
+    else if (status.toLowerCase().includes("retirado"))
+        iconeClass = "eprobe-icon-alert";
+
+    // HTML simplificado e compacto
+    card.innerHTML = `
+        <div class="eprobe-card-minimal-content">
+            <div class="eprobe-status-row">
+                <span class="eprobe-status-icon ${statusClass} ${iconeClass}"></span>
+                <span class="eprobe-status-text">${status}</span>
+            </div>
+            ${
+                dadosSessao?.data?.dataFormatada
+                    ? `
+                <div class="eprobe-date-row">
+                    <span class="eprobe-date-icon eprobe-icon-calendar"></span>
+                    <span class="eprobe-date-label">Sessão:</span>
+                    <span class="eprobe-date-text">${dadosSessao.data.dataFormatada}</span>
+                </div>
+            `
+                    : ""
+            }
+        </div>
+    `;
+
+    console.log(`✅ MATERIAL: Card minimalista criado com status "${status}"`);
+    return card;
+}
+
+/**
+ * Cria um item de informação para o card
+ * @param {string} label - Rótulo da informação
+ * @param {string} valor - Valor da informação
+ * @param {string} icone - Nome do ícone Material
+ * @returns {HTMLElement} - Elemento do item criado
+ */
+function criarItemInformacao(label, valor, icone) {
+    const item = document.createElement("div");
+    item.className = "eprobe-info-item";
+
+    const iconeEl = document.createElement("span");
+    iconeEl.className = "material-icons eprobe-info-icon";
+    iconeEl.textContent = icone;
+
+    const textoContainer = document.createElement("div");
+    textoContainer.className = "eprobe-info-text";
+
+    const labelEl = document.createElement("div");
+    labelEl.className = "eprobe-info-label";
+    labelEl.textContent = label;
+
+    const valorEl = document.createElement("div");
+    valorEl.className = "eprobe-info-value";
+    valorEl.textContent = valor;
+
+    textoContainer.appendChild(labelEl);
+    textoContainer.appendChild(valorEl);
+
+    item.appendChild(iconeEl);
+    item.appendChild(textoContainer);
+
+    return item;
+}
+
+/**
+ * Atualiza o card existente com novos dados
+ * VERSÃO OTIMIZADA - Evita remoção/recriação desnecessária
+ * @param {Object} dadosSessao - Novos dados da sessão
+ */
+function atualizarCardMaterialDesign(dadosSessao) {
+    const cardExistente = document.getElementById("eprobe-data-sessao");
+
+    if (cardExistente) {
+        console.log(
+            "🔄 MATERIAL: Card existente encontrado, verificando se precisa atualizar"
+        );
+
+        // Verificar se os dados realmente mudaram
+        const statusAtual = cardExistente.querySelector(
+            ".eprobe-status-text"
+        )?.textContent;
+        const dataAtual =
+            cardExistente.querySelector(".eprobe-date-text")?.textContent;
+
+        if (
+            statusAtual === dadosSessao?.status &&
+            dataAtual === dadosSessao?.data?.dataFormatada
+        ) {
+            console.log(
+                "ℹ️ MATERIAL: Card já está atualizado, mantendo estado atual"
+            );
+            materialDesignState.cardAtivo = true;
+            materialDesignState.ultimaDeteccao = dadosSessao;
+            return;
+        }
+
+        console.log(
+            "🔄 MATERIAL: Dados mudaram, atualizando card Material Design"
+        );
+
+        // Remover card antigo apenas se os dados mudaram
+        cardExistente.remove();
+        const novoCard = criarCardMaterialDesign(dadosSessao);
+        inserirCardNaInterface(novoCard);
+
+        materialDesignState.cardAtivo = true;
+        materialDesignState.ultimaDeteccao = dadosSessao;
+    } else {
+        console.log("🆕 MATERIAL: Criando novo card Material Design");
+        const novoCard = criarCardMaterialDesign(dadosSessao);
+        inserirCardNaInterface(novoCard);
+
+        materialDesignState.cardAtivo = true;
+        materialDesignState.ultimaDeteccao = dadosSessao;
+    }
+}
+
+/**
+ * Insere o card na interface ao lado do lblMagistrado na row mt-2
+ * VERSÃO CORRIGIDA - Posicionamento específico conforme solicitado
+ * @param {HTMLElement} card - Elemento do card a ser inserido
+ */
+function inserirCardNaInterface(card) {
+    console.log(
+        "🎯 MATERIAL: Iniciando inserção do card ao lado do lblMagistrado..."
+    );
+
+    // Estratégia 1: POSIÇÃO CORRETA - Ao lado do lblMagistrado na row mt-2
+    const lblMagistrado = document.querySelector("#lblMagistrado");
+    if (lblMagistrado) {
+        // Encontrar a row mt-2 que contém o lblMagistrado
+        const rowMt2 = lblMagistrado.closest(".row.mt-2");
+        if (rowMt2) {
+            // Inserir o card como uma nova coluna na mesma row
+            card.classList.add("col-md-6", "col-lg-4"); // Responsivo
+            rowMt2.appendChild(card);
+            console.log(
+                "✅ MATERIAL: Card inserido na row mt-2 ao lado do lblMagistrado"
+            );
+            return true;
+        }
+
+        // Fallback: inserir após o elemento lblMagistrado
+        lblMagistrado.parentElement.insertBefore(
+            card,
+            lblMagistrado.nextSibling
+        );
+        console.log("✅ MATERIAL: Card inserido após lblMagistrado (fallback)");
+        return true;
+    }
+
+    // Estratégia 2: Procurar por qualquer .row.mt-2 na página
+    const rowMt2 = document.querySelector(".row.mt-2");
+    if (rowMt2) {
+        card.classList.add("col-md-6", "col-lg-4");
+        rowMt2.appendChild(card);
+        console.log("✅ MATERIAL: Card inserido em .row.mt-2 encontrada");
+        return true;
+    }
+
+    // Estratégia 3: Na área do processo
+    const areaProcesso = document.querySelector("#divInfraAreaProcesso");
+    if (areaProcesso) {
+        // Criar uma row para manter o layout Bootstrap
+        const novaRow = document.createElement("div");
+        novaRow.className = "row mt-2";
+        card.classList.add("col-md-6", "col-lg-4");
+        novaRow.appendChild(card);
+        areaProcesso.insertBefore(novaRow, areaProcesso.firstChild);
+        console.log(
+            "✅ MATERIAL: Card inserido em nova row na área do processo"
+        );
+        return true;
+    }
+
+    // Estratégia 4: FALLBACK ABSOLUTO - Posição fixa no topo direito
+    console.log("⚠️ MATERIAL: Usando fallback - posição fixa no topo");
+    card.style.position = "fixed";
+    card.style.top = "80px";
+    card.style.right = "20px";
+    card.style.zIndex = "9999";
+    card.style.maxWidth = "280px";
+    card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+    document.body.appendChild(card);
+    console.log("✅ MATERIAL: Card inserido no body (fallback garantido)");
+    return true;
+}
+
+/**
+ * Remove o card Material Design da interface
+ */
+function removerCardMaterialDesign() {
+    const card = document.getElementById("eprobe-data-sessao");
+    if (card) {
+        card.remove();
+        console.log("🗑️ MATERIAL: Card Material Design removido");
+
+        // Atualizar estado
+        materialDesignState.cardAtivo = false;
+        materialDesignState.ultimaDeteccao = null;
+
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Verifica se o card Material Design está presente na interface
+ * @returns {boolean} - True se o card estiver presente
+ */
+function cardMaterialDesignPresente() {
+    return !!document.getElementById("eprobe-data-sessao");
+}
+
+/**
+ * Função integrada para detectar dados e criar card Material Design
+ * VERSÃO CORRIGIDA FINAL - Usa dados existentes
+ */
+function detectarECriarCardMaterialDesign() {
+    console.log(
+        "🔍 MATERIAL: Iniciando detecção e criação de card Material Design"
+    );
+
+    try {
+        // OPÇÃO 1: Usar dados já processados se disponíveis
+        if (
+            window.SENT1_AUTO &&
+            typeof window.SENT1_AUTO.hasDadosCompletosSessionJulgamento ===
+                "function"
+        ) {
+            if (window.SENT1_AUTO.hasDadosCompletosSessionJulgamento()) {
+                const dadosExistentes =
+                    window.SENT1_AUTO.getDadosCompletosSessionJulgamento();
+                if (dadosExistentes) {
+                    console.log(
+                        "✅ MATERIAL: Usando dados já processados da sessão"
+                    );
+                    atualizarCardMaterialDesign(dadosExistentes);
+                    return dadosExistentes;
+                }
+            }
+        }
+
+        // OPÇÃO 2: Tentar detectar novos dados
+        let statusDetectado = null;
+
+        if (
+            window.SENT1_AUTO &&
+            typeof window.SENT1_AUTO.debugDeteccaoStatusSessao === "function"
+        ) {
+            statusDetectado = window.SENT1_AUTO.debugDeteccaoStatusSessao();
+            console.log(
+                "✅ MATERIAL: Detectando novos dados via debugDeteccaoStatusSessao"
+            );
+        } else {
+            console.warn(
+                "⚠️ MATERIAL: Namespace SENT1_AUTO não disponível, tentando fallback"
+            );
+
+            // OPÇÃO 3: Fallback - buscar dados das minutas diretamente
+            const minutasContainer = document.querySelector("#fldMinutas");
+            if (minutasContainer && minutasContainer.textContent.trim()) {
+                console.log(
+                    "🔍 MATERIAL: Tentando extrair dados das minutas diretamente"
+                );
+                statusDetectado = {
+                    status: "Dados detectados nas minutas",
+                    data: {
+                        dataFormatada: new Date().toLocaleDateString("pt-BR"),
+                    },
+                    tipoProcesso: "Processo do eProc",
+                    orgao: "TJSC",
+                    timestamp: new Date().toISOString(),
+                };
+            }
+        }
+
+        if (statusDetectado) {
+            console.log(
+                "✅ MATERIAL: Status detectado, criando/atualizando card"
+            );
+            atualizarCardMaterialDesign(statusDetectado);
+
+            // Exposição global para debug
+            if (window.SENT1_AUTO) {
+                window.SENT1_AUTO.ultimoDadosSessao = statusDetectado;
+                window.SENT1_AUTO.timestampUltimaDeteccao =
+                    new Date().toISOString();
+            }
+
+            return statusDetectado;
+        } else {
+            console.log(
+                "ℹ️ MATERIAL: Nenhum dado detectado - executando teste de fallback"
+            );
+
+            // FALLBACK FINAL: Criar card de teste se nada funcionar
+            testeCardImediato();
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ MATERIAL: Erro ao detectar dados:", error);
+        console.log("🚨 MATERIAL: Executando fallback de emergência");
+
+        // Fallback de emergência
+        try {
+            testeCardImediato();
+        } catch (fallbackError) {
+            console.error(
+                "❌ MATERIAL: Falha total no fallback:",
+                fallbackError
+            );
+        }
+
+        return null;
+    }
+}
+
+/**
+ * Carrega os ícones Material Icons se não estiverem disponíveis
+ */
+function carregarMaterialIcons() {
+    // Verificar se os ícones já estão carregados
+    if (document.querySelector('link[href*="material-icons"]')) {
+        console.log("✅ MATERIAL: Ícones Material Icons já carregados");
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        console.log("🔄 MATERIAL: Carregando ícones Material Icons...");
+
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href =
+            "https://fonts.googleapis.com/icon?family=Material+Icons";
+
+        linkElement.onload = () => {
+            console.log(
+                "✅ MATERIAL: Ícones Material Icons carregados com sucesso"
+            );
+            resolve();
+        };
+
+        linkElement.onerror = () => {
+            console.warn(
+                "⚠️ MATERIAL: Erro ao carregar ícones Material Icons, continuando sem ícones"
+            );
+            resolve();
+        };
+
+        document.head.appendChild(linkElement);
+
+        // Resolve após 100ms mesmo se onload não disparar (fallback rápido)
+        setTimeout(resolve, 100);
+    });
+}
+
+/**
+ * Inicialização automática do sistema Material Design
+ * VERSÃO OTIMIZADA - Sem recriação automática de cards
+ */
+async function inicializarMaterialDesign() {
+    console.log("🚀 MATERIAL: Inicializando sistema Material Design");
+
+    try {
+        // Aguardar um breve momento para garantir que a página esteja carregada
+        setTimeout(() => {
+            console.log("🔍 MATERIAL: Detecção única de dados de sessão");
+            // Detectar uma única vez, sem loops ou timers
+            detectarECriarCardMaterialDesign();
+        }, 500);
+
+        console.log(
+            "✅ MATERIAL: Sistema Material Design inicializado com sucesso"
+        );
+    } catch (error) {
+        console.error(
+            "❌ MATERIAL: Erro na inicialização do Material Design:",
+            error
+        );
+    }
+}
+
+/**
+ * Aplica o CSS minimalista do Material Design
+ */
+function aplicarCSSMaterialDesign() {
+    // Verificar se já foi aplicado
+    if (document.querySelector("style[data-eprobe-material-design]")) {
+        return;
+    }
+
+    const css = `
+        /* eProbe Card Micro Compacto - Tamanho Exato do Conteúdo */
+        .eprobe-material-card-minimal {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 3px;
+            padding: 2px 4px;
+            margin: 1px 0;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            width: fit-content;
+            max-width: none;
+            font-size: 10px;
+            transition: all 0.2s ease;
+            display: inline-block;
+            line-height: 1.1;
+        }
+        
+        .eprobe-material-card-minimal:hover {
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .eprobe-card-minimal-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            white-space: nowrap;
+        }
+        
+        .eprobe-status-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .eprobe-date-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+        
+        .eprobe-status-icon,
+        .eprobe-date-icon {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .eprobe-status-text {
+            font-size: 10px;
+            font-weight: 600;
+            color: #1f2937;
+            line-height: 1.1;
+        }
+        
+        .eprobe-date-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 500;
+            line-height: 1.1;
+        }
+        
+        .eprobe-date-text {
+            font-size: 10px;
+            color: #374151;
+            font-weight: 600;
+            line-height: 1.1;
+        }
+        
+        /* Ícones SVG micro otimizados */
+        .eprobe-icon-calendar::before {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2' ry='2'/%3E%3Cline x1='16' x2='16' y1='2' y2='6'/%3E%3Cline x1='8' x2='8' y1='2' y2='6'/%3E%3Cline x1='3' x2='21' y1='10' y2='10'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        
+        .eprobe-icon-check::before {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        
+        .eprobe-icon-alert::before {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        
+        .eprobe-icon-info::before {
+            content: "";
+            display: block;
+            width: 12px;
+            height: 12px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-size: contain;
+            background-position: center;
+        }
+        
+        /* Cores dos ícones por status */
+        .eprobe-status-icon.status-pautado .eprobe-icon-info::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+        }
+        
+        .eprobe-status-icon.status-julgado .eprobe-icon-check::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
+        }
+        
+        .eprobe-status-icon.status-retirado .eprobe-icon-alert::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
+        }
+        
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .eprobe-material-card-minimal {
+                max-width: 90vw;
+            }
+            
+            .eprobe-card-minimal-content {
+                white-space: normal;
+            }
+        }
+    `;
+
+    // Carregar ícones já incluídos no CSS
+    const styleElement = document.createElement("style");
+    styleElement.setAttribute("data-eprobe-material-design", "true");
+    styleElement.textContent = css;
+    document.head.appendChild(styleElement);
+
+    console.log(
+        "✅ MATERIAL: CSS minimalista aplicado com ícones SVG incluídos"
+    );
+}
+
+// Aplicar CSS imediatamente
+aplicarCSSMaterialDesign();
+
 // 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
 // Funções expostas globalmente para personalizar botões (fora da IIFE)
 
@@ -10026,10 +11789,29 @@ setTimeout(() => {
 
 /**
  * Insere um elemento personalizado na navbar do eProc
- * ao lado esquerdo do link do Portal jus.br
+ * baseado no design do Figma - logo PNG "eP" simples e transparente
+ *
+ * VERSÃO ATUALIZADA - LOGO PNG:
+ * ✅ Logo "eP" em formato PNG em vez de texto
+ * ✅ Imagem carregada via chrome.runtime.getURL()
+ * ✅ Hover com filter brightness
+ * ✅ Fundo transparente conforme Figma
+ * ✅ Sem gradientes, sombras ou efeitos extras
+ * ✅ Proteção contra duplicação
+ *
+ * @returns {boolean} - Sucesso da inserção
  */
 function inserirElementoNavbarEproc() {
     console.log("🔍 NAVBAR: Tentando inserir elemento personalizado na navbar");
+
+    // PROTEÇÃO REFORÇADA: Remover qualquer elemento existente primeiro
+    const elementoExistente = document.getElementById("eprobe-navbar-element");
+    if (elementoExistente) {
+        console.log(
+            "🗑️ NAVBAR: Removendo elemento existente para evitar duplicação"
+        );
+        elementoExistente.remove();
+    }
 
     // Buscar a navbar principal
     const navbar = document.querySelector("nav#navbar");
@@ -10047,33 +11829,51 @@ function inserirElementoNavbarEproc() {
         return false;
     }
 
-    // Verificar se o elemento já existe
-    if (document.getElementById("eprobe-navbar-element")) {
-        console.log("ℹ️ NAVBAR: Elemento personalizado já existe na navbar");
-        return true;
-    }
-
-    // Criar elemento personalizado baseado no design do Figma - SIMPLES
+    // Criar elemento personalizado com imagem PNG
     const customElement = document.createElement("a");
     customElement.id = "eprobe-navbar-element";
     customElement.href = "https://e-probe.vercel.app/";
     customElement.target = "_blank";
-    customElement.className =
-        "d-flex mr-2 align-items-center navbar-eprobe-icon";
+    customElement.className = "d-flex align-items-center navbar-eprobe-icon";
     customElement.setAttribute("data-notification", "");
     customElement.style.cssText = `
-        padding-right: 10px; 
-        padding-left: 9px; 
-        border-right: 2px solid whitesmoke;
+        padding: 6px 10px;
+        margin-right: 6px;
+        border-right: 1px solid rgba(255, 255, 255, 0.2);
         text-decoration: none;
-        color: white;
-        font-family: 'Exo 2', sans-serif;
-        font-size: 16px;
-        font-weight: 500;
+        transition: opacity 0.2s ease;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 40px;
+        min-width: 40px;
     `;
 
-    // Conteúdo simples: apenas | eP em branco
-    customElement.innerHTML = `| eP`;
+    // Criar elemento de imagem
+    const logoImg = document.createElement("img");
+    logoImg.src = chrome.runtime.getURL("assets/40x.png");
+    logoImg.alt = "eProbe";
+    logoImg.style.cssText = `
+        width: 20px;
+        height: 20px;
+        object-fit: contain;
+        filter: brightness(1);
+        transition: filter 0.2s ease;
+        vertical-align: middle;
+    `;
+
+    // Adicionar hover simples (apenas filter)
+    addPassiveEventListener(customElement, "mouseenter", function () {
+        logoImg.style.filter = "brightness(0.7)";
+    });
+
+    addPassiveEventListener(customElement, "mouseleave", function () {
+        logoImg.style.filter = "brightness(1)";
+    });
+
+    // Logo PNG em vez de texto
+    customElement.appendChild(logoImg);
 
     // Inserir o elemento antes do link do Portal jus.br
     portalLink.parentNode.insertBefore(customElement, portalLink);
@@ -10101,24 +11901,143 @@ function removerElementoNavbarEproc() {
     }
 }
 
-// Função para carregar a fonte Exo 2
+// Função para carregar a fonte Exo 2 com verificação e fallback - OTIMIZADA
 function carregarFonteExo2() {
     // Verificar se a fonte já foi carregada
     if (document.querySelector('link[href*="Exo+2"]')) {
+        console.log("✅ FONTE: Exo 2 já carregada anteriormente");
+        return Promise.resolve();
+    }
+
+    return new Promise((resolve) => {
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href =
+            "https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap";
+
+        // Adicionar listener para verificar quando a fonte carrega
+        linkElement.onload = () => {
+            console.log("✅ FONTE: Exo 2 carregada com sucesso");
+            resolve();
+        };
+
+        linkElement.onerror = () => {
+            console.warn("⚠️ FONTE: Erro ao carregar Exo 2, usando fallback");
+            resolve();
+        };
+
+        document.head.appendChild(linkElement);
+        console.log("🔄 FONTE: Carregando Exo 2 do Google Fonts...");
+
+        // Resolve após 50ms mesmo se onload não disparar (fallback rápido)
+        setTimeout(resolve, 50);
+    });
+}
+
+// ============================================
+// INICIALIZAÇÃO OTIMIZADA DA NAVBAR - SEM DELAY
+// ============================================
+
+// Função para tentar inserir o elemento logo que a navbar estiver disponível
+function tentarInserirElementoNavbar() {
+    const navbar = document.querySelector("nav#navbar");
+    const portalLink = navbar?.querySelector(
+        'a[href*="pdpj/marketplace_redirecionar"]'
+    );
+
+    if (
+        navbar &&
+        portalLink &&
+        !document.getElementById("eprobe-navbar-element")
+    ) {
+        console.log(
+            "🎯 NAVBAR: Navbar detectada, inserindo elemento imediatamente"
+        );
+        inserirElementoNavbarEproc();
+        return true;
+    }
+    return false;
+}
+
+// Observer para detectar quando a navbar é adicionada ao DOM
+const navbarObserver = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+        if (mutation.type === "childList") {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Verificar se o node é a navbar ou contém a navbar
+                    if (node.matches && node.matches("nav#navbar")) {
+                        if (tentarInserirElementoNavbar()) {
+                            navbarObserver.disconnect();
+                            return;
+                        }
+                    }
+                    // Verificar se a navbar foi adicionada dentro do node
+                    const navbar =
+                        node.querySelector && node.querySelector("nav#navbar");
+                    if (navbar) {
+                        if (tentarInserirElementoNavbar()) {
+                            navbarObserver.disconnect();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+});
+
+// Variável de controle para evitar inicializações múltiplas da navbar
+let navbarJaInicializada = false;
+
+// Inicializar inserção do elemento navbar de forma otimizada
+async function inicializarNavbarOtimizada() {
+    // Proteção contra múltiplas execuções
+    if (navbarJaInicializada) {
+        console.log("ℹ️ NAVBAR: Já foi inicializada, ignorando nova tentativa");
+        return;
+    }
+    navbarJaInicializada = true;
+
+    console.log("🚀 NAVBAR: Iniciando inserção otimizada sem delay");
+
+    // Carregar fonte em paralelo (sem aguardar)
+    carregarFonteExo2().catch((err) =>
+        console.warn("⚠️ FONTE: Erro ao carregar", err)
+    );
+
+    // Tentar inserir imediatamente se a navbar já estiver disponível
+    if (tentarInserirElementoNavbar()) {
+        console.log("✅ NAVBAR: Elemento inserido imediatamente");
         return;
     }
 
-    const linkElement = document.createElement("link");
-    linkElement.rel = "stylesheet";
-    linkElement.href =
-        "https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap";
-    document.head.appendChild(linkElement);
+    // Se não conseguiu inserir, usar observer para detectar quando navbar aparecer
+    navbarObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
+    // Fallback: tentar inserir após um breve delay se o observer não funcionar
+    setTimeout(() => {
+        if (!document.getElementById("eprobe-navbar-element")) {
+            console.log("🔄 NAVBAR: Fallback - tentando inserir após delay");
+            if (tentarInserirElementoNavbar()) {
+                navbarObserver.disconnect();
+            }
+        }
+    }, 500);
+
+    // Cleanup: desconectar observer após 5 segundos para evitar vazamento de memória
+    setTimeout(() => {
+        navbarObserver.disconnect();
+        console.log("🧹 NAVBAR: Observer desconectado por timeout");
+    }, 5000);
 }
 
-// Inserir automaticamente quando a página carregar
-setTimeout(() => {
-    carregarFonteExo2();
-    setTimeout(() => {
-        inserirElementoNavbarEproc();
-    }, 500); // Aguardar um pouco para a fonte carregar
-}, 2000); // Aguardar 2 segundos para garantir que a navbar está carregada
+// Executar inicialização otimizada imediatamente
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", inicializarNavbarOtimizada);
+} else {
+    inicializarNavbarOtimizada();
+}

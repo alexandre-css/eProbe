@@ -1875,3 +1875,415 @@ button.btn.btn-link.btn-pesquisar:active::after,
 /* ============================================
    FIM EXCLUSÕES DE TEMAS DE BOTÕES - eProc
    ============================================ */
+
+/* ============================================
+   CARD DE SESSÃO - MATERIAL DESIGN
+   ============================================ */
+
+/* Container principal do card */
+#eprobe-data-sessao,
+.sessao-card-container {
+    position: fixed !important;
+    top: 20px !important;
+    right: 20px !important;
+    z-index: 99999 !important;
+    font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif !important;
+    max-width: 320px !important;
+    min-width: 280px !important;
+}
+
+/* Card principal */
+.sessao-card,
+#eprobe-data-sessao {
+    background: #ffffff !important;
+    border-radius: 12px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), 0 4px 16px rgba(0, 0, 0, 0.06),
+        0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+    overflow: hidden !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transform: translateY(0) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    backdrop-filter: blur(10px) !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.sessao-card:hover,
+#eprobe-data-sessao:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12), 0 8px 24px rgba(0, 0, 0, 0.08),
+        0 0 0 1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Header do card com status colorido */
+.sessao-card-header,
+#eprobe-data-sessao::before {
+    content: "";
+    display: block;
+    height: 4px !important;
+    background: linear-gradient(90deg, #1976d2, #2196f3) !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+/* Estados do header baseados no status */
+.sessao-card.status-pautado .sessao-card-header,
+#eprobe-data-sessao.status-pautado::before {
+    background: linear-gradient(90deg, #1976d2, #2196f3) !important;
+}
+
+.sessao-card.status-retirado .sessao-card-header,
+#eprobe-data-sessao.status-retirado::before {
+    background: linear-gradient(90deg, #d32f2f, #f44336) !important;
+}
+
+.sessao-card.status-julgado .sessao-card-header,
+#eprobe-data-sessao.status-julgado::before {
+    background: linear-gradient(90deg, #388e3c, #4caf50) !important;
+}
+
+.sessao-card.status-incluido .sessao-card-header,
+#eprobe-data-sessao.status-incluido::before {
+    background: linear-gradient(90deg, #f57c00, #ff9800) !important;
+}
+
+/* Conteúdo principal */
+.sessao-card-content,
+#eprobe-data-sessao .card-content {
+    padding: 20px !important;
+    background: transparent !important;
+}
+
+/* Título principal */
+.sessao-card-title,
+#eprobe-data-sessao h3,
+#eprobe-data-sessao .card-title {
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    color: #212121 !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.15px !important;
+    font-family: "Roboto", sans-serif !important;
+}
+
+/* Subtítulo */
+.sessao-card-subtitle,
+#eprobe-data-sessao .card-subtitle,
+#eprobe-data-sessao p {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #757575 !important;
+    margin: 0 0 16px 0 !important;
+    line-height: 1.4 !important;
+    letter-spacing: 0.25px !important;
+    font-family: "Roboto", sans-serif !important;
+}
+
+/* Container de informações */
+.sessao-card-info,
+#eprobe-data-sessao .card-info {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+}
+
+/* Item de informação */
+.sessao-info-item,
+#eprobe-data-sessao .info-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    padding: 8px 0 !important;
+    border: none !important;
+    background: transparent !important;
+}
+
+/* Ícone do item */
+.sessao-info-icon,
+#eprobe-data-sessao .info-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    background: #f5f5f5 !important;
+    color: #616161 !important;
+    flex-shrink: 0 !important;
+    transition: all 0.3s ease !important;
+}
+
+.sessao-info-icon svg,
+#eprobe-data-sessao .info-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+}
+
+/* Ícones específicos por status */
+.sessao-card.status-pautado .sessao-info-icon,
+#eprobe-data-sessao.status-pautado .info-icon {
+    background: rgba(25, 118, 210, 0.1) !important;
+    color: #1976d2 !important;
+}
+
+.sessao-card.status-retirado .sessao-info-icon,
+#eprobe-data-sessao.status-retirado .info-icon {
+    background: rgba(211, 47, 47, 0.1) !important;
+    color: #d32f2f !important;
+}
+
+.sessao-card.status-julgado .sessao-info-icon,
+#eprobe-data-sessao.status-julgado .info-icon {
+    background: rgba(56, 142, 60, 0.1) !important;
+    color: #388e3c !important;
+}
+
+.sessao-card.status-incluido .sessao-info-icon,
+#eprobe-data-sessao.status-incluido .info-icon {
+    background: rgba(245, 124, 0, 0.1) !important;
+    color: #f57c00 !important;
+}
+
+/* Texto do item */
+.sessao-info-text,
+#eprobe-data-sessao .info-text {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+}
+
+.sessao-info-label,
+#eprobe-data-sessao .info-label {
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    color: #9e9e9e !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    line-height: 1 !important;
+    font-family: "Roboto", sans-serif !important;
+}
+
+.sessao-info-value,
+#eprobe-data-sessao .info-value,
+#eprobe-data-sessao .data-sessao,
+#eprobe-data-sessao .orgao-sessao {
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: #424242 !important;
+    line-height: 1.3 !important;
+    letter-spacing: 0.25px !important;
+    font-family: "Roboto", sans-serif !important;
+}
+
+/* Badge de status */
+.sessao-status-badge,
+#eprobe-data-sessao .status-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 6px 12px !important;
+    border-radius: 16px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.4px !important;
+    text-transform: uppercase !important;
+    margin-top: 8px !important;
+    border: none !important;
+    font-family: "Roboto", sans-serif !important;
+}
+
+.sessao-card.status-pautado .sessao-status-badge,
+#eprobe-data-sessao.status-pautado .status-badge {
+    background: rgba(25, 118, 210, 0.1) !important;
+    color: #1976d2 !important;
+}
+
+.sessao-card.status-retirado .sessao-status-badge,
+#eprobe-data-sessao.status-retirado .status-badge {
+    background: rgba(211, 47, 47, 0.1) !important;
+    color: #d32f2f !important;
+}
+
+.sessao-card.status-julgado .sessao-status-badge,
+#eprobe-data-sessao.status-julgado .status-badge {
+    background: rgba(56, 142, 60, 0.1) !important;
+    color: #388e3c !important;
+}
+
+.sessao-card.status-incluido .sessao-status-badge,
+#eprobe-data-sessao.status-incluido .status-badge {
+    background: rgba(245, 124, 0, 0.1) !important;
+    color: #f57c00 !important;
+}
+
+/* Divisor sutil */
+.sessao-card-divider,
+#eprobe-data-sessao .divider {
+    height: 1px !important;
+    background: #e0e0e0 !important;
+    margin: 16px 0 !important;
+    border: none !important;
+}
+
+/* Animação de entrada */
+@keyframes slideInFromRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+.sessao-card,
+#eprobe-data-sessao {
+    animation: slideInFromRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #eprobe-data-sessao,
+    .sessao-card-container {
+        top: 10px !important;
+        right: 10px !important;
+        left: 10px !important;
+        max-width: none !important;
+    }
+
+    .sessao-card-content,
+    #eprobe-data-sessao .card-content {
+        padding: 16px !important;
+    }
+
+    .sessao-info-icon,
+    #eprobe-data-sessao .info-icon {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .sessao-info-icon svg,
+    #eprobe-data-sessao .info-icon svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
+
+/* Tema escuro */
+@media (prefers-color-scheme: dark) {
+    .sessao-card,
+    #eprobe-data-sessao {
+        background: #1e1e1e !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .sessao-card-title,
+    #eprobe-data-sessao h3,
+    #eprobe-data-sessao .card-title {
+        color: #ffffff !important;
+    }
+
+    .sessao-card-subtitle,
+    #eprobe-data-sessao .card-subtitle,
+    #eprobe-data-sessao p {
+        color: #b3b3b3 !important;
+    }
+
+    .sessao-info-icon,
+    #eprobe-data-sessao .info-icon {
+        background: rgba(255, 255, 255, 0.05) !important;
+        color: #b3b3b3 !important;
+    }
+
+    .sessao-info-value,
+    #eprobe-data-sessao .info-value,
+    #eprobe-data-sessao .data-sessao,
+    #eprobe-data-sessao .orgao-sessao {
+        color: #e0e0e0 !important;
+    }
+
+    .sessao-info-label,
+    #eprobe-data-sessao .info-label {
+        color: #888888 !important;
+    }
+
+    .sessao-card-divider,
+    #eprobe-data-sessao .divider {
+        background: rgba(255, 255, 255, 0.1) !important;
+    }
+}
+
+/* Animação de pulso para elementos ativos */
+.sessao-card.active,
+#eprobe-data-sessao.active {
+    animation: pulse-glow 2s infinite !important;
+}
+
+@keyframes pulse-glow {
+    0%,
+    100% {
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08),
+            0 4px 16px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.04) !important;
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.15),
+            0 8px 24px rgba(25, 118, 210, 0.1),
+            0 0 0 1px rgba(25, 118, 210, 0.1) !important;
+    }
+}
+
+/* Microinterações */
+.sessao-info-item:hover .sessao-info-icon,
+#eprobe-data-sessao .info-item:hover .info-icon {
+    transform: scale(1.05) !important;
+}
+
+.sessao-info-item:hover .sessao-info-value,
+#eprobe-data-sessao .info-item:hover .info-value,
+#eprobe-data-sessao .info-item:hover .data-sessao,
+#eprobe-data-sessao .info-item:hover .orgao-sessao {
+    color: #1976d2 !important;
+    transition: color 0.2s ease !important;
+}
+
+/* Estados de loading */
+.sessao-card.loading .sessao-card-content::after,
+#eprobe-data-sessao.loading .card-content::after {
+    content: "" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.6) 50%,
+        transparent 100%
+    ) !important;
+    animation: shimmer 1.5s infinite !important;
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Garantir que o card seja sempre visível */
+#eprobe-data-sessao {
+    visibility: visible !important;
+    display: block !important;
+    opacity: 1 !important;
+}

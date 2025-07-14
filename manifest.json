@@ -33,14 +33,19 @@
     },
 
     "icons": {
-        "16": "assets/icon16.png",
-        "48": "assets/icon48.png",
-        "128": "assets/icon128.png"
+        "16": "assets/16x.png",
+        "48": "assets/48x.png",
+        "128": "assets/128x.png"
     },
 
     "web_accessible_resources": [
         {
-            "resources": ["assets/icons.css", "src/semanticKernel.js"],
+            "resources": [
+                "assets/icons.css",
+                "assets/eP.png",
+                "assets/40x.png",
+                "src/semanticKernel.js"
+            ],
             "matches": [
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"

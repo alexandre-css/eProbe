@@ -260,10 +260,20 @@ document.addEventListener("DOMContentLoaded", function () {
     function applyTheme(theme) {
         console.log("🎨 POPUP: Iniciando aplicação do tema:", theme);
 
-        // Salva a preferência do tema
+        // Salva a preferência do tema no chrome.storage E no localStorage para aplicação instantânea
         chrome.storage.sync.set({ selectedTheme: theme }, function () {
             console.log("✅ POPUP: Tema salvo no storage:", theme);
         });
+
+        // Salvar também no localStorage para aplicação mais rápida
+        try {
+            localStorage.setItem("eprobe_selected_theme", theme);
+            console.log(
+                "✅ POPUP: Tema salvo no localStorage para aplicação instantânea"
+            );
+        } catch (e) {
+            console.warn("⚠️ POPUP: Erro ao salvar no localStorage:", e);
+        }
 
         // Envia mensagem para o content script aplicar o tema
         chrome.tabs.query(
