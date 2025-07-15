@@ -156,9 +156,12 @@
                     window.performanceMetrics.timeoutsIntercepted++;
                 }
 
-                console.log(
-                    `🎯 PERFORMANCE: Interceptando setTimeout crítico de ${delay}ms (#${timeoutCounter}) - usando requestIdleCallback`
-                );
+                // Log apenas as primeiras 3 interceptações
+                if (timeoutCounter <= 3) {
+                    console.log(
+                        `🎯 PERFORMANCE: setTimeout ${delay}ms interceptado (#${timeoutCounter})`
+                    );
+                }
 
                 // Estratégia 1: requestIdleCallback prioritário para callbacks pesados
                 if (window.requestIdleCallback && delay > 100) {
@@ -179,13 +182,10 @@
                                 const elapsed = performance.now() - startTime;
                                 if (elapsed > 16) {
                                     console.warn(
-                                        `⚠️ PERFORMANCE: Callback ainda demorou ${elapsed}ms, mas executado durante idle`
-                                    );
-                                } else {
-                                    console.log(
-                                        `✅ PERFORMANCE: Callback otimizado executado em ${elapsed}ms durante idle`
+                                        `⚠️ PERFORMANCE: Callback lento: ${elapsed}ms`
                                     );
                                 }
+                                // Removido log de sucesso para reduzir ruído
                             } catch (e) {
                                 console.warn(
                                     "❌ PERFORMANCE: Erro em callback idle:",
@@ -280,14 +280,12 @@
                 }
             }
 
-            // Estratégia 3: Buscar jQuery minificado/hasheado nos scripts (só logar na primeira vez)
+            // Estratégia 3: Buscar jQuery minificado/hasheado nos scripts (só logar uma vez)
             const scripts = document.querySelectorAll('script[src*="jquery"]');
-            if (scripts.length > 0) {
-                if (!jQueryIntercepted) {
-                    console.log(
-                        `🎯 PERFORMANCE: ${scripts.length} script(s) jQuery detectado(s) via src`
-                    );
-                }
+            if (scripts.length > 0 && !jQueryDetected) {
+                console.log(
+                    `🎯 PERFORMANCE: ${scripts.length} script(s) jQuery detectado(s)`
+                );
                 jQueryDetected = true;
             }
 
@@ -474,62 +472,62 @@
                 return true;
             }
 
-            return false;
+            return jQueryDetected; // Retornar sempre um booleano consistente
         };
 
-        // Executar interceptação mega-agressiva CONTINUAMENTE
+        // Executar interceptação otimizada com limite
         let interceptAttempts = 0;
-        const maxAttempts = 50; // Aumentado para 50 tentativas
+        const maxAttempts = 5; // Reduzido para 5 tentativas apenas
+        let jQueryDetected = false; // IMPORTANTE: Declarar variável para evitar ReferenceError
 
-        const continuousIntercept = () => {
+        const optimizedIntercept = () => {
             interceptAttempts++;
             const success = interceptJQueryMegaAggressive();
 
-            // Log de progresso apenas nas primeiras tentativas ou quando encontrar jQuery
+            // Atualizar status de detecção baseado no sucesso
+            if (success) {
+                jQueryDetected = true;
+            }
+
+            // Log apenas nas primeiras tentativas
             if (success && !jQueryIntercepted) {
                 console.log(
-                    `✅ PERFORMANCE: jQuery interceptado com sucesso na tentativa ${interceptAttempts}`
+                    `✅ PERFORMANCE: jQuery interceptado na tentativa ${interceptAttempts}`
                 );
-            } else if (interceptAttempts <= 5 && !success) {
+                return; // Parar aqui se sucesso
+            } else if (interceptAttempts <= 3) {
                 console.log(
-                    `🔍 PERFORMANCE: Tentativa ${interceptAttempts}/50 - jQuery não encontrado ainda`
+                    `🔍 PERFORMANCE: Tentativa ${interceptAttempts}/${maxAttempts} - jQuery não encontrado`
                 );
             }
 
-            // Continuar tentando até encontrar ou atingir máximo
-            if (interceptAttempts < maxAttempts && !jQueryIntercepted) {
-                const delays = [
-                    0, 1, 5, 10, 25, 50, 100, 200, 500, 1000, 2000, 5000,
-                ];
-                const delay = delays[interceptAttempts % delays.length];
-                originalSetTimeout(continuousIntercept, delay);
-            } else if (jQueryIntercepted) {
-                console.log(
-                    `🎯 PERFORMANCE: Interceptação jQuery finalizada após ${interceptAttempts} tentativas - ${jQueryDetectionCount} detecções realizadas`
-                );
+            // Parar após 5 tentativas ou se jQuery foi interceptado
+            if (
+                interceptAttempts < maxAttempts &&
+                !jQueryIntercepted &&
+                !jQueryDetected
+            ) {
+                const delay = 200 + interceptAttempts * 100; // 200ms, 300ms, 400ms, etc
+                originalSetTimeout(optimizedIntercept, delay);
+            } else {
+                if (jQueryIntercepted || jQueryDetected) {
+                    console.log(
+                        `✅ PERFORMANCE: jQuery processado após ${interceptAttempts} tentativas`
+                    );
+                } else {
+                    console.log(
+                        `⚠️ PERFORMANCE: Limite atingido (${interceptAttempts} tentativas) - prosseguindo`
+                    );
+                }
             }
         };
 
-        // Iniciar interceptação contínua
-        continuousIntercept();
+        // Iniciar interceptação otimizada
+        optimizedIntercept();
 
+        console.log("🚀 PERFORMANCE: Sistema otimizado carregado");
         console.log(
-            "🚀 PERFORMANCE: Sistema ULTRA-MEGA-ROBUSTO implementado com interceptação total e contínua"
-        );
-        console.log(
-            "🎯 PERFORMANCE: Interceptações ativas: setTimeout específico (131ms, 165ms), jQuery inteligente, forced reflow prevenção ULTRA, event throttling TOTAL"
-        );
-        console.log(
-            "📊 PERFORMANCE: requestIdleCallback protegido, fragmentação temporal, cache agressivo de layout (300ms), event listeners 100% passivos"
-        );
-        console.log(
-            "🛡️ PERFORMANCE: Proteção COMPLETA contra: jQuery timeouts, forced reflows (cache 300ms), eventos críticos throttled, requestIdleCallback violações"
-        );
-        console.log(
-            "⚡ PERFORMANCE: Throttling ativo para: mousemove (50ms), mouseout/over (100ms), scroll/touchmove/wheel (32ms), resize (250ms)"
-        );
-        console.log(
-            "📊 MONITORING: Sistema de monitoramento ativo - Use window.getPerformanceReport() para estatísticas em tempo real"
+            "🎯 PERFORMANCE: Interceptação jQuery limitada a 5 tentativas"
         );
     })();
 
@@ -598,13 +596,67 @@
 
     // 🔐 CONTROLE ÚNICO POR PROCESSO - Garantir apenas uma busca por processo
     let processosJaProcessados = new Set(); // Armazenar números de processos já processados
+
+    // ⚡ SISTEMA DE DEBOUNCE GLOBAL - Prevenir execuções redundantes
+    const debounceTimers = new Map();
+
+    function debounceGlobal(func, key, delay = 300) {
+        if (debounceTimers.has(key)) {
+            clearTimeout(debounceTimers.get(key));
+        }
+
+        const timerId = setTimeout(() => {
+            func();
+            debounceTimers.delete(key);
+        }, delay);
+
+        debounceTimers.set(key, timerId);
+    }
+
+    // 🚀 CACHE INTELIGENTE PARA ELEMENTOS DOM
+    const domCache = new Map();
+    const CACHE_EXPIRY = 5000; // 5 segundos
+
+    function getCachedElement(selector, useCache = true) {
+        if (!useCache) {
+            return document.querySelector(selector);
+        }
+
+        const now = Date.now();
+        const cached = domCache.get(selector);
+
+        if (cached && now - cached.timestamp < CACHE_EXPIRY) {
+            return cached.element;
+        }
+
+        const element = document.querySelector(selector);
+        domCache.set(selector, {
+            element: element,
+            timestamp: now,
+        });
+
+        return element;
+    }
+
+    // 🧹 LIMPEZA AUTOMÁTICA DO CACHE
+    setInterval(() => {
+        const now = Date.now();
+        for (const [key, value] of domCache.entries()) {
+            if (now - value.timestamp > CACHE_EXPIRY) {
+                domCache.delete(key);
+            }
+        }
+    }, 10000); // Limpar a cada 10 segundos
+
     let processoAtual = null; // Processo atual sendo visualizado
     let cachePorProcesso = new Map(); // Cache específico por processo
-    let inicializacaoExecutada = false; // Controle de inicialização única
     let timeoutsAtivos = new Set(); // Controle de timeouts ativos
 
     // 🚫 CONTROLE GLOBAL DE REQUISIÇÕES
     let REQUISICOES_AUTOMATICAS_DESABILITADAS = true; // DESABILITAR TODAS AS REQUISIÇÕES AUTOMÁTICAS
+
+    // 🔥 CONTROLE DE PERFORMANCE ULTRA
+    let MODO_ULTRA_PERFORMANCE = false; // Controla operações custosas para otimizar performance
 
     // Configurações de segurança MAIS RIGOROSAS
     const MAX_TENTATIVAS_CRUZAMENTO = 1; // REDUZIDO: Máximo 1 tentativa por processo
@@ -7126,6 +7178,14 @@ ${texto}`;
         window.SENT1_AUTO.encontrarTextoRetirado = encontrarTextoRetirado;
         window.SENT1_AUTO.forcarDeteccaoCompleta = forcarDeteccaoCompleta;
 
+        // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO
+        window.SENT1_AUTO.diagnosticarCompleto = diagnosticarCompleto;
+        window.SENT1_AUTO.corrigirProblemas = corrigirProblemas;
+        window.SENT1_AUTO.forcarReaplicacaoIcones = forcarReaplicacaoIcones;
+        window.SENT1_AUTO.inicializarSubstituicaoIcones =
+            inicializarSubstituicaoIcones;
+        window.SENT1_AUTO.diagnosticarIconesCSS = diagnosticarIconesCSS;
+
         // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
         window.SENT1_AUTO.debugButtonCreation = debugButtonCreation;
         window.SENT1_AUTO.forceCreateButton = forceCreateButton;
@@ -7149,6 +7209,38 @@ ${texto}`;
             examinarEstruturaHTMLDados;
         window.SENT1_AUTO.buscarPadroesEspecificosImagens =
             buscarPadroesEspecificosImagens;
+
+        // 🔧 FUNÇÕES DE DIAGNÓSTICO DE ÍCONES CSS
+        window.SENT1_AUTO.diagnosticarIconesCSS = diagnosticarIconesCSS;
+        window.SENT1_AUTO.forcarReaplicacaoIcones = forcarReaplicacaoIcones;
+        window.SENT1_AUTO.forcarRecriacaoCardSessao = forcarRecriacaoCardSessao;
+        window.SENT1_AUTO.encontrarContainerParaCard =
+            encontrarContainerParaCard;
+
+        // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA
+        window.SENT1_AUTO.ativarModoUltraPerformance = function () {
+            MODO_ULTRA_PERFORMANCE = true;
+            console.log(
+                "🔥 PERFORMANCE: Modo ultra-performance ATIVADO - operações custosas desabilitadas"
+            );
+            return true;
+        };
+
+        window.SENT1_AUTO.desativarModoUltraPerformance = function () {
+            MODO_ULTRA_PERFORMANCE = false;
+            console.log(
+                "✅ PERFORMANCE: Modo ultra-performance DESATIVADO - todas as operações habilitadas"
+            );
+            return false;
+        };
+
+        window.SENT1_AUTO.statusModoUltraPerformance = function () {
+            const status = MODO_ULTRA_PERFORMANCE ? "ATIVO" : "INATIVO";
+            console.log(
+                `📊 PERFORMANCE: Modo ultra-performance está ${status}`
+            );
+            return MODO_ULTRA_PERFORMANCE;
+        };
 
         // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
         // Estrutura preparada para futuras funcionalidades da página de localizadores
@@ -7717,6 +7809,408 @@ ${texto}`;
                 quantidadeMatchesEspecificos: matchesEspecificos?.length || 0,
                 elementosComDatasSessao: elementosComDatasSessao.length,
             };
+        }
+
+        // ========================================
+        // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO AUTOMÁTICA
+        // ========================================
+
+        /**
+         * Diagnóstico completo do estado atual da extensão
+         * Verifica se todas as funcionalidades estão operando corretamente
+         */
+        function diagnosticarCompleto() {
+            console.log(
+                "🔍 DIAGNÓSTICO: Iniciando diagnóstico completo do sistema"
+            );
+
+            const diagnostico = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                url: window.location.href,
+                modoUltraPerformance: MODO_ULTRA_PERFORMANCE,
+                funcionalidades: {},
+            };
+
+            // 1. Verificar detecção de data da sessão
+            console.log("📅 Verificando detecção de data da sessão...");
+            const temDataSessao = hasDataSessaoPautado();
+            diagnostico.funcionalidades.dataSessao = {
+                detectada: temDataSessao,
+                valor: temDataSessao ? getDataSessaoPautado() : null,
+                processoAtual: processoAtual,
+            };
+
+            // 2. Verificar botão "Resumir Documento"
+            console.log("🔘 Verificando botão Resumir Documento...");
+            const botaoExiste =
+                document.getElementById("eprobe-btn") !== null ||
+                document.getElementById("documento-relevante-auto-button") !==
+                    null ||
+                document.getElementById("sent1-auto-button") !== null;
+
+            const botaoID = document.getElementById("eprobe-btn")
+                ? "eprobe-btn"
+                : document.getElementById("documento-relevante-auto-button")
+                ? "documento-relevante-auto-button"
+                : document.getElementById("sent1-auto-button")
+                ? "sent1-auto-button"
+                : "nenhum";
+
+            diagnostico.funcionalidades.botaoResumir = {
+                existe: botaoExiste,
+                id: botaoID,
+                elemento: botaoExiste ? "Encontrado" : "Não encontrado",
+            };
+
+            // 3. Verificar substituição de ícones
+            console.log("🎨 Verificando substituição de ícones...");
+            const iconeSubstituido =
+                document.querySelector("[data-eprobe-icon-replaced]") !== null;
+            diagnostico.funcionalidades.substituicaoIcones = {
+                aplicada: iconeSubstituido,
+                quantidade: document.querySelectorAll(
+                    "[data-eprobe-icon-replaced]"
+                ).length,
+            };
+
+            // 4. Verificar sistema de temas
+            console.log("🎨 Verificando sistema de temas...");
+            const temaTemaAplicado =
+                document.querySelector(".eprobe-theme-applied") !== null;
+            diagnostico.funcionalidades.sistemaTheme = {
+                aplicado: temaTemaAplicado,
+                funcaoDisponivel: typeof window.applyThemeStyles === "function",
+            };
+
+            // 5. Verificar namespace SENT1_AUTO
+            console.log("📦 Verificando namespace SENT1_AUTO...");
+            diagnostico.namespace = {
+                existe: typeof window.SENT1_AUTO === "object",
+                funcoes: window.SENT1_AUTO
+                    ? Object.keys(window.SENT1_AUTO).length
+                    : 0,
+            };
+
+            console.log("📊 DIAGNÓSTICO COMPLETO:", diagnostico);
+            return diagnostico;
+        }
+
+        /**
+         * Função de correção automática para problemas detectados
+         * Tenta resolver os problemas mais comuns automaticamente
+         */
+        function corrigirProblemas() {
+            console.log(
+                "🔧 CORREÇÃO: Iniciando correção automática de problemas"
+            );
+
+            const resultadoCorrecao = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                acoes: [],
+            };
+
+            // 1. Tentar criar botão se não existir
+            const botaoJaExiste =
+                document.getElementById("eprobe-btn") ||
+                document.getElementById("documento-relevante-auto-button") ||
+                document.getElementById("sent1-auto-button");
+
+            if (!botaoJaExiste) {
+                console.log("🔘 Criando botão Resumir Documento...");
+                try {
+                    ensureButtonExists();
+                    const botaoCriado =
+                        document.getElementById("eprobe-btn") ||
+                        document.getElementById(
+                            "documento-relevante-auto-button"
+                        ) ||
+                        document.getElementById("sent1-auto-button");
+
+                    resultadoCorrecao.acoes.push({
+                        acao: "Criação de botão",
+                        status: "Tentativa executada",
+                        sucesso: botaoCriado !== null,
+                        idCriado: botaoCriado ? botaoCriado.id : null,
+                    });
+                } catch (error) {
+                    console.error("❌ Erro ao criar botão:", error);
+                    resultadoCorrecao.acoes.push({
+                        acao: "Criação de botão",
+                        status: "Erro",
+                        erro: error.message,
+                    });
+                }
+            }
+
+            // 2. Tentar aplicar substituição de ícones
+            if (
+                document.querySelectorAll("[data-eprobe-icon-replaced]")
+                    .length === 0
+            ) {
+                console.log("🎨 Aplicando substituição de ícones...");
+                try {
+                    substituirIconesFieldsetAcoes();
+                    resultadoCorrecao.acoes.push({
+                        acao: "Substituição de ícones",
+                        status: "Executada",
+                        quantidade: document.querySelectorAll(
+                            "[data-eprobe-icon-replaced]"
+                        ).length,
+                    });
+                } catch (error) {
+                    console.error("❌ Erro ao substituir ícones:", error);
+                    resultadoCorrecao.acoes.push({
+                        acao: "Substituição de ícones",
+                        status: "Erro",
+                        erro: error.message,
+                    });
+                }
+            }
+
+            // 3. Forçar detecção de data da sessão se necessário
+            if (!hasDataSessaoPautado()) {
+                console.log("📅 Forçando detecção de data da sessão...");
+                try {
+                    const dataDetectada = detectarDataSessao();
+                    resultadoCorrecao.acoes.push({
+                        acao: "Detecção de data da sessão",
+                        status: "Executada",
+                        sucesso: dataDetectada !== null,
+                        valor: dataDetectada,
+                    });
+                } catch (error) {
+                    console.error("❌ Erro ao detectar data da sessão:", error);
+                    resultadoCorrecao.acoes.push({
+                        acao: "Detecção de data da sessão",
+                        status: "Erro",
+                        erro: error.message,
+                    });
+                }
+            }
+
+            console.log("🔧 CORREÇÃO COMPLETA:", resultadoCorrecao);
+            return resultadoCorrecao;
+        }
+
+        /**
+         * Força a reaplicação dos ícones em caso de falha
+         * Remove marcações existentes e executa novamente
+         */
+        function forcarReaplicacaoIcones() {
+            console.log("🔄 ÍCONES: Forçando reaplicação de ícones...");
+
+            // Remover marcações existentes
+            const iconesJaSubstituidos = document.querySelectorAll(
+                "[data-eprobe-icon-replaced]"
+            );
+            iconesJaSubstituidos.forEach((icone) => {
+                icone.removeAttribute("data-eprobe-icon-replaced");
+                icone.removeAttribute("data-original-text");
+            });
+
+            let resultados = {
+                fieldsetAcoes: 0,
+                ferramentas: 0,
+                erros: [],
+            };
+
+            // Executar substituição no fieldset de ações
+            try {
+                const fieldsetAcoes = document.querySelector(
+                    "#fldAcoes.infraFieldset"
+                );
+                if (fieldsetAcoes) {
+                    console.log(
+                        "🎨 Reaplicando ícones no fieldset de ações..."
+                    );
+                    substituirIconesFieldsetAcoes();
+                    resultados.fieldsetAcoes = document.querySelectorAll(
+                        "#fldAcoes [data-eprobe-icon-replaced]"
+                    ).length;
+                }
+            } catch (error) {
+                console.error("❌ Erro na reaplicação do fieldset:", error);
+                resultados.erros.push(`Fieldset: ${error.message}`);
+            }
+
+            // Executar substituição nas ferramentas
+            try {
+                console.log("🛠️ Reaplicando ícones das ferramentas...");
+                if (typeof substituirIconesFerramentas === "function") {
+                    substituirIconesFerramentas();
+                    resultados.ferramentas =
+                        document.querySelectorAll(
+                            "img[data-eprobe-icon-replaced]"
+                        ).length - resultados.fieldsetAcoes;
+                }
+            } catch (error) {
+                console.error("❌ Erro na reaplicação das ferramentas:", error);
+                resultados.erros.push(`Ferramentas: ${error.message}`);
+            }
+
+            console.log("✅ ÍCONES: Reaplicação concluída:", resultados);
+            return resultados;
+        }
+
+        /**
+         * Inicializa o sistema de substituição de ícones
+         * Função principal que coordena toda a substituição
+         */
+        function inicializarSubstituicaoIcones() {
+            console.log("🎨 ÍCONES: Inicializando sistema de substituição...");
+
+            if (MODO_ULTRA_PERFORMANCE) {
+                console.log(
+                    "⚠️ ÍCONES: Modo ultra-performance ativo - substituição bloqueada"
+                );
+                return false;
+            }
+
+            const resultados = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                execucoes: [],
+                totalSubstituicoes: 0,
+            };
+
+            // 1. Substituir ícones do fieldset de ações
+            try {
+                const antes = document.querySelectorAll(
+                    "[data-eprobe-icon-replaced]"
+                ).length;
+                substituirIconesFieldsetAcoes();
+                const depois = document.querySelectorAll(
+                    "[data-eprobe-icon-replaced]"
+                ).length;
+                const substituicoes = depois - antes;
+
+                resultados.execucoes.push({
+                    tipo: "Fieldset Ações",
+                    substituicoes: substituicoes,
+                    sucesso: true,
+                });
+                resultados.totalSubstituicoes += substituicoes;
+            } catch (error) {
+                console.error("❌ Erro na substituição do fieldset:", error);
+                resultados.execucoes.push({
+                    tipo: "Fieldset Ações",
+                    substituicoes: 0,
+                    sucesso: false,
+                    erro: error.message,
+                });
+            }
+
+            // 2. Substituir ícones das ferramentas
+            try {
+                if (typeof substituirIconesFerramentas === "function") {
+                    const antes = document.querySelectorAll(
+                        "[data-eprobe-icon-replaced]"
+                    ).length;
+                    substituirIconesFerramentas();
+                    const depois = document.querySelectorAll(
+                        "[data-eprobe-icon-replaced]"
+                    ).length;
+                    const substituicoes = depois - antes;
+
+                    resultados.execucoes.push({
+                        tipo: "Ferramentas",
+                        substituicoes: substituicoes,
+                        sucesso: true,
+                    });
+                    resultados.totalSubstituicoes += substituicoes;
+                }
+            } catch (error) {
+                console.error("❌ Erro na substituição de ferramentas:", error);
+                resultados.execucoes.push({
+                    tipo: "Ferramentas",
+                    substituicoes: 0,
+                    sucesso: false,
+                    erro: error.message,
+                });
+            }
+
+            console.log("🎨 ÍCONES: Inicialização concluída:", resultados);
+            return resultados;
+        }
+
+        /**
+         * Diagnóstico específico para problemas com ícones CSS
+         * Analisa o estado atual dos ícones na página
+         */
+        function diagnosticarIconesCSS() {
+            console.log("🔍 DIAGNÓSTICO: Analisando estado dos ícones CSS...");
+
+            const diagnostico = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                url: window.location.href,
+                fieldsetAcoes: null,
+                iconesGIF: 0,
+                iconesSVG: 0,
+                iconesSubstituidos: 0,
+                problemas: [],
+                recomendacoes: [],
+            };
+
+            // Analisar fieldset de ações
+            const fieldsetAcoes = document.querySelector(
+                "#fldAcoes.infraFieldset"
+            );
+            if (fieldsetAcoes) {
+                diagnostico.fieldsetAcoes = {
+                    encontrado: true,
+                    children: fieldsetAcoes.children.length,
+                    links: fieldsetAcoes.querySelectorAll("a").length,
+                };
+
+                // Contar tipos de ícones
+                const iconesGIF =
+                    fieldsetAcoes.querySelectorAll('img[src*=".gif"]');
+                const iconesSVG = fieldsetAcoes.querySelectorAll("svg.lucide");
+                const iconesSubstituidos = fieldsetAcoes.querySelectorAll(
+                    "[data-eprobe-icon-replaced]"
+                );
+
+                diagnostico.iconesGIF = iconesGIF.length;
+                diagnostico.iconesSVG = iconesSVG.length;
+                diagnostico.iconesSubstituidos = iconesSubstituidos.length;
+
+                // Identificar problemas
+                if (iconesGIF.length > 0 && iconesSVG.length === 0) {
+                    diagnostico.problemas.push(
+                        "Ícones GIF não foram substituídos por SVG"
+                    );
+                    diagnostico.recomendacoes.push(
+                        "Execute window.SENT1_AUTO.forcarReaplicacaoIcones()"
+                    );
+                }
+
+                if (iconesSubstituidos.length === 0 && iconesGIF.length > 0) {
+                    diagnostico.problemas.push(
+                        "Nenhum ícone foi marcado como substituído"
+                    );
+                    diagnostico.recomendacoes.push(
+                        "Execute window.SENT1_AUTO.inicializarSubstituicaoIcones()"
+                    );
+                }
+            } else {
+                diagnostico.fieldsetAcoes = { encontrado: false };
+                diagnostico.problemas.push("Fieldset #fldAcoes não encontrado");
+                diagnostico.recomendacoes.push(
+                    "Verifique se está na página correta do eProc"
+                );
+            }
+
+            // Verificar se modo ultra-performance está bloqueando
+            if (MODO_ULTRA_PERFORMANCE) {
+                diagnostico.problemas.push(
+                    "Modo ultra-performance ativo bloqueando substituições"
+                );
+                diagnostico.recomendacoes.push(
+                    "Execute window.SENT1_AUTO.desativarModoUltraPerformance()"
+                );
+            }
+
+            console.log("🔍 DIAGNÓSTICO COMPLETO:", diagnostico);
+            return diagnostico;
         }
 
         // ========================================
@@ -9932,9 +10426,9 @@ ${texto}`;
             return dataValidada;
         }
 
-        // Função principal para detectar data da sessão
+        // Função principal para detectar data da sessão - VERSÃO OTIMIZADA
         function detectarDataSessao() {
-            console.log("🔍 INICIANDO: Detecção da data da sessão");
+            console.log("🔍 INICIANDO: Detecção da data da sessão (otimizada)");
 
             // 🔐 VERIFICAÇÃO DE PROCESSO
             processoAtual = obterNumeroProcesso();
@@ -9945,218 +10439,196 @@ ${texto}`;
                 return null;
             }
 
-            // 🔓 PERMITIR MÚLTIPLAS DETECÇÕES - Verificar se já há data detectada
-            if (hasDataSessaoPautado()) {
+            // 🔓 VERIFICAR CACHE EXISTENTE
+            if (
+                hasDataSessaoPautado() &&
+                processoComDataSessao === processoAtual
+            ) {
                 console.log(
-                    `ℹ️ DETECÇÃO: Data da sessão já detectada para o processo ${processoAtual}: ${
+                    `ℹ️ CACHE: Data já detectada para processo ${processoAtual}: ${
                         getDataSessaoPautado().dataFormatada
                     }`
-                );
-                console.log(
-                    `🔍 DEBUG: Processo com data armazenada: ${processoComDataSessao}`
                 );
                 return getDataSessaoPautado();
             }
 
-            console.log(
-                `🔍 DETECÇÃO: Analisando processo ${processoAtual} pela primeira vez...`
-            );
-            console.log(
-                `🔍 DEBUG: Processo anterior com data: ${processoComDataSessao}`
-            );
-
-            // Verificar se há data armazenada de outro processo
+            // 🧹 LIMPAR CACHE DE PROCESSO ANTERIOR
             if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
                 console.log(
-                    `⚠️ CACHE: Limpando data de processo anterior (${processoComDataSessao}): ${dataSessaoPautado.dataFormatada}`
+                    `⚠️ CACHE: Limpando dados do processo anterior (${processoComDataSessao})`
                 );
                 resetDataSessaoPautado();
             }
 
-            // 🎯 PRIORIDADE 1: Detectar com status específico primeiro
+            console.log(`🔍 DETECÇÃO: Analisando processo ${processoAtual}...`);
+
+            // 🎯 PRIORIDADE 1: Detectar com status específico (mais rápido)
             const statusDetectado = detectarStatusSessao();
             if (statusDetectado) {
-                console.log(
-                    `✅ SUCESSO COM STATUS: ${statusDetectado.status} detectado`
-                );
+                console.log(`✅ STATUS: ${statusDetectado.status} detectado`);
 
                 dataSessaoPautado = statusDetectado.data;
                 dataSessaoPautado.statusSessao = statusDetectado;
                 processoComDataSessao = processoAtual;
 
-                console.log(
-                    `✅ SUCESSO: Data da sessão detectada com status para processo ${processoAtual}: ${statusDetectado.data.dataFormatada}`
-                );
-
                 // 🔐 MARCAR PROCESSO COMO PROCESSADO
                 marcarProcessoComoProcessado(processoAtual);
 
-                // Interface inserida automaticamente
-                setTimeout(() => {
-                    inserirDataSessaoNaInterface();
-                }, 500);
+                // Interface com debounce
+                debounceGlobal(
+                    () => {
+                        inserirDataSessaoNaInterface();
+                    },
+                    "interface-update",
+                    300
+                );
 
                 return dataSessaoPautado;
             }
 
-            // FALLBACK: Buscar em todo o texto da página com padrões genéricos
-            console.log("🔍 FALLBACK: Tentando padrões genéricos de data");
+            // 🔍 BUSCA OTIMIZADA: Usar cache de texto quando possível
             const textoCompleto = document.body.innerText;
+            if (!textoCompleto || textoCompleto.length < 100) {
+                console.log("❌ DETECÇÃO: Conteúdo da página insuficiente");
+                return null;
+            }
 
-            // Primeiro padrão: buscar por texto que contém data da sessão
-            const padrao1 =
-                /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
+            // Padrões otimizados (combinados em uma única passada)
+            const padroes = [
+                /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                /(?:incluído\s*em\s*pauta\s*em)\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            ];
 
-            const match1 = textoCompleto.match(padrao1);
-            if (match1) {
-                const dataEncontrada = match1[1];
-                console.log(`✅ PADRÃO 1: Data encontrada: ${dataEncontrada}`);
-
-                const dataValidada = validarDataBrasileira(dataEncontrada);
-                if (dataValidada) {
-                    // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
-                    const statusDetectadoFallback = detectarStatusSessao();
-                    if (statusDetectadoFallback) {
-                        console.log(
-                            `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
-                        );
-                        dataValidada.statusSessao = statusDetectadoFallback;
-                    } else {
-                        console.log(
-                            "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
-                        );
-                    }
-
-                    dataSessaoPautado = dataValidada;
-                    processoComDataSessao = processoAtual;
+            for (const [index, padrao] of padroes.entries()) {
+                const match = textoCompleto.match(padrao);
+                if (match) {
+                    const dataEncontrada = match[1];
                     console.log(
-                        `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
+                        `✅ PADRÃO ${
+                            index + 1
+                        }: Data encontrada: ${dataEncontrada}`
                     );
 
-                    // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
-                    marcarProcessoComoProcessado(processoAtual);
-
-                    // �🚀 INTEGRAÇÃO AUTOMÁTICA CONTROLADA: Apenas uma tentativa
-                    setTimeout(async () => {
-                        try {
-                            console.log(
-                                "� CRUZAMENTO: Tentativa automática única e controlada"
-                            );
-                            const resultado = await cruzarDadosDataSessao();
-                            if (resultado) {
-                                console.log("✅ CRUZAMENTO: Sucesso!");
-                                atualizarDataSessaoNaInterface();
-                            } else {
-                                console.log(
-                                    "ℹ️ CRUZAMENTO: Dados não encontrados"
-                                );
-                                console.log(
-                                    "💡 Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
-                                );
-                            }
-                        } catch (error) {
-                            console.warn(
-                                "⚠️ CRUZAMENTO: Erro controlado:",
-                                error.message
-                            );
+                    const dataValidada = validarDataBrasileira(dataEncontrada);
+                    if (dataValidada) {
+                        // Tentar detectar status mesmo no fallback
+                        const statusDetectadoFallback = detectarStatusSessao();
+                        if (statusDetectadoFallback) {
+                            dataValidada.statusSessao = statusDetectadoFallback;
                         }
-                    }, 3000); // Delay maior
 
-                    return dataValidada;
-                }
-            }
+                        dataSessaoPautado = dataValidada;
+                        processoComDataSessao = processoAtual;
 
-            // Segundo padrão: julgamento em [data]
-            const padrao2 =
-                /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i;
+                        // 🔐 MARCAR PROCESSO COMO PROCESSADO
+                        marcarProcessoComoProcessado(processoAtual);
 
-            const match2 = textoCompleto.match(padrao2);
-            if (match2) {
-                const dataEncontrada = match2[1];
-                console.log(`✅ PADRÃO 2: Data encontrada: ${dataEncontrada}`);
-
-                const dataValidada = validarDataBrasileira(dataEncontrada);
-                if (dataValidada) {
-                    // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
-                    const statusDetectadoFallback = detectarStatusSessao();
-                    if (statusDetectadoFallback) {
                         console.log(
-                            `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
+                            `✅ SUCESSO: Data detectada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
                         );
-                        dataValidada.statusSessao = statusDetectadoFallback;
-                    } else {
-                        console.log(
-                            "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
+
+                        // � CRUZAMENTO AUTOMÁTICO COM DEBOUNCE
+                        debounceGlobal(
+                            async () => {
+                                try {
+                                    console.log(
+                                        "🔄 CRUZAMENTO: Iniciando busca de dados completos..."
+                                    );
+                                    const resultado =
+                                        await cruzarDadosDataSessao();
+                                    if (resultado) {
+                                        console.log(
+                                            "✅ CRUZAMENTO: Dados completos obtidos!"
+                                        );
+                                        atualizarDataSessaoNaInterface();
+                                    }
+                                } catch (error) {
+                                    console.warn(
+                                        "⚠️ CRUZAMENTO: Erro controlado:",
+                                        error.message
+                                    );
+                                }
+                            },
+                            "cruzamento-auto",
+                            1500
                         );
+
+                        return dataValidada;
                     }
-
-                    dataSessaoPautado = dataValidada;
-                    console.log(
-                        `✅ SUCESSO: Data da sessão detectada e armazenada: ${dataValidada.dataFormatada}`
-                    );
-
-                    // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                    marcarProcessoComoProcessado(processoAtual);
-
-                    // Interface inserida automaticamente
-                    setTimeout(() => {
-                        inserirDataSessaoNaInterface();
-                    }, 500);
-
-                    // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo spam de requisições
-
-                    return dataValidada;
                 }
             }
 
-            // Terceiro padrão: data isolada próxima de palavras-chave
-            const padrao3 =
-                /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i;
-
-            const match3 = textoCompleto.match(padrao3);
-            if (match3) {
-                const dataEncontrada = match3[1];
-                console.log(`✅ PADRÃO 3: Data encontrada: ${dataEncontrada}`);
-
-                const dataValidada = validarDataBrasileira(dataEncontrada);
-                if (dataValidada) {
-                    // 🔍 TENTAR DETECTAR STATUS MESMO NO FALLBACK
-                    const statusDetectadoFallback = detectarStatusSessao();
-                    if (statusDetectadoFallback) {
-                        console.log(
-                            `🎯 FALLBACK: Status detectado: ${statusDetectadoFallback.status}`
-                        );
-                        dataValidada.statusSessao = statusDetectadoFallback;
-                    } else {
-                        console.log(
-                            "⚠️ FALLBACK: Nenhum status específico detectado, usando padrão"
-                        );
-                    }
-
-                    dataSessaoPautado = dataValidada;
-                    processoComDataSessao = processoAtual;
-                    console.log(
-                        `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
-                    );
-
-                    // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                    marcarProcessoComoProcessado(processoAtual);
-
-                    // Interface inserida automaticamente
-                    setTimeout(() => {
-                        inserirDataSessaoNaInterface();
-                    }, 500);
-
-                    // ⚠️ CRUZAMENTO AUTOMÁTICO DESABILITADO - Prevenindo múltiplas requisições
-
-                    return dataValidada;
-                }
-            }
-
-            console.log(
-                "❌ Nenhuma data válida encontrada em todos os padrões"
-            );
+            console.log("❌ DETECÇÃO: Nenhuma data de sessão encontrada");
             return null;
+        }
+
+        // Função para inserir data da sessão na interface do eProc
+        function inserirDataSessaoNaInterface() {
+            console.log(
+                "🎯 INSERIR: Tentando inserir data da sessão na interface"
+            );
+
+            // Verificar se há data detectada
+            if (!hasDataSessaoPautado()) {
+                console.log("❌ INSERIR: Nenhuma data detectada para inserir");
+                return false;
+            }
+
+            // Buscar o elemento container alvo com cache
+            const targetContainer = getCachedElement(
+                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
+            );
+
+            if (!targetContainer) {
+                console.log("❌ INSERIR: Container alvo não encontrado");
+                return false;
+            }
+
+            // Verificar se já existe o elemento da data da sessão
+            if (document.getElementById("eprobe-data-sessao")) {
+                console.log(
+                    "ℹ️ INSERIR: Data da sessão já inserida na interface"
+                );
+                return true;
+            }
+
+            // Criar elemento usando a função reutilizável
+            const dataSessaoElement = criarBotaoEleganteeProc(
+                "eprobe-data-sessao",
+                "col-auto mr-2"
+            );
+            processoComDataSessao = processoAtual;
+            console.log(
+                `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
+            );
+
+            // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
+            marcarProcessoComoProcessado(processoAtual);
+
+            // �🚀 INTEGRAÇÃO AUTOMÁTICA CONTROLADA: Apenas uma tentativa
+            setTimeout(async () => {
+                try {
+                    console.log(
+                        "� CRUZAMENTO: Tentativa automática única e controlada"
+                    );
+                    const resultado = await cruzarDadosDataSessao();
+                    if (resultado) {
+                        console.log("✅ CRUZAMENTO: Sucesso!");
+                        atualizarDataSessaoNaInterface();
+                    } else {
+                        console.log("ℹ️ CRUZAMENTO: Dados não encontrados");
+                        console.log(
+                            "💡 Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
+                        );
+                    }
+                } catch (error) {
+                    console.warn(
+                        "⚠️ CRUZAMENTO: Erro controlado:",
+                        error.message
+                    );
+                }
+            }, 3000); // Delay maior
         }
 
         // Funções utilitárias para gerenciar data da sessão
@@ -10230,7 +10702,7 @@ ${texto}`;
         // Função para inserir data da sessão na interface do eProc
         function inserirDataSessaoNaInterface() {
             console.log(
-                "🎯 INSERIR: Tentando inserir data da sessão na interface"
+                "🎯 INSERIR: Tentando inserir data da sessão na interface (otimizado)"
             );
 
             // Verificar se há data detectada
@@ -10239,8 +10711,8 @@ ${texto}`;
                 return false;
             }
 
-            // Buscar o elemento container alvo
-            const targetContainer = document.querySelector(
+            // Buscar o elemento container alvo com cache
+            const targetContainer = getCachedElement(
                 "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
             );
 
@@ -10250,11 +10722,24 @@ ${texto}`;
             }
 
             // Verificar se já existe o elemento da data da sessão
-            if (document.getElementById("eprobe-data-sessao")) {
+            const existingElement =
+                document.getElementById("eprobe-data-sessao");
+            if (existingElement) {
                 console.log(
-                    "ℹ️ INSERIR: Data da sessão já inserida na interface"
+                    "ℹ️ INSERIR: Data da sessão já inserida, verificando se precisa atualizar"
                 );
-                return true;
+
+                // Verificar se os dados mudaram para decidir se atualiza
+                const currentData = getDataSessaoPautado();
+                const elementData =
+                    existingElement.getAttribute("data-processo");
+
+                if (elementData !== processoAtual) {
+                    console.log("🔄 INSERIR: Processo mudou, atualizando card");
+                    existingElement.remove();
+                } else {
+                    return true;
+                }
             }
 
             // Criar elemento usando a função reutilizável
@@ -10262,6 +10747,9 @@ ${texto}`;
                 "eprobe-data-sessao",
                 "col-auto mr-2"
             );
+
+            // Adicionar identificação do processo para controle de cache
+            dataSessaoElement.setAttribute("data-processo", processoAtual);
 
             // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
             const dadosCompletos = getDadosCompletosSessionJulgamento();
@@ -10339,93 +10827,72 @@ Dados obtidos automaticamente pelo eProbe`;
                 dataSessaoElement.title = tooltipBase;
             }
 
-            // 🔗 ADICIONAR LISTENER DE CLIQUE - Cruzamento de dados acionado pelo usuário
-            dataSessaoElement.addEventListener("click", async function (event) {
+            // 🔗 ADICIONAR LISTENER DE CLIQUE OTIMIZADO - Com debounce
+            dataSessaoElement.addEventListener("click", function (event) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                console.log(
-                    "🖱️ CLIQUE: Usuário clicou na data da sessão - iniciando cruzamento de dados"
+                // Usar debounce para evitar cliques múltiplos
+                debounceGlobal(
+                    async () => {
+                        console.log(
+                            "🖱️ CLIQUE: Usuário clicou na data da sessão"
+                        );
+
+                        // Verificar se já há dados completos
+                        if (getDadosCompletosSessionJulgamento()) {
+                            console.log(
+                                "ℹ️ CLIQUE: Mostrando dados completos existentes"
+                            );
+                            showDadosCompletosSessionJulgamento();
+                            return;
+                        }
+
+                        // Feedback visual rápido
+                        const elementoOriginal = this.innerHTML;
+                        this.style.opacity = "0.7";
+                        this.style.transform = "scale(0.95)";
+
+                        try {
+                            console.log(
+                                "🔄 CLIQUE: Iniciando cruzamento de dados"
+                            );
+                            const resultado = await cruzarDadosDataSessao(
+                                null,
+                                true
+                            );
+
+                            if (resultado) {
+                                console.log(
+                                    "✅ CLIQUE: Dados obtidos com sucesso"
+                                );
+                                // Atualizar interface com delay mínimo
+                                setTimeout(() => {
+                                    atualizarDataSessaoNaInterface();
+                                }, 200);
+                            } else {
+                                console.log(
+                                    "ℹ️ CLIQUE: Nenhum dado adicional encontrado"
+                                );
+                            }
+                        } catch (error) {
+                            console.warn(
+                                "⚠️ CLIQUE: Erro no cruzamento:",
+                                error.message
+                            );
+                        } finally {
+                            // Restaurar visual
+                            this.style.opacity = "1";
+                            this.style.transform = "scale(1)";
+                        }
+                    },
+                    "click-cruzamento",
+                    500
                 );
-
-                // Verificar se já há dados completos
-                if (getDadosCompletosSessionJulgamento()) {
-                    console.log(
-                        "ℹ️ CLIQUE: Dados completos já disponíveis - mostrando informações"
-                    );
-                    showDadosCompletosSessionJulgamento();
-                    return;
-                }
-
-                // Mostrar feedback visual de carregamento
-                const elementoOriginal = this.innerHTML;
-                this.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0; animation: spin 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">Buscando dados...</span>
-                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">Aguarde...</span>
-                </div>
-            `;
-
-                // Adicionar animação de rotação
-                const style = document.createElement("style");
-                style.textContent = `
-                @keyframes spin {
-                    from { transform: rotate(0deg); }
-                    to { transform: rotate(360deg); }
-                }
-            `;
-                if (!document.head.querySelector("style[data-eprobe-spin]")) {
-                    style.setAttribute("data-eprobe-spin", "true");
-                    document.head.appendChild(style);
-                }
-
-                try {
-                    // Forçar cruzamento de dados independente do toggle
-                    console.log(
-                        "🔄 CLIQUE: Forçando cruzamento de dados da sessão"
-                    );
-                    const resultado = await cruzarDadosDataSessao(null, true);
-
-                    if (resultado) {
-                        console.log(
-                            "✅ CLIQUE: Cruzamento realizado com sucesso - atualizando interface"
-                        );
-                        // A interface será atualizada automaticamente pelo cruzamento
-                        setTimeout(() => {
-                            atualizarDataSessaoNaInterface();
-                        }, 500);
-                    } else {
-                        console.log(
-                            "⚠️ CLIQUE: Cruzamento não retornou dados - restaurando interface"
-                        );
-                        // Restaurar conteúdo original
-                        this.innerHTML = elementoOriginal;
-
-                        // Mostrar notificação
-                        alert(
-                            "Não foi possível obter dados completos da sessão.\n\nPossíveis causas:\n• Sessão não encontrada na lista\n• Problemas de conectividade\n• Limite de tentativas atingido"
-                        );
-                    }
-                } catch (error) {
-                    console.error("❌ CLIQUE: Erro durante cruzamento:", error);
-                    // Restaurar conteúdo original
-                    this.innerHTML = elementoOriginal;
-
-                    // Mostrar erro
-                    alert(`Erro ao buscar dados da sessão:\n${error.message}`);
-                }
             });
 
             // Inserir o elemento no container
             targetContainer.appendChild(dataSessaoElement);
-
-            // 🎨 Card Material Design será criado apenas uma vez pela inicialização
-            console.log(
-                "ℹ️ INTERFACE: Card Material Design gerenciado pela inicialização"
-            );
 
             console.log(
                 `✅ INSERIR: Data da sessão inserida na interface: ${dataSessaoPautado.dataFormatada}`
@@ -11075,60 +11542,87 @@ Dados obtidos automaticamente pelo eProbe`;
             }
         }
 
-        // 🚀 INICIALIZAÇÃO AUTOMÁTICA - Executar automáticamente após carregamento da página
+        // 🚀 INICIALIZAÇÃO AUTOMÁTICA OTIMIZADA - Carregamento mais rápido
+        let inicializacaoExecutada = false; // Prevenir execução dupla
+
         function inicializarAutomaticamente() {
+            if (inicializacaoExecutada) {
+                console.log("⚠️ INICIALIZAÇÃO: Já executada, pulando...");
+                return;
+            }
+
+            inicializacaoExecutada = true;
             console.log(
                 "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
             );
 
-            // Aguardar um pouco para garantir que a página carregou completamente
-            setTimeout(() => {
-                try {
-                    // 1. Detectar data da sessão
-                    if (!hasDataSessaoPautado()) {
-                        console.log(
-                            "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
-                        );
-                        detectarDataSessao();
+            // Execução imediata sem delay desnecessário
+            try {
+                // 1. Detectar data da sessão de forma não-bloqueante
+                if (!hasDataSessaoPautado()) {
+                    console.log(
+                        "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
+                    );
+
+                    // Usar requestIdleCallback para não bloquear a UI
+                    if (window.requestIdleCallback) {
+                        requestIdleCallback(() => {
+                            detectarDataSessao();
+                        });
+                    } else {
+                        // Fallback para navegadores que não suportam requestIdleCallback
+                        setTimeout(() => detectarDataSessao(), 100);
                     }
+                }
 
-                    // 2. Se detectou data, inserir na interface
-                    if (hasDataSessaoPautado()) {
-                        console.log(
-                            "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
-                        );
-                        inserirDataSessaoNaInterface();
+                // 2. Verificar se há dados para inserir na interface
+                if (hasDataSessaoPautado()) {
+                    console.log(
+                        "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
+                    );
+                    inserirDataSessaoNaInterface();
 
-                        // 3. Cruzar dados automaticamente
+                    // 3. Cruzamento só se requisições estiverem habilitadas
+                    if (!REQUISICOES_AUTOMATICAS_DESABILITADAS) {
                         console.log(
-                            "🔄 INICIALIZAÇÃO: Iniciando cruzamento automático de dados..."
+                            "🔄 INICIALIZAÇÃO: Agendando cruzamento de dados..."
                         );
-                        cruzarDadosDataSessao()
-                            .then(() => {
-                                console.log(
-                                    "✅ INICIALIZAÇÃO: Processo completo finalizado com sucesso!"
-                                );
-                                // Atualizar interface com dados completos se disponíveis
-                                atualizarDataSessaoNaInterface();
-                            })
-                            .catch((error) => {
-                                console.warn(
-                                    "⚠️ INICIALIZAÇÃO: Erro no cruzamento automático:",
-                                    error
-                                );
-                            });
+                        debounceGlobal(
+                            () => {
+                                cruzarDadosDataSessao()
+                                    .then(() => {
+                                        console.log(
+                                            "✅ INICIALIZAÇÃO: Processo completo finalizado!"
+                                        );
+                                        atualizarDataSessaoNaInterface();
+                                    })
+                                    .catch((error) => {
+                                        console.warn(
+                                            "⚠️ INICIALIZAÇÃO: Erro no cruzamento:",
+                                            error.message
+                                        );
+                                    });
+                            },
+                            "cruzamento-automatico",
+                            2000
+                        );
                     } else {
                         console.log(
-                            "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
+                            "ℹ️ INICIALIZAÇÃO: Cruzamento automático desabilitado - interface básica pronta"
                         );
                     }
-                } catch (error) {
-                    console.error(
-                        "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
-                        error
+                } else {
+                    console.log(
+                        "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
                     );
                 }
-            }, 1000); // Aguardar 1 segundo
+            } catch (error) {
+                console.error(
+                    "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
+                    error
+                );
+                inicializacaoExecutada = false; // Permitir retry em caso de erro
+            }
         }
 
         // 🧪 FUNÇÃO DE TESTE - Para validação durante desenvolvimento
@@ -11578,7 +12072,7 @@ Dados obtidos automaticamente pelo eProbe`;
             // Se a página já carregou, executar imediatamente
             inicializarAutomaticamente();
         }
-    })();
+    })(); // Fechamento da IIFE de detecção de sessão
 
     // ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
 
@@ -12120,6 +12614,14 @@ Dados obtidos automaticamente pelo eProbe`;
      * VERSÃO OTIMIZADA - Sem recriação automática de cards
      */
     async function inicializarMaterialDesign() {
+        // 🔥 PERFORMANCE: Pular se modo ultra-performance estiver ativo
+        if (MODO_ULTRA_PERFORMANCE) {
+            console.log(
+                "🔥 PERFORMANCE: Inicialização Material Design PULADA (modo ultra-performance ativo)"
+            );
+            return;
+        }
+
         console.log("🚀 MATERIAL: Inicializando sistema Material Design");
 
         try {
@@ -12145,8 +12647,22 @@ Dados obtidos automaticamente pelo eProbe`;
      * Aplica o CSS minimalista do Material Design
      */
     function aplicarCSSMaterialDesign() {
+        // 🔥 PERFORMANCE: Pular se modo ultra-performance estiver ativo
+        if (MODO_ULTRA_PERFORMANCE) {
+            console.log(
+                "🔥 PERFORMANCE: Aplicação de CSS Material Design PULADA (modo ultra-performance ativo)"
+            );
+            return;
+        }
+
+        console.log("🎨 MATERIAL: Iniciando aplicação do CSS minimalista");
+
         // Verificar se já foi aplicado
-        if (document.querySelector("style[data-eprobe-material-design]")) {
+        const styleExistente = document.querySelector(
+            "style[data-eprobe-material-design]"
+        );
+        if (styleExistente) {
+            console.log("ℹ️ MATERIAL: CSS já aplicado, pulando aplicação");
             return;
         }
 
@@ -12303,8 +12819,233 @@ Dados obtidos automaticamente pelo eProbe`;
         );
     }
 
-    // Aplicar CSS imediatamente
+    /**
+     * 🔧 FUNÇÃO DE DIAGNÓSTICO - Verificar aplicação de ícones e CSS
+     * Seguindo REGRAS CRÍTICAS: SEMPRE declarar variáveis antes de usar
+     */
+    function diagnosticarIconesCSS() {
+        console.log("🔧 DIAGNÓSTICO: Verificando aplicação de ícones CSS");
+
+        // REGRA CRÍTICA: Declarar todas as variáveis antes de usar
+        let cardEncontrado = false;
+        let cssEncontrado = false;
+        let iconesPresentes = false;
+
+        // Verificar se o card existe
+        const card = document.getElementById("eprobe-data-sessao");
+        if (card) {
+            cardEncontrado = true;
+            console.log("✅ DIAGNÓSTICO: Card encontrado:", card);
+            console.log("📝 DIAGNÓSTICO: HTML do card:", card.innerHTML);
+
+            // Verificar ícones no card
+            const icones = card.querySelectorAll('[class*="eprobe-icon"]');
+            if (icones.length > 0) {
+                iconesPresentes = true;
+                console.log(
+                    `🎯 DIAGNÓSTICO: ${icones.length} ícone(s) encontrado(s):`
+                );
+                icones.forEach((icone, index) => {
+                    console.log(`   ${index + 1}. Classe: ${icone.className}`);
+                    const computedStyle = window.getComputedStyle(
+                        icone,
+                        "::before"
+                    );
+                    console.log(
+                        `   ${index + 1}. Background-image: ${
+                            computedStyle.backgroundImage
+                        }`
+                    );
+                });
+            } else {
+                console.log("❌ DIAGNÓSTICO: Nenhum ícone encontrado no card");
+            }
+        } else {
+            console.log("❌ DIAGNÓSTICO: Card não encontrado");
+        }
+
+        // Verificar se o CSS foi aplicado
+        const styleElements = document.querySelectorAll(
+            'style[data-eprobe-material-design="true"]'
+        );
+        if (styleElements.length > 0) {
+            cssEncontrado = true;
+            console.log(
+                `✅ DIAGNÓSTICO: ${styleElements.length} elemento(s) de estilo encontrado(s)`
+            );
+            styleElements.forEach((style, index) => {
+                const cssContent = style.textContent || "";
+                const temIcones = cssContent.includes("eprobe-icon");
+                console.log(`   ${index + 1}. Tem ícones CSS: ${temIcones}`);
+                if (temIcones) {
+                    const iconeMatches = cssContent.match(/\.eprobe-icon-\w+/g);
+                    console.log(
+                        `   ${index + 1}. Ícones definidos: ${
+                            iconeMatches ? iconeMatches.length : 0
+                        }`
+                    );
+                }
+            });
+        } else {
+            console.log(
+                "❌ DIAGNÓSTICO: CSS do Material Design não encontrado"
+            );
+        }
+
+        // Resultado do diagnóstico
+        const diagnostico = {
+            cardEncontrado,
+            cssEncontrado,
+            iconesPresentes,
+            timestamp: new Date().toISOString(),
+        };
+
+        console.log("📊 DIAGNÓSTICO: Resultado final:", diagnostico);
+        return diagnostico;
+    }
+
+    /**
+     * 🔧 FUNÇÃO DE CORREÇÃO - Forçar reaplicação de CSS de ícones
+     * Seguindo REGRAS CRÍTICAS: SEMPRE verificar existência antes de usar
+     */
+    function forcarReaplicacaoIcones() {
+        console.log("🔧 CORREÇÃO: Forçando reaplicação de CSS de ícones");
+
+        // REGRA CRÍTICA: Verificar existência antes de usar
+        const styleExistente = document.querySelector(
+            'style[data-eprobe-material-design="true"]'
+        );
+        if (styleExistente) {
+            console.log("🔄 CORREÇÃO: Removendo CSS existente para recriar");
+            styleExistente.remove();
+        }
+
+        // Reaplicar CSS
+        aplicarCSSMaterialDesign();
+
+        // Aguardar um frame e diagnosticar novamente
+        requestAnimationFrame(() => {
+            diagnosticarIconesCSS();
+        });
+    }
+
+    // IMPORTANTE: Aplicar CSS imediatamente
     aplicarCSSMaterialDesign();
+
+    /**
+     * 🔧 FUNÇÃO DE CORREÇÃO - Forçar recriação completa do card de sessão
+     * Seguindo REGRAS CRÍTICAS: SEMPRE declarar variáveis e verificar existência
+     */
+    function forcarRecriacaoCardSessao() {
+        console.log(
+            "🔧 CORREÇÃO: Forçando recriação completa do card de sessão"
+        );
+
+        // REGRA CRÍTICA: Declarar todas as variáveis antes de usar
+        let cardExistente = null;
+        let dadosSessaoGlobais = null;
+        let statusSessao = null;
+
+        try {
+            // Verificar se há dados globais salvos
+            if (
+                typeof window.SENT1_AUTO !== "undefined" &&
+                window.SENT1_AUTO.showDadosGlobaisSessao
+            ) {
+                dadosSessaoGlobais = window.SENT1_AUTO.showDadosGlobaisSessao();
+            }
+
+            // Obter status atual
+            if (typeof getStatusSessao === "function") {
+                statusSessao = getStatusSessao();
+            }
+
+            // Dados mínimos para o card
+            const dadosCard = {
+                status: statusSessao?.status || "Pautado",
+                data: {
+                    dataFormatada:
+                        statusSessao?.data?.dataFormatada || "29/07/2025",
+                },
+            };
+
+            console.log("📋 CORREÇÃO: Dados para o card:", dadosCard);
+
+            // Remover card existente
+            cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                console.log("🗑️ CORREÇÃO: Removendo card existente");
+                cardExistente.remove();
+            }
+
+            // Forçar reaplicação do CSS
+            forcarReaplicacaoIcones();
+
+            // Aguardar um frame para garantir que o CSS foi aplicado
+            requestAnimationFrame(() => {
+                try {
+                    // Criar novo card
+                    const novoCard = criarCardMaterialDesign(dadosCard);
+
+                    // Inserir no local correto
+                    const targetContainer = encontrarContainerParaCard();
+                    if (targetContainer && novoCard) {
+                        targetContainer.appendChild(novoCard);
+                        console.log(
+                            "✅ CORREÇÃO: Card recriado e inserido com sucesso"
+                        );
+
+                        // Diagnosticar após inserção
+                        setTimeout(() => {
+                            diagnosticarIconesCSS();
+                        }, 100);
+                    } else {
+                        console.log(
+                            "❌ CORREÇÃO: Falha ao encontrar container ou criar card"
+                        );
+                    }
+                } catch (error) {
+                    console.error("❌ CORREÇÃO: Erro ao recriar card:", error);
+                }
+            });
+        } catch (error) {
+            console.error("❌ CORREÇÃO: Erro geral na recriação:", error);
+        }
+    }
+
+    /**
+     * 🔍 FUNÇÃO AUXILIAR - Encontrar container adequado para o card
+     * Seguindo REGRAS CRÍTICAS: SEMPRE retornar valor consistente
+     */
+    function encontrarContainerParaCard() {
+        // REGRA CRÍTICA: Declarar variável antes de usar
+        let container = null;
+
+        // Estratégia 1: Tentar encontrar container específico do eProc
+        const possiveisContainers = [
+            "#divInfraAreaProcesso",
+            "#conteudoMinutas",
+            "#fldMinutas",
+            ".infraAreaTabela",
+            "body",
+        ];
+
+        for (const seletor of possiveisContainers) {
+            container = document.querySelector(seletor);
+            if (container) {
+                console.log(`✅ CONTAINER: Encontrado container: ${seletor}`);
+                break;
+            }
+        }
+
+        // Fallback garantido
+        if (!container) {
+            container = document.body;
+            console.log("⚠️ CONTAINER: Usando fallback para body");
+        }
+
+        return container;
+    }
 
     // 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
     // Funções expostas globalmente para personalizar botões (fora da IIFE)
@@ -13030,6 +13771,9 @@ Dados obtidos automaticamente pelo eProbe`;
         "Associar Procurador Parte": {
             newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus-icon lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>',
         },
+        "Permissão/Negação Expressa": {
+            newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ban-icon lucide-ban"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>',
+        },
         "Requisição Un. Externa": {
             newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
         },
@@ -13095,6 +13839,11 @@ Dados obtidos automaticamente pelo eProbe`;
                                 svg.classList.add("iconeAcao");
                                 svg.style.width = "18px";
                                 svg.style.height = "18px";
+                                svg.setAttribute(
+                                    "data-eprobe-icon-replaced",
+                                    "true"
+                                );
+                                svg.setAttribute("data-original-text", text);
                             }
 
                             img.parentNode.replaceChild(container, img);
@@ -13179,6 +13928,11 @@ Dados obtidos automaticamente pelo eProbe`;
             {
                 selector: 'img[src*="configuracao.gif"]',
                 newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+            },
+            {
+                selector: 'img[src*="menos.gif"]',
+                newSvg: ICON_REPLACEMENTS_BY_TEXT["Permissão/Negação Expressa"]
+                    .newSvg,
             },
         ];
 
@@ -13279,6 +14033,14 @@ Dados obtidos automaticamente pelo eProbe`;
 
     // Função para monitorar e aplicar substituições automaticamente
     function inicializarSubstituicaoIcones() {
+        // 🔥 PERFORMANCE: Pular se modo ultra-performance estiver ativo
+        if (MODO_ULTRA_PERFORMANCE) {
+            console.log(
+                "🔥 PERFORMANCE: Sistema de substituição de ícones PULADO (modo ultra-performance ativo)"
+            );
+            return;
+        }
+
         console.log("🎨 ÍCONES: Iniciando sistema de substituição de ícones");
 
         // Primeira tentativa imediata
@@ -13570,4 +14332,63 @@ Dados obtidos automaticamente pelo eProbe`;
             console.error("❌ ÍCONES: Erro na inicialização:", error);
         }
     }, 2000);
+
+    // 🔧 EXECUÇÃO ROBUSTA - Segunda tentativa para correção de inconsistências
+    setTimeout(() => {
+        console.log("🔧 ROBUSTA: Verificação e correção de inconsistências...");
+
+        // Verificar se modo ultra-performance está bloqueando
+        if (MODO_ULTRA_PERFORMANCE) {
+            console.log(
+                "⚠️ ROBUSTA: Modo ultra-performance ativo - funções podem estar bloqueadas"
+            );
+        } else {
+            // Verificar se ícones foram substituídos
+            const fieldsetAcoes = document.querySelector(
+                "#fldAcoes.infraFieldset"
+            );
+            if (fieldsetAcoes) {
+                const iconesGIF =
+                    fieldsetAcoes.querySelectorAll('img[src*=".gif"]');
+                const iconesSVG = fieldsetAcoes.querySelectorAll("svg.lucide");
+
+                if (iconesGIF.length > 0 && iconesSVG.length === 0) {
+                    console.log(
+                        "🔧 ROBUSTA: Ícones não foram substituídos - executando correção..."
+                    );
+                    try {
+                        substituirIconesFieldsetAcoes();
+                        substituirIconesFerramentas();
+                        console.log("✅ ROBUSTA: Correção de ícones executada");
+                    } catch (error) {
+                        console.error("❌ ROBUSTA: Erro na correção:", error);
+                    }
+                }
+            }
+
+            // Verificar botão Resumir Documento
+            const botaoResumir =
+                document.getElementById("documento-relevante-auto-button") ||
+                document.getElementById("sent1-auto-button") ||
+                document.getElementById("eprobe-btn");
+            if (!botaoResumir) {
+                console.log(
+                    "🔧 ROBUSTA: Botão não encontrado - tentando criação..."
+                );
+                try {
+                    if (typeof ensureButtonExists === "function") {
+                        ensureButtonExists();
+                        console.log(
+                            "✅ ROBUSTA: Tentativa de criação de botão executada"
+                        );
+                    }
+                } catch (error) {
+                    console.error(
+                        "❌ ROBUSTA: Erro na criação do botão:",
+                        error
+                    );
+                }
+            }
+        }
+    }, 5000);
 })(); // Fechamento da IIFE principal

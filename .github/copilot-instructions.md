@@ -1,5 +1,48 @@
 # eProbe - AI Coding Instructions
 
+## ⚠️ REGRAS CRÍTICAS - NUNCA ESQUECER
+
+### 🔴 DECLARAÇÃO OBRIGATÓRIA DE VARIÁVEIS E FUNÇÕES
+
+**REGRA ABSOLUTA**: SEMPRE declarar variáveis e funções antes de usar. NUNCA referenciar variáveis não declaradas.
+
+```javascript
+// ❌ ERRO CRÍTICO - NÃO FAZER:
+if (minhaVariavel) { ... } // ReferenceError se não declarada
+
+// ✅ CORRETO - SEMPRE FAZER:
+let minhaVariavel = false; // Declarar primeiro
+if (minhaVariavel) { ... } // Usar depois
+```
+
+**CHECKLIST OBRIGATÓRIO antes de cada edição:**
+
+1. ✅ Todas as variáveis estão declaradas com `let`, `const` ou `var`?
+2. ✅ Todas as funções estão definidas antes de serem chamadas?
+3. ✅ Escopo das variáveis está correto?
+4. ✅ Funções retornam valores consistentes (boolean, string, object)?
+5. ✅ Não há referências a variáveis undefined?
+
+### 🔧 PADRÕES DE DECLARAÇÃO OBRIGATÓRIOS
+
+```javascript
+// 1. VARIÁVEIS DE CONTROLE - sempre inicializar
+let interceptAttempts = 0;
+let jQueryDetected = false;
+let jQueryIntercepted = false;
+
+// 2. FUNÇÕES - sempre declarar antes de usar
+const minhaFuncao = () => {
+    // implementação
+    return valorConsistente; // sempre retornar algo
+};
+
+// 3. VARIÁVEIS DE ESCOPO - verificar disponibilidade
+if (typeof window.jQuery !== "undefined") {
+    // usar jQuery apenas se existir
+}
+```
+
 ## Project Overview
 
 eProbe is a Chrome extension that automates document detection and text extraction from the Brazilian court system (eProc/TJSC). It intelligently identifies legal documents (SENT1, INIC1), extracts text content, and facilitates AI-powered document analysis.
@@ -10,7 +53,7 @@ eProbe is a Chrome extension that automates document detection and text extracti
 
 ### Main Entry Points
 
--   **`src/main.js`**: Primary content script (8005 lines) - handles all automation logic and message handling
+-   **`src/main.js`**: Primary content script (13,623 lines) - handles all automation logic and message handling
 -   **`src/popup.js`**: Extension popup interface with functional theme system and configuration switches (332 lines)
 -   **`src/themeApply.js`**: Real-time theme application with global applyThemeStyles() function (88 lines)
 -   **`src/popup.html`**: Clean popup interface without inline scripts (CSP compliant) (164 lines)
@@ -113,6 +156,54 @@ Multiple fallback approaches in `extractTextFromPDF()`:
 5. OCR capture as last resort
 
 ## Development Conventions
+
+### 🚨 PRÁTICAS OBRIGATÓRIAS DE CODIFICAÇÃO
+
+#### Declaração de Variáveis e Funções
+
+```javascript
+// ❌ ERRO COMUM - NÃO FAZER:
+if (jQueryDetected) { ... } // ReferenceError se não declarada
+
+// ✅ PADRÃO CORRETO - SEMPRE FAZER:
+let jQueryDetected = false; // Declarar no escopo correto
+let interceptAttempts = 0;
+const maxAttempts = 5;
+
+// Função deve ser declarada antes de usar
+const optimizedIntercept = () => {
+    interceptAttempts++;
+    const success = interceptJQueryMegaAggressive();
+
+    // Sempre atualizar variáveis de controle
+    if (success) {
+        jQueryDetected = true;
+    }
+
+    // Sempre retornar valor consistente
+    return success;
+};
+```
+
+#### Controle de Escopo e Inicialização
+
+```javascript
+// Variáveis globais no topo do arquivo
+let dataSessaoPautado = null;
+let processoComDataSessao = null;
+let jQueryIntercepted = false;
+
+// Verificação antes de usar variáveis globais
+if (typeof window.jQuery !== "undefined") {
+    // usar apenas se existir
+}
+
+// Funções devem ter valores de retorno consistentes
+function detectarAlgo() {
+    // ...implementação...
+    return resultado || false; // sempre retornar algo
+}
+```
 
 ### Function Naming & Organization
 
@@ -284,6 +375,20 @@ let processoComDadosCompletos = null; // Process with complete data
 
 ## Recent Updates & Architecture Changes
 
+### Performance Optimization (July 2025)
+
+**Problem Solved**: `ReferenceError: jQueryDetected is not defined` and performance issues
+
+-   **Before**: Variables referenced without declaration causing runtime errors
+-   **After**: Strict variable declaration and scoping practices implemented
+
+**Critical Fixes**:
+
+1. **Variable Declaration**: All variables now properly declared with `let`/`const`
+2. **Function Returns**: All functions return consistent boolean/object values
+3. **Scope Management**: Variables declared in correct scope before use
+4. **Performance Limits**: jQuery detection limited to 5 attempts max
+
 ### Theme System Refactoring (December 2025)
 
 **Problem Solved**: CSP violations and broken theme functionality
@@ -337,3 +442,55 @@ let processoComDadosCompletos = null; // Process with complete data
 -   Reference non-existent DOM elements without checking
 -   Mix theme logic with other functionality
 -   Hardcode theme values without fallbacks
+
+### Critical Coding Patterns
+
+**✅ ALWAYS Do:**
+
+```javascript
+// 1. Declare variables before using
+let myVariable = false;
+let attempts = 0;
+const maxAttempts = 5;
+
+// 2. Initialize function variables properly
+const myFunction = () => {
+    let localVar = null; // Always declare
+    // ...implementation...
+    return localVar || false; // Always return something
+};
+
+// 3. Check existence before using
+if (typeof window.jQuery !== "undefined") {
+    // safe to use jQuery
+}
+
+// 4. Use consistent return values
+function detectSomething() {
+    let detected = false;
+    // ...logic...
+    return detected; // Always boolean
+}
+```
+
+**❌ NEVER Do:**
+
+```javascript
+// 1. DON'T reference undeclared variables
+if (someVariable) { ... } // ReferenceError!
+
+// 2. DON'T mix variable scopes
+function outer() {
+    // innerVar used but not declared
+    if (innerVar) { ... } // ERROR!
+}
+
+// 3. DON'T forget return values
+function processData() {
+    // ...processing...
+    // Missing return statement!
+}
+
+// 4. DON'T assume global availability
+$.ready(() => { ... }); // jQuery might not exist!
+```
