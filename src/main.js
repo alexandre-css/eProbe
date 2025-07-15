@@ -1213,13 +1213,20 @@
 
             // Criar ícone do separador
             const iconeSeparador = document.createElement("span");
+            iconeSeparador.style.cssText = `
+                display: inline-block !important;
+                margin-right: 4px !important;
+                vertical-align: middle !important;
+                width: 16px !important;
+                height: 16px !important;
+            `;
             iconeSeparador.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal" style="margin-right: 2px; vertical-align: middle;">
-                <path d="m16 16-4 4-4-4"/>
-                <path d="M3 12h18"/>
-                <path d="m8 8 4-4 4 4"/>
-            </svg>
-        `;
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
+                    <path d="m16 16-4 4-4-4"/>
+                    <path d="M3 12h18"/>
+                    <path d="m8 8 4-4 4 4"/>
+                </svg>
+            `;
 
             // Criar título editável (sem caixa, apenas texto)
             const tituloEditavel = document.createElement("span");
@@ -4711,13 +4718,19 @@ ${texto}`;
             const button = criarInfraButtonPrimary(
                 "documento-relevante-auto-button",
                 `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
  <rect width="18" height="18" x="3" y="3" rx="2"/>
  <path d="m9 8 6 4-6 4Z"/>
  </svg>
  Resumir Documento
  `
             );
+
+            // Aplicar margin-right simples
+            const svg = button.querySelector("svg");
+            if (svg) {
+                svg.style.marginRight = "4px";
+            }
 
             // Adicionar espaçamento quando posicionado ao lado do PDPJ
             if (insertMethod === "beforePDPJ") {
@@ -5250,12 +5263,25 @@ ${texto}`;
             button.id = "sent1-auto-button";
             button.className = "eprobe-button";
             button.innerHTML = `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px; vertical-align: middle;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
  <rect width="18" height="18" x="3" y="3" rx="2"/>
  <path d="m9 8 6 4-6 4Z"/>
  </svg>
  Resumir Documento
  `;
+
+            // FORÇAR aplicação do margin-right no SVG após criação
+            setTimeout(() => {
+                const svg = button.querySelector("svg");
+                if (svg) {
+                    svg.style.marginRight = "4px";
+                    svg.style.setProperty("margin-right", "4px", "important");
+                    console.log(
+                        "✅ Margin-right aplicado manualmente ao SVG do botão flutuante:",
+                        svg.style.marginRight
+                    );
+                }
+            }, 100);
 
             // Usar estilo customizado próprio para o botão flutuante
             button.style.cssText = `
@@ -6975,6 +7001,19 @@ ${texto}`;
             button.style.backgroundColor = "#134377";
             button.style.borderColor = "#134377";
 
+            // FORÇAR aplicação do margin-right no SVG
+            setTimeout(() => {
+                const svg = button.querySelector("svg");
+                if (svg) {
+                    svg.style.marginRight = "4px";
+                    svg.style.setProperty("margin-right", "4px", "important");
+                    console.log(
+                        "✅ FUNÇÃO CENTRAL: Margin-right aplicado automaticamente ao SVG:",
+                        svg.style.marginRight
+                    );
+                }
+            }, 50);
+
             // Adicionar eventos para hover, focus e blur
             button.addEventListener("mouseenter", () => {
                 button.style.backgroundColor = "#0f3a66";
@@ -8037,15 +8076,37 @@ ${texto}`;
             try {
                 console.log("🛠️ Reaplicando ícones das ferramentas...");
                 if (typeof substituirIconesFerramentas === "function") {
-                    substituirIconesFerramentas();
-                    resultados.ferramentas =
-                        document.querySelectorAll(
-                            "img[data-eprobe-icon-replaced]"
-                        ).length - resultados.fieldsetAcoes;
+                    const sucessoFerramentas = substituirIconesFerramentas();
+                    if (sucessoFerramentas) {
+                        // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
+                        const totalIcones = document.querySelectorAll(
+                            "[data-eprobe-icon-replaced]"
+                        ).length;
+                        const iconesFieldset = document.querySelectorAll(
+                            "#fldAcoes [data-eprobe-icon-replaced]"
+                        ).length;
+                        resultados.ferramentas = totalIcones - iconesFieldset;
+                        console.log(
+                            `✅ ÍCONES: ${resultados.ferramentas} ícones de ferramentas aplicados`
+                        );
+                    } else {
+                        resultados.ferramentas = 0;
+                        console.log(
+                            "⚠️ ÍCONES: Nenhum ícone de ferramenta foi substituído"
+                        );
+                    }
+                } else {
+                    console.warn(
+                        "⚠️ ÍCONES: Função substituirIconesFerramentas não está disponível"
+                    );
+                    resultados.erros.push(
+                        "Função substituirIconesFerramentas não encontrada"
+                    );
                 }
             } catch (error) {
                 console.error("❌ Erro na reaplicação das ferramentas:", error);
                 resultados.erros.push(`Ferramentas: ${error.message}`);
+                resultados.ferramentas = 0;
             }
 
             console.log("✅ ÍCONES: Reaplicação concluída:", resultados);
@@ -8483,7 +8544,7 @@ ${texto}`;
             }
 
             switch (statusSessao.status) {
-                case "Pautado":
+                case "Incluído":
                     return "Processo Pautado";
                 case "Julgado":
                     return "Processo Julgado";
@@ -8505,7 +8566,7 @@ ${texto}`;
             }
 
             switch (statusSessao.status) {
-                case "Pautado":
+                case "Incluído":
                     return "#3b82f6"; // Azul para pautado
                 case "Julgado":
                     return "#16a34a"; // Verde para julgado
@@ -13197,7 +13258,7 @@ Dados obtidos automaticamente pelo eProbe`;
 
         const configuracaoTema = { ...TEMAS_BOTOES_EPROC[tema], ...opcoes };
 
-        // Seletores para todos os tipos de botões do eProc (EXCLUINDO botões de pesquisa, navbar E infraLegendObrigatorio)
+        // Seletores para todos os tipos de botões do eProc (INCLUINDO botões eProbe - EXCLUINDO apenas pesquisa, navbar, infraLegendObrigatorio)
         const seletoresBotoes = [
             ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *)",
             ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *)",
@@ -13213,6 +13274,7 @@ Dados obtidos automaticamente pelo eProbe`;
             'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *)',
         ];
 
+        // Remover estilo anterior se existir
         // Remover estilo anterior se existir
         const estiloAnterior = document.getElementById(
             "eprobe-estilo-botoes-eproc"
@@ -13330,34 +13392,14 @@ Dados obtidos automaticamente pelo eProbe`;
         }
 
         // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
+        css +=
+            '\n\n    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */\n    .d-none.d-md-flex {\n        align-items: center !important;\n    }\n\n    /* 🛡️ PROTEÇÃO TOTAL: Resetar estilos para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        all: unset !important;\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n    /* 🛡️ EPROBE BUTTONS: Abordagem UNSET para limpar conflitos + aplicar valor desejado */\n    #documento-relevante-auto-button svg, #sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Regra específica adicional para maior especificidade */\n    button#documento-relevante-auto-button svg, button#sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Forçar com classe infraButton se aplicável */\n    .infraButton#documento-relevante-auto-button svg, .infraButton#sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Regra ultra-específica para casos extremos */\n    body #documento-relevante-auto-button svg, body #sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Prioridade máxima - abordagem UNSET híbrida */\n    html body div #documento-relevante-auto-button svg, \n    html body div #sent1-auto-button svg,\n    [id="documento-relevante-auto-button"] svg,\n    [id="sent1-auto-button"] svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n        margin-left: 0 !important;\n    }\n    ';
+
+        // Adicionar CSS para margin-right do botão
         css += `
-
-    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */
-    .d-none.d-md-flex {
-        align-items: center !important;
-    }
-
-    /* 🛡️ PROTEÇÃO TOTAL: Resetar estilos para elementos excluídos */
-    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,
-    button[class*="btn-pesquisar"], .input-group-btn .btn,
-    .btn-pesquisar::before, .btn-pesquisar::after,
-    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,
-    .search-button::before, .search-button::after,
-    .infraLegendObrigatorio, .infraLegendObrigatorio *,
-    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {
-        all: unset !important;
-    }
-
-    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */
-    .infraLegendObrigatorio, legend.infraLegendObrigatorio {
-        background: initial !important;
-        color: initial !important;
-        border: initial !important;
-        border-radius: initial !important;
-        box-shadow: initial !important;
-        transition: initial !important;
-        font-weight: initial !important;
-        cursor: initial !important;
+    /* 🛡️ EPROBE BUTTONS: Margin-right no botão */
+    #documento-relevante-auto-button, #sent1-auto-button {
+        margin-right: 4px !important;
     }
     `;
 
@@ -14045,14 +14087,32 @@ Dados obtidos automaticamente pelo eProbe`;
 
         // Primeira tentativa imediata
         setTimeout(() => {
-            substituirIconesFieldsetAcoes();
-            substituirIconesFerramentas();
+            try {
+                substituirIconesFieldsetAcoes();
+                if (typeof substituirIconesFerramentas === "function") {
+                    substituirIconesFerramentas();
+                }
+            } catch (error) {
+                console.error(
+                    "❌ ÍCONES: Erro na primeira tentativa de substituição:",
+                    error
+                );
+            }
         }, 1000);
 
         // Segunda tentativa para páginas que demoram a carregar
         setTimeout(() => {
-            substituirIconesFieldsetAcoes();
-            substituirIconesFerramentas();
+            try {
+                substituirIconesFieldsetAcoes();
+                if (typeof substituirIconesFerramentas === "function") {
+                    substituirIconesFerramentas();
+                }
+            } catch (error) {
+                console.error(
+                    "❌ ÍCONES: Erro na segunda tentativa de substituição:",
+                    error
+                );
+            }
         }, 3000);
 
         // Observador para mudanças dinâmicas na página
@@ -14086,8 +14146,17 @@ Dados obtidos automaticamente pelo eProbe`;
 
             if (shouldReplace) {
                 setTimeout(() => {
-                    substituirIconesFieldsetAcoes();
-                    substituirIconesFerramentas();
+                    try {
+                        substituirIconesFieldsetAcoes();
+                        if (typeof substituirIconesFerramentas === "function") {
+                            substituirIconesFerramentas();
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ ÍCONES: Erro na substituição por observador:",
+                            error
+                        );
+                    }
                 }, 500);
             }
         });
@@ -14103,39 +14172,111 @@ Dados obtidos automaticamente pelo eProbe`;
 
     // Função para substituir ícones de ferramentas em toda a página
     function substituirIconesFerramentas() {
-        console.log("🎨 ÍCONES: Substituindo ícones de ferramentas...");
+        console.log(
+            "🎨 ÍCONES: Iniciando substituição de ícones de ferramentas"
+        );
+
+        let substituicoesRealizadas = 0;
+        let errosEncontrados = [];
 
         try {
-            // Procurar por ícones novo.gif (Nova Minuta)
-            const iconesNovo = document.querySelectorAll(
-                'img[src*="novo.gif"]'
-            );
-            iconesNovo.forEach((img) => {
-                if (img.alt === "Nova Minuta") {
-                    const novoSvg = document.createElement("div");
-                    novoSvg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>`;
-                    const svgElement = novoSvg.firstElementChild;
+            // ===============================
+            // DEFINIÇÃO DOS ÍCONES DE FERRAMENTAS
+            // ===============================
+            const ferramentasIcones = {
+                "Nova Minuta": {
+                    selector: 'img[src*="novo.gif"][alt="Nova Minuta"]',
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>`,
+                },
+            };
 
-                    // Preservar atributos do ícone original
-                    svgElement.style.width = img.style.width || "0.9em";
-                    svgElement.style.height = img.style.height || "0.9em";
-                    svgElement.style.opacity = img.style.opacity || "1";
-                    svgElement.setAttribute(
-                        "aria-hidden",
-                        img.getAttribute("aria-hidden") || "true"
+            // ===============================
+            // SUBSTITUIÇÃO PRINCIPAL
+            // ===============================
+            Object.entries(ferramentasIcones).forEach(([nome, config]) => {
+                try {
+                    const elementos = document.querySelectorAll(
+                        config.selector
                     );
+                    elementos.forEach((img) => {
+                        // Verificar se já foi substituído
+                        if (
+                            img.hasAttribute("data-eprobe-icon-replaced") ||
+                            img.classList.contains("substituted-icon")
+                        ) {
+                            return;
+                        }
 
-                    img.parentNode.replaceChild(svgElement, img);
-                    console.log("✅ ÍCONES: Nova Minuta substituído");
+                        // Criar container SVG
+                        const container = document.createElement("span");
+                        container.innerHTML = config.newSvg;
+                        container.style.display = "inline-flex";
+                        container.style.alignItems = "center";
+                        container.style.marginRight = "4px";
+
+                        const svg = container.firstElementChild;
+                        if (svg) {
+                            // Preservar dimensões e estilos originais
+                            svg.style.width = img.style.width || "0.9em";
+                            svg.style.height = img.style.height || "0.9em";
+                            svg.style.opacity = img.style.opacity || "1";
+
+                            // Adicionar classes e atributos de controle
+                            svg.classList.add(
+                                "iconeFerramentas",
+                                "substituted-icon"
+                            );
+                            svg.setAttribute(
+                                "data-eprobe-icon-replaced",
+                                "true"
+                            );
+                            svg.setAttribute("data-original-name", nome);
+                            svg.setAttribute(
+                                "aria-hidden",
+                                img.getAttribute("aria-hidden") || "true"
+                            );
+
+                            // Preservar eventos se existirem
+                            if (img.onclick) {
+                                svg.onclick = img.onclick;
+                            }
+
+                            // Realizar substituição
+                            img.parentNode.replaceChild(container, img);
+                            substituicoesRealizadas++;
+                            console.log(
+                                `✅ ÍCONES: Substituído ícone "${nome}"`
+                            );
+                        }
+                    });
+                } catch (error) {
+                    const errorMsg = `Erro ao processar "${nome}": ${error.message}`;
+                    errosEncontrados.push(errorMsg);
+                    console.warn(`⚠️ ÍCONES: ${errorMsg}`);
                 }
             });
 
-            console.log("✅ ÍCONES: Substituição de ferramentas concluída");
+            // ===============================
+            // RELATÓRIO FINAL
+            // ===============================
+            console.log(
+                `🎨 ÍCONES: Substituição de ferramentas concluída - ${substituicoesRealizadas} ícones substituídos`
+            );
+
+            if (errosEncontrados.length > 0) {
+                console.warn(
+                    `⚠️ ÍCONES: ${errosEncontrados.length} erros encontrados:`,
+                    errosEncontrados
+                );
+            }
+
+            return substituicoesRealizadas > 0;
         } catch (error) {
             console.error(
-                "❌ ÍCONES: Erro na substituição de ferramentas:",
+                "❌ ÍCONES: Erro crítico na substituição de ferramentas:",
                 error
             );
+            return false;
         }
     }
 

@@ -23,6 +23,23 @@ if (minhaVariavel) { ... } // Usar depois
 4. ✅ Funções retornam valores consistentes (boolean, string, object)?
 5. ✅ Não há referências a variáveis undefined?
 
+### 📁 ORGANIZAÇÃO OBRIGATÓRIA DE ARQUIVOS MARKDOWN
+
+**REGRA ABSOLUTA**: SEMPRE criar arquivos `.md` em `C:\eProbe\src\md\` - NUNCA em outras pastas.
+
+```
+✅ CORRETO: C:\eProbe\src\md\NOVA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\NOVA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\development\NOVA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\src\NOVA_DOCUMENTACAO.md
+```
+
+**EXCEÇÕES PERMITIDAS APENAS:**
+
+-   `README.md` (raiz do projeto)
+-   `PRIVACY_POLICY.md` (raiz do projeto)
+-   Arquivos temporários em `development/` durante desenvolvimento ativo
+
 ### 🔧 PADRÕES DE DECLARAÇÃO OBRIGATÓRIOS
 
 ```javascript
@@ -356,6 +373,23 @@ let processoComDadosCompletos = null; // Process with complete data
 -   **Code files**: JavaScript, HTML, CSS in `src/` root
 -   **Backup files**: Legacy/old versions in `src/old/`
 -   **Configuration**: Extension manifest and settings in project root
+
+### 📝 REGRA OBRIGATÓRIA - Criação de Arquivos Markdown
+
+**SEMPRE** criar arquivos `.md` em `C:\eProbe\src\md\` - NUNCA em outras pastas.
+
+```
+✅ CORRETO: C:\eProbe\src\md\MINHA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\MINHA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\development\MINHA_DOCUMENTACAO.md
+❌ ERRADO: C:\eProbe\src\MINHA_DOCUMENTACAO.md
+```
+
+**Exceções permitidas**:
+
+-   `README.md` (raiz do projeto)
+-   `PRIVACY_POLICY.md` (raiz do projeto)
+-   Arquivos temporários em `development/` (apenas durante desenvolvimento ativo)
 
 ### Current Documentation Structure
 
