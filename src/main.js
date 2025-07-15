@@ -4726,12 +4726,6 @@ ${texto}`;
  `
             );
 
-            // Aplicar margin-right simples
-            const svg = button.querySelector("svg");
-            if (svg) {
-                svg.style.marginRight = "4px";
-            }
-
             // Adicionar espaçamento quando posicionado ao lado do PDPJ
             if (insertMethod === "beforePDPJ") {
                 button.style.marginRight = "15px";
@@ -5273,14 +5267,6 @@ ${texto}`;
             // FORÇAR aplicação do margin-right no SVG após criação
             setTimeout(() => {
                 const svg = button.querySelector("svg");
-                if (svg) {
-                    svg.style.marginRight = "4px";
-                    svg.style.setProperty("margin-right", "4px", "important");
-                    console.log(
-                        "✅ Margin-right aplicado manualmente ao SVG do botão flutuante:",
-                        svg.style.marginRight
-                    );
-                }
             }, 100);
 
             // Usar estilo customizado próprio para o botão flutuante
@@ -7198,6 +7184,8 @@ ${texto}`;
             hasStatusSessao,
             resetStatusSessao,
             showStatusSessaoInfo,
+            // Nova função simplificada de cards
+            detectarCardSessaoSimplificado,
             // Funções da navbar foram centralizadas em gerenciarNavbarEprobe()
         };
 
@@ -7212,6 +7200,8 @@ ${texto}`;
         window.SENT1_AUTO.testarCasoRetirado = testarCasoRetirado;
         window.SENT1_AUTO.debugStatusSessao = showStatusSessaoInfo;
         window.SENT1_AUTO.testarSistemaStatusSessao = testarSistemaStatusSessao;
+        // 🧪 FUNÇÕES DE TESTE SIMPLIFICADO
+        // window.SENT1_AUTO.testarDeteccaoSimplificada = testarDeteccaoSimplificada; // FUNÇÃO NÃO DEFINIDA - REMOVIDA
         window.SENT1_AUTO.debugPadroesStatusSessao = debugPadroesStatusSessao;
         window.SENT1_AUTO.forcarStatusSessao = forcarStatusSessao;
         window.SENT1_AUTO.encontrarTextoRetirado = encontrarTextoRetirado;
@@ -8366,52 +8356,30 @@ ${texto}`;
          * @returns {Object|null} - Objeto com status e data, ou null se não encontrado
          */
         function detectarStatusSessao() {
-            console.log("🔍 STATUS: Iniciando detecção do status da sessão");
+            console.log(
+                "🔍 STATUS: Iniciando detecção SIMPLIFICADA do status da sessão"
+            );
 
             try {
-                // 1. Buscar especificamente no fieldset #fldMinutas
+                // MÉTODO SIMPLIFICADO: Buscar primeiro pelo botão infraLegendObrigatorio
+                const resultadoSimplificado = detectarCardSessaoSimplificado();
+                if (resultadoSimplificado) {
+                    console.log("✅ STATUS: Detectado via método simplificado");
+                    return resultadoSimplificado;
+                }
+
+                // FALLBACK: Buscar no fieldset #fldMinutas como antes
                 const fieldsetMinutas = document.getElementById("fldMinutas");
                 let textoCompleto = "";
 
                 if (fieldsetMinutas) {
-                    // Buscar em todos os elementos dentro do fieldset
-                    const elementosTexto =
-                        fieldsetMinutas.querySelectorAll("*");
-                    const textosEncontrados = [];
-
-                    elementosTexto.forEach((elemento) => {
-                        const texto =
-                            elemento.innerText || elemento.textContent || "";
-                        if (texto.trim()) {
-                            textosEncontrados.push(texto.trim());
-                        }
-                    });
-
-                    textoCompleto = textosEncontrados.join(" ");
+                    textoCompleto =
+                        fieldsetMinutas.textContent ||
+                        fieldsetMinutas.innerText ||
+                        "";
                     console.log("🎯 STATUS: Buscando no fieldset #fldMinutas");
-                    console.log(
-                        `📝 Texto completo das minutas (${textoCompleto.length} chars):`,
-                        textoCompleto.substring(0, 300) + "..."
-                    );
-
-                    // Procurar padrões específicos nos textos encontrados
-                    textosEncontrados.forEach((texto, index) => {
-                        if (
-                            /(?:Incluído|Julgado|Retirado)\s+em\s+Pauta/i.test(
-                                texto
-                            )
-                        ) {
-                            console.log(
-                                `🎯 TEXTO RELEVANTE ${index + 1}:`,
-                                texto
-                            );
-                        }
-                    });
                 } else {
-                    console.log(
-                        "❌ STATUS: Fieldset #fldMinutas não encontrado"
-                    );
-                    // Fallback para página completa
+                    // Último recurso: página completa
                     textoCompleto = document.body.innerText;
                     console.log(
                         "⚠️ STATUS: Usando página completa como fallback"
@@ -8425,42 +8393,33 @@ ${texto}`;
                     return null;
                 }
 
-                // Padrões para detectar diferentes status de sessão - REORDENADOS para priorizar "Retirado"
+                // Padrões simplificados e reorganizados
                 const padroes = [
                     {
                         regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
                         statusCompleto: "Retirado em Pauta",
-                        descricao: "Processo Retirado de Pauta",
                     },
                     {
                         regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Julgado",
                         statusCompleto: "Julgado em Pauta",
-                        descricao: "Processo Julgado",
                     },
                     {
                         regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Pautado",
                         statusCompleto: "Incluído em Pauta",
-                        descricao: "Processo Pautado",
                     },
                 ];
 
-                // Tentar cada padrão - com logs detalhados
+                // Buscar padrões
                 for (const padrao of padroes) {
-                    console.log(`🔍 Testando padrão: ${padrao.status}`);
-
-                    // Reset regex lastIndex antes do match
                     padrao.regex.lastIndex = 0;
                     const match = textoCompleto.match(padrao.regex);
-                    console.log(`   Match resultado:`, match);
 
-                    if (match && match.length > 0) {
-                        // Resetar lastIndex para nova busca
+                    if (match) {
                         padrao.regex.lastIndex = 0;
                         const detalhes = padrao.regex.exec(textoCompleto);
-                        console.log(`   Detalhes extraídos:`, detalhes);
 
                         if (detalhes) {
                             const tipoProcesso = detalhes[1]?.trim();
@@ -8468,67 +8427,33 @@ ${texto}`;
                             const orgao = detalhes[3];
 
                             console.log(
-                                `✅ STATUS: ${padrao.status} encontrado`
+                                `✅ STATUS: ${padrao.status} encontrado - Tipo: ${tipoProcesso}, Data: ${dataEncontrada}`
                             );
-                            console.log(`📋 Tipo: ${tipoProcesso}`);
-                            console.log(`📅 Data: ${dataEncontrada}`);
-                            console.log(`🏛️ Órgão: ${orgao}`);
 
-                            // Validar data
                             const dataValidada =
                                 validarDataBrasileira(dataEncontrada);
                             if (dataValidada) {
-                                // SALVAR NAS FUNÇÕES GLOBAIS
+                                // Salvar nas funções globais
                                 setTipoJulgamentoProcessoPautado(tipoProcesso);
                                 setStatusJulgamento(padrao.statusCompleto);
                                 setDataSessao(dataEncontrada);
 
-                                const resultado = {
+                                return {
                                     status: padrao.status,
-                                    descricao: padrao.descricao,
                                     tipoProcesso: tipoProcesso,
                                     data: dataValidada,
                                     orgao: orgao,
                                     textoCompleto: detalhes[0],
                                 };
-
-                                console.log(
-                                    "🎯 STATUS: Resultado final:",
-                                    resultado
-                                );
-                                console.log(
-                                    "💾 GLOBAIS: Dados salvos nas funções globais"
-                                );
-                                return resultado;
                             }
                         }
                     }
                 }
 
-                console.log("❌ STATUS: Nenhum status de sessão detectado");
-
-                // Debug adicional - verificar se há palavras-chave
-                const palavrasChave = ["retirado", "julgado", "incluído"];
-                palavrasChave.forEach((palavra) => {
-                    if (new RegExp(palavra, "i").test(textoCompleto)) {
-                        console.log(
-                            `🔍 DEBUG: Palavra "${palavra}" encontrada no texto`
-                        );
-                        const contextos = textoCompleto.match(
-                            new RegExp(`(.{0,30}${palavra}.{0,30})`, "gi")
-                        );
-                        if (contextos) {
-                            console.log(
-                                `📝 Contextos de "${palavra}":`,
-                                contextos.slice(0, 2)
-                            );
-                        }
-                    }
-                });
-
+                console.log("❌ STATUS: Nenhum padrão encontrado");
                 return null;
             } catch (error) {
-                console.error("❌ STATUS: Erro na detecção do status:", error);
+                console.error("❌ STATUS: Erro na detecção:", error);
                 return null;
             }
         }
@@ -12225,6 +12150,135 @@ Dados obtidos automaticamente pelo eProbe`;
     // MATERIAL DESIGN - CARD DE DADOS DE SESSÃO
     // =============================================
 
+    // =============================================
+    // DETECÇÃO SIMPLIFICADA DE CARDS DE SESSÃO
+    // =============================================
+
+    /**
+     * Função simplificada para detectar cards de sessão
+     * Busca especificamente pelo botão infraLegendObrigatorio e analisa o conteúdo nas próximas linhas
+     */
+    function detectarCardSessaoSimplificado() {
+        console.log("🔍 CARD SESSÃO: Iniciando detecção simplificada");
+
+        try {
+            // Buscar o botão específico mencionado pelo usuário
+            const botaoInfra = document.querySelector(
+                'button[type="button"].infraLegendObrigatorio.btn.btn-link.btn-sm.p-0'
+            );
+
+            if (!botaoInfra) {
+                console.log(
+                    "❌ CARD SESSÃO: Botão infraLegendObrigatorio não encontrado"
+                );
+                return null;
+            }
+
+            console.log(
+                "✅ CARD SESSÃO: Botão infraLegendObrigatorio encontrado"
+            );
+
+            // Obter o container pai para buscar o texto nas próximas linhas
+            let containerTexto = botaoInfra.parentElement;
+            let nivelPai = 0;
+
+            // Subir até 3 níveis para encontrar um container com texto relevante
+            while (containerTexto && nivelPai < 3) {
+                const textoContainer =
+                    containerTexto.textContent ||
+                    containerTexto.innerText ||
+                    "";
+
+                if (textoContainer.length > 50) {
+                    console.log(
+                        `📝 CARD SESSÃO: Texto encontrado no nível ${nivelPai}:`,
+                        textoContainer.substring(0, 200)
+                    );
+                    break;
+                }
+
+                containerTexto = containerTexto.parentElement;
+                nivelPai++;
+            }
+
+            if (!containerTexto) {
+                console.log(
+                    "❌ CARD SESSÃO: Nenhum container com texto encontrado"
+                );
+                return null;
+            }
+
+            const textoCompleto =
+                containerTexto.textContent || containerTexto.innerText || "";
+
+            // Padrões simplificados já configurados
+            const padroes = [
+                {
+                    regex: /\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
+                    status: "Retirado",
+                    statusCompleto: "Retirado em Pauta",
+                },
+                {
+                    regex: /\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
+                    status: "Julgado",
+                    statusCompleto: "Julgado em Pauta",
+                },
+                {
+                    regex: /\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
+                    status: "Pautado",
+                    statusCompleto: "Incluído em Pauta",
+                },
+            ];
+
+            // Buscar padrões no texto
+            for (const padrao of padroes) {
+                const match = textoCompleto.match(padrao.regex);
+
+                if (match) {
+                    const dataEncontrada = match[1];
+                    console.log(
+                        `✅ CARD SESSÃO: ${padrao.status} encontrado - Data: ${dataEncontrada}`
+                    );
+
+                    // Validar data
+                    const dataValidada = validarDataBrasileira(dataEncontrada);
+                    if (dataValidada) {
+                        const dadosSessao = {
+                            status: padrao.status,
+                            statusCompleto: padrao.statusCompleto,
+                            data: dataValidada,
+                            textoOriginal: match[0],
+                            timestamp: new Date().toISOString(),
+                        };
+
+                        console.log(
+                            "✅ CARD SESSÃO: Dados detectados com sucesso:",
+                            dadosSessao
+                        );
+
+                        // Criar/atualizar o card
+                        atualizarCardMaterialDesign(dadosSessao);
+
+                        return dadosSessao;
+                    }
+                }
+            }
+
+            console.log(
+                "❌ CARD SESSÃO: Nenhum padrão de data encontrado no texto"
+            );
+            return null;
+        } catch (error) {
+            console.error(
+                "❌ CARD SESSÃO: Erro na detecção simplificada:",
+                error
+            );
+            return null;
+        }
+    }
+
+    // ...existing code...
+
     /**
      * Obtém a classe CSS correspondente ao status
      * @param {string} status - Status da sessão
@@ -12530,11 +12584,21 @@ Dados obtidos automaticamente pelo eProbe`;
      */
     function detectarECriarCardMaterialDesign() {
         console.log(
-            "🔍 MATERIAL: Iniciando detecção e criação de card Material Design"
+            "🔍 MATERIAL: Iniciando detecção SIMPLIFICADA de card Material Design"
         );
 
         try {
-            // OPÇÃO 1: Usar dados já processados se disponíveis
+            // NOVA ABORDAGEM SIMPLIFICADA: Usar a detecção direta do botão infraLegendObrigatorio
+            const dadosDetectados = detectarCardSessaoSimplificado();
+
+            if (dadosDetectados) {
+                console.log(
+                    "✅ MATERIAL: Dados detectados via método simplificado"
+                );
+                return dadosDetectados;
+            }
+
+            // FALLBACK 1: Verificar se já existem dados processados
             if (
                 window.SENT1_AUTO &&
                 typeof window.SENT1_AUTO.hasDadosCompletosSessionJulgamento ===
@@ -12553,80 +12617,29 @@ Dados obtidos automaticamente pelo eProbe`;
                 }
             }
 
-            // OPÇÃO 2: Tentar detectar novos dados
-            let statusDetectado = null;
-
+            // FALLBACK 2: Método original como último recurso
             if (
                 window.SENT1_AUTO &&
                 typeof window.SENT1_AUTO.debugDeteccaoStatusSessao ===
                     "function"
             ) {
-                statusDetectado = window.SENT1_AUTO.debugDeteccaoStatusSessao();
-                console.log(
-                    "✅ MATERIAL: Detectando novos dados via debugDeteccaoStatusSessao"
-                );
-            } else {
-                console.warn(
-                    "⚠️ MATERIAL: Namespace SENT1_AUTO não disponível, tentando fallback"
-                );
-
-                // OPÇÃO 3: Fallback - buscar dados das minutas diretamente
-                const minutasContainer = document.querySelector("#fldMinutas");
-                if (minutasContainer && minutasContainer.textContent.trim()) {
+                const statusDetectado =
+                    window.SENT1_AUTO.debugDeteccaoStatusSessao();
+                if (statusDetectado) {
                     console.log(
-                        "🔍 MATERIAL: Tentando extrair dados das minutas diretamente"
+                        "✅ MATERIAL: Detectando dados via método original"
                     );
-                    statusDetectado = {
-                        status: "Dados detectados nas minutas",
-                        data: {
-                            dataFormatada: new Date().toLocaleDateString(
-                                "pt-BR"
-                            ),
-                        },
-                        tipoProcesso: "Processo do eProc",
-                        orgao: "TJSC",
-                        timestamp: new Date().toISOString(),
-                    };
+                    atualizarCardMaterialDesign(statusDetectado);
+                    return statusDetectado;
                 }
             }
 
-            if (statusDetectado) {
-                console.log(
-                    "✅ MATERIAL: Status detectado, criando/atualizando card"
-                );
-                atualizarCardMaterialDesign(statusDetectado);
-
-                // Exposição global para debug
-                if (window.SENT1_AUTO) {
-                    window.SENT1_AUTO.ultimoDadosSessao = statusDetectado;
-                    window.SENT1_AUTO.timestampUltimaDeteccao =
-                        new Date().toISOString();
-                }
-
-                return statusDetectado;
-            } else {
-                console.log(
-                    "ℹ️ MATERIAL: Nenhum dado detectado - executando teste de fallback"
-                );
-
-                // FALLBACK FINAL: Criar card de teste se nada funcionar
-                testeCardImediato();
-                return null;
-            }
+            console.log(
+                "ℹ️ MATERIAL: Nenhum dado detectado - card não será criado"
+            );
+            return null;
         } catch (error) {
-            console.error("❌ MATERIAL: Erro ao detectar dados:", error);
-            console.log("🚨 MATERIAL: Executando fallback de emergência");
-
-            // Fallback de emergência
-            try {
-                testeCardImediato();
-            } catch (fallbackError) {
-                console.error(
-                    "❌ MATERIAL: Falha total no fallback:",
-                    fallbackError
-                );
-            }
-
+            console.error("❌ MATERIAL: Erro na detecção simplificada:", error);
             return null;
         }
     }
@@ -12683,18 +12696,33 @@ Dados obtidos automaticamente pelo eProbe`;
             return;
         }
 
-        console.log("🚀 MATERIAL: Inicializando sistema Material Design");
+        console.log(
+            "🚀 MATERIAL: Inicializando sistema Material Design SIMPLIFICADO"
+        );
 
         try {
             // Aguardar um breve momento para garantir que a página esteja carregada
             setTimeout(() => {
-                console.log("🔍 MATERIAL: Detecção única de dados de sessão");
-                // Detectar uma única vez, sem loops ou timers
-                detectarECriarCardMaterialDesign();
+                console.log(
+                    "🔍 MATERIAL: Executando detecção simplificada única"
+                );
+
+                // Usar a nova função simplificada
+                const resultado = detectarCardSessaoSimplificado();
+
+                if (resultado) {
+                    console.log(
+                        "✅ MATERIAL: Card criado via detecção simplificada"
+                    );
+                } else {
+                    console.log(
+                        "ℹ️ MATERIAL: Nenhum dado detectado na página atual"
+                    );
+                }
             }, 500);
 
             console.log(
-                "✅ MATERIAL: Sistema Material Design inicializado com sucesso"
+                "✅ MATERIAL: Sistema Material Design simplificado inicializado com sucesso"
             );
         } catch (error) {
             console.error(
@@ -13391,17 +13419,15 @@ Dados obtidos automaticamente pelo eProbe`;
         `;
         }
 
-        // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
-        css +=
-            '\n\n    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */\n    .d-none.d-md-flex {\n        align-items: center !important;\n    }\n\n    /* 🛡️ PROTEÇÃO TOTAL: Resetar estilos para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        all: unset !important;\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n    /* 🛡️ EPROBE BUTTONS: Abordagem UNSET para limpar conflitos + aplicar valor desejado */\n    #documento-relevante-auto-button svg, #sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Regra específica adicional para maior especificidade */\n    button#documento-relevante-auto-button svg, button#sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Forçar com classe infraButton se aplicável */\n    .infraButton#documento-relevante-auto-button svg, .infraButton#sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Regra ultra-específica para casos extremos */\n    body #documento-relevante-auto-button svg, body #sent1-auto-button svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n    }\n    \n    /* 🛡️ EPROBE BUTTONS: Prioridade máxima - abordagem UNSET híbrida */\n    html body div #documento-relevante-auto-button svg, \n    html body div #sent1-auto-button svg,\n    [id="documento-relevante-auto-button"] svg,\n    [id="sent1-auto-button"] svg {\n        margin: unset !important;\n        margin-right: 4px !important;\n        margin-left: 0 !important;\n    }\n    ';
-
-        // Adicionar CSS para margin-right do botão
+        // CSS para margin-right do botão - SOLUÇÃO SIMPLES QUE FUNCIONOU
         css += `
     /* 🛡️ EPROBE BUTTONS: Margin-right no botão */
-    #documento-relevante-auto-button, #sent1-auto-button {
-        margin-right: 4px !important;
-    }
+    #documento-relevante-auto-button { margin-right: 4px !important; }
     `;
+
+        // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
+        css +=
+            '\n\n    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */\n    .d-none.d-md-flex {\n        align-items: center !important;\n    }\n\n    /* 🛡️ PROTEÇÃO TOTAL: Resetar estilos para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        all: unset !important;\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n    ';
 
         estiloElemento.textContent = css;
         document.head.appendChild(estiloElemento);
@@ -14532,4 +14558,21 @@ Dados obtidos automaticamente pelo eProbe`;
             }
         }
     }, 5000);
+
+    // =============================================
+    // INICIALIZAÇÃO DO SISTEMA MATERIAL DESIGN
+    // =============================================
+
+    console.log(
+        "🚀 SISTEMA: Inicializando Material Design para cards de sessão"
+    );
+
+    // Aguardar carregamento da página antes de detectar cards
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            setTimeout(inicializarMaterialDesign, 1000);
+        });
+    } else {
+        setTimeout(inicializarMaterialDesign, 1000);
+    }
 })(); // Fechamento da IIFE principal
