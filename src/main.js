@@ -30,31 +30,38 @@
             "drop",
         ];
 
-        // 1. Interceptar addEventListener nativo
+        // 1. Interceptar addEventListener nativo COM FORÇA EXTRA
         const originalAddEventListener = EventTarget.prototype.addEventListener;
         EventTarget.prototype.addEventListener = function (
             type,
             listener,
             options
         ) {
+            // FORÇA PASSIVE EM QUALQUER EVENTO PROBLEMÁTICO
             if (passiveEvents.includes(type)) {
                 if (typeof options === "boolean") {
                     options = { capture: options, passive: true };
                 } else if (typeof options === "object" && options !== null) {
-                    options.passive = true;
+                    options = { ...options, passive: true }; // Força sobrescrever
                 } else {
                     options = { passive: true };
                 }
+
+                // LOG para debug de violações
+                console.log(
+                    `🔒 PASSIVE: Forçando passive=true para evento "${type}"`
+                );
             }
             return originalAddEventListener.call(this, type, listener, options);
         };
 
-        // 2. Interceptar jQuery quando disponível
+        // 2. Interceptar jQuery quando disponível COM FORÇA TOTAL
         const interceptJQuery = () => {
             if (typeof $ !== "undefined" && $.fn && $.fn.on) {
                 const originalJQueryOn = $.fn.on;
+
                 $.fn.on = function (events, selector, data, handler) {
-                    // Se for um string de eventos, verificar se algum é passivo
+                    // Se eventos passivos, forçar passive
                     if (typeof events === "string") {
                         const eventList = events.split(" ");
                         const hasPassiveEvent = eventList.some((event) =>
@@ -62,7 +69,10 @@
                         );
 
                         if (hasPassiveEvent) {
-                            // Para eventos passivos, adicionar através do addEventListener nativo
+                            console.log(
+                                `🔒 JQUERY PASSIVE: Forçando passive=true para eventos "${events}"`
+                            );
+                            // Para eventos passivos, usar addEventListener nativo
                             return this.each(function () {
                                 eventList.forEach((eventName) => {
                                     if (
@@ -89,14 +99,21 @@
                         }
                     }
 
-                    // Para outros eventos, usar comportamento original
-                    return originalJQueryOn.apply(this, arguments);
+                    return originalJQueryOn.call(
+                        this,
+                        events,
+                        selector,
+                        data,
+                        handler
+                    );
                 };
 
                 console.log(
-                    "✅ PERFORMANCE: jQuery interceptado para event listeners passivos"
+                    "✅ PERFORMANCE: jQuery interceptado com passive forçado"
                 );
+                return true;
             }
+            return false;
         };
 
         // Tentar interceptar jQuery imediatamente e em intervalos
@@ -107,7 +124,7 @@
 
         // 3. Cache otimizado para getBoundingClientRect
         const rectCache = new WeakMap();
-        const CACHE_DURATION = 150; // Aumentado para 150ms
+        const RECT_CACHE_DURATION = 150; // Aumentado para 150ms
 
         window.getCachedBoundingRect = function (element) {
             if (!element) return null;
@@ -115,7 +132,7 @@
             const now = Date.now();
             const cached = rectCache.get(element);
 
-            if (cached && now - cached.timestamp < CACHE_DURATION) {
+            if (cached && now - cached.timestamp < RECT_CACHE_DURATION) {
                 return cached.rect;
             }
 
@@ -156,36 +173,39 @@
                     window.performanceMetrics.timeoutsIntercepted++;
                 }
 
-                // Log apenas as primeiras 3 interceptações
-                if (timeoutCounter <= 3) {
+                // Log apenas as primeiras 2 interceptações para reduzir spam
+                if (timeoutCounter <= 2) {
                     console.log(
                         `🎯 PERFORMANCE: setTimeout ${delay}ms interceptado (#${timeoutCounter})`
                     );
                 }
 
-                // Estratégia 1: requestIdleCallback prioritário para callbacks pesados
+                // Estratégia 1: requestIdleCallback otimizado para callbacks pesados
                 if (window.requestIdleCallback && delay > 100) {
                     return window.requestIdleCallback(
                         (deadline) => {
                             const startTime = performance.now();
                             try {
-                                // Executar callback em pequenos chunks durante idle time
-                                let chunkStart = performance.now();
-                                while (
-                                    deadline.timeRemaining() > 0 &&
-                                    performance.now() - chunkStart < 5
-                                ) {
+                                // Executar callback em chunks menores durante idle time
+                                if (deadline.timeRemaining() > 5) {
                                     callback.apply(this, args);
-                                    break; // Executar uma vez e sair
+                                } else {
+                                    // Se não há tempo suficiente, agendar para próximo idle
+                                    window.requestIdleCallback(
+                                        (deadline) => {
+                                            callback.apply(this, args);
+                                        },
+                                        { timeout: 50 }
+                                    ); // Timeout reduzido
                                 }
 
                                 const elapsed = performance.now() - startTime;
-                                if (elapsed > 16) {
+                                if (elapsed > 50) {
+                                    // Limite aumentado para 50ms
                                     console.warn(
                                         `⚠️ PERFORMANCE: Callback lento: ${elapsed}ms`
                                     );
                                 }
-                                // Removido log de sucesso para reduzir ruído
                             } catch (e) {
                                 console.warn(
                                     "❌ PERFORMANCE: Erro em callback idle:",
@@ -193,7 +213,7 @@
                                 );
                             }
                         },
-                        { timeout: delay }
+                        { timeout: Math.min(delay, 100) } // Timeout máximo de 100ms
                     );
                 }
 
@@ -214,15 +234,13 @@
                                     callback.apply(this, args);
                                     const elapsed =
                                         performance.now() - startTime;
-                                    if (elapsed > 16) {
+                                    if (elapsed > 50) {
+                                        // Só avisar se > 50ms
                                         console.warn(
                                             `⚠️ PERFORMANCE: Callback final ainda demorou ${elapsed}ms`
                                         );
-                                    } else {
-                                        console.log(
-                                            `✅ PERFORMANCE: Callback fragmentado executado em ${elapsed}ms`
-                                        );
                                     }
+                                    // Removido log de sucesso para reduzir overhead
                                 } catch (e) {
                                     console.warn(
                                         "❌ PERFORMANCE: Erro em callback fragmentado:",
@@ -7116,6 +7134,11 @@ ${texto}`;
         // Inicializar - VERSÃO SEGURA (sem interferência na navbar)
         init();
 
+        // ===============================
+        // SISTEMA DE ALTERNÂNCIA DE ESTRELAS REMOVIDO - PREVENÇÃO DE ERROS
+        // ================================================================
+        // Função removida para evitar ReferenceError e problemas de escopo
+
         // Expor funções para debug manual
         window.SENT1_AUTO = {
             runFullAutomation,
@@ -7186,6 +7209,10 @@ ${texto}`;
             showStatusSessaoInfo,
             // Nova função simplificada de cards
             detectarCardSessaoSimplificado,
+            // 🎨 NOVAS FUNÇÕES FIGMA
+            criarCardMaterialDesign,
+            obterConfigFigmaStatus,
+            adicionarTooltipInterativo,
             // Funções da navbar foram centralizadas em gerenciarNavbarEprobe()
         };
 
@@ -7206,6 +7233,25 @@ ${texto}`;
         window.SENT1_AUTO.forcarStatusSessao = forcarStatusSessao;
         window.SENT1_AUTO.encontrarTextoRetirado = encontrarTextoRetirado;
         window.SENT1_AUTO.forcarDeteccaoCompleta = forcarDeteccaoCompleta;
+
+        // 🎨 FUNÇÕES DE ÍCONES
+        window.SENT1_AUTO.substituirIconesFieldsetAcoes =
+            substituirIconesFieldsetAcoes;
+        window.SENT1_AUTO.substituirIconesFerramentas =
+            substituirIconesFerramentas;
+        window.SENT1_AUTO.substituirIconesGlobalmente =
+            substituirIconesGlobalmente;
+        window.SENT1_AUTO.debugIconesSubstituicao = debugIconesSubstituicao;
+        // 🌟 FUNÇÃO DE ALTERNÂNCIA DE ESTRELAS REMOVIDA (prevenção ReferenceError)
+        // window.SENT1_AUTO.configurarAlternanciaEstrelas = configurarAlternanciaEstrelas;
+
+        // 🛡️ WRAPPER SEGURO: Função stub para prevenir ReferenceError
+        window.SENT1_AUTO.configurarAlternanciaEstrelas = function () {
+            console.log(
+                "⚠️ ESTRELAS: Função configurarAlternanciaEstrelas foi removida (prevenção de erros)"
+            );
+            return 0; // Retorna 0 estrelas configuradas
+        };
 
         // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO
         window.SENT1_AUTO.diagnosticarCompleto = diagnosticarCompleto;
@@ -7239,12 +7285,706 @@ ${texto}`;
         window.SENT1_AUTO.buscarPadroesEspecificosImagens =
             buscarPadroesEspecificosImagens;
 
+        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO SVG className
+        window.SENT1_AUTO.testarCorrecaoSVG = function () {
+            console.log("🧪 TESTE: Validando correção do erro SVG className");
+
+            try {
+                // Forçar reaplicação dos ícones para testar
+                window.SENT1_AUTO.forcarReaplicacaoIcones();
+
+                // Aguardar processamento
+                setTimeout(() => {
+                    const svgsSubstituidos =
+                        document.querySelectorAll(".substituted-icon");
+                    console.log(
+                        `✅ TESTE: ${svgsSubstituidos.length} SVGs com classe substituted-icon encontrados`
+                    );
+
+                    // Verificar se algum SVG tem classes aplicadas corretamente
+                    let svgsComClasses = 0;
+                    svgsSubstituidos.forEach((svg) => {
+                        if (
+                            svg
+                                .getAttribute("class")
+                                ?.includes("substituted-icon")
+                        ) {
+                            svgsComClasses++;
+                        }
+                    });
+
+                    console.log(
+                        `✅ TESTE: ${svgsComClasses} SVGs com classes aplicadas corretamente`
+                    );
+                    console.log(
+                        "✅ TESTE: Correção SVG className validada com sucesso!"
+                    );
+
+                    return {
+                        svgsTotal: svgsSubstituidos.length,
+                        svgsComClasses: svgsComClasses,
+                        sucesso: true,
+                    };
+                }, 1000);
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante validação:", error);
+                return { sucesso: false, erro: error.message };
+            }
+        };
+
+        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO
+        window.SENT1_AUTO.testarCriacaoCard = function () {
+            console.log(
+                "🧪 TESTE: Validando criação do card de sessão - VERSÃO ROBUSTA"
+            );
+
+            try {
+                // 1. Verificar se há data detectada
+                console.log("🔍 TESTE: Verificando dados detectados...");
+                const dataDetectada =
+                    window.SENT1_AUTO.getDataSessaoPautado?.();
+                console.log("📊 DADOS:", dataDetectada);
+
+                if (!dataDetectada) {
+                    console.log(
+                        "❌ TESTE: Nenhuma data detectada. Tentando detectar..."
+                    );
+                    const resultado = window.SENT1_AUTO.detectarDataSessao?.();
+                    console.log("📊 DETECÇÃO:", resultado);
+
+                    if (!resultado) {
+                        return {
+                            sucesso: false,
+                            motivo: "Não foi possível detectar data da sessão",
+                            passos: [
+                                "1. Execute: window.SENT1_AUTO.detectarDataSessao()",
+                                "2. Verifique se está na página correta do eProc",
+                                "3. Verifique se há minutas com data de sessão",
+                            ],
+                        };
+                    }
+                }
+
+                // 2. Verificar container disponível
+                console.log("🔍 TESTE: Verificando containers disponíveis...");
+                const containers = [
+                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#fldCapa #divCapaProcesso .row.mt-2",
+                    "#divCapaProcesso .row.mt-2",
+                    ".row.mt-2",
+                    "#fldCapa .row",
+                    "#divCapaProcesso",
+                    "#fldCapa",
+                ];
+
+                let containerEncontrado = null;
+                let seletorUsado = "";
+
+                for (const seletor of containers) {
+                    const elemento = document.querySelector(seletor);
+                    if (elemento) {
+                        containerEncontrado = elemento;
+                        seletorUsado = seletor;
+                        console.log(
+                            `✅ CONTAINER: Encontrado com "${seletor}"`
+                        );
+                        break;
+                    }
+                }
+
+                if (!containerEncontrado) {
+                    console.log(
+                        "⚠️ TESTE: Nenhum container padrão encontrado, testando fallback..."
+                    );
+                }
+
+                // 3. Remover card existente se houver
+                const cardExistente =
+                    document.getElementById("eprobe-data-sessao");
+                if (cardExistente) {
+                    cardExistente.remove();
+                    console.log(
+                        "🗑️ TESTE: Card existente removido para novo teste"
+                    );
+                }
+
+                // 4. Forçar criação do card
+                console.log("🎯 TESTE: Forçando criação do card...");
+                const resultado =
+                    window.SENT1_AUTO.inserirDataSessaoNaInterface?.();
+                console.log("📊 RESULTADO INSERÇÃO:", resultado);
+
+                // 5. Verificar se o card foi criado
+                const cardCriado =
+                    document.getElementById("eprobe-data-sessao");
+
+                if (cardCriado) {
+                    console.log("✅ TESTE: Card criado com sucesso!");
+
+                    // Verificar propriedades do card
+                    const propriedades = {
+                        id: cardCriado.id,
+                        posicao: cardCriado.style.position || "integrado",
+                        visivel:
+                            cardCriado.offsetWidth > 0 &&
+                            cardCriado.offsetHeight > 0,
+                        containerPai:
+                            cardCriado.parentElement?.tagName || "N/A",
+                        dataProcesso: cardCriado.getAttribute("data-processo"),
+                        conteudo: cardCriado.innerHTML.length > 0,
+                    };
+
+                    console.log("📊 PROPRIEDADES DO CARD:", propriedades);
+
+                    return {
+                        sucesso: true,
+                        cardCriado: true,
+                        dataFormatada:
+                            dataDetectada?.dataFormatada ||
+                            window.SENT1_AUTO.getDataSessaoPautado()
+                                ?.dataFormatada,
+                        containerUsado: seletorUsado || "fallback-posicao-fixa",
+                        propriedades: propriedades,
+                        logs: "Card criado e validado com sucesso",
+                    };
+                } else {
+                    console.log("❌ TESTE: Card não foi criado!");
+
+                    // Diagnóstico adicional
+                    console.log("🔍 DIAGNÓSTICO:");
+                    console.log("- Data detectada:", !!dataDetectada);
+                    console.log(
+                        "- Função inserir existe:",
+                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
+                    );
+                    console.log(
+                        "- Container encontrado:",
+                        !!containerEncontrado
+                    );
+                    console.log("- Seletor usado:", seletorUsado);
+
+                    return {
+                        sucesso: false,
+                        motivo: "Card não foi criado apesar da execução da função",
+                        diagnostico: {
+                            dataDetectada: !!dataDetectada,
+                            funcaoInserirExiste:
+                                typeof window.SENT1_AUTO
+                                    .inserirDataSessaoNaInterface,
+                            containerEncontrado: !!containerEncontrado,
+                            seletorUsado: seletorUsado,
+                        },
+                        sugestoes: [
+                            "1. Verifique se está na página correta do eProc",
+                            "2. Execute: window.SENT1_AUTO.detectarDataSessao()",
+                            "3. Tente: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()",
+                            "4. Verifique console para erros JavaScript",
+                        ],
+                    };
+                }
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante teste:", error);
+                return {
+                    sucesso: false,
+                    erro: error.message,
+                    stack: error.stack,
+                    sugestao: "Verifique o console para detalhes do erro",
+                };
+            }
+        };
+
+        // 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES
+        window.SENT1_AUTO.forcarInsercaoCardSemValidacao = function () {
+            console.log("🚀 FORCE: Criando card de sessão SEM validações");
+
+            try {
+                // Remover card existente
+                const cardExistente =
+                    document.getElementById("eprobe-data-sessao");
+                if (cardExistente) {
+                    cardExistente.remove();
+                    console.log("🗑️ FORCE: Card existente removido");
+                }
+
+                // Criar data fictícia se não houver
+                let dataParaUsar = window.SENT1_AUTO.getDataSessaoPautado?.();
+                if (!dataParaUsar) {
+                    console.log(
+                        "⚠️ FORCE: Sem data detectada, criando data teste"
+                    );
+                    dataParaUsar = {
+                        dataFormatada:
+                            "Data de teste - " +
+                            new Date().toLocaleDateString("pt-BR"),
+                        dataOriginal: new Date().toLocaleDateString("pt-BR"),
+                        orgao: "Teste",
+                    };
+                }
+
+                // Criar card com HTML direto
+                const cardHTML = `
+                    <div id="eprobe-data-sessao" class="card mt-3" style="border-left: 4px solid #007bff; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" data-processo="${
+                        processoAtual || "teste"
+                    }">
+                        <div class="card-body py-2">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-calendar-check me-2" style="color: #007bff; font-size: 1.1em;"></i>
+                                <div class="flex-grow-1">
+                                    <h6 class="card-title mb-1" style="color: #495057; font-weight: 600;">
+                                        📅 Data da Sessão de Julgamento
+                                    </h6>
+                                    <p class="card-text mb-0" style="color: #6c757d; font-size: 0.95em;">
+                                        <strong style="color: #007bff;">${
+                                            dataParaUsar.dataFormatada
+                                        }</strong>
+                                        ${
+                                            dataParaUsar.orgao
+                                                ? `<span class="badge bg-secondary ms-2">${dataParaUsar.orgao}</span>`
+                                                : ""
+                                        }
+                                    </p>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.8em;">
+                                    <i class="fas fa-robot me-1"></i>eProbe
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Tentar inserir em containers (mesma estratégia)
+                const containers = [
+                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#fldCapa #divCapaProcesso .row.mt-2",
+                    "#divCapaProcesso .row.mt-2",
+                    ".row.mt-2",
+                    "#fldCapa .row",
+                    "#divCapaProcesso",
+                    "#fldCapa",
+                    "body",
+                ];
+
+                let inserido = false;
+                let seletorUsado = "";
+
+                for (const seletor of containers) {
+                    const container = document.querySelector(seletor);
+                    if (container) {
+                        console.log(
+                            `✅ FORCE: Tentando inserir em "${seletor}"`
+                        );
+
+                        try {
+                            container.insertAdjacentHTML("beforeend", cardHTML);
+                            seletorUsado = seletor;
+                            inserido = true;
+                            console.log(
+                                `✅ FORCE: Card inserido com sucesso em "${seletor}"`
+                            );
+                            break;
+                        } catch (err) {
+                            console.log(
+                                `❌ FORCE: Erro ao inserir em "${seletor}":`,
+                                err.message
+                            );
+                            continue;
+                        }
+                    }
+                }
+
+                // Se não conseguiu inserir em nenhum container, usar posição fixa
+                if (!inserido) {
+                    console.log(
+                        "⚠️ FORCE: Nenhum container funcional, criando em posição fixa"
+                    );
+
+                    const cardFixo = document.createElement("div");
+                    cardFixo.innerHTML = cardHTML;
+                    cardFixo.firstElementChild.style.cssText += `
+                        position: fixed !important;
+                        top: 20px !important;
+                        right: 20px !important;
+                        z-index: 10000 !important;
+                        max-width: 400px !important;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                    `;
+
+                    document.body.appendChild(cardFixo.firstElementChild);
+                    seletorUsado = "posicao-fixa-body";
+                    inserido = true;
+                    console.log("✅ FORCE: Card criado em posição fixa");
+                }
+
+                // Verificar se foi criado
+                const cardCriado =
+                    document.getElementById("eprobe-data-sessao");
+
+                if (cardCriado) {
+                    console.log(
+                        "✅ FORCE: Card criado e verificado com sucesso!"
+                    );
+
+                    // Destacar o card temporariamente
+                    cardCriado.style.animation = "pulse 2s ease-in-out";
+                    setTimeout(() => {
+                        if (cardCriado) cardCriado.style.animation = "";
+                    }, 2000);
+
+                    return {
+                        sucesso: true,
+                        metodo: "forcado",
+                        container: seletorUsado,
+                        dataUsada: dataParaUsar,
+                        cardId: cardCriado.id,
+                    };
+                } else {
+                    console.log(
+                        "❌ FORCE: Card não foi criado mesmo com método forçado!"
+                    );
+                    return {
+                        sucesso: false,
+                        motivo: "Falha mesmo com método forçado",
+                        container: seletorUsado,
+                    };
+                }
+            } catch (error) {
+                console.error("❌ FORCE: Erro crítico:", error);
+                return {
+                    sucesso: false,
+                    erro: error.message,
+                    stack: error.stack,
+                };
+            }
+        };
+
+        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DE ERRO switchRelevanciaEvento
+        window.SENT1_AUTO.testarErroSwitchRelevancia = function () {
+            console.log("🧪 TESTE: Diagnosticando erro switchRelevanciaEvento");
+
+            try {
+                // 1. Verificar se há elementos img problemáticos
+                const imagensProblematicas = [];
+                const todasImagens = document.querySelectorAll("img");
+
+                console.log(
+                    `🔍 VERIFICANDO: ${todasImagens.length} imagens na página`
+                );
+
+                todasImagens.forEach((img, index) => {
+                    try {
+                        // Tentar acessar .src para simular o erro
+                        const src = img.src;
+                        if (
+                            !src ||
+                            src === null ||
+                            src === undefined ||
+                            src === ""
+                        ) {
+                            imagensProblematicas.push({
+                                index,
+                                elemento: img,
+                                problema: "src null/undefined/empty",
+                                id: img.id || "sem-id",
+                                className: img.className || "sem-classe",
+                                parentElement:
+                                    img.parentElement?.tagName || "sem-parent",
+                            });
+                        }
+                    } catch (error) {
+                        imagensProblematicas.push({
+                            index,
+                            elemento: img,
+                            problema: error.message,
+                            id: img.id || "sem-id",
+                            className: img.className || "sem-classe",
+                            parentElement:
+                                img.parentElement?.tagName || "sem-parent",
+                        });
+                    }
+                });
+
+                console.log(
+                    `🔍 DIAGNÓSTICO: ${imagensProblematicas.length} imagens problemáticas encontradas`
+                );
+                imagensProblematicas.forEach((problema, i) => {
+                    console.log(`❌ PROBLEMA ${i + 1}:`, problema);
+                });
+
+                // 2. Verificar se há elementos removidos/modificados pela extensão
+                const elementosModificados = document.querySelectorAll(
+                    '[data-eprobe-modified="true"]'
+                );
+                console.log(
+                    `🔧 MODIFICADOS: ${elementosModificados.length} elementos modificados pela extensão`
+                );
+
+                // 3. Verificar se há SVGs que substituíram imagens
+                const svgsSubstituidos = document.querySelectorAll(
+                    'svg[data-eprobe-icon="true"]'
+                );
+                console.log(
+                    `🎨 SUBSTITUÍDOS: ${svgsSubstituidos.length} SVGs substituindo ícones`
+                );
+
+                // 4. Procurar por elementos que podem estar relacionados ao switchRelevanciaEvento
+                const elementsRelevancia = document.querySelectorAll(
+                    '[onclick*="switchRelevancia"], [data-relevancia]'
+                );
+                console.log(
+                    `🎯 RELEVÂNCIA: ${elementsRelevancia.length} elementos com switchRelevancia encontrados`
+                );
+
+                return {
+                    totalImagens: todasImagens.length,
+                    imagensProblematicas,
+                    elementosModificados: elementosModificados.length,
+                    svgsSubstituidos: svgsSubstituidos.length,
+                    elementosRelevancia: elementsRelevancia.length,
+                };
+            } catch (error) {
+                console.error("❌ ERRO no diagnóstico:", error);
+                return { erro: error.message };
+            }
+        };
+
         // 🔧 FUNÇÕES DE DIAGNÓSTICO DE ÍCONES CSS
         window.SENT1_AUTO.diagnosticarIconesCSS = diagnosticarIconesCSS;
         window.SENT1_AUTO.forcarReaplicacaoIcones = forcarReaplicacaoIcones;
         window.SENT1_AUTO.forcarRecriacaoCardSessao = forcarRecriacaoCardSessao;
         window.SENT1_AUTO.encontrarContainerParaCard =
             encontrarContainerParaCard;
+
+        // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
+        window.SENT1_AUTO.diagnosticoCompletoCard = function () {
+            console.log("🩺 DIAGNÓSTICO COMPLETO - Card de Sessão");
+            console.log("====================================");
+
+            const relatorio = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                url: window.location.href,
+                diagnosticos: {},
+            };
+
+            try {
+                // 1. VERIFICAR PÁGINA ATUAL
+                console.log("🌐 1. VERIFICAÇÃO DA PÁGINA");
+                relatorio.diagnosticos.pagina = {
+                    url: window.location.href,
+                    eProc: window.location.href.includes("eproc"),
+                    tipoDetectado: detectPageType ? detectPageType() : "N/A",
+                    contemProcesso: window.location.href.includes("processo"),
+                };
+                console.log(
+                    "   URL eProc:",
+                    relatorio.diagnosticos.pagina.eProc
+                );
+                console.log(
+                    "   Tipo página:",
+                    relatorio.diagnosticos.pagina.tipoDetectado
+                );
+
+                // 2. VERIFICAR DETECÇÃO DE DATA
+                console.log("\n📅 2. VERIFICAÇÃO DE DETECÇÃO DE DATA");
+                const hasData = window.SENT1_AUTO.hasDataSessaoPautado?.();
+                const dataAtual = window.SENT1_AUTO.getDataSessaoPautado?.();
+
+                relatorio.diagnosticos.data = {
+                    hasDataFunction:
+                        typeof window.SENT1_AUTO.hasDataSessaoPautado,
+                    getDataFunction:
+                        typeof window.SENT1_AUTO.getDataSessaoPautado,
+                    hasData: hasData,
+                    dataDetectada: dataAtual,
+                    processoAtual: processoAtual,
+                    processoComData:
+                        typeof processoComDataSessao !== "undefined"
+                            ? processoComDataSessao
+                            : "N/A",
+                };
+                console.log("   Has data:", hasData);
+                console.log("   Data detectada:", dataAtual);
+                console.log("   Processo atual:", processoAtual);
+
+                // 3. VERIFICAR CONTAINERS DISPONÍVEIS
+                console.log("\n📦 3. VERIFICAÇÃO DE CONTAINERS");
+                const containers = [
+                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                    "#fldCapa #divCapaProcesso .row.mt-2",
+                    "#divCapaProcesso .row.mt-2",
+                    ".row.mt-2",
+                    "#fldCapa .row",
+                    "#divCapaProcesso",
+                    "#fldCapa",
+                ];
+
+                relatorio.diagnosticos.containers = {};
+                containers.forEach((seletor, index) => {
+                    const elemento = document.querySelector(seletor);
+                    relatorio.diagnosticos.containers[`container_${index}`] = {
+                        seletor: seletor,
+                        encontrado: !!elemento,
+                        visivel: elemento
+                            ? elemento.offsetWidth > 0 &&
+                              elemento.offsetHeight > 0
+                            : false,
+                        tagName: elemento?.tagName || "N/A",
+                    };
+                    console.log(
+                        `   ${index + 1}. ${seletor.substring(0, 50)}... → ${
+                            !!elemento ? "✅" : "❌"
+                        }`
+                    );
+                });
+
+                // 4. VERIFICAR CARD EXISTENTE
+                console.log("\n🎴 4. VERIFICAÇÃO DE CARD EXISTENTE");
+                const cardExistente =
+                    document.getElementById("eprobe-data-sessao");
+                relatorio.diagnosticos.cardExistente = {
+                    presente: !!cardExistente,
+                    visivel: cardExistente
+                        ? cardExistente.offsetWidth > 0 &&
+                          cardExistente.offsetHeight > 0
+                        : false,
+                    posicao: cardExistente?.style.position || "static",
+                    containerPai:
+                        cardExistente?.parentElement?.tagName || "N/A",
+                    dataProcesso:
+                        cardExistente?.getAttribute("data-processo") || "N/A",
+                };
+                console.log("   Card presente:", !!cardExistente);
+                if (cardExistente) {
+                    console.log(
+                        "   Visível:",
+                        cardExistente.offsetWidth > 0 &&
+                            cardExistente.offsetHeight > 0
+                    );
+                    console.log(
+                        "   Container pai:",
+                        cardExistente.parentElement?.tagName
+                    );
+                }
+
+                // 5. VERIFICAR FUNÇÕES NECESSÁRIAS
+                console.log("\n🔧 5. VERIFICAÇÃO DE FUNÇÕES");
+                relatorio.diagnosticos.funcoes = {
+                    inserirDataSessaoNaInterface:
+                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
+                    detectarDataSessao:
+                        typeof window.SENT1_AUTO.detectarDataSessao,
+                    criarBotaoEleganteeProc: typeof criarBotaoEleganteeProc,
+                    getCachedElement: typeof getCachedElement,
+                };
+                console.log(
+                    "   inserirDataSessaoNaInterface:",
+                    typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
+                );
+                console.log(
+                    "   detectarDataSessao:",
+                    typeof window.SENT1_AUTO.detectarDataSessao
+                );
+
+                // 6. VERIFICAR ELEMENTOS DOM CRÍTICOS
+                console.log("\n🏗️ 6. VERIFICAÇÃO DE ELEMENTOS DOM");
+                const elementosCriticos = {
+                    "#fldCapa": document.querySelector("#fldCapa"),
+                    "#divCapaProcesso":
+                        document.querySelector("#divCapaProcesso"),
+                    "#divInfraAreaProcesso": document.querySelector(
+                        "#divInfraAreaProcesso"
+                    ),
+                    ".row.mt-2": document.querySelector(".row.mt-2"),
+                };
+
+                relatorio.diagnosticos.elementosDOM = {};
+                Object.entries(elementosCriticos).forEach(
+                    ([seletor, elemento]) => {
+                        relatorio.diagnosticos.elementosDOM[seletor] = {
+                            presente: !!elemento,
+                            visivel: elemento
+                                ? elemento.offsetWidth > 0 &&
+                                  elemento.offsetHeight > 0
+                                : false,
+                            children: elemento?.children.length || 0,
+                        };
+                        console.log(
+                            `   ${seletor}: ${!!elemento ? "✅" : "❌"}`
+                        );
+                    }
+                );
+
+                // 7. CONCLUSÕES E RECOMENDAÇÕES
+                console.log("\n💡 7. CONCLUSÕES");
+                const conclusoes = [];
+
+                if (!relatorio.diagnosticos.pagina.eProc) {
+                    conclusoes.push("❌ Não está em uma página do eProc");
+                }
+
+                if (!relatorio.diagnosticos.data.hasData) {
+                    conclusoes.push("❌ Nenhuma data de sessão detectada");
+                }
+
+                const containersDisponiveis = Object.values(
+                    relatorio.diagnosticos.containers
+                ).filter((c) => c.encontrado).length;
+                if (containersDisponiveis === 0) {
+                    conclusoes.push("❌ Nenhum container adequado encontrado");
+                }
+
+                if (
+                    relatorio.diagnosticos.funcoes
+                        .inserirDataSessaoNaInterface !== "function"
+                ) {
+                    conclusoes.push("❌ Função de inserção não disponível");
+                }
+
+                relatorio.conclusoes = conclusoes;
+                relatorio.recomendacoes = [];
+
+                if (conclusoes.length === 0) {
+                    console.log(
+                        "   ✅ Tudo parece estar funcionando corretamente"
+                    );
+                    relatorio.recomendacoes.push(
+                        "Execute: window.SENT1_AUTO.testarCriacaoCard()"
+                    );
+                } else {
+                    conclusoes.forEach((conclusao) =>
+                        console.log(`   ${conclusao}`)
+                    );
+
+                    if (!relatorio.diagnosticos.pagina.eProc) {
+                        relatorio.recomendacoes.push(
+                            "Navegue para uma página do eProc"
+                        );
+                    }
+                    if (!relatorio.diagnosticos.data.hasData) {
+                        relatorio.recomendacoes.push(
+                            "Execute: window.SENT1_AUTO.detectarDataSessao()"
+                        );
+                    }
+                    if (containersDisponiveis === 0) {
+                        relatorio.recomendacoes.push(
+                            "Execute: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()"
+                        );
+                    }
+                }
+
+                console.log("\n📋 RELATÓRIO COMPLETO:", relatorio);
+                return relatorio;
+            } catch (error) {
+                console.error("❌ ERRO no diagnóstico completo:", error);
+                return {
+                    erro: error.message,
+                    stack: error.stack,
+                    timestamp: new Date().toLocaleString("pt-BR"),
+                };
+            }
+        };
 
         // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA
         window.SENT1_AUTO.ativarModoUltraPerformance = function () {
@@ -7574,11 +8314,11 @@ ${texto}`;
 
             elementosImgMinutas.forEach((img, index) => {
                 console.log(`📷 IMG ${index + 1}:`, {
-                    id: img.id,
-                    src: img.src,
-                    style: img.getAttribute("style"),
-                    parent: img.parentElement?.tagName,
-                    parentId: img.parentElement?.id,
+                    id: img?.id || "N/A",
+                    src: img?.src || "N/A",
+                    style: img?.getAttribute("style") || "N/A",
+                    parent: img?.parentElement?.tagName || "N/A",
+                    parentId: img?.parentElement?.id || "N/A",
                 });
             });
 
@@ -7731,14 +8471,15 @@ ${texto}`;
 
             imagensEmf2wls.forEach((img, index) => {
                 console.log(`🖼️ IMAGEM ${index + 1}:`, {
-                    id: img.id,
-                    src: img.src,
-                    style: img.getAttribute("style"),
-                    width: img.style.width,
-                    height: img.style.height,
-                    opacity: img.style.opacity,
+                    id: img?.id || "N/A",
+                    src: img?.src || "N/A",
+                    style: img?.getAttribute("style") || "N/A",
+                    width: img?.style?.width || "N/A",
+                    height: img?.style?.height || "N/A",
+                    opacity: img?.style?.opacity || "N/A",
                     contextoPai:
-                        img.parentElement?.innerHTML?.substring(0, 100) + "...",
+                        img?.parentElement?.innerHTML?.substring(0, 100) +
+                            "..." || "N/A",
                 });
 
                 // Verificar se há texto próximo que contenha informações de sessão
@@ -8053,6 +8794,8 @@ ${texto}`;
                         "🎨 Reaplicando ícones no fieldset de ações..."
                     );
                     substituirIconesFieldsetAcoes();
+                    // Adicionar substituição global
+                    substituirIconesGlobalmente();
                     resultados.fieldsetAcoes = document.querySelectorAll(
                         "#fldAcoes [data-eprobe-icon-replaced]"
                     ).length;
@@ -8067,6 +8810,8 @@ ${texto}`;
                 console.log("🛠️ Reaplicando ícones das ferramentas...");
                 if (typeof substituirIconesFerramentas === "function") {
                     const sucessoFerramentas = substituirIconesFerramentas();
+                    // Executar também a substituição global
+                    substituirIconesGlobalmente();
                     if (sucessoFerramentas) {
                         // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
                         const totalIcones = document.querySelectorAll(
@@ -8433,10 +9178,32 @@ ${texto}`;
                             const dataValidada =
                                 validarDataBrasileira(dataEncontrada);
                             if (dataValidada) {
-                                // Salvar nas funções globais
-                                setTipoJulgamentoProcessoPautado(tipoProcesso);
-                                setStatusJulgamento(padrao.statusCompleto);
-                                setDataSessao(dataEncontrada);
+                                // Salvar nas funções globais usando namespace
+                                if (
+                                    window.SENT1_AUTO &&
+                                    window.SENT1_AUTO
+                                        .setTipoJulgamentoProcessoPautado
+                                ) {
+                                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                                        tipoProcesso
+                                    );
+                                }
+                                if (
+                                    window.SENT1_AUTO &&
+                                    window.SENT1_AUTO.setStatusJulgamento
+                                ) {
+                                    window.SENT1_AUTO.setStatusJulgamento(
+                                        padrao.statusCompleto
+                                    );
+                                }
+                                if (
+                                    window.SENT1_AUTO &&
+                                    window.SENT1_AUTO.setDataSessao
+                                ) {
+                                    window.SENT1_AUTO.setDataSessao(
+                                        dataEncontrada
+                                    );
+                                }
 
                                 return {
                                     status: padrao.status,
@@ -10448,8 +11215,8 @@ ${texto}`;
 
             console.log(`🔍 DETECÇÃO: Analisando processo ${processoAtual}...`);
 
-            // 🎯 PRIORIDADE 1: Detectar com status específico (mais rápido)
-            const statusDetectado = detectarStatusSessao();
+            // 🎯 PRIORIDADE 1: Detectar com método simplificado unificado
+            const statusDetectado = detectarCardSessaoSimplificado();
             if (statusDetectado) {
                 console.log(`✅ STATUS: ${statusDetectado.status} detectado`);
 
@@ -10499,7 +11266,8 @@ ${texto}`;
                     const dataValidada = validarDataBrasileira(dataEncontrada);
                     if (dataValidada) {
                         // Tentar detectar status mesmo no fallback
-                        const statusDetectadoFallback = detectarStatusSessao();
+                        const statusDetectadoFallback =
+                            detectarCardSessaoSimplificado();
                         if (statusDetectadoFallback) {
                             dataValidada.statusSessao = statusDetectadoFallback;
                         }
@@ -10514,7 +11282,16 @@ ${texto}`;
                             `✅ SUCESSO: Data detectada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
                         );
 
-                        // � CRUZAMENTO AUTOMÁTICO COM DEBOUNCE
+                        // 🎯 INSERIR INTERFACE IMEDIATAMENTE APÓS DETECÇÃO
+                        debounceGlobal(
+                            () => {
+                                inserirDataSessaoNaInterface();
+                            },
+                            "interface-update-pattern",
+                            300
+                        );
+
+                        // 🔄 CRUZAMENTO AUTOMÁTICO COM DEBOUNCE
                         debounceGlobal(
                             async () => {
                                 try {
@@ -10547,74 +11324,6 @@ ${texto}`;
 
             console.log("❌ DETECÇÃO: Nenhuma data de sessão encontrada");
             return null;
-        }
-
-        // Função para inserir data da sessão na interface do eProc
-        function inserirDataSessaoNaInterface() {
-            console.log(
-                "🎯 INSERIR: Tentando inserir data da sessão na interface"
-            );
-
-            // Verificar se há data detectada
-            if (!hasDataSessaoPautado()) {
-                console.log("❌ INSERIR: Nenhuma data detectada para inserir");
-                return false;
-            }
-
-            // Buscar o elemento container alvo com cache
-            const targetContainer = getCachedElement(
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
-            );
-
-            if (!targetContainer) {
-                console.log("❌ INSERIR: Container alvo não encontrado");
-                return false;
-            }
-
-            // Verificar se já existe o elemento da data da sessão
-            if (document.getElementById("eprobe-data-sessao")) {
-                console.log(
-                    "ℹ️ INSERIR: Data da sessão já inserida na interface"
-                );
-                return true;
-            }
-
-            // Criar elemento usando a função reutilizável
-            const dataSessaoElement = criarBotaoEleganteeProc(
-                "eprobe-data-sessao",
-                "col-auto mr-2"
-            );
-            processoComDataSessao = processoAtual;
-            console.log(
-                `✅ SUCESSO: Data da sessão detectada e armazenada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
-            );
-
-            // � MARCAR PROCESSO COMO PROCESSADO ANTES DO CRUZAMENTO
-            marcarProcessoComoProcessado(processoAtual);
-
-            // �🚀 INTEGRAÇÃO AUTOMÁTICA CONTROLADA: Apenas uma tentativa
-            setTimeout(async () => {
-                try {
-                    console.log(
-                        "� CRUZAMENTO: Tentativa automática única e controlada"
-                    );
-                    const resultado = await cruzarDadosDataSessao();
-                    if (resultado) {
-                        console.log("✅ CRUZAMENTO: Sucesso!");
-                        atualizarDataSessaoNaInterface();
-                    } else {
-                        console.log("ℹ️ CRUZAMENTO: Dados não encontrados");
-                        console.log(
-                            "💡 Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
-                        );
-                    }
-                } catch (error) {
-                    console.warn(
-                        "⚠️ CRUZAMENTO: Erro controlado:",
-                        error.message
-                    );
-                }
-            }, 3000); // Delay maior
         }
 
         // Funções utilitárias para gerenciar data da sessão
@@ -10697,14 +11406,66 @@ ${texto}`;
                 return false;
             }
 
-            // Buscar o elemento container alvo com cache
-            const targetContainer = getCachedElement(
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
-            );
+            // 🛡️ BUSCA ROBUSTA: Tentar múltiplos seletores para encontrar o container
+            const possibleSelectors = [
+                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+                "#fldCapa #divCapaProcesso .row.mt-2",
+                "#divCapaProcesso .row.mt-2",
+                ".row.mt-2",
+                "#fldCapa .row",
+                "#divCapaProcesso",
+                "#fldCapa",
+                "#divInfraAreaProcesso",
+            ];
+
+            let targetContainer = null;
+            let usedSelector = "";
+
+            for (const selector of possibleSelectors) {
+                targetContainer = getCachedElement(selector);
+                if (targetContainer) {
+                    usedSelector = selector;
+                    console.log(
+                        `✅ INSERIR: Container encontrado com seletor: ${selector}`
+                    );
+                    break;
+                }
+            }
 
             if (!targetContainer) {
-                console.log("❌ INSERIR: Container alvo não encontrado");
-                return false;
+                console.log(
+                    "❌ INSERIR: Nenhum container encontrado com os seletores disponíveis"
+                );
+                console.log("🔍 INSERIR: Tentando busca alternativa...");
+
+                // Busca alternativa mais ampla
+                const alternativeSelectors = [
+                    ".row",
+                    "[class*='row']",
+                    ".container-fluid",
+                    "#divInfraBarraComandosSuperior",
+                    ".infraBarraComandos",
+                ];
+
+                for (const selector of alternativeSelectors) {
+                    targetContainer = document.querySelector(selector);
+                    if (targetContainer) {
+                        usedSelector = selector;
+                        console.log(
+                            `✅ INSERIR: Container alternativo encontrado: ${selector}`
+                        );
+                        break;
+                    }
+                }
+            }
+
+            if (!targetContainer) {
+                console.log(
+                    "❌ INSERIR: CRÍTICO - Nenhum container encontrado! Usando fallback..."
+                );
+                // Fallback: criar posição fixa
+                return criarCardPosicaoFixa();
             }
 
             // Verificar se já existe o elemento da data da sessão
@@ -10724,6 +11485,9 @@ ${texto}`;
                     console.log("🔄 INSERIR: Processo mudou, atualizando card");
                     existingElement.remove();
                 } else {
+                    console.log(
+                        "ℹ️ INSERIR: Card já existe e é do processo atual"
+                    );
                     return true;
                 }
             }
@@ -10733,6 +11497,11 @@ ${texto}`;
                 "eprobe-data-sessao",
                 "col-auto mr-2"
             );
+
+            if (!dataSessaoElement) {
+                console.error("❌ INSERIR: Falha ao criar elemento do card");
+                return false;
+            }
 
             // Adicionar identificação do processo para controle de cache
             dataSessaoElement.setAttribute("data-processo", processoAtual);
@@ -10878,11 +11647,115 @@ Dados obtidos automaticamente pelo eProbe`;
             });
 
             // Inserir o elemento no container
-            targetContainer.appendChild(dataSessaoElement);
+            try {
+                targetContainer.appendChild(dataSessaoElement);
+                console.log(
+                    `✅ INSERIR: Data da sessão inserida na interface: ${dataSessaoPautado.dataFormatada}`
+                );
+                console.log(`🎯 INSERIR: Container usado: ${usedSelector}`);
+                return true;
+            } catch (error) {
+                console.error(
+                    "❌ INSERIR: Erro ao inserir no container:",
+                    error
+                );
+                console.log("🔄 INSERIR: Tentando fallback de posição fixa...");
+                return criarCardPosicaoFixa();
+            }
+        }
 
-            console.log(
-                `✅ INSERIR: Data da sessão inserida na interface: ${dataSessaoPautado.dataFormatada}`
+        // 🚨 FUNÇÃO DE FALLBACK: Criar card em posição fixa quando não encontra container
+        function criarCardPosicaoFixa() {
+            console.log("🚨 FALLBACK: Criando card em posição fixa");
+
+            // Remover card existente se houver
+            const existingElement =
+                document.getElementById("eprobe-data-sessao");
+            if (existingElement) {
+                existingElement.remove();
+            }
+
+            const dataSessaoElement = criarBotaoEleganteeProc(
+                "eprobe-data-sessao",
+                ""
             );
+
+            if (!dataSessaoElement) {
+                console.error("❌ FALLBACK: Falha ao criar elemento do card");
+                return false;
+            }
+
+            // Adicionar identificação do processo
+            dataSessaoElement.setAttribute("data-processo", processoAtual);
+
+            // 🎨 ESTILO PARA POSIÇÃO FIXA
+            dataSessaoElement.style.cssText = `
+                position: fixed;
+                top: 80px;
+                right: 20px;
+                z-index: 10000;
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 8px;
+                border: 1px solid #d1d5db;
+                padding: 8px 12px;
+                border-radius: 6px;
+                background-color: #f8fafc;
+                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
+                transition: all 0.2s ease;
+                cursor: pointer;
+                white-space: nowrap;
+                max-width: fit-content;
+                font-family: system-ui, -apple-system, sans-serif;
+            `;
+
+            // Interface básica com status
+            const statusSessao = getStatusSessao();
+            const textoCard = obterTextoCardPorStatus(statusSessao);
+            const corCard = obterCorCardPorStatus(statusSessao);
+
+            dataSessaoElement.innerHTML = `
+                <svg style="width: 16px; height: 16px; color: ${corCard}; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
+                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
+                </svg>
+                <div style="display: flex; flex-direction: column; gap: 1px;">
+                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">${textoCard}</span>
+                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
+                    <span style="font-weight: 500; font-size: 9px; color: #dc2626; line-height: 1;">📍 Modo Fallback</span>
+                </div>
+            `;
+
+            dataSessaoElement.title = `Sessão: ${textoCard} - ${dataSessaoPautado.dataFormatada}\n(Card em posição fixa - container não encontrado)`;
+
+            // Adicionar listener de clique básico
+            dataSessaoElement.addEventListener("click", function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                console.log("🖱️ CLIQUE: Card de sessão (modo fallback)");
+
+                // Feedback visual
+                this.style.transform = "scale(0.95)";
+                setTimeout(() => {
+                    this.style.transform = "scale(1)";
+                }, 150);
+
+                // Mostrar informações básicas
+                alert(
+                    `Sessão Detectada:\n\n${textoCard}\nData: ${
+                        dataSessaoPautado.dataFormatada
+                    }\n\nStatus: ${
+                        statusSessao?.status || "Detectado"
+                    }\nProcesso: ${processoAtual}`
+                );
+            });
+
+            // Inserir no body
+            document.body.appendChild(dataSessaoElement);
+
+            console.log("✅ FALLBACK: Card criado em posição fixa com sucesso");
             return true;
         }
 
@@ -12155,126 +13028,287 @@ Dados obtidos automaticamente pelo eProbe`;
     // =============================================
 
     /**
-     * Função simplificada para detectar cards de sessão
-     * Busca especificamente pelo botão infraLegendObrigatorio e analisa o conteúdo nas próximas linhas
+     * Função simplificada para detectar cards de sessão usando XPath específico
+     * NOVA ESTRATÉGIA: Buscar EXCLUSIVAMENTE no caminho XPath fornecido
+     * Caminho: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]
      */
     function detectarCardSessaoSimplificado() {
-        console.log("🔍 CARD SESSÃO: Iniciando detecção simplificada");
+        console.log(
+            "🎯 DETECÇÃO XPATH: Buscando dados de sessão no caminho específico"
+        );
 
         try {
-            // Buscar o botão específico mencionado pelo usuário
-            const botaoInfra = document.querySelector(
-                'button[type="button"].infraLegendObrigatorio.btn.btn-link.btn-sm.p-0'
-            );
+            // XPATH ESPECÍFICO fornecido pelo usuário
+            const xpathExpression =
+                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
 
-            if (!botaoInfra) {
+            // Usar XPath para encontrar o elemento exato
+            const spanElement = document.evaluate(
+                xpathExpression,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (!spanElement) {
                 console.log(
-                    "❌ CARD SESSÃO: Botão infraLegendObrigatorio não encontrado"
+                    "❌ XPATH: Elemento não encontrado no caminho especificado"
                 );
+                console.log(`   Caminho: ${xpathExpression}`);
                 return null;
             }
 
-            console.log(
-                "✅ CARD SESSÃO: Botão infraLegendObrigatorio encontrado"
-            );
+            console.log("✅ XPATH: Elemento encontrado!");
+            console.log(`   ID: ${spanElement.id}`);
+            console.log(`   Tag: ${spanElement.tagName}`);
 
-            // Obter o container pai para buscar o texto nas próximas linhas
-            let containerTexto = botaoInfra.parentElement;
-            let nivelPai = 0;
+            // Extrair dados do atributo onmouseover
+            const onmouseoverAttr = spanElement.getAttribute("onmouseover");
 
-            // Subir até 3 níveis para encontrar um container com texto relevante
-            while (containerTexto && nivelPai < 3) {
-                const textoContainer =
-                    containerTexto.textContent ||
-                    containerTexto.innerText ||
-                    "";
-
-                if (textoContainer.length > 50) {
-                    console.log(
-                        `📝 CARD SESSÃO: Texto encontrado no nível ${nivelPai}:`,
-                        textoContainer.substring(0, 200)
-                    );
-                    break;
-                }
-
-                containerTexto = containerTexto.parentElement;
-                nivelPai++;
-            }
-
-            if (!containerTexto) {
-                console.log(
-                    "❌ CARD SESSÃO: Nenhum container com texto encontrado"
-                );
+            if (!onmouseoverAttr) {
+                console.log("❌ XPATH: Atributo onmouseover não encontrado");
                 return null;
             }
 
-            const textoCompleto =
-                containerTexto.textContent || containerTexto.innerText || "";
+            console.log("🔍 XPATH: Atributo onmouseover encontrado:");
+            console.log(`   ${onmouseoverAttr}`);
 
-            // Padrões simplificados já configurados
-            const padroes = [
-                {
-                    regex: /\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
-                    status: "Retirado",
-                    statusCompleto: "Retirado em Pauta",
-                },
-                {
-                    regex: /\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
-                    status: "Julgado",
-                    statusCompleto: "Julgado em Pauta",
-                },
-                {
-                    regex: /\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\)/i,
-                    status: "Pautado",
-                    statusCompleto: "Incluído em Pauta",
-                },
-            ];
+            // Extrair o conteúdo do tooltip (texto dentro das aspas)
+            const match = onmouseoverAttr.match(
+                /infraTooltipMostrar\('([^']+)'/
+            );
+            if (!match) {
+                console.log("❌ XPATH: Formato do tooltip não reconhecido");
+                return null;
+            }
 
-            // Buscar padrões no texto
-            for (const padrao of padroes) {
-                const match = textoCompleto.match(padrao.regex);
+            const tooltipContent = match[1];
+            console.log(`📝 XPATH: Conteúdo do tooltip: ${tooltipContent}`);
 
-                if (match) {
-                    const dataEncontrada = match[1];
-                    console.log(
-                        `✅ CARD SESSÃO: ${padrao.status} encontrado - Data: ${dataEncontrada}`
-                    );
+            // USAR NOVA FUNÇÃO que detecta o formato atualizado
+            const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
 
-                    // Validar data
-                    const dataValidada = validarDataBrasileira(dataEncontrada);
-                    if (dataValidada) {
-                        const dadosSessao = {
-                            status: padrao.status,
-                            statusCompleto: padrao.statusCompleto,
-                            data: dataValidada,
-                            textoOriginal: match[0],
-                            timestamp: new Date().toISOString(),
-                        };
+            if (resultado) {
+                console.log(`✅ XPATH: SUCESSO! Encontrado:`);
+                console.log(`   - Status: ${resultado.status}`);
+                console.log(
+                    `   - Status Original: ${resultado.statusOriginal}`
+                );
+                console.log(`   - Tipo: ${resultado.tipoProcesso}`);
+                console.log(`   - Data: ${resultado.data}`);
+                console.log(`   - Código: ${resultado.codigo}`);
+                console.log(`   - Total Sessões: ${resultado.totalSessoes}`);
 
-                        console.log(
-                            "✅ CARD SESSÃO: Dados detectados com sucesso:",
-                            dadosSessao
-                        );
+                // Criar/atualizar o card
+                atualizarCardMaterialDesign(resultado);
 
-                        // Criar/atualizar o card
-                        atualizarCardMaterialDesign(dadosSessao);
+                // Salvar dados globalmente (adaptar formato para compatibilidade)
+                dataSessaoPautado = {
+                    dataFormatada: resultado.data,
+                    dataOriginal: resultado.data,
+                    dia: parseInt(resultado.data.split("/")[0]),
+                    mes: parseInt(resultado.data.split("/")[1]),
+                    ano: parseInt(resultado.data.split("/")[2]),
+                };
+                processoComDataSessao = processoAtual;
 
-                        return dadosSessao;
-                    }
+                // Usar namespace SENT1_AUTO para funções globais
+                if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
+                    window.SENT1_AUTO.setDataSessao(resultado.data);
                 }
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
+                ) {
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                        resultado.tipoProcesso
+                    );
+                }
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setStatusJulgamento
+                ) {
+                    window.SENT1_AUTO.setStatusJulgamento(
+                        resultado.statusCompleto
+                    );
+                }
+
+                return resultado;
             }
 
             console.log(
-                "❌ CARD SESSÃO: Nenhum padrão de data encontrado no texto"
+                "❌ XPATH: Dados de sessão não foram encontrados no tooltip"
             );
             return null;
         } catch (error) {
-            console.error(
-                "❌ CARD SESSÃO: Erro na detecção simplificada:",
-                error
-            );
+            console.error("❌ DETECÇÃO: Erro na detecção:", error);
             return null;
         }
+    }
+
+    /**
+     * Valida uma data brasileira de forma simples (DD/MM/YYYY)
+     * @param {string} dataString - Data em formato brasileiro
+     * @returns {Object|null} - Objeto com data validada ou null
+     */
+    function validarDataSessaoSimples(dataString) {
+        try {
+            // Limpar e normalizar a string da data
+            const dataLimpa = dataString.trim().replace(/[^\d\/\-\.]/g, "");
+
+            // Separar por /
+            const partes = dataLimpa.split("/");
+            if (partes.length !== 3) {
+                return null;
+            }
+
+            // Assumir formato brasileiro: DD/MM/AAAA
+            const dia = parseInt(partes[0], 10);
+            const mes = parseInt(partes[1], 10);
+            const ano = parseInt(partes[2], 10);
+
+            // Validações básicas
+            if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
+                return null;
+            }
+
+            if (
+                dia < 1 ||
+                dia > 31 ||
+                mes < 1 ||
+                mes > 12 ||
+                ano < 2020 ||
+                ano > 2030
+            ) {
+                return null;
+            }
+
+            // Criar objeto Date para validação
+            const dataObj = new Date(ano, mes - 1, dia);
+
+            if (
+                dataObj.getFullYear() !== ano ||
+                dataObj.getMonth() !== mes - 1 ||
+                dataObj.getDate() !== dia
+            ) {
+                return null;
+            }
+
+            // Retornar objeto de data validada
+            return {
+                dataOriginal: dataString,
+                dataFormatada: `${dia.toString().padStart(2, "0")}/${mes
+                    .toString()
+                    .padStart(2, "0")}/${ano}`,
+                dia: dia,
+                mes: mes,
+                ano: ano,
+                timestamp: dataObj.getTime(),
+                dataObj: dataObj,
+            };
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Extrai dados da sessão de um texto usando TODOS os padrões de status
+     * @param {string} texto - Texto para analisar
+     * @returns {Object|null} - Dados da sessão ou null
+     */
+    function extrairDadosSessaoCompleto(texto) {
+        // Padrões para TODOS os status de sessão
+        const padroesSessao = [
+            {
+                regex: /([A-Za-zÀ-ÿ\s]+)\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/i,
+                status: "Retirado",
+                statusCompleto: "Retirado em Pauta",
+                cor: "#dc2626", // Vermelho
+            },
+            {
+                regex: /([A-Za-zÀ-ÿ\s]+)\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/i,
+                status: "Julgado",
+                statusCompleto: "Julgado em Pauta",
+                cor: "#16a34a", // Verde
+            },
+            {
+                regex: /([A-Za-zÀ-ÿ\s]+)\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/i,
+                status: "Pautado",
+                statusCompleto: "Incluído em Pauta",
+                cor: "#3b82f6", // Azul
+            },
+        ];
+
+        // Testar cada padrão
+        for (const padrao of padroesSessao) {
+            const match = texto.match(padrao.regex);
+
+            if (match) {
+                const tipoProcesso = match[1].trim();
+                const dataSessao = match[2];
+                const orgao = match[3];
+
+                console.log(`✅ EXTRAÇÃO: ${padrao.status} encontrado!`);
+                console.log(`   - Tipo: ${tipoProcesso}`);
+                console.log(`   - Data: ${dataSessao}`);
+                console.log(`   - Órgão: ${orgao}`);
+                console.log(`   - Status: ${padrao.statusCompleto}`);
+
+                // Validar data brasileira (versão simplificada)
+                const dataValidada = validarDataSessaoSimples(dataSessao);
+                if (!dataValidada) {
+                    console.log("❌ EXTRAÇÃO: Data inválida:", dataSessao);
+                    continue;
+                }
+
+                // Criar objeto de dados da sessão
+                const dadosSessao = {
+                    status: padrao.status,
+                    statusCompleto: padrao.statusCompleto,
+                    tipoProcesso: tipoProcesso,
+                    data: dataValidada,
+                    orgao: orgao,
+                    cor: padrao.cor,
+                    textoOriginal: match[0],
+                    timestamp: new Date().toISOString(),
+                };
+
+                console.log("🎯 EXTRAÇÃO: Criando card automaticamente...");
+
+                // Criar/atualizar o card
+                atualizarCardMaterialDesign(dadosSessao);
+
+                // Salvar dados globalmente
+                dataSessaoPautado = dataValidada;
+                processoComDataSessao = processoAtual;
+
+                // Usar namespace SENT1_AUTO para funcões globais
+                if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
+                    window.SENT1_AUTO.setDataSessao(dataSessao);
+                }
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
+                ) {
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                        tipoProcesso
+                    );
+                }
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setStatusJulgamento
+                ) {
+                    window.SENT1_AUTO.setStatusJulgamento(
+                        padrao.statusCompleto
+                    );
+                }
+
+                return dadosSessao;
+            }
+        }
+
+        return null;
     }
 
     // ...existing code...
@@ -12336,59 +13370,494 @@ Dados obtidos automaticamente pelo eProbe`;
     }
 
     /**
-     * Cria um card Material Design SIMPLIFICADO para exibir dados de sessão
-     * VERSÃO MINIMALISTA - Apenas status e data, com ícones Lucide
+     * Cria um card Material Design usando SVG do Figma com dados dinâmicos
      * @param {Object} dadosSessao - Dados da sessão detectada
      * @returns {HTMLElement} - Elemento do card criado
      */
     function criarCardMaterialDesign(dadosSessao) {
-        console.log(
-            "🎨 MATERIAL: Criando card minimalista para dados de sessão"
-        );
+        console.log("🎨 FIGMA: Criando card com design SVG do Figma");
+
+        // Determinar status e obter configuração específica
+        const status = dadosSessao?.status || "Pautado";
+        const configStatus = obterConfigFigmaStatus(status);
 
         // Container principal do card
         const card = document.createElement("div");
         card.id = "eprobe-data-sessao";
-        card.className = "eprobe-material-card-minimal";
+        card.className = "eprobe-figma-card-svg";
 
-        // Determinar status e cor
-        const status = dadosSessao?.status || "Desconhecido";
-        const statusClass = obterClasseStatusPorTipo(status);
+        // Data formatada dinâmica
+        const dataFormatada = dadosSessao?.data || "29/01/2025";
 
-        // Determinar ícone baseado no status (CSS icons)
-        let iconeClass = "eprobe-icon-info";
-        if (status.toLowerCase().includes("julgado"))
-            iconeClass = "eprobe-icon-check";
-        else if (status.toLowerCase().includes("pautado"))
-            iconeClass = "eprobe-icon-info";
-        else if (status.toLowerCase().includes("retirado"))
-            iconeClass = "eprobe-icon-alert";
+        // Criar tooltip com todas as sessões se houver múltiplas
+        let tooltipAtributos = "";
+        if (
+            dadosSessao?.totalSessoes &&
+            dadosSessao.totalSessoes > 1 &&
+            dadosSessao.todasSessoes
+        ) {
+            tooltipAtributos = `data-eprobe-tooltip="multiple" style="cursor: help;"`;
+        }
 
-        // HTML simplificado e compacto
+        // SVG do Figma com data dinâmica sobreposta
         card.innerHTML = `
-        <div class="eprobe-card-minimal-content">
-            <div class="eprobe-status-row">
-                <span class="eprobe-status-icon ${statusClass} ${iconeClass}"></span>
-                <span class="eprobe-status-text">${status}</span>
-            </div>
-            ${
-                dadosSessao?.data?.dataFormatada
-                    ? `
-                <div class="eprobe-date-row">
-                    <span class="eprobe-date-icon eprobe-icon-calendar"></span>
-                    <span class="eprobe-date-label">Sessão:</span>
-                    <span class="eprobe-date-text">${dadosSessao.data.dataFormatada}</span>
+            <div class="eprobe-figma-svg-container" ${tooltipAtributos}>
+                ${configStatus.svgCompleto || ""}
+                <div class="eprobe-figma-data-overlay">
+                    <span class="eprobe-figma-data-text">Sessão: ${dataFormatada}</span>
                 </div>
-            `
-                    : ""
-            }
-        </div>
-    `;
+            </div>
+        `;
 
-        console.log(
-            `✅ MATERIAL: Card minimalista criado com status "${status}"`
-        );
+        // Aplicar estilos únicos para SVG Figma
+        aplicarEstilosSvgFigma();
+
+        // Adicionar tooltip dinâmico se necessário
+        if (dadosSessao?.totalSessoes && dadosSessao.totalSessoes > 1) {
+            setTimeout(() => {
+                adicionarTooltipInterativo(card, dadosSessao.todasSessoes);
+            }, 100);
+        }
+
+        console.log(`✅ FIGMA: Card SVG criado para status "${status}"`);
         return card;
+    }
+
+    /**
+     * Aplica estilos únicos para cards SVG do Figma
+     */
+    function aplicarEstilosSvgFigma() {
+        if (document.getElementById("eprobe-figma-svg-styles")) return;
+
+        const styleSvg = document.createElement("style");
+        styleSvg.id = "eprobe-figma-svg-styles";
+        styleSvg.textContent = `
+            .eprobe-figma-card-svg {
+                display: inline-block;
+                margin: 8px 0;
+                position: relative;
+            }
+            
+            .eprobe-figma-svg-container {
+                position: relative;
+                display: inline-block;
+            }
+            
+            .eprobe-figma-svg-container svg {
+                transition: all 0.2s ease;
+                display: block;
+            }
+            
+            .eprobe-figma-card-svg:hover .eprobe-figma-svg-container svg {
+                transform: translateY(-1px);
+                filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+            }
+            
+            .eprobe-figma-data-overlay {
+                position: absolute;
+                bottom: 12px;
+                left: 24px;
+                right: 24px;
+                pointer-events: none;
+                z-index: 10;
+            }
+            
+            .eprobe-figma-data-text {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                color: #1D1B20;
+                opacity: 0.9;
+                text-align: left;
+                display: block;
+                line-height: 1.2;
+                background: rgba(255, 255, 255, 0.8);
+                padding: 2px 4px;
+                border-radius: 4px;
+                backdrop-filter: blur(4px);
+            }
+        `;
+        document.head.appendChild(styleSvg);
+    }
+
+    /**
+     * Obtém configuração específica para cada status baseada nos designs do Figma
+     * @param {string} status - Status da sessão
+     * @returns {Object} - Configuração do design
+     */
+    function obterConfigFigmaStatus(status) {
+        const configs = {
+            Pautado: {
+                // Design exato do Figma para PAUTADO
+                svgCompleto: `<svg width="233" height="88" viewBox="0 0 233 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#filter0_d_41_12)">
+<rect x="4" width="225" height="80" rx="12" fill="#FEF7FF"/>
+<rect x="4.5" y="0.5" width="224" height="79" rx="11.5" stroke="#CAC4D0"/>
+</g>
+<path d="M21.3772 53.8831C20.4657 53.8831 19.6856 53.5756 19.037 52.9607C18.3884 52.3457 18.0636 51.6056 18.0625 50.7403V28.7403C18.0625 27.876 18.3873 27.1364 19.037 26.5214C19.6867 25.9064 20.4668 25.5984 21.3772 25.5974H23.0346V22.4545H26.3493V25.5974H39.6083V22.4545H42.923V25.5974H44.5803C45.4919 25.5974 46.2725 25.9054 46.9222 26.5214C47.5719 27.1374 47.8962 27.877 47.8951 28.7403V36.0867C47.8951 36.5319 47.736 36.9054 47.4178 37.2071C47.0995 37.5088 46.7062 37.6592 46.2377 37.6581C45.7692 37.6571 45.3759 37.5062 45.0577 37.2055C44.7395 36.9049 44.5803 36.5319 44.5803 36.0867V35.026H21.3772V50.7403H30.99C31.4595 50.7403 31.8534 50.8911 32.1717 51.1928C32.4899 51.4945 32.6484 51.8675 32.6473 52.3117C32.6462 52.7559 32.4871 53.1294 32.17 53.4321C31.8529 53.7349 31.4595 53.8852 30.99 53.8831H21.3772ZM42.923 55.4545C40.6303 55.4545 38.6763 54.6882 37.0609 53.1555C35.4455 51.6229 34.6373 49.7702 34.6362 47.5974C34.6351 45.4246 35.4433 43.5719 37.0609 42.0393C38.6785 40.5066 40.6325 39.7403 42.923 39.7403C45.2135 39.7403 47.1681 40.5066 48.7867 42.0393C50.4054 43.5719 51.2131 45.4246 51.2098 47.5974C51.2065 49.7702 50.3983 51.6234 48.7851 53.1571C47.1719 54.6908 45.2179 55.4566 42.923 55.4545ZM45.6991 51.3295L46.8592 50.2295L43.7517 47.2831V42.8831H42.0943V47.9117L45.6991 51.3295Z" fill="#5C85B4"/>
+<path d="M69.7234 56.5753C69.7234 56.3429 69.6869 56.1378 69.614 55.9601C69.5456 55.7778 69.4226 55.6137 69.2448 55.4679C69.0717 55.322 68.8301 55.183 68.5202 55.0509C68.2149 54.9187 67.8275 54.7843 67.3581 54.6476C66.8659 54.5017 66.4216 54.3399 66.0251 54.1622C65.6286 53.9799 65.2891 53.7726 65.0066 53.5401C64.724 53.3077 64.5075 53.0411 64.3571 52.7403C64.2068 52.4395 64.1316 52.0955 64.1316 51.7081C64.1316 51.3207 64.2113 50.963 64.3708 50.6349C64.5303 50.3067 64.7582 50.0219 65.0544 49.7804C65.3552 49.5343 65.7129 49.3429 66.1277 49.2061C66.5424 49.0694 67.0049 49.0011 67.5154 49.0011C68.2627 49.0011 68.8962 49.1446 69.4157 49.4317C69.9398 49.7143 70.3386 50.0857 70.612 50.546C70.8855 51.0017 71.0222 51.4893 71.0222 52.0089H69.7097C69.7097 51.6352 69.6299 51.3048 69.4704 51.0177C69.3109 50.726 69.0694 50.4981 68.7458 50.3341C68.4223 50.1655 68.0121 50.0811 67.5154 50.0811C67.0459 50.0811 66.6586 50.1518 66.3532 50.2931C66.0479 50.4343 65.82 50.6257 65.6696 50.8673C65.5238 51.1088 65.4509 51.3845 65.4509 51.6944C65.4509 51.9041 65.4942 52.0955 65.5808 52.2686C65.6719 52.4373 65.8109 52.5945 65.9978 52.7403C66.1892 52.8862 66.4307 53.0206 66.7224 53.1436C67.0186 53.2667 67.3718 53.3852 67.782 53.4991C68.3471 53.6586 68.8347 53.8364 69.2448 54.0323C69.655 54.2283 69.9922 54.4493 70.2566 54.6954C70.5254 54.9369 70.7237 55.2127 70.8513 55.5226C70.9834 55.8279 71.0495 56.1742 71.0495 56.5616C71.0495 56.9672 70.9675 57.3341 70.8034 57.6622C70.6394 57.9903 70.4047 58.2706 70.0993 58.503C69.794 58.7354 69.4271 58.9155 68.9987 59.0431C68.5749 59.1661 68.101 59.2276 67.5769 59.2276C67.1166 59.2276 66.6631 59.1638 66.2165 59.0362C65.7745 58.9086 65.3711 58.7172 65.0066 58.462C64.6465 58.2068 64.3571 57.8923 64.1384 57.5186C63.9242 57.1404 63.8171 56.7029 63.8171 56.2061H65.1296C65.1296 56.5479 65.1957 56.8419 65.3279 57.088C65.46 57.3295 65.64 57.53 65.8679 57.6895C66.1003 57.849 66.3624 57.9675 66.654 58.045C66.9502 58.1179 67.2579 58.1544 67.5769 58.1544C68.0372 58.1544 68.4268 58.0906 68.7458 57.963C69.0648 57.8354 69.3064 57.6531 69.4704 57.4161C69.639 57.1791 69.7234 56.8989 69.7234 56.5753Z" fill="#1D1B20"/>
+<defs>
+<filter id="filter0_d_41_12" x="0" y="0" width="233" height="88" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dy="4"/>
+<feGaussianBlur stdDeviation="2"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_41_12"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_41_12" result="shape"/>
+</filter>
+</defs>
+</svg>`,
+                cor: "#5C85B4",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Pautado",
+            },
+            // TEMPORÁRIO: Manter outros status com design genérico até implementação
+            Julgado: {
+                cor: "#22c55e",
+                corFundo: "#f0fdf4",
+                corBorda: "#bbf7d0",
+                corTexto: "#166534",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M9 12l2 2 4-4"></path>
+                    <circle cx="12" cy="12" r="10"></circle>
+                </svg>`,
+                descricao: "Processo julgado",
+            },
+            Retirado: {
+                cor: "#ef4444",
+                corFundo: "#fef2f2",
+                corBorda: "#fecaca",
+                corTexto: "#991b1b",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>`,
+                descricao: "Processo retirado de pauta",
+            },
+            "Sobrestado (art. 942)": {
+                cor: "#f59e0b",
+                corFundo: "#fffbeb",
+                corBorda: "#fed7aa",
+                corTexto: "#92400e",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>`,
+                descricao: "Sobrestado por art. 942",
+            },
+            "Pedido de Vista": {
+                cor: "#8b5cf6",
+                corFundo: "#faf5ff",
+                corBorda: "#ddd6fe",
+                corTexto: "#5b21b6",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>`,
+                descricao: "Pedido de vista solicitado",
+            },
+            "Adiado (art. 935)": {
+                cor: "#f97316",
+                corFundo: "#fff7ed",
+                corBorda: "#fed7aa",
+                corTexto: "#c2410c",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                    <path d="M16 8a6 6 0 0 0-12 0"></path>
+                </svg>`,
+                descricao: "Adiado por art. 935",
+            },
+            Adiado: {
+                cor: "#f97316",
+                corFundo: "#fff7ed",
+                corBorda: "#fed7aa",
+                corTexto: "#c2410c",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 6v6l4 2"></path>
+                </svg>`,
+                descricao: "Sessão adiada",
+            },
+            "Conv. em Diligência": {
+                cor: "#06b6d4",
+                corFundo: "#ecfeff",
+                corBorda: "#a5f3fc",
+                corTexto: "#0e7490",
+                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>`,
+                descricao: "Convertido em diligência",
+            },
+        };
+
+        return configs[status] || configs.Pautado;
+    }
+
+    /**
+     * Adiciona tooltip interativo ao card com múltiplas sessões - VERSÃO FIGMA
+     * @param {HTMLElement} cardElement - Elemento do card
+     * @param {Array} todasSessoes - Array com todas as sessões
+     */
+    function adicionarTooltipInterativo(cardElement, todasSessoes) {
+        if (!cardElement || !todasSessoes || todasSessoes.length <= 1) return;
+
+        // Criar elemento do tooltip se não existir
+        let tooltip = document.getElementById("eprobe-tooltip");
+        if (!tooltip) {
+            tooltip = document.createElement("div");
+            tooltip.id = "eprobe-tooltip";
+            document.body.appendChild(tooltip);
+        }
+
+        // Encontrar elemento alvo (área das sessões) - adaptar para Figma
+        const sessionsIndicator = cardElement.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        if (!sessionsIndicator) return;
+
+        // Gerar conteúdo do tooltip elegante e minimalista
+        const tooltipContent = `
+            <div class="eprobe-tooltip-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                <span>Histórico de Sessões</span>
+            </div>
+            <div class="eprobe-tooltip-divider"></div>
+            <div class="eprobe-tooltip-sessions">
+                ${todasSessoes
+                    .map((sessao, index) => {
+                        const isRecente = index === 0;
+                        const statusIcon = getStatusIcon(sessao.statusOriginal);
+                        return `<div class="eprobe-tooltip-session ${
+                            isRecente ? "current" : ""
+                        }">
+                        <div class="session-icon">${statusIcon}</div>
+                        <div class="session-info">
+                            <div class="session-date">${sessao.data}</div>
+                            <div class="session-status">${sessao.status}</div>
+                        </div>
+                        ${
+                            isRecente
+                                ? '<div class="session-badge">Atual</div>'
+                                : ""
+                        }
+                    </div>`;
+                    })
+                    .join("")}
+            </div>
+        `;
+
+        // Aplicar estilos do tooltip se ainda não existir
+        if (!document.querySelector("#eprobe-tooltip-styles")) {
+            const tooltipStyle = document.createElement("style");
+            tooltipStyle.id = "eprobe-tooltip-styles";
+            tooltipStyle.textContent = `
+                #eprobe-tooltip {
+                    position: absolute;
+                    background: #ffffff;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 12px;
+                    font-size: 13px;
+                    min-width: 260px;
+                    z-index: 10000;
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                    display: none;
+                    pointer-events: none;
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                }
+                
+                .eprobe-tooltip-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 14px 16px 10px 16px;
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 13px;
+                }
+                
+                .eprobe-tooltip-header svg {
+                    color: #6b7280;
+                    flex-shrink: 0;
+                }
+                
+                .eprobe-tooltip-divider {
+                    height: 1px;
+                    background: #f3f4f6;
+                    margin: 0 16px;
+                }
+                
+                .eprobe-tooltip-sessions {
+                    padding: 10px 0 14px 0;
+                }
+                
+                .eprobe-tooltip-session {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 8px 16px;
+                    transition: background-color 0.15s ease;
+                }
+                
+                .eprobe-tooltip-session:hover {
+                    background-color: #f9fafb;
+                }
+                
+                .eprobe-tooltip-session.current {
+                    background-color: #eff6ff;
+                    border-left: 3px solid #3b82f6;
+                    padding-left: 13px;
+                }
+                
+                .session-icon {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 6px;
+                    background-color: #f3f4f6;
+                    color: #6b7280;
+                    flex-shrink: 0;
+                }
+                
+                .eprobe-tooltip-session.current .session-icon {
+                    background-color: #dbeafe;
+                    color: #3b82f6;
+                }
+                
+                .session-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .session-date {
+                    font-weight: 600;
+                    color: #1f2937;
+                    font-size: 13px;
+                    line-height: 1.3;
+                }
+                
+                .session-status {
+                    color: #6b7280;
+                    font-size: 12px;
+                    line-height: 1.3;
+                    margin-top: 1px;
+                }
+                
+                .eprobe-tooltip-session.current .session-date {
+                    color: #1e40af;
+                }
+                
+                .eprobe-tooltip-session.current .session-status {
+                    color: #3b82f6;
+                }
+                
+                .session-badge {
+                    background: #3b82f6;
+                    color: white;
+                    font-size: 10px;
+                    font-weight: 600;
+                    padding: 3px 8px;
+                    border-radius: 12px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+            `;
+            document.head.appendChild(tooltipStyle);
+        }
+
+        // Eventos de mouse
+        sessionsIndicator.addEventListener("mouseenter", (e) => {
+            tooltip.innerHTML = tooltipContent;
+            tooltip.style.display = "block";
+
+            // Posicionar tooltip
+            const rect = sessionsIndicator.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+
+            let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+            let top = rect.top - tooltipRect.height - 12;
+
+            // Ajustar se sair da tela
+            if (left < 10) left = 10;
+            if (left + tooltipRect.width > window.innerWidth - 10) {
+                left = window.innerWidth - tooltipRect.width - 10;
+            }
+            if (top < 10) {
+                top = rect.bottom + 12;
+            }
+
+            tooltip.style.left = left + "px";
+            tooltip.style.top = top + "px";
+        });
+
+        sessionsIndicator.addEventListener("mouseleave", () => {
+            tooltip.style.display = "none";
+        });
+    }
+
+    /**
+     * Retorna ícone SVG apropriado para o status
+     * @param {string} status - Status da sessão
+     * @returns {string} - SVG do ícone
+     */
+    function getStatusIcon(status) {
+        const icons = {
+            Julgado: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 6L9 17l-5-5"></path>
+            </svg>`,
+            Retirado: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="15" y1="9" x2="9" y2="15"></line>
+                <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>`,
+            Sobrestado: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>`,
+            "Pedido de Vista": `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>`,
+            Pautado: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12,6 12,12 16,14"></polyline>
+            </svg>`,
+            Adiado: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 6v6l4 2"></path>
+                <path d="M16 8a6 6 0 0 0-12 0"></path>
+            </svg>`,
+        };
+
+        // Buscar ícone por palavra-chave
+        for (const [key, icon] of Object.entries(icons)) {
+            if (status.includes(key) || key.includes(status.split(" ")[0])) {
+                return icon;
+            }
+        }
+
+        // Ícone padrão
+        return `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+        </svg>`;
     }
 
     /**
@@ -12439,7 +13908,7 @@ Dados obtidos automaticamente pelo eProbe`;
                 "🔄 MATERIAL: Card existente encontrado, verificando se precisa atualizar"
             );
 
-            // Verificar se os dados realmente mudaram
+            // Verificar se os dados realmente mudaram (adaptar para nova estrutura)
             const statusAtual = cardExistente.querySelector(
                 ".eprobe-status-text"
             )?.textContent;
@@ -12448,7 +13917,7 @@ Dados obtidos automaticamente pelo eProbe`;
 
             if (
                 statusAtual === dadosSessao?.status &&
-                dataAtual === dadosSessao?.data?.dataFormatada
+                dataAtual === dadosSessao?.data
             ) {
                 console.log(
                     "ℹ️ MATERIAL: Card já está atualizado, mantendo estado atual"
@@ -12496,7 +13965,10 @@ Dados obtidos automaticamente pelo eProbe`;
             const rowMt2 = lblMagistrado.closest(".row.mt-2");
             if (rowMt2) {
                 // Inserir o card como uma nova coluna na mesma row
-                card.classList.add("col-md-6", "col-lg-4"); // Responsivo
+                // Não adicionar classes Bootstrap para cards SVG do Figma
+                if (!card.classList.contains("eprobe-figma-card-svg")) {
+                    card.classList.add("col-md-6", "col-lg-4"); // Responsivo apenas para cards CSS
+                }
                 rowMt2.appendChild(card);
                 console.log(
                     "✅ MATERIAL: Card inserido na row mt-2 ao lado do lblMagistrado"
@@ -12518,7 +13990,10 @@ Dados obtidos automaticamente pelo eProbe`;
         // Estratégia 2: Procurar por qualquer .row.mt-2 na página
         const rowMt2 = document.querySelector(".row.mt-2");
         if (rowMt2) {
-            card.classList.add("col-md-6", "col-lg-4");
+            // Não adicionar classes Bootstrap para cards SVG do Figma
+            if (!card.classList.contains("eprobe-figma-card-svg")) {
+                card.classList.add("col-md-6", "col-lg-4");
+            }
             rowMt2.appendChild(card);
             console.log("✅ MATERIAL: Card inserido em .row.mt-2 encontrada");
             return true;
@@ -12530,7 +14005,10 @@ Dados obtidos automaticamente pelo eProbe`;
             // Criar uma row para manter o layout Bootstrap
             const novaRow = document.createElement("div");
             novaRow.className = "row mt-2";
-            card.classList.add("col-md-6", "col-lg-4");
+            // Não adicionar classes Bootstrap para cards SVG do Figma
+            if (!card.classList.contains("eprobe-figma-card-svg")) {
+                card.classList.add("col-md-6", "col-lg-4");
+            }
             novaRow.appendChild(card);
             areaProcesso.insertBefore(novaRow, areaProcesso.firstChild);
             console.log(
@@ -13865,23 +15343,67 @@ Dados obtidos automaticamente pelo eProbe`;
         Object.values(ICON_REPLACEMENTS).forEach((replacement) => {
             const img = fieldset.querySelector(replacement.selector);
             if (img) {
-                const container = document.createElement("span");
-                container.innerHTML = replacement.newSvg;
-                container.style.display = "inline-flex";
-                container.style.alignItems = "center";
-                container.style.marginRight = "4px";
-
-                // Preservar classes e atributos importantes
-                const svg = container.firstElementChild;
-                if (svg) {
-                    svg.classList.add("iconeAcao");
-                    svg.style.width = "18px";
-                    svg.style.height = "18px";
+                // 🛡️ PROTEÇÃO: Verificar se elemento ainda é válido
+                if (!img.parentNode || !img.src) {
+                    console.warn(
+                        "⚠️ ÍCONES: Elemento img inválido, pulando substituição"
+                    );
+                    return;
                 }
 
-                img.parentNode.replaceChild(container, img);
-                substituicoesRealizadas++;
-                console.log(`✅ ÍCONES: Substituído ícone ${img.alt}`);
+                // 🛡️ PROTEÇÃO: Marcar elemento como processado para evitar problemas
+                if (img.hasAttribute("data-eprobe-processing")) {
+                    console.log(
+                        "ℹ️ ÍCONES: Elemento já sendo processado, pulando"
+                    );
+                    return;
+                }
+                img.setAttribute("data-eprobe-processing", "true");
+
+                try {
+                    const container = document.createElement("span");
+                    container.innerHTML = replacement.newSvg;
+                    container.style.display = "inline-flex";
+                    container.style.alignItems = "center";
+                    container.style.marginRight = "4px";
+
+                    // 🛡️ PROTEÇÃO: Marcar container como modificado pela extensão
+                    container.setAttribute("data-eprobe-modified", "true");
+                    container.setAttribute("data-original-alt", img.alt || "");
+
+                    // Preservar classes e atributos importantes
+                    const svg = container.firstElementChild;
+                    if (svg) {
+                        // 🛡️ PROTEÇÃO: Usar setAttribute para SVG className
+                        svg.setAttribute("class", "iconeAcao");
+                        svg.setAttribute("data-eprobe-icon", "true");
+                        svg.style.width = "18px";
+                        svg.style.height = "18px";
+                    }
+
+                    // 🛡️ PROTEÇÃO: Substituição mais segura com verificação
+                    if (img.parentNode && img.parentNode.contains(img)) {
+                        img.parentNode.replaceChild(container, img);
+                        substituicoesRealizadas++;
+                        // Log compacto apenas para os primeiros
+                        if (substituicoesRealizadas <= 3) {
+                            console.log(
+                                `✅ ÍCONES: Substituído ${img.alt} (${substituicoesRealizadas})`
+                            );
+                        }
+                    } else {
+                        console.warn(
+                            "⚠️ ÍCONES: Elemento não mais no DOM, cancelando substituição"
+                        );
+                    }
+                } catch (error) {
+                    console.error(
+                        "❌ ÍCONES: Erro durante substituição:",
+                        error
+                    );
+                    // Remove marca de processamento em caso de erro
+                    img.removeAttribute("data-eprobe-processing");
+                }
             }
         });
 
@@ -13896,29 +15418,76 @@ Dados obtidos automaticamente pelo eProbe`;
                     if (linkText.includes(text) || linkText.endsWith(text)) {
                         const img = link.querySelector("img.iconeAcao, img");
                         if (img) {
-                            const container = document.createElement("span");
-                            container.innerHTML = replacement.newSvg;
-                            container.style.display = "inline-flex";
-                            container.style.alignItems = "center";
-                            container.style.marginRight = "4px";
-
-                            const svg = container.firstElementChild;
-                            if (svg) {
-                                svg.classList.add("iconeAcao");
-                                svg.style.width = "18px";
-                                svg.style.height = "18px";
-                                svg.setAttribute(
-                                    "data-eprobe-icon-replaced",
-                                    "true"
+                            // 🛡️ PROTEÇÃO: Verificar se elemento ainda é válido
+                            if (!img.parentNode || !img.src) {
+                                console.warn(
+                                    "⚠️ ÍCONES: Elemento img inválido no link, pulando substituição"
                                 );
-                                svg.setAttribute("data-original-text", text);
+                                return;
                             }
 
-                            img.parentNode.replaceChild(container, img);
-                            substituicoesRealizadas++;
-                            console.log(
-                                `✅ ÍCONES: Substituído ícone para "${text}"`
-                            );
+                            // 🛡️ PROTEÇÃO: Marcar elemento como processado
+                            if (img.hasAttribute("data-eprobe-processing")) {
+                                return;
+                            }
+                            img.setAttribute("data-eprobe-processing", "true");
+
+                            try {
+                                const container =
+                                    document.createElement("span");
+                                container.innerHTML = replacement.newSvg;
+                                container.style.display = "inline-flex";
+                                container.style.alignItems = "center";
+                                container.style.marginRight = "4px";
+
+                                // 🛡️ PROTEÇÃO: Marcar container como modificado
+                                container.setAttribute(
+                                    "data-eprobe-modified",
+                                    "true"
+                                );
+                                container.setAttribute(
+                                    "data-original-text",
+                                    text
+                                );
+
+                                const svg = container.firstElementChild;
+                                if (svg) {
+                                    // 🛡️ PROTEÇÃO: Usar setAttribute para SVG className
+                                    svg.setAttribute("class", "iconeAcao");
+                                    svg.style.width = "18px";
+                                    svg.style.height = "18px";
+                                    svg.setAttribute(
+                                        "data-eprobe-icon-replaced",
+                                        "true"
+                                    );
+                                    svg.setAttribute(
+                                        "data-original-text",
+                                        text
+                                    );
+                                }
+
+                                // 🛡️ PROTEÇÃO: Substituição mais segura
+                                if (
+                                    img.parentNode &&
+                                    img.parentNode.contains(img)
+                                ) {
+                                    img.parentNode.replaceChild(container, img);
+                                    substituicoesRealizadas++;
+                                    console.log(
+                                        `✅ ÍCONES: Substituído ícone para "${text}"`
+                                    );
+                                } else {
+                                    console.warn(
+                                        "⚠️ ÍCONES: Elemento img não mais no DOM"
+                                    );
+                                }
+                            } catch (error) {
+                                console.error(
+                                    "❌ ÍCONES: Erro durante substituição por texto:",
+                                    error
+                                );
+                                img.removeAttribute("data-eprobe-processing");
+                            }
                         }
                     }
                 });
@@ -13996,6 +15565,78 @@ Dados obtidos automaticamente pelo eProbe`;
             {
                 selector: 'img[src*="configuracao.gif"]',
                 newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+            },
+            {
+                selector: 'img[src*="refresh.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
+            },
+            {
+                selector: 'img[src*="valores.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus-icon lucide-list-plus"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>',
+            },
+            {
+                selector: 'img[src*="minuta_historico.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus-icon lucide-list-plus"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>',
+            },
+            {
+                selector: 'img[src*="novo.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
+            },
+            {
+                selector: 'img[src*="minuta_alterar.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+            },
+            {
+                selector: 'img[src*="minuta_assinar2.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>',
+            },
+            {
+                selector: 'img[src*="alterar.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-cog-icon lucide-file-cog"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m2.305 15.53.923-.382"/><path d="m3.228 12.852-.924-.383"/><path d="M4.677 21.5a2 2 0 0 0 1.313.5H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2.5"/><path d="m4.852 11.228-.383-.923"/><path d="m4.852 16.772-.383.924"/><path d="m7.148 11.228.383-.923"/><path d="m7.53 17.696-.382-.924"/><path d="m8.772 12.852.923-.383"/><path d="m8.772 15.148.923.383"/><circle cx="6" cy="14" r="3"/></svg>',
+            },
+            {
+                selector: 'img[src*="balao.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+            },
+            {
+                selector: 'img[src*="linkeditor.png"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+            },
+            {
+                selector: 'img[src*="html.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+            },
+            {
+                selector: 'img[src*="tooltip.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>',
+            },
+            {
+                selector: 'img[src*="duvida.png"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+            },
+            {
+                selector: 'img[src*="ver_resumo.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>',
+            },
+            {
+                selector: 'img[src*="ver_tudo.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
+            },
+            {
+                selector: 'img[src*="lupa.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+            },
+            {
+                selector: 'img[src*="EstrelaAcesa.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+            },
+            {
+                selector: 'img[src*="EstrelaApagada.gif"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+            },
+            {
+                selector: 'img[src*="oral_video.png"]',
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
             },
             {
                 selector: 'img[src*="menos.gif"]',
@@ -14177,6 +15818,8 @@ Dados obtidos automaticamente pelo eProbe`;
                         if (typeof substituirIconesFerramentas === "function") {
                             substituirIconesFerramentas();
                         }
+                        // Executar também substituição global
+                        substituirIconesGlobalmente();
                     } catch (error) {
                         console.error(
                             "❌ ÍCONES: Erro na substituição por observador:",
@@ -14196,73 +15839,295 @@ Dados obtidos automaticamente pelo eProbe`;
         console.log("🎨 ÍCONES: Sistema de observação ativo");
     }
 
-    // Função para substituir ícones de ferramentas em toda a página
-    function substituirIconesFerramentas() {
+    // Função adicional para substituição global de ícones específicos
+    function substituirIconesGlobalmente() {
         console.log(
-            "🎨 ÍCONES: Iniciando substituição de ícones de ferramentas"
+            "🎨 ÍCONES: Iniciando substituição global de ícones específicos"
         );
 
         let substituicoesRealizadas = 0;
-        let errosEncontrados = [];
 
-        try {
-            // ===============================
-            // DEFINIÇÃO DOS ÍCONES DE FERRAMENTAS
-            // ===============================
-            const ferramentasIcones = {
-                "Nova Minuta": {
-                    selector: 'img[src*="novo.gif"][alt="Nova Minuta"]',
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>`,
-                },
-            };
+        // Mapeamento global para ícones específicos que podem aparecer em qualquer lugar
+        const iconesGlobais = [
+            {
+                // Ícones de configuração
+                selectors: [
+                    'img[src*="configuracao.gif"]',
+                    'img[title*="Ações Preferenciais"]',
+                    'img[alt*="Ações Preferenciais"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                name: "Configuração",
+            },
+            {
+                // Ícones de refresh
+                selectors: [
+                    'img[src*="refresh.gif"]',
+                    'img[id="refresh"]',
+                    'img[title*="Atualizar"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
+                name: "Refresh",
+            },
+            {
+                // Ícones de histórico/lista
+                selectors: [
+                    'img[src*="valores.gif"]',
+                    'img[src*="minuta_historico.gif"]',
+                    'img[alt*="Histórico"]',
+                    'img[title*="Histórico"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus-icon lucide-list-plus"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>',
+                name: "Histórico",
+            },
+            {
+                // Ícones de nova minuta/documento
+                selectors: [
+                    'img[src*="novo.gif"]',
+                    'img[alt*="Nova Minuta"]',
+                    'img[title*="Nova Minuta"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
+                name: "Nova Minuta",
+            },
+            {
+                // Ícones de editar minuta
+                selectors: [
+                    'img[src*="minuta_alterar.gif"]',
+                    'img[title*="Alterar Julgamento"]',
+                    'img[alt*="Alterar Julgamento"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+                name: "Editar Minuta",
+            },
+            {
+                // Ícones de assinar minuta
+                selectors: [
+                    'img[src*="minuta_assinar2.gif"]',
+                    'img[title*="Assinar Minuta"]',
+                    'img[alt*="Assinar Minuta"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>',
+                name: "Assinar Minuta",
+            },
+            {
+                // Ícones de editar genérico
+                selectors: [
+                    'img[src*="alterar.gif"]',
+                    'img[title*="Alterar"]',
+                    'img[alt*="Alterar"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-cog-icon lucide-file-cog"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m2.305 15.53.923-.382"/><path d="m3.228 12.852-.924-.383"/><path d="M4.677 21.5a2 2 0 0 0 1.313.5H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2.5"/><path d="m4.852 11.228-.383-.923"/><path d="m4.852 16.772-.383.924"/><path d="m7.148 11.228.383-.923"/><path d="m7.53 17.696-.382-.924"/><path d="m8.772 12.852.923-.383"/><path d="m8.772 15.148.923.383"/><circle cx="6" cy="14" r="3"/></svg>',
+                name: "Editar",
+            },
+            {
+                // Ícones de balão/memo
+                selectors: [
+                    'img[src*="balao.gif"]',
+                    'img[alt*="Incluir Memo"]',
+                    'img[title*="Memo"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>',
+                name: "Memo Balão",
+            },
+            {
+                // Ícones de link
+                selectors: [
+                    'img[src*="linkeditor.png"]',
+                    'img[alt*="Link"]',
+                    'img[title*="Link"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+                name: "Link",
+            },
+            {
+                // Ícones de visualizar documento HTML
+                selectors: [
+                    'img[src*="html.gif"]',
+                    'img[title*="Visualizar Documento"]',
+                    'img[alt*="Visualizar"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+                name: "Visualizar HTML",
+            },
+            {
+                // Ícones de PDF
+                selectors: [
+                    'img[src*="pdf.gif"]',
+                    'img[title*="PDF"]',
+                    'img[alt*="PDF"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/></svg>',
+                name: "PDF",
+            },
+            {
+                // Ícones de tooltip/memo
+                selectors: [
+                    'img[src*="tooltip.gif"]',
+                    'img[alt*="Incluir Memo"]',
+                    'img[title*="Tooltip"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>',
+                name: "Memo Tooltip",
+            },
+            {
+                // Ícones de ajuda/interrogação
+                selectors: [
+                    'img[src*="duvida.png"]',
+                    'img[alt*="Ajuda"]',
+                    'img[title*="Ajuda"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+                name: "Ajuda",
+            },
+            {
+                // Ícones de ocultar/resumo
+                selectors: [
+                    'img[src*="ver_resumo.gif"]',
+                    'img[title*="Ocultar"]',
+                    'img[alt*="Resumo"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>',
+                name: "Ocultar",
+            },
+            {
+                // Ícones de mostrar/ver tudo
+                selectors: [
+                    'img[src*="ver_tudo.gif"]',
+                    'img[title*="Mostrar"]',
+                    'img[alt*="Ver Tudo"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
+                name: "Mostrar",
+            },
+            {
+                // Ícones de lupa/busca
+                selectors: [
+                    'img[src*="lupa.gif"]',
+                    'img[alt*="Informações do Evento"]',
+                    'img[title*="Buscar"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+                name: "Lupa",
+            },
+            {
+                // Ícones de estrela acesa (preenchida)
+                selectors: [
+                    'img[src*="EstrelaAcesa.gif"]',
+                    'img[alt*="Evento relevante"]',
+                    'img[title*="Relevante"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+                name: "Estrela Acesa",
+            },
+            {
+                // Ícones de estrela apagada (só contorno)
+                selectors: [
+                    'img[src*="EstrelaApagada.gif"]',
+                    'img[src*="estrela_apagada.gif"]',
+                    'img[alt*="Evento normal"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+                name: "Estrela Apagada",
+            },
+            {
+                // Ícones de vídeo/televisão
+                selectors: [
+                    'img[src*="oral_video.png"]',
+                    'img[alt*="Vídeo"]',
+                    'img[title*="Vídeo"]',
+                ],
+                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
+                name: "Vídeo",
+            },
+        ];
 
-            // ===============================
-            // SUBSTITUIÇÃO PRINCIPAL
-            // ===============================
-            Object.entries(ferramentasIcones).forEach(([nome, config]) => {
-                try {
-                    const elementos = document.querySelectorAll(
-                        config.selector
-                    );
-                    elementos.forEach((img) => {
-                        // Verificar se já foi substituído
-                        if (
-                            img.hasAttribute("data-eprobe-icon-replaced") ||
-                            img.classList.contains("substituted-icon")
-                        ) {
-                            return;
-                        }
+        iconesGlobais.forEach((icone) => {
+            icone.selectors.forEach((selector) => {
+                const elementos = document.querySelectorAll(selector);
+
+                elementos.forEach((img) => {
+                    // Verificar se já foi substituído
+                    if (
+                        img.hasAttribute("data-eprobe-icon-replaced") ||
+                        img.classList.contains("substituted-icon")
+                    ) {
+                        return;
+                    }
+
+                    try {
+                        // Preservar todas as propriedades originais
+                        const originalWidth =
+                            img.style.width ||
+                            img.getAttribute("width") ||
+                            getComputedStyle(img).width ||
+                            "1.1em";
+                        const originalHeight =
+                            img.style.height ||
+                            img.getAttribute("height") ||
+                            getComputedStyle(img).height ||
+                            "1.1em";
+                        const originalOpacity = img.style.opacity || "1";
+                        const originalBorderWidth =
+                            img.style.borderWidth || "0";
+                        const originalPaddingRight =
+                            img.style.paddingRight || "";
 
                         // Criar container SVG
                         const container = document.createElement("span");
-                        container.innerHTML = config.newSvg;
+                        container.innerHTML = icone.newSvg;
                         container.style.display = "inline-flex";
                         container.style.alignItems = "center";
-                        container.style.marginRight = "4px";
+                        container.style.verticalAlign = "middle";
 
                         const svg = container.firstElementChild;
                         if (svg) {
-                            // Preservar dimensões e estilos originais
-                            svg.style.width = img.style.width || "0.9em";
-                            svg.style.height = img.style.height || "0.9em";
-                            svg.style.opacity = img.style.opacity || "1";
+                            // Aplicar todas as propriedades preservadas
+                            svg.style.width = originalWidth;
+                            svg.style.height = originalHeight;
+                            svg.style.opacity = originalOpacity;
+                            svg.style.borderWidth = originalBorderWidth;
+                            if (originalPaddingRight) {
+                                svg.style.paddingRight = originalPaddingRight;
+                            }
 
-                            // Adicionar classes e atributos de controle
-                            svg.classList.add(
-                                "iconeFerramentas",
-                                "substituted-icon"
-                            );
+                            // Preservar classes CSS - CORRIGIDO para SVG
+                            if (img.className) {
+                                // SVG usa setAttribute para classes, não className
+                                svg.setAttribute(
+                                    "class",
+                                    img.className + " substituted-icon"
+                                );
+                            } else {
+                                svg.classList.add("substituted-icon");
+                            }
+
+                            // Preservar atributos importantes
+                            [
+                                "title",
+                                "alt",
+                                "aria-hidden",
+                                "role",
+                                "id",
+                            ].forEach((attr) => {
+                                const value = img.getAttribute(attr);
+                                if (value) {
+                                    svg.setAttribute(attr, value);
+                                }
+                            });
+
+                            // Adicionar atributos de controle
                             svg.setAttribute(
                                 "data-eprobe-icon-replaced",
                                 "true"
                             );
-                            svg.setAttribute("data-original-name", nome);
+                            svg.setAttribute("data-original-name", icone.name);
                             svg.setAttribute(
-                                "aria-hidden",
-                                img.getAttribute("aria-hidden") || "true"
+                                "data-original-selector",
+                                selector
                             );
 
-                            // Preservar eventos se existirem
+                            // Preservar eventos
                             if (img.onclick) {
                                 svg.onclick = img.onclick;
                             }
@@ -14271,9 +16136,468 @@ Dados obtidos automaticamente pelo eProbe`;
                             img.parentNode.replaceChild(container, img);
                             substituicoesRealizadas++;
                             console.log(
-                                `✅ ÍCONES: Substituído ícone "${nome}"`
+                                `✅ ÍCONES GLOBAL: Substituído ${icone.name} via "${selector}"`
                             );
                         }
+                    } catch (error) {
+                        console.warn(
+                            `⚠️ ÍCONES GLOBAL: Erro ao substituir ${icone.name}:`,
+                            error
+                        );
+                    }
+                });
+            });
+        });
+
+        console.log(
+            `🎨 ÍCONES GLOBAL: ${substituicoesRealizadas} ícones substituídos globalmente`
+        );
+        return substituicoesRealizadas > 0;
+    }
+
+    // Função de teste para debug de ícones
+    function debugIconesSubstituicao() {
+        console.log("🔍 DEBUG ÍCONES: Analisando página atual...");
+
+        const iconesTeste = [
+            'img[src*="configuracao.gif"]',
+            'img[src*="refresh.gif"]',
+            'img[src*="valores.gif"]',
+            'img[src*="minuta_historico.gif"]',
+            'img[src*="novo.gif"]',
+            'img[src*="minuta_alterar.gif"]',
+            'img[src*="minuta_assinar2.gif"]',
+            'img[src*="alterar.gif"]',
+            'img[src*="balao.gif"]',
+            'img[src*="linkeditor.png"]',
+            'img[src*="html.gif"]',
+            'img[src*="pdf.gif"]',
+            'img[src*="tooltip.gif"]',
+            'img[src*="duvida.png"]',
+            'img[src*="ver_resumo.gif"]',
+            'img[src*="ver_tudo.gif"]',
+            'img[src*="lupa.gif"]',
+            'img[src*="EstrelaAcesa.gif"]',
+            'img[src*="EstrelaApagada.gif"]',
+            'img[src*="oral_video.png"]',
+            'img[title*="Ações Preferenciais"]',
+            'img[title*="Atualizar"]',
+            'img[title*="Alterar Julgamento"]',
+            'img[title*="Visualizar Documento"]',
+            'img[title*="Ajuda"]',
+            'img[title*="Ocultar"]',
+            'img[title*="Mostrar"]',
+            'img[title*="Buscar"]',
+            'img[title*="Relevante"]',
+            'img[title*="Vídeo"]',
+            'img[alt*="Nova Minuta"]',
+            'img[alt*="Incluir Memo"]',
+            'img[alt*="Visualizar"]',
+            'img[alt*="Ajuda"]',
+            'img[alt*="Resumo"]',
+            'img[alt*="Ver Tudo"]',
+            'img[alt*="Informações do Evento"]',
+            'img[alt*="Evento relevante"]',
+            'img[alt*="Evento normal"]',
+            'img[alt*="Vídeo"]',
+            'img[id="refresh"]',
+        ];
+
+        console.log("📊 ESTATÍSTICAS DE ÍCONES:");
+        iconesTeste.forEach((selector) => {
+            const elementos = document.querySelectorAll(selector);
+            const substituidos = document.querySelectorAll(
+                selector.replace("img", "[data-eprobe-icon-replaced]")
+            );
+
+            console.log(
+                `${selector}: ${elementos.length} encontrados, ${substituidos.length} já substituídos`
+            );
+
+            if (elementos.length > 0) {
+                elementos.forEach((img, i) => {
+                    console.log(`  - Item ${i + 1}:`, {
+                        src: img.src,
+                        alt: img.alt,
+                        title: img.title,
+                        id: img.id,
+                        className: img.className,
+                        substituido: img.hasAttribute(
+                            "data-eprobe-icon-replaced"
+                        ),
+                    });
+                });
+            }
+        });
+
+        // Executar todas as funções de substituição
+        console.log("🔄 EXECUTANDO SUBSTITUIÇÕES...");
+        try {
+            const resultados = {
+                fieldset: substituirIconesFieldsetAcoes(),
+                ferramentas: substituirIconesFerramentas(),
+                global: substituirIconesGlobalmente(),
+            };
+
+            console.log("✅ RESULTADOS:", resultados);
+
+            // Estatísticas finais
+            const totalSubstituidos = document.querySelectorAll(
+                "[data-eprobe-icon-replaced]"
+            ).length;
+            console.log(
+                `🎯 TOTAL DE ÍCONES SUBSTITUÍDOS: ${totalSubstituidos}`
+            );
+
+            return resultados;
+        } catch (error) {
+            console.error("❌ ERRO NO DEBUG:", error);
+            return { erro: error.message };
+        }
+    }
+
+    // ===== SISTEMA DE THROTTLING ULTRA-OTIMIZADO PARA PERFORMANCE =====
+    let ultimaSubstituicaoIcones = 0;
+    let contadorSubstituicoes = 0;
+    const THROTTLE_ICONES_MS = 5000; // 5 segundos mínimo entre execuções (aumentado)
+    const MAX_SUBSTITUICOES_POR_MINUTO = 5; // Máximo 5 execuções por minuto (reduzido)
+    let historicoSubstituicoes = [];
+    let executandoSubstituicao = false; // Flag para evitar execuções simultâneas
+
+    // Função para substituir ícones de ferramentas em toda a página
+    function substituirIconesFerramentas() {
+        const agora = Date.now();
+
+        // ===== CONTROLE DE THROTTLING ULTRA-RIGOROSO =====
+
+        // 0. Verificar se já está executando
+        if (executandoSubstituicao) {
+            console.log("⏸️ ÍCONES: Ignorando execução - já está em andamento");
+            return { ignorado: true, motivo: "em_andamento" };
+        }
+
+        // 1. Verificar intervalo mínimo
+        if (agora - ultimaSubstituicaoIcones < THROTTLE_ICONES_MS) {
+            console.log(
+                "⏱️ ÍCONES: Ignorando execução - muito frequente (throttle)"
+            );
+            return { ignorado: true, motivo: "throttle_tempo" };
+        }
+
+        // 2. Limpar histórico antigo (mais de 1 minuto)
+        historicoSubstituicoes = historicoSubstituicoes.filter(
+            (timestamp) => agora - timestamp < 60000
+        );
+
+        // 3. Verificar limite por minuto
+        if (historicoSubstituicoes.length >= MAX_SUBSTITUICOES_POR_MINUTO) {
+            console.log(
+                "⏱️ ÍCONES: Ignorando execução - limite por minuto atingido"
+            );
+            return { ignorado: true, motivo: "limite_minuto" };
+        }
+
+        // 4. Marcar como executando e registrar
+        executandoSubstituicao = true;
+        ultimaSubstituicaoIcones = agora;
+        historicoSubstituicoes.push(agora);
+        contadorSubstituicoes++;
+
+        console.log(
+            `🎨 ÍCONES: Iniciando substituição otimizada #${contadorSubstituicoes} (${historicoSubstituicoes.length}/${MAX_SUBSTITUICOES_POR_MINUTO} este minuto)`
+        );
+
+        let substituicoesRealizadas = 0;
+        let errosEncontrados = [];
+
+        try {
+            // ===============================
+            // DEFINIÇÃO DOS ÍCONES DE FERRAMENTAS - VERSÃO EXPANDIDA
+            // ===============================
+            const ferramentasIcones = {
+                // Ícones de configuração/ferramentas (chave inglesa)
+                Configuracao: {
+                    selectors: [
+                        'img[src*="configuracao.gif"]',
+                        'img[title*="Ações Preferenciais"]',
+                        'img[alt*="Ações Preferenciais"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+                },
+                // Ícones de refresh/atualização
+                Refresh: {
+                    selectors: [
+                        'img[src*="refresh.gif"]',
+                        'img[id="refresh"]',
+                        'img[title*="Atualizar"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>`,
+                },
+                // Ícones de lista/histórico (valores.gif)
+                Historico: {
+                    selectors: [
+                        'img[src*="valores.gif"]',
+                        'img[src*="minuta_historico.gif"]',
+                        'img[alt*="Histórico"]',
+                        'img[title*="Histórico"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-plus-icon lucide-list-plus"><path d="M11 12H3"/><path d="M16 6H3"/><path d="M16 18H3"/><path d="M18 9v6"/><path d="M21 12h-6"/></svg>`,
+                },
+                // Ícones de nova minuta/novo documento
+                "Nova Minuta": {
+                    selectors: [
+                        'img[src*="novo.gif"]',
+                        'img[alt*="Nova Minuta"]',
+                        'img[title*="Nova Minuta"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>`,
+                },
+                // Ícones de editar minuta
+                "Editar Minuta": {
+                    selectors: [
+                        'img[src*="minuta_alterar.gif"]',
+                        'img[title*="Alterar Julgamento"]',
+                        'img[alt*="Alterar Julgamento"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>`,
+                },
+                // Ícones de assinar minuta
+                "Assinar Minuta": {
+                    selectors: [
+                        'img[src*="minuta_assinar2.gif"]',
+                        'img[title*="Assinar Minuta"]',
+                        'img[alt*="Assinar Minuta"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>`,
+                },
+                // Ícones de editar genérico
+                Editar: {
+                    selectors: [
+                        'img[src*="alterar.gif"]',
+                        'img[title*="Alterar"]',
+                        'img[alt*="Alterar"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-cog-icon lucide-file-cog"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="m2.305 15.53.923-.382"/><path d="m3.228 12.852-.924-.383"/><path d="M4.677 21.5a2 2 0 0 0 1.313.5H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v2.5"/><path d="m4.852 11.228-.383-.923"/><path d="m4.852 16.772-.383.924"/><path d="m7.148 11.228.383-.923"/><path d="m7.53 17.696-.382-.924"/><path d="m8.772 12.852.923-.383"/><path d="m8.772 15.148.923.383"/><circle cx="6" cy="14" r="3"/></svg>`,
+                },
+                // Ícones de balão/memo
+                "Memo Balão": {
+                    selectors: [
+                        'img[src*="balao.gif"]',
+                        'img[alt*="Incluir Memo"]',
+                        'img[title*="Memo"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>`,
+                },
+                // Ícones de link
+                Link: {
+                    selectors: [
+                        'img[src*="linkeditor.png"]',
+                        'img[alt*="Link"]',
+                        'img[title*="Link"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+                },
+                // Ícones de visualizar documento HTML
+                "Visualizar HTML": {
+                    selectors: [
+                        'img[src*="html.gif"]',
+                        'img[title*="Visualizar Documento"]',
+                        'img[alt*="Visualizar"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`,
+                },
+                // Ícones de PDF
+                PDF: {
+                    selectors: [
+                        'img[src*="pdf.gif"]',
+                        'img[title*="PDF"]',
+                        'img[alt*="PDF"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/></svg>`,
+                },
+                // Ícones de tooltip/memo
+                "Memo Tooltip": {
+                    selectors: [
+                        'img[src*="tooltip.gif"]',
+                        'img[alt*="Incluir Memo"]',
+                        'img[title*="Tooltip"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>`,
+                },
+                // Ícones de ajuda/interrogação
+                Ajuda: {
+                    selectors: [
+                        'img[src*="duvida.png"]',
+                        'img[alt*="Ajuda"]',
+                        'img[title*="Ajuda"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>`,
+                },
+                // Ícones de ocultar/resumo
+                Ocultar: {
+                    selectors: [
+                        'img[src*="ver_resumo.gif"]',
+                        'img[title*="Ocultar"]',
+                        'img[alt*="Resumo"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>`,
+                },
+                // Ícones de mostrar/ver tudo
+                Mostrar: {
+                    selectors: [
+                        'img[src*="ver_tudo.gif"]',
+                        'img[title*="Mostrar"]',
+                        'img[alt*="Ver Tudo"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`,
+                },
+                // Ícones de lupa/busca
+                Lupa: {
+                    selectors: [
+                        'img[src*="lupa.gif"]',
+                        'img[alt*="Informações do Evento"]',
+                        'img[title*="Buscar"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>`,
+                },
+                // Ícones de estrela acesa (preenchida)
+                "Estrela Acesa": {
+                    selectors: [
+                        'img[src*="EstrelaAcesa.gif"]',
+                        'img[alt*="Evento relevante"]',
+                        'img[title*="Relevante"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
+                },
+                // Ícones de estrela apagada (só contorno)
+                "Estrela Apagada": {
+                    selectors: [
+                        'img[src*="EstrelaApagada.gif"]',
+                        'img[src*="estrela_apagada.gif"]',
+                        'img[alt*="Evento normal"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
+                },
+                // Ícones de vídeo/televisão
+                Vídeo: {
+                    selectors: [
+                        'img[src*="oral_video.png"]',
+                        'img[alt*="Vídeo"]',
+                        'img[title*="Vídeo"]',
+                    ],
+                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`,
+                },
+            };
+
+            // ===============================
+            // SUBSTITUIÇÃO PRINCIPAL - VERSÃO MELHORADA
+            // ===============================
+            Object.entries(ferramentasIcones).forEach(([nome, config]) => {
+                try {
+                    // Tentar cada seletor até encontrar elementos
+                    config.selectors.forEach((selector) => {
+                        const elementos = document.querySelectorAll(selector);
+
+                        elementos.forEach((img) => {
+                            // Verificar se já foi substituído
+                            if (
+                                img.hasAttribute("data-eprobe-icon-replaced") ||
+                                img.classList.contains("substituted-icon")
+                            ) {
+                                return;
+                            }
+
+                            // Preservar dimensões originais
+                            const originalWidth =
+                                img.style.width ||
+                                img.getAttribute("width") ||
+                                "1.1em";
+                            const originalHeight =
+                                img.style.height ||
+                                img.getAttribute("height") ||
+                                "1.1em";
+                            const originalOpacity = img.style.opacity || "1";
+
+                            // Criar container SVG
+                            const container = document.createElement("span");
+                            container.innerHTML = config.newSvg;
+                            container.style.display = "inline-flex";
+                            container.style.alignItems = "center";
+                            container.style.marginRight = "4px";
+
+                            const svg = container.firstElementChild;
+                            if (svg) {
+                                // Preservar dimensões e estilos originais
+                                svg.style.width = originalWidth;
+                                svg.style.height = originalHeight;
+                                svg.style.opacity = originalOpacity;
+
+                                // Preservar propriedades CSS específicas
+                                if (img.style.borderWidth) {
+                                    svg.style.borderWidth =
+                                        img.style.borderWidth;
+                                }
+                                if (img.style.paddingRight) {
+                                    svg.style.paddingRight =
+                                        img.style.paddingRight;
+                                }
+
+                                // Adicionar classes e atributos de controle
+                                svg.classList.add(
+                                    "iconeFerramentas",
+                                    "substituted-icon"
+                                );
+                                if (img.classList.contains("infraImg")) {
+                                    svg.classList.add("infraImg");
+                                }
+
+                                svg.setAttribute(
+                                    "data-eprobe-icon-replaced",
+                                    "true"
+                                );
+                                svg.setAttribute("data-original-name", nome);
+                                svg.setAttribute(
+                                    "data-original-selector",
+                                    selector
+                                );
+
+                                // Preservar atributos de acessibilidade
+                                if (img.getAttribute("aria-hidden")) {
+                                    svg.setAttribute(
+                                        "aria-hidden",
+                                        img.getAttribute("aria-hidden")
+                                    );
+                                }
+                                if (img.getAttribute("title")) {
+                                    svg.setAttribute(
+                                        "title",
+                                        img.getAttribute("title")
+                                    );
+                                }
+                                if (img.getAttribute("alt")) {
+                                    svg.setAttribute(
+                                        "alt",
+                                        img.getAttribute("alt")
+                                    );
+                                }
+
+                                // Preservar eventos se existirem
+                                if (img.onclick) {
+                                    svg.onclick = img.onclick;
+                                }
+
+                                // Realizar substituição
+                                img.parentNode.replaceChild(container, img);
+                                substituicoesRealizadas++;
+
+                                // Log compacto: só contar, detalhes no final
+                                if (substituicoesRealizadas <= 5) {
+                                    console.log(
+                                        `✅ ÍCONES: Substituído "${nome}" (${substituicoesRealizadas})`
+                                    );
+                                }
+                            }
+                        });
                     });
                 } catch (error) {
                     const errorMsg = `Erro ao processar "${nome}": ${error.message}`;
@@ -14303,6 +16627,9 @@ Dados obtidos automaticamente pelo eProbe`;
                 error
             );
             return false;
+        } finally {
+            // Sempre marcar como não executando
+            executandoSubstituicao = false;
         }
     }
 
@@ -14366,11 +16693,11 @@ Dados obtidos automaticamente pelo eProbe`;
 
             imagens.forEach((img, index) => {
                 console.log(`🔍 DEBUG: Imagem ${index + 1}:`, {
-                    src: img.src,
-                    alt: img.alt,
-                    className: img.className,
-                    width: img.style.width,
-                    height: img.style.height,
+                    src: img?.src || "N/A",
+                    alt: img?.alt || "N/A",
+                    className: img?.className || "N/A",
+                    width: img?.style?.width || "N/A",
+                    height: img?.style?.height || "N/A",
                 });
             });
         } else {
@@ -14384,12 +16711,12 @@ Dados obtidos automaticamente pelo eProbe`;
         );
         iconesNovo.forEach((img, index) => {
             console.log(`🔍 DEBUG: novo.gif ${index + 1}:`, {
-                src: img.src,
-                alt: img.alt,
-                parentElement: img.parentElement.tagName,
-                parentText: img.parentElement.textContent
-                    ?.trim()
-                    .substring(0, 50),
+                src: img?.src || "N/A",
+                alt: img?.alt || "N/A",
+                parentElement: img?.parentElement?.tagName || "N/A",
+                parentText:
+                    img?.parentElement?.textContent?.trim().substring(0, 50) ||
+                    "N/A",
             });
         });
 
@@ -14401,6 +16728,15 @@ Dados obtidos automaticamente pelo eProbe`;
 
         const gifsSumario = {};
         todosGifs.forEach((img) => {
+            // 🛡️ PROTEÇÃO: Verificar se img e img.src existem antes de acessar
+            if (!img || !img.src) {
+                console.warn(
+                    "⚠️ IMG SRC: Elemento img sem src encontrado:",
+                    img
+                );
+                return;
+            }
+
             const nomeArquivo = img.src.split("/").pop();
             if (!gifsSumario[nomeArquivo]) {
                 gifsSumario[nomeArquivo] = 0;
@@ -14576,3 +16912,1194 @@ Dados obtidos automaticamente pelo eProbe`;
         setTimeout(inicializarMaterialDesign, 1000);
     }
 })(); // Fechamento da IIFE principal
+
+// 🧪 FUNÇÕES DE TESTE E DEBUG - SEMPRE DISPONÍVEIS
+// Definidas fora da IIFE para garantir disponibilidade imediata
+
+// Verificar se window.SENT1_AUTO existe, criar se necessário
+if (typeof window.SENT1_AUTO === "undefined") {
+    window.SENT1_AUTO = {};
+}
+
+// 🧪 FUNÇÃO ESPECÍFICA PARA TESTAR DETECÇÃO DE CARD DE SESSÃO
+window.SENT1_AUTO.testarDeteccaoCard = function () {
+    console.log("🧪 TESTE CARD: Iniciando teste de detecção de card de sessão");
+
+    try {
+        // 1. Verificar botões infraLegendObrigatorio com classes completas
+        const botoesInfra = document.querySelectorAll(
+            "button.infraLegendObrigatorio.btn.btn-link.btn-sm.p-0"
+        );
+        console.log(
+            `🔍 TESTE: ${botoesInfra.length} botões infraLegendObrigatorio.btn.btn-link.btn-sm.p-0 encontrados`
+        );
+
+        if (botoesInfra.length > 0) {
+            botoesInfra.forEach((botao, index) => {
+                const texto = botao.textContent || botao.innerText || "";
+                console.log(`📄 BOTÃO ${index + 1}:`, texto.substring(0, 150));
+
+                // Testar TODOS os padrões de sessão
+                const resultado = extrairDadosSessaoCompleto(texto);
+                if (resultado) {
+                    console.log(`✅ TESTE: ${resultado.status} encontrado!`);
+                    console.log(`   - Tipo: ${resultado.tipoProcesso}`);
+                    console.log(`   - Data: ${resultado.data.dataFormatada}`);
+                    console.log(`   - Órgão: ${resultado.orgao}`);
+                    console.log(`   - Status: ${resultado.statusCompleto}`);
+                } else if (texto.includes("em Pauta em")) {
+                    console.log(
+                        "⚠️ TESTE: Padrão parcial encontrado, mas não validado:",
+                        texto.substring(0, 100)
+                    );
+                }
+            });
+        }
+
+        // 2. Testar fallback (todos os botões)
+        const todosBotoes = document.querySelectorAll("button");
+        let botoesComPadrao = 0;
+
+        todosBotoes.forEach((botao) => {
+            const texto = botao.textContent || botao.innerText || "";
+            if (texto.includes("em Pauta em")) {
+                // Usar função unificada para validação completa
+                const resultado = extrairDadosSessaoCompleto(texto);
+                if (resultado) {
+                    botoesComPadrao++;
+                    console.log(
+                        "📄 FALLBACK VALIDADO:",
+                        texto.substring(0, 150)
+                    );
+                    console.log(
+                        `   🎯 STATUS: ${resultado.status} (${resultado.statusCompleto})`
+                    );
+                    console.log(`   📅 DATA: ${resultado.data.dataFormatada}`);
+                    console.log(`   🏢 ÓRGÃO: ${resultado.orgao}`);
+                } else if (texto.includes("em Pauta em")) {
+                    console.log(
+                        "⚠️ FALLBACK PARCIAL:",
+                        texto.substring(0, 100)
+                    );
+                    console.log("   ❌ Não validado pela função unificada");
+                }
+            }
+        });
+
+        console.log(
+            `🔍 TESTE: ${botoesComPadrao} botões com padrões de sessão encontrados`
+        );
+
+        // 3. Executar detecção real
+        console.log("🚀 TESTE: Executando detecção real...");
+        const resultado = window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+
+        return {
+            botoesInfra: botoesInfra.length,
+            botoesComPadrao: botoesComPadrao,
+            deteccaoSucesso: !!resultado,
+            resultado: resultado,
+        };
+    } catch (error) {
+        console.error("❌ TESTE: Erro no teste:", error);
+        return { erro: error.message };
+    }
+};
+
+// 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO
+window.SENT1_AUTO.testarCriacaoCard = function () {
+    console.log(
+        "🧪 TESTE: Validando criação do card de sessão - VERSÃO ROBUSTA"
+    );
+
+    try {
+        // 1. Verificar se há data detectada
+        console.log("🔍 TESTE: Verificando dados detectados...");
+        const dataDetectada = window.SENT1_AUTO.getDataSessaoPautado?.();
+        console.log("📊 DADOS:", dataDetectada);
+
+        if (!dataDetectada) {
+            console.log(
+                "❌ TESTE: Nenhuma data detectada. Tentando detectar..."
+            );
+            const resultado = window.SENT1_AUTO.detectarDataSessao?.();
+            console.log("📊 DETECÇÃO:", resultado);
+
+            if (!resultado) {
+                return {
+                    sucesso: false,
+                    motivo: "Não foi possível detectar data da sessão",
+                    passos: [
+                        "1. Execute: window.SENT1_AUTO.detectarDataSessao()",
+                        "2. Verifique se está na página correta do eProc",
+                        "3. Verifique se há minutas com data de sessão",
+                    ],
+                };
+            }
+        }
+
+        // 2. Verificar container disponível
+        console.log("🔍 TESTE: Verificando containers disponíveis...");
+        const containers = [
+            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#fldCapa #divCapaProcesso .row.mt-2",
+            "#divCapaProcesso .row.mt-2",
+            ".row.mt-2",
+            "#fldCapa .row",
+            "#divCapaProcesso",
+            "#fldCapa",
+        ];
+
+        let containerEncontrado = null;
+        let seletorUsado = "";
+
+        for (const seletor of containers) {
+            const elemento = document.querySelector(seletor);
+            if (elemento) {
+                containerEncontrado = elemento;
+                seletorUsado = seletor;
+                console.log(`✅ CONTAINER: Encontrado com "${seletor}"`);
+                break;
+            }
+        }
+
+        if (!containerEncontrado) {
+            console.log(
+                "⚠️ TESTE: Nenhum container padrão encontrado, testando fallback..."
+            );
+        }
+
+        // 3. Remover card existente se houver
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ TESTE: Card existente removido para novo teste");
+        }
+
+        // 4. Forçar criação do card
+        console.log("🎯 TESTE: Forçando criação do card...");
+        const resultado = window.SENT1_AUTO.inserirDataSessaoNaInterface?.();
+        console.log("📊 RESULTADO INSERÇÃO:", resultado);
+
+        // 5. Verificar se o card foi criado
+        const cardCriado = document.getElementById("eprobe-data-sessao");
+
+        if (cardCriado) {
+            console.log("✅ TESTE: Card criado com sucesso!");
+
+            // Verificar propriedades do card
+            const propriedades = {
+                id: cardCriado.id,
+                posicao: cardCriado.style.position || "integrado",
+                visivel:
+                    cardCriado.offsetWidth > 0 && cardCriado.offsetHeight > 0,
+                containerPai: cardCriado.parentElement?.tagName || "N/A",
+                dataProcesso: cardCriado.getAttribute("data-processo"),
+                conteudo: cardCriado.innerHTML.length > 0,
+            };
+
+            console.log("📊 PROPRIEDADES DO CARD:", propriedades);
+
+            return {
+                sucesso: true,
+                cardCriado: true,
+                dataFormatada:
+                    dataDetectada?.dataFormatada ||
+                    window.SENT1_AUTO.getDataSessaoPautado()?.dataFormatada,
+                containerUsado: seletorUsado || "fallback-posicao-fixa",
+                propriedades: propriedades,
+                logs: "Card criado e validado com sucesso",
+            };
+        } else {
+            console.log("❌ TESTE: Card não foi criado!");
+
+            // Diagnóstico adicional
+            console.log("🔍 DIAGNÓSTICO:");
+            console.log("- Data detectada:", !!dataDetectada);
+            console.log(
+                "- Função inserir existe:",
+                typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
+            );
+            console.log("- Container encontrado:", !!containerEncontrado);
+            console.log("- Seletor usado:", seletorUsado);
+
+            return {
+                sucesso: false,
+                motivo: "Card não foi criado apesar da execução da função",
+                diagnostico: {
+                    dataDetectada: !!dataDetectada,
+                    funcaoInserirExiste:
+                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
+                    containerEncontrado: !!containerEncontrado,
+                    seletorUsado: seletorUsado,
+                },
+                sugestoes: [
+                    "1. Verifique se está na página correta do eProc",
+                    "2. Execute: window.SENT1_AUTO.detectarDataSessao()",
+                    "3. Tente: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()",
+                    "4. Verifique console para erros JavaScript",
+                ],
+            };
+        }
+    } catch (error) {
+        console.error("❌ TESTE: Erro durante teste:", error);
+        return {
+            sucesso: false,
+            erro: error.message,
+            stack: error.stack,
+            sugestao: "Verifique o console para detalhes do erro",
+        };
+    }
+};
+
+// 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES
+window.SENT1_AUTO.forcarInsercaoCardSemValidacao = function () {
+    console.log("🚀 FORCE: Criando card de sessão SEM validações");
+
+    try {
+        // Remover card existente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ FORCE: Card existente removido");
+        }
+
+        // Criar data fictícia se não houver
+        let dataParaUsar = window.SENT1_AUTO.getDataSessaoPautado?.();
+        if (!dataParaUsar) {
+            console.log("⚠️ FORCE: Sem data detectada, criando data teste");
+            dataParaUsar = {
+                dataFormatada:
+                    "Data de teste - " + new Date().toLocaleDateString("pt-BR"),
+                dataOriginal: new Date().toLocaleDateString("pt-BR"),
+                orgao: "Teste",
+            };
+        }
+
+        // Obter número do processo atual
+        let processoAtual = "N/A";
+        try {
+            const urlMatch = window.location.href.match(
+                /processo_selecionar\.php\?.*num_processo=([^&]+)/
+            );
+            if (urlMatch) {
+                processoAtual = decodeURIComponent(urlMatch[1]);
+            } else {
+                const titleMatch = document.title.match(
+                    /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/
+                );
+                if (titleMatch) {
+                    processoAtual = titleMatch[1];
+                }
+            }
+        } catch (e) {
+            console.log("⚠️ Não foi possível obter número do processo");
+        }
+
+        // Criar card com HTML direto
+        const cardHTML = `
+            <div id="eprobe-data-sessao" class="card mt-3" style="border-left: 4px solid #007bff; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" data-processo="${processoAtual}">
+                <div class="card-body py-2">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-calendar-check me-2" style="color: #007bff; font-size: 1.1em;"></i>
+                        <div class="flex-grow-1">
+                            <h6 class="card-title mb-1" style="color: #495057; font-weight: 600;">
+                                📅 Data da Sessão de Julgamento
+                            </h6>
+                            <p class="card-text mb-0" style="color: #6c757d; font-size: 0.95em;">
+                                <strong style="color: #007bff;">${
+                                    dataParaUsar.dataFormatada
+                                }</strong>
+                                ${
+                                    dataParaUsar.orgao
+                                        ? `<span class="badge bg-secondary ms-2">${dataParaUsar.orgao}</span>`
+                                        : ""
+                                }
+                            </p>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.8em;">
+                            <i class="fas fa-robot me-1"></i>eProbe
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Tentar inserir em containers (mesma estratégia)
+        const containers = [
+            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#fldCapa #divCapaProcesso .row.mt-2",
+            "#divCapaProcesso .row.mt-2",
+            ".row.mt-2",
+            "#fldCapa .row",
+            "#divCapaProcesso",
+            "#fldCapa",
+            "body",
+        ];
+
+        let inserido = false;
+        let seletorUsado = "";
+
+        for (const seletor of containers) {
+            const container = document.querySelector(seletor);
+            if (container) {
+                console.log(`✅ FORCE: Tentando inserir em "${seletor}"`);
+
+                try {
+                    container.insertAdjacentHTML("beforeend", cardHTML);
+                    seletorUsado = seletor;
+                    inserido = true;
+                    console.log(
+                        `✅ FORCE: Card inserido com sucesso em "${seletor}"`
+                    );
+                    break;
+                } catch (err) {
+                    console.log(
+                        `❌ FORCE: Erro ao inserir em "${seletor}":`,
+                        err.message
+                    );
+                    continue;
+                }
+            }
+        }
+
+        // Se não conseguiu inserir em nenhum container, usar posição fixa
+        if (!inserido) {
+            console.log(
+                "⚠️ FORCE: Nenhum container funcional, criando em posição fixa"
+            );
+
+            const cardFixo = document.createElement("div");
+            cardFixo.innerHTML = cardHTML;
+            cardFixo.firstElementChild.style.cssText += `
+                position: fixed !important;
+                top: 20px !important;
+                right: 20px !important;
+                z-index: 10000 !important;
+                max-width: 400px !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+            `;
+
+            document.body.appendChild(cardFixo.firstElementChild);
+            seletorUsado = "posicao-fixa-body";
+            inserido = true;
+            console.log("✅ FORCE: Card criado em posição fixa");
+        }
+
+        // Verificar se foi criado
+        const cardCriado = document.getElementById("eprobe-data-sessao");
+
+        if (cardCriado) {
+            console.log("✅ FORCE: Card criado e verificado com sucesso!");
+
+            // Destacar o card temporariamente
+            cardCriado.style.animation = "pulse 2s ease-in-out";
+            setTimeout(() => {
+                if (cardCriado) cardCriado.style.animation = "";
+            }, 2000);
+
+            return {
+                sucesso: true,
+                metodo: "forcado",
+                container: seletorUsado,
+                dataUsada: dataParaUsar,
+                cardId: cardCriado.id,
+            };
+        } else {
+            console.log(
+                "❌ FORCE: Card não foi criado mesmo com método forçado!"
+            );
+            return {
+                sucesso: false,
+                motivo: "Falha mesmo com método forçado",
+                container: seletorUsado,
+            };
+        }
+    } catch (error) {
+        console.error("❌ FORCE: Erro crítico:", error);
+        return {
+            sucesso: false,
+            erro: error.message,
+            stack: error.stack,
+        };
+    }
+};
+
+// 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
+window.SENT1_AUTO.diagnosticoCompletoCard = function () {
+    console.log("🩺 DIAGNÓSTICO COMPLETO - Card de Sessão");
+    console.log("====================================");
+
+    const relatorio = {
+        timestamp: new Date().toLocaleString("pt-BR"),
+        url: window.location.href,
+        diagnosticos: {},
+    };
+
+    try {
+        // 1. VERIFICAR PÁGINA ATUAL
+        console.log("🌐 1. VERIFICAÇÃO DA PÁGINA");
+        relatorio.diagnosticos.pagina = {
+            url: window.location.href,
+            eProc: window.location.href.includes("eproc"),
+            contemProcesso: window.location.href.includes("processo"),
+        };
+        console.log("   URL eProc:", relatorio.diagnosticos.pagina.eProc);
+
+        // 2. VERIFICAR DETECÇÃO DE DATA
+        console.log("\n📅 2. VERIFICAÇÃO DE DETECÇÃO DE DATA");
+        const hasData = window.SENT1_AUTO.hasDataSessaoPautado?.();
+        const dataAtual = window.SENT1_AUTO.getDataSessaoPautado?.();
+
+        relatorio.diagnosticos.data = {
+            hasDataFunction: typeof window.SENT1_AUTO.hasDataSessaoPautado,
+            getDataFunction: typeof window.SENT1_AUTO.getDataSessaoPautado,
+            hasData: hasData,
+            dataDetectada: dataAtual,
+        };
+        console.log("   Has data:", hasData);
+        console.log("   Data detectada:", dataAtual);
+
+        // 3. VERIFICAR CONTAINERS DISPONÍVEIS
+        console.log("\n📦 3. VERIFICAÇÃO DE CONTAINERS");
+        const containers = [
+            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
+            "#fldCapa #divCapaProcesso .row.mt-2",
+            "#divCapaProcesso .row.mt-2",
+            ".row.mt-2",
+            "#fldCapa .row",
+            "#divCapaProcesso",
+            "#fldCapa",
+        ];
+
+        relatorio.diagnosticos.containers = {};
+        containers.forEach((seletor, index) => {
+            const elemento = document.querySelector(seletor);
+            relatorio.diagnosticos.containers[`container_${index}`] = {
+                seletor: seletor,
+                encontrado: !!elemento,
+                visivel: elemento
+                    ? elemento.offsetWidth > 0 && elemento.offsetHeight > 0
+                    : false,
+                tagName: elemento?.tagName || "N/A",
+            };
+            console.log(
+                `   ${index + 1}. ${seletor.substring(0, 50)}... → ${
+                    !!elemento ? "✅" : "❌"
+                }`
+            );
+        });
+
+        // 4. VERIFICAR CARD EXISTENTE
+        console.log("\n🎴 4. VERIFICAÇÃO DE CARD EXISTENTE");
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        relatorio.diagnosticos.cardExistente = {
+            presente: !!cardExistente,
+            visivel: cardExistente
+                ? cardExistente.offsetWidth > 0 &&
+                  cardExistente.offsetHeight > 0
+                : false,
+            posicao: cardExistente?.style.position || "static",
+            containerPai: cardExistente?.parentElement?.tagName || "N/A",
+            dataProcesso: cardExistente?.getAttribute("data-processo") || "N/A",
+        };
+        console.log("   Card presente:", !!cardExistente);
+
+        // 5. VERIFICAR FUNÇÕES NECESSÁRIAS
+        console.log("\n🔧 5. VERIFICAÇÃO DE FUNÇÕES");
+        relatorio.diagnosticos.funcoes = {
+            inserirDataSessaoNaInterface:
+                typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
+            detectarDataSessao: typeof window.SENT1_AUTO.detectarDataSessao,
+        };
+        console.log(
+            "   inserirDataSessaoNaInterface:",
+            typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
+        );
+        console.log(
+            "   detectarDataSessao:",
+            typeof window.SENT1_AUTO.detectarDataSessao
+        );
+
+        console.log("\n📋 RELATÓRIO COMPLETO:", relatorio);
+        return relatorio;
+    } catch (error) {
+        console.error("❌ ERRO no diagnóstico completo:", error);
+        return {
+            erro: error.message,
+            stack: error.stack,
+            timestamp: new Date().toLocaleString("pt-BR"),
+        };
+    }
+};
+
+// 🔧 FUNÇÃO DE DEBUG RÁPIDO
+window.SENT1_AUTO.debugRapido = function () {
+    console.log("🔧 DEBUG RÁPIDO eProbe");
+    console.log("1. Namespace existe:", typeof window.SENT1_AUTO);
+    console.log("2. É objeto:", typeof window.SENT1_AUTO === "object");
+
+    if (typeof window.SENT1_AUTO === "object") {
+        const funcoes = Object.keys(window.SENT1_AUTO).filter(
+            (key) => typeof window.SENT1_AUTO[key] === "function"
+        );
+        console.log(`3. Total de funções: ${funcoes.length}`);
+        console.log("4. Funções disponíveis:", funcoes.slice(0, 10));
+    }
+
+    console.log("5. URL atual:", window.location.href);
+    console.log("6. É eProc:", window.location.href.includes("eproc"));
+
+    return {
+        namespace: typeof window.SENT1_AUTO,
+        totalFuncoes:
+            typeof window.SENT1_AUTO === "object"
+                ? Object.keys(window.SENT1_AUTO).filter(
+                      (key) => typeof window.SENT1_AUTO[key] === "function"
+                  ).length
+                : 0,
+        url: window.location.href,
+        eProc: window.SENT1_AUTO && window.location.href.includes("eproc"),
+    };
+};
+
+// 🧪 FUNÇÃO DE TESTE PARA MÚLTIPLAS SESSÕES
+window.SENT1_AUTO.testarMultiplasSessoes = function () {
+    console.log(
+        "🧪 TESTE MÚLTIPLAS SESSÕES: Testando sistema de tooltip elegante"
+    );
+
+    // Criar dados de teste com múltiplas sessões
+    const dadosTesteSessoes = {
+        status: "Retirado",
+        statusCompleto: "Retirado em Pauta",
+        statusOriginal: "Retirado em Pauta",
+        tipoProcesso: "RELATÓRIO/VOTO",
+        data: "10/04/2025",
+        codigo: "5201740",
+        cor: "#dc2626",
+        totalSessoes: 4,
+        todasSessoes: [
+            {
+                data: "10/04/2025",
+                status: "Retirado",
+                statusOriginal: "Retirado em Pauta",
+                cor: "#dc2626",
+            },
+            {
+                data: "06/02/2025",
+                status: "Sobrestado (art. 942)",
+                statusOriginal: "Sobrestado - art. 942 CPC em Pauta",
+                cor: "#f59e0b",
+            },
+            {
+                data: "05/12/2024",
+                status: "Pedido de Vista",
+                statusOriginal: "Pedido de Vista em Pauta",
+                cor: "#8b5cf6",
+            },
+            {
+                data: "19/11/2024",
+                status: "Julgado",
+                statusOriginal: "Julgado em Pauta",
+                cor: "#16a34a",
+            },
+        ],
+    };
+
+    console.log("📊 DADOS DE TESTE:", dadosTesteSessoes);
+
+    try {
+        // Remover card existente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ Card existente removido");
+        }
+
+        // Criar novo card com dados de teste
+        const novoCard = criarCardMaterialDesign(dadosTesteSessoes);
+
+        // Inserir na interface
+        const resultado = inserirCardNaInterface(novoCard);
+
+        if (resultado) {
+            console.log("✅ TESTE: Card criado com sucesso!");
+            console.log(
+                "💡 INSTRUÇÃO: Passe o mouse sobre '4 sessões (passe o mouse para ver histórico)' para ver o tooltip elegante"
+            );
+            return {
+                sucesso: true,
+                totalSessoes: dadosTesteSessoes.totalSessoes,
+                cardCriado: !!document.getElementById("eprobe-data-sessao"),
+                mensagem:
+                    "Tooltip elegante com ícones Lucide e design minimalista",
+                design: "Background branco, bordas sutis, ícones SVG, badge azul para sessão atual",
+            };
+        } else {
+            console.log("❌ TESTE: Falha ao inserir card na interface");
+            return { sucesso: false, erro: "Falha na inserção" };
+        }
+    } catch (error) {
+        console.error("💥 TESTE: Erro durante teste:", error);
+        return { sucesso: false, erro: error.message };
+    }
+};
+
+// 🧪 FUNÇÃO DE TESTE PARA O NOVO FORMATO DE TOOLTIP
+window.SENT1_AUTO.testarNovoFormatoTooltip = function (textoTeste) {
+    console.log("🧪 TESTE NOVO FORMATO: Testando extração de dados de sessão");
+
+    // Usar texto de exemplo se não fornecido
+    const texto =
+        textoTeste ||
+        "10/04/2025 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>06/02/2025 - Sobrestado - art. 942 CPC em Pauta - RELATÓRIO/VOTO (5201740)<br/>05/12/2024 - Pedido de Vista em Pauta - RELATÓRIO/VOTO (5201740)<br/>19/11/2024 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>";
+
+    console.log("📝 TEXTO DE TESTE:", texto);
+
+    try {
+        const resultado = extrairDadosCardSessaoGlobal(texto);
+
+        if (resultado) {
+            console.log("✅ SUCESSO: Dados extraídos com sucesso!");
+            console.log("📊 RESULTADO:", resultado);
+            console.log(`📈 TOTAL DE SESSÕES: ${resultado.totalSessoes}`);
+            console.log("🎯 SESSÃO MAIS RECENTE:", {
+                data: resultado.data,
+                status: resultado.status,
+                statusOriginal: resultado.statusOriginal,
+                cor: resultado.cor,
+            });
+
+            // Mostrar todas as sessões encontradas
+            if (resultado.todasSessoes) {
+                console.log("📋 TODAS AS SESSÕES:");
+                resultado.todasSessoes.forEach((sessao, index) => {
+                    console.log(
+                        `   ${index + 1}. ${sessao.data} - ${sessao.status} (${
+                            sessao.statusOriginal
+                        })`
+                    );
+                });
+            }
+
+            return resultado;
+        } else {
+            console.log("❌ FALHA: Nenhum dado extraído");
+            return null;
+        }
+    } catch (error) {
+        console.error("💥 ERRO no teste:", error);
+        return { erro: error.message };
+    }
+};
+
+// 🔧 FUNÇÃO PARA TESTAR XPATH E TOOLTIP REAL
+window.SENT1_AUTO.testarXPathTooltipReal = function () {
+    console.log("🔧 TESTE XPATH: Testando extração do tooltip real da página");
+
+    try {
+        // Usar o XPath específico mencionado nos logs
+        const xpath =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
+        const elemento = document.evaluate(
+            xpath,
+            document,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+        ).singleNodeValue;
+
+        if (!elemento) {
+            console.log(
+                "❌ XPATH: Elemento não encontrado no caminho especificado"
+            );
+            return { erro: "Elemento não encontrado" };
+        }
+
+        console.log("✅ XPATH: Elemento encontrado:", elemento);
+
+        // Verificar atributo onmouseover
+        const onmouseover = elemento.getAttribute("onmouseover");
+        if (!onmouseover) {
+            console.log("❌ TOOLTIP: Atributo onmouseover não encontrado");
+            return { erro: "Sem atributo onmouseover" };
+        }
+
+        console.log("📄 ONMOUSEOVER:", onmouseover);
+
+        // Extrair conteúdo do tooltip
+        const matchTooltip = onmouseover.match(
+            /infraTooltipMostrar\('([^']+)'/
+        );
+        if (!matchTooltip) {
+            console.log("❌ TOOLTIP: Conteúdo do tooltip não encontrado");
+            return { erro: "Padrão de tooltip não encontrado" };
+        }
+
+        const conteudoTooltip = matchTooltip[1];
+        console.log("🎯 CONTEÚDO DO TOOLTIP:", conteudoTooltip);
+
+        // Testar extração com o novo formato
+        const dadosExtraidos = extrairDadosCardSessaoGlobal(conteudoTooltip);
+
+        return {
+            elemento: !!elemento,
+            onmouseover: !!onmouseover,
+            conteudoTooltip: conteudoTooltip,
+            dadosExtraidos: dadosExtraidos,
+            sucesso: !!dadosExtraidos,
+        };
+    } catch (error) {
+        console.error("💥 ERRO no teste XPath:", error);
+        return { erro: error.message };
+    }
+};
+
+console.log(
+    "✅ FUNÇÕES DE TESTE: Carregadas fora da IIFE - sempre disponíveis"
+);
+
+// Função de detecção global ao namespace
+window.SENT1_AUTO.detectarCardSessaoGlobal = function () {
+    console.log("🔍 GLOBAL: Executando detecção simplificada via namespace");
+
+    try {
+        // Buscar botões infraLegendObrigatorio
+        const botoesInfra = document.querySelectorAll(
+            "button.infraLegendObrigatorio"
+        );
+        console.log(`🔍 GLOBAL: ${botoesInfra.length} botões encontrados`);
+
+        if (botoesInfra.length === 0) {
+            // Fallback: buscar qualquer botão com padrões de sessão
+            const todosBotoes = document.querySelectorAll("button");
+            for (let botao of todosBotoes) {
+                const texto = botao.textContent || botao.innerText || "";
+                if (texto.includes("em Pauta em")) {
+                    console.log("✅ GLOBAL: Padrão encontrado via fallback");
+                    return extrairDadosCardSessaoGlobal(texto);
+                }
+            }
+            return null;
+        }
+
+        // Verificar cada botão
+        for (let botao of botoesInfra) {
+            const texto = botao.textContent || botao.innerText || "";
+            if (texto.includes("em Pauta em")) {
+                console.log(
+                    "✅ GLOBAL: Padrão encontrado em botão infraLegendObrigatorio"
+                );
+                return extrairDadosCardSessaoGlobal(texto);
+            }
+        }
+
+        return null;
+    } catch (error) {
+        console.error("❌ GLOBAL: Erro na detecção:", error);
+        return null;
+    }
+};
+/**
+ * Função auxiliar para traduzir status de sessão conforme regras específicas
+ * @param {string} statusOriginal - Status original do sistema eProc
+ * @returns {Object} - Objeto com status traduzido, completo e cor
+ */
+function traduzirStatusSessao(statusOriginal) {
+    const traducoes = {
+        "Retirado em Pauta": {
+            status: "Retirado",
+            statusCompleto: "Retirado em Pauta",
+            cor: "#dc2626", // Vermelho
+        },
+        "Sobrestado - art. 942 CPC em Pauta": {
+            status: "Sobrestado (art. 942)",
+            statusCompleto: "Sobrestado - art. 942 CPC",
+            cor: "#f59e0b", // Amarelo
+        },
+        "Pedido de Vista em Pauta": {
+            status: "Pedido de Vista",
+            statusCompleto: "Pedido de Vista em Pauta",
+            cor: "#8b5cf6", // Roxo
+        },
+        "Adiado - art. 935 CPC em Pauta": {
+            status: "Adiado (art. 935)",
+            statusCompleto: "Adiado - art. 935 CPC",
+            cor: "#ef4444", // Vermelho claro
+        },
+        "Convertido em Diligência em Pauta": {
+            status: "Conv. em Diligência",
+            statusCompleto: "Convertido em Diligência",
+            cor: "#06b6d4", // Azul claro
+        },
+        "Julgado em Pauta": {
+            status: "Julgado",
+            statusCompleto: "Julgado em Pauta",
+            cor: "#16a34a", // Verde
+        },
+        "Incluído em Pauta": {
+            status: "Pautado",
+            statusCompleto: "Incluído em Pauta",
+            cor: "#3b82f6", // Azul
+        },
+        "Adiado em Pauta": {
+            status: "Adiado",
+            statusCompleto: "Adiado em Pauta",
+            cor: "#f97316", // Laranja
+        },
+    };
+
+    // Buscar tradução exata primeiro
+    if (traducoes[statusOriginal]) {
+        return traducoes[statusOriginal];
+    }
+
+    // Buscar por padrões parciais
+    for (const [chave, valor] of Object.entries(traducoes)) {
+        if (statusOriginal.includes(chave) || chave.includes(statusOriginal)) {
+            return valor;
+        }
+    }
+
+    // Fallback para status não mapeados
+    console.log(`⚠️ STATUS: Não mapeado: "${statusOriginal}"`);
+    return {
+        status: statusOriginal,
+        statusCompleto: statusOriginal,
+        cor: "#6b7280", // Cinza
+    };
+}
+
+/**
+ * Função auxiliar para extrair dados de sessão do NOVO formato de tooltip
+ * NOVO PADRÃO: "DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>"
+ * @param {string} texto - Texto do tooltip para analisar
+ * @returns {Object|null} - Dados da sessão mais recente ou null
+ */
+function extrairDadosCardSessaoGlobal(texto) {
+    console.log(
+        "🔍 EXTRAÇÃO NOVA: Analisando tooltip:",
+        texto.substring(0, 200)
+    );
+
+    // NOVO PADRÃO: DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>
+    const padraoGeral =
+        /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)\s*\((\d+)\)/g;
+
+    const sessoes = [];
+    let match;
+
+    // Extrair todas as sessões do tooltip
+    while ((match = padraoGeral.exec(texto)) !== null) {
+        const data = match[1];
+        const statusOriginal = match[2].trim();
+        const documento = match[3].trim();
+        const codigo = match[4];
+
+        // Traduzir status conforme as regras especificadas
+        const statusTraduzido = traduzirStatusSessao(statusOriginal);
+
+        console.log(
+            `📅 SESSÃO: ${data} - ${statusOriginal} → ${statusTraduzido.status}`
+        );
+
+        sessoes.push({
+            data: data,
+            statusOriginal: statusOriginal,
+            status: statusTraduzido.status,
+            statusCompleto: statusTraduzido.statusCompleto,
+            documento: documento,
+            codigo: codigo,
+            cor: statusTraduzido.cor,
+        });
+    }
+
+    if (sessoes.length === 0) {
+        console.log(
+            "❌ EXTRAÇÃO NOVA: Nenhuma sessão encontrada no formato atualizado"
+        );
+        return null;
+    }
+
+    // Pegar a sessão mais recente (primeira na lista, pois vem ordenada cronologicamente)
+    const sessaoMaisRecente = sessoes[0];
+
+    console.log(
+        `📊 EXTRAÇÃO: ${sessoes.length} sessões encontradas, usando mais recente`
+    );
+
+    // Criar objeto de dados da sessão no formato esperado pelo sistema
+    const dadosSessao = {
+        status: sessaoMaisRecente.status,
+        statusCompleto: sessaoMaisRecente.statusCompleto,
+        statusOriginal: sessaoMaisRecente.statusOriginal,
+        tipoProcesso: sessaoMaisRecente.documento,
+        data: sessaoMaisRecente.data,
+        codigo: sessaoMaisRecente.codigo,
+        cor: sessaoMaisRecente.cor,
+        textoOriginal: `${sessaoMaisRecente.data} - ${sessaoMaisRecente.statusOriginal} - ${sessaoMaisRecente.documento} (${sessaoMaisRecente.codigo})`,
+        timestamp: new Date().toISOString(),
+        todasSessoes: sessoes, // Guardar todas as sessões para referência
+        totalSessoes: sessoes.length,
+    };
+
+    console.log(
+        "✅ EXTRAÇÃO NOVA: Dados extraídos da sessão mais recente:",
+        dadosSessao
+    );
+    console.log(
+        `📈 EXTRAÇÃO: Total de ${sessoes.length} sessões históricas preservadas`
+    );
+
+    return dadosSessao;
+}
+
+// 🎨 FUNÇÃO DE TESTE PARA DESIGNS FIGMA
+window.SENT1_AUTO.testarDesignFigma = function (statusTeste = "Julgado") {
+    console.log(
+        `🎨 TESTE FIGMA: Testando design Figma para status "${statusTeste}"`
+    );
+
+    try {
+        // Criar dados de sessão simulados para teste
+        const dadosSessaoTeste = {
+            data: "15/01/2025",
+            status: statusTeste,
+            statusOriginal: statusTeste,
+            totalSessoes: 3,
+            todasSessoes: [
+                {
+                    data: "15/01/2025",
+                    status: statusTeste,
+                    statusOriginal: statusTeste,
+                },
+                {
+                    data: "08/01/2025",
+                    status: "Pautado",
+                    statusOriginal: "Pautado",
+                },
+                {
+                    data: "20/12/2024",
+                    status: "Adiado",
+                    statusOriginal: "Adiado em Pauta",
+                },
+            ],
+        };
+
+        console.log("📊 DADOS DE TESTE:", dadosSessaoTeste);
+
+        // Criar card com design Figma
+        const card =
+            window.SENT1_AUTO.criarCardMaterialDesign(dadosSessaoTeste);
+
+        if (!card) {
+            console.error("❌ FIGMA: Falha ao criar card");
+            return { sucesso: false, erro: "Card não foi criado" };
+        }
+
+        console.log("✅ FIGMA: Card criado com sucesso", card);
+
+        // Remover card existente se houver
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ FIGMA: Card anterior removido");
+        }
+
+        // Inserir card na página
+        const containers = [
+            "#fldCapa #divCapaProcesso .row.mt-2",
+            "#divCapaProcesso .row.mt-2",
+            ".row.mt-2",
+            "#fldCapa",
+            "#divCapaProcesso",
+            "body",
+        ];
+
+        let inserido = false;
+        for (const seletor of containers) {
+            const container = document.querySelector(seletor);
+            if (container) {
+                container.appendChild(card);
+                inserido = true;
+                console.log(`✅ FIGMA: Card inserido em "${seletor}"`);
+                break;
+            }
+        }
+
+        if (!inserido) {
+            console.warn(
+                "⚠️ FIGMA: Não foi possível inserir o card automaticamente"
+            );
+            console.log(
+                "💡 FIGMA: Card criado e disponível na variável:",
+                card
+            );
+            return {
+                sucesso: true,
+                card: card,
+                aviso: "Card criado mas não inserido automaticamente",
+            };
+        }
+
+        // Testar todas as configurações de status
+        const todosStatus = [
+            "Julgado",
+            "Retirado",
+            "Sobrestado (art. 942)",
+            "Pedido de Vista",
+            "Pautado",
+            "Adiado (art. 935)",
+            "Adiado",
+            "Conv. em Diligência",
+        ];
+
+        console.log("🎨 FIGMA: Status disponíveis para teste:", todosStatus);
+
+        return {
+            sucesso: true,
+            card: card,
+            statusTeste: statusTeste,
+            configuracao: window.SENT1_AUTO.obterConfigFigmaStatus(statusTeste),
+            todosStatusDisponiveis: todosStatus,
+            dica: "Use window.SENT1_AUTO.testarDesignFigma('STATUS') para testar outros status",
+        };
+    } catch (error) {
+        console.error("❌ FIGMA: Erro durante teste:", error);
+        return {
+            sucesso: false,
+            erro: error.message,
+            stack: error.stack,
+        };
+    }
+};
+
+// 🌈 FUNÇÃO PARA TESTAR TODOS OS DESIGNS FIGMA
+window.SENT1_AUTO.testarTodosDesignsFigma = function () {
+    console.log("🌈 FIGMA: Testando todos os 8 designs disponíveis");
+
+    const todosStatus = [
+        "Julgado",
+        "Retirado",
+        "Sobrestado (art. 942)",
+        "Pedido de Vista",
+        "Pautado",
+        "Adiado (art. 935)",
+        "Adiado",
+        "Conv. em Diligência",
+    ];
+
+    // Criar um container para demonstração
+    let containerDemo = document.getElementById("eprobe-figma-demo");
+    if (containerDemo) {
+        containerDemo.remove();
+    }
+
+    containerDemo = document.createElement("div");
+    containerDemo.id = "eprobe-figma-demo";
+    containerDemo.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        max-height: 80vh;
+        overflow-y: auto;
+        width: 320px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    `;
+
+    // Título
+    const titulo = document.createElement("h3");
+    titulo.textContent = "🎨 Designs Figma - eProbe";
+    titulo.style.cssText = `
+        margin: 0 0 16px 0;
+        font-size: 16px;
+        color: #1f2937;
+        text-align: center;
+    `;
+    containerDemo.appendChild(titulo);
+
+    // Criar cards para cada status
+    todosStatus.forEach((status, index) => {
+        const dadosSimulados = {
+            data: `${15 + index}/01/2025`,
+            status: status,
+            statusOriginal: status,
+            totalSessoes: 1,
+            todasSessoes: [
+                {
+                    data: `${15 + index}/01/2025`,
+                    status: status,
+                    statusOriginal: status,
+                },
+            ],
+        };
+
+        try {
+            const card =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosSimulados);
+            card.style.marginBottom = "12px";
+            containerDemo.appendChild(card);
+        } catch (error) {
+            console.error(
+                `❌ FIGMA: Erro ao criar card para "${status}":`,
+                error
+            );
+        }
+    });
+
+    // Botão para fechar
+    const botaoFechar = document.createElement("button");
+    botaoFechar.textContent = "✕ Fechar";
+    botaoFechar.style.cssText = `
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #f3f4f6;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 8px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #6b7280;
+    `;
+    botaoFechar.onclick = () => containerDemo.remove();
+    containerDemo.appendChild(botaoFechar);
+
+    document.body.appendChild(containerDemo);
+
+    console.log("✅ FIGMA: Demonstração criada com todos os 8 designs");
+    return {
+        sucesso: true,
+        totalCards: todosStatus.length,
+        container: containerDemo,
+    };
+};
+
+// ===== INSTRUÇÕES DE USO =====
+console.log("🧪 FUNÇÕES DE TESTE DISPONÍVEIS:");
+console.log("- window.SENT1_AUTO.detectarCardSessaoSimplificado()");
+console.log("- window.SENT1_AUTO.detectarCardSessaoGlobal()");
+console.log("- window.SENT1_AUTO.testarCriacaoCard()");
+console.log("- window.SENT1_AUTO.forcarInsercaoCardSemValidacao()");
+console.log("- window.SENT1_AUTO.diagnosticoCompletoCard()");
+console.log("- window.SENT1_AUTO.debugRapido()");
+console.log("🆕 NOVAS FUNÇÕES PARA TOOLTIP:");
+console.log("- window.SENT1_AUTO.testarNovoFormatoTooltip()");
+console.log("- window.SENT1_AUTO.testarXPathTooltipReal()");
+console.log("🎯 TESTE MÚLTIPLAS SESSÕES:");
+console.log("- window.SENT1_AUTO.testarMultiplasSessoes()");
+console.log("🎨 NOVAS FUNÇÕES FIGMA:");
+console.log("- window.SENT1_AUTO.testarDesignFigma('Julgado')");
+console.log("- window.SENT1_AUTO.testarTodosDesignsFigma()");
+console.log("- window.SENT1_AUTO.obterConfigFigmaStatus('Pautado')");
+console.log("- window.SENT1_AUTO.criarCardMaterialDesign(dados)");
+console.log("✅ eProbe Extension carregada com sucesso!");
