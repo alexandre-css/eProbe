@@ -22,7 +22,12 @@
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ],
-            "js": ["src/main.js", "src/themeApply.js", "src/semanticKernel.js"],
+            "js": [
+                "src/CardMaterialFigma.js",
+                "src/main.js",
+                "src/themeApply.js",
+                "src/semanticKernel.js"
+            ],
             "run_at": "document_end"
         }
     ],

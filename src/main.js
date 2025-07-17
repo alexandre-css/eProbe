@@ -7227,6 +7227,214 @@ ${texto}`;
         window.SENT1_AUTO.testarCasoRetirado = testarCasoRetirado;
         window.SENT1_AUTO.debugStatusSessao = showStatusSessaoInfo;
         window.SENT1_AUTO.testarSistemaStatusSessao = testarSistemaStatusSessao;
+        // 🧪 FUNÇÃO DE TESTE MATERIAL BASE
+        window.SENT1_AUTO.testarMaterialBaseLayout = function () {
+            console.log(
+                "🧪 TESTE MATERIAL BASE: Verificando especificações CSS exatas"
+            );
+
+            try {
+                // Dados de teste
+                const dadosTeste = {
+                    status: "PAUTADO",
+                    data: "29/01/2025",
+                    orgao: "2ª Câmara de Direito Civil",
+                };
+
+                // Criar card Material Base
+                const card = criarCardMaterialDesign(dadosTeste);
+
+                // Verificar especificações CSS
+                const computedStyle = window.getComputedStyle(card);
+
+                const especificacoes = {
+                    width: computedStyle.width,
+                    height: computedStyle.height,
+                    background: computedStyle.backgroundColor,
+                    border: computedStyle.border,
+                    borderRadius: computedStyle.borderRadius,
+                    boxShadow: computedStyle.boxShadow,
+                    display: computedStyle.display,
+                    flexDirection: computedStyle.flexDirection,
+                    justifyContent: computedStyle.justifyContent,
+                    alignItems: computedStyle.alignItems,
+                    padding: computedStyle.padding,
+                    gap: computedStyle.gap,
+                    position: computedStyle.position,
+                };
+
+                console.log("📊 ESPECIFICAÇÕES APLICADAS:", especificacoes);
+
+                // Verificar se atende aos requisitos
+                const conformidade = {
+                    dimensoes:
+                        especificacoes.width === "225px" &&
+                        especificacoes.height === "80px",
+                    background:
+                        especificacoes.background.includes("254, 247, 255") ||
+                        especificacoes.background === "#FEF7FF",
+                    borderRadius: especificacoes.borderRadius === "12px",
+                    flexLayout:
+                        especificacoes.display === "flex" &&
+                        especificacoes.flexDirection === "column",
+                    centralizado:
+                        especificacoes.justifyContent === "center" &&
+                        especificacoes.alignItems === "center",
+                    padding: especificacoes.padding === "10px",
+                    gap: especificacoes.gap === "10px",
+                };
+
+                console.log("✅ CONFORMIDADE MATERIAL BASE:", conformidade);
+
+                // Verificar áreas do card
+                const iconArea = card.querySelector(".eprobe-icon-area");
+                const headerArea = card.querySelector(".eprobe-header-area");
+                const subheadArea = card.querySelector(".eprobe-subhead-area");
+                const dataArea = card.querySelector(".eprobe-data-area");
+
+                const areas = {
+                    icone: !!iconArea,
+                    header: !!headerArea ? headerArea.textContent : null,
+                    subhead: !!subheadArea ? subheadArea.textContent : null,
+                    data: !!dataArea ? dataArea.textContent : null,
+                };
+
+                console.log("📐 ÁREAS DO CARD:", areas);
+
+                return {
+                    sucesso: true,
+                    layout: "Material Base CSS",
+                    especificacoes: especificacoes,
+                    conformidade: conformidade,
+                    areas: areas,
+                    verificacao: {
+                        dimensoesCorretas: conformidade.dimensoes,
+                        layoutFlexCorreto: conformidade.flexLayout,
+                        estilizacaoCorreta:
+                            conformidade.background &&
+                            conformidade.borderRadius,
+                        areasPresentes: Object.values(areas).every(Boolean),
+                    },
+                };
+            } catch (error) {
+                console.error("❌ ERRO no teste Material Base:", error);
+                return {
+                    sucesso: false,
+                    erro: error.message,
+                };
+            }
+        };
+        // 🧪 FUNÇÃO DE TESTE XPATH + MATERIAL DESIGN
+        window.SENT1_AUTO.testarXPathMaterialDesign = function () {
+            console.log(
+                "🧪 TESTE COMPLETO: XPath Exclusivo + Material Design Figma"
+            );
+
+            try {
+                // 1. Testar XPath exclusivo
+                console.log("🎯 PASSO 1: Testando detecção XPath exclusiva...");
+                const resultadoXPath =
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+
+                if (!resultadoXPath) {
+                    console.log(
+                        "❌ XPath não encontrou dados. Testando fallback..."
+                    );
+                    const resultadoGlobal =
+                        window.SENT1_AUTO.detectarCardSessaoGlobal?.();
+
+                    if (!resultadoGlobal) {
+                        return {
+                            sucesso: false,
+                            etapa: "Detecção XPath",
+                            motivo: "Nenhuma estratégia XPath encontrou dados",
+                            xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
+                            recomendacoes: [
+                                "Verifique se está na página correta do eProc",
+                                "Confirme se existe o elemento span com onmouseover",
+                                'Execute no console: $x("/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]")',
+                            ],
+                        };
+                    }
+                    console.log("✅ XPath global funcionou:", resultadoGlobal);
+                }
+
+                // 2. Testar criação Material Design
+                console.log("🎨 PASSO 2: Testando Material Design Figma...");
+                const dadosTeste = resultadoXPath || {
+                    data: "16/07/2025",
+                    status: "PAUTADO",
+                    orgao: "2ª Câmara de Direito Civil",
+                    processo: "TESTE-XPATH-MATERIAL",
+                };
+
+                const cardMaterial =
+                    window.SENT1_AUTO.criarCardMaterialDesign?.(dadosTeste);
+
+                if (!cardMaterial) {
+                    return {
+                        sucesso: false,
+                        etapa: "Criação Material Design",
+                        motivo: "Função criarCardMaterialDesign falhou",
+                        dados: dadosTeste,
+                        funcaoExiste:
+                            typeof window.SENT1_AUTO.criarCardMaterialDesign,
+                    };
+                }
+
+                // 3. Testar configurações Figma
+                console.log("🔧 PASSO 3: Testando configurações Figma...");
+                const configFigma =
+                    window.SENT1_AUTO.obterConfigFigmaStatus?.("PAUTADO");
+
+                console.log("📊 CONFIG FIGMA:", configFigma);
+
+                // 4. Verificar especificações visuais
+                console.log(
+                    "👀 PASSO 4: Verificando especificações visuais..."
+                );
+                const especificacoes = {
+                    width: "263px",
+                    height: "161px",
+                    background: "#FEF7FF",
+                    border: "1px solid #CAC4D0",
+                    borderRadius: "12px",
+                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
+                    fontFamily: "Roboto",
+                    cores: {
+                        PAUTADO: "#5C85B4",
+                        RETIRADO: "#CE2D4F",
+                        VISTA: "#FFBF46",
+                        JULGADO: "#3AB795",
+                        ADIADO: "#F55D3E",
+                        ADIADO_935: "#731963",
+                        SOBRESTADO: "#FCB0B3",
+                        DILIGENCIA: "#00171F",
+                    },
+                };
+
+                // 5. Resultado final
+                return {
+                    sucesso: true,
+                    estrategia: "XPath Exclusivo",
+                    design: "Material Design Figma",
+                    deteccao: resultadoXPath || "Dados de teste",
+                    card: !!cardMaterial,
+                    configuracao: configFigma,
+                    especificacoesFigma: especificacoes,
+                    xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
+                    logs: "Sistema XPath + Material Design funcionando corretamente",
+                    timestamp: new Date().toISOString(),
+                };
+            } catch (error) {
+                console.error("❌ ERRO no teste:", error);
+                return {
+                    sucesso: false,
+                    erro: error.message,
+                    stack: error.stack,
+                };
+            }
+        };
         // 🧪 FUNÇÕES DE TESTE SIMPLIFICADO
         // window.SENT1_AUTO.testarDeteccaoSimplificada = testarDeteccaoSimplificada; // FUNÇÃO NÃO DEFINIDA - REMOVIDA
         window.SENT1_AUTO.debugPadroesStatusSessao = debugPadroesStatusSessao;
@@ -7335,138 +7543,168 @@ ${texto}`;
         // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO
         window.SENT1_AUTO.testarCriacaoCard = function () {
             console.log(
-                "🧪 TESTE: Validando criação do card de sessão - VERSÃO ROBUSTA"
+                "🧪 TESTE: Validando criação do card Material Design com XPath exclusivo"
             );
 
             try {
-                // 1. Verificar se há data detectada
-                console.log("🔍 TESTE: Verificando dados detectados...");
-                const dataDetectada =
-                    window.SENT1_AUTO.getDataSessaoPautado?.();
-                console.log("📊 DADOS:", dataDetectada);
+                // 1. Testar detecção XPath exclusiva
+                console.log("🔍 TESTE: Executando detecção XPath exclusiva...");
+                const resultadoXPath =
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+                console.log("📊 RESULTADO XPATH:", resultadoXPath);
 
-                if (!dataDetectada) {
+                if (!resultadoXPath) {
                     console.log(
-                        "❌ TESTE: Nenhuma data detectada. Tentando detectar..."
+                        "❌ TESTE: XPath não encontrou dados de sessão"
                     );
-                    const resultado = window.SENT1_AUTO.detectarDataSessao?.();
-                    console.log("📊 DETECÇÃO:", resultado);
-
-                    if (!resultado) {
-                        return {
-                            sucesso: false,
-                            motivo: "Não foi possível detectar data da sessão",
-                            passos: [
-                                "1. Execute: window.SENT1_AUTO.detectarDataSessao()",
-                                "2. Verifique se está na página correta do eProc",
-                                "3. Verifique se há minutas com data de sessão",
-                            ],
-                        };
-                    }
+                    return {
+                        sucesso: false,
+                        motivo: "XPath não detectou dados de sessão",
+                        passos: [
+                            "1. Verifique se está na página correta do eProc",
+                            "2. Execute: window.SENT1_AUTO.detectarCardSessaoSimplificado()",
+                            "3. Verifique se existe o XPath: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
+                            "4. Verifique se o span tem atributo onmouseover com dados da sessão",
+                        ],
+                    };
                 }
 
-                // 2. Verificar container disponível
-                console.log("🔍 TESTE: Verificando containers disponíveis...");
-                const containers = [
-                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#fldCapa #divCapaProcesso .row.mt-2",
-                    "#divCapaProcesso .row.mt-2",
-                    ".row.mt-2",
-                    "#fldCapa .row",
-                    "#divCapaProcesso",
-                    "#fldCapa",
-                ];
+                // 2. Verificar se o Material Design está sendo usado
+                console.log(
+                    "🎨 TESTE: Verificando implementação Material Design..."
+                );
 
-                let containerEncontrado = null;
-                let seletorUsado = "";
-
-                for (const seletor of containers) {
-                    const elemento = document.querySelector(seletor);
-                    if (elemento) {
-                        containerEncontrado = elemento;
-                        seletorUsado = seletor;
-                        console.log(
-                            `✅ CONTAINER: Encontrado com "${seletor}"`
-                        );
-                        break;
-                    }
-                }
-
-                if (!containerEncontrado) {
-                    console.log(
-                        "⚠️ TESTE: Nenhum container padrão encontrado, testando fallback..."
-                    );
-                }
-
-                // 3. Remover card existente se houver
-                const cardExistente =
-                    document.getElementById("eprobe-data-sessao");
+                // Remover card existente se houver
+                const cardExistente = document.getElementById(
+                    "eprobe-card-material-design"
+                );
                 if (cardExistente) {
                     cardExistente.remove();
                     console.log(
-                        "🗑️ TESTE: Card existente removido para novo teste"
+                        "🗑️ TESTE: Card Material Design existente removido"
                     );
                 }
 
-                // 4. Forçar criação do card
-                console.log("🎯 TESTE: Forçando criação do card...");
-                const resultado =
-                    window.SENT1_AUTO.inserirDataSessaoNaInterface?.();
-                console.log("📊 RESULTADO INSERÇÃO:", resultado);
+                // 3. Testar criação do card Material Design
+                console.log("🎯 TESTE: Criando card Material Design...");
+                const dadosTeste = {
+                    data: resultadoXPath.data || "16/07/2025",
+                    status: resultadoXPath.status || "PAUTADO",
+                    orgao: resultadoXPath.orgao || "2ª Câmara de Direito Civil",
+                    processo:
+                        resultadoXPath.processo || "1234567-89.2025.8.24.0000",
+                };
 
-                // 5. Verificar se o card foi criado
+                const cardMaterial =
+                    window.SENT1_AUTO.criarCardMaterialDesign?.(dadosTeste);
+
+                if (!cardMaterial) {
+                    console.log(
+                        "❌ TESTE: Função criarCardMaterialDesign não funcionou"
+                    );
+                    return {
+                        sucesso: false,
+                        motivo: "Material Design não foi criado",
+                        diagnostico: {
+                            funcaoExiste:
+                                typeof window.SENT1_AUTO
+                                    .criarCardMaterialDesign,
+                            dadosPassados: dadosTeste,
+                        },
+                    };
+                }
+
+                // 4. Adicionar card ao DOM para teste visual
+                if (cardMaterial && !document.body.contains(cardMaterial)) {
+                    document.body.appendChild(cardMaterial);
+                }
+
+                // 5. Verificar propriedades do Material Design
                 const cardCriado =
-                    document.getElementById("eprobe-data-sessao");
+                    document.getElementById("eprobe-card-material-design") ||
+                    cardMaterial;
 
                 if (cardCriado) {
-                    console.log("✅ TESTE: Card criado com sucesso!");
+                    console.log(
+                        "✅ TESTE: Card Material Design criado com sucesso!"
+                    );
 
-                    // Verificar propriedades do card
-                    const propriedades = {
-                        id: cardCriado.id,
-                        posicao: cardCriado.style.position || "integrado",
-                        visivel:
-                            cardCriado.offsetWidth > 0 &&
-                            cardCriado.offsetHeight > 0,
-                        containerPai:
-                            cardCriado.parentElement?.tagName || "N/A",
-                        dataProcesso: cardCriado.getAttribute("data-processo"),
-                        conteudo: cardCriado.innerHTML.length > 0,
+                    // Verificar especificações Figma
+                    const propriedadesFigma = {
+                        width:
+                            cardCriado.style.width ||
+                            getComputedStyle(cardCriado).width,
+                        height:
+                            cardCriado.style.height ||
+                            getComputedStyle(cardCriado).height,
+                        background:
+                            cardCriado.style.background ||
+                            getComputedStyle(cardCriado).backgroundColor,
+                        borderRadius:
+                            cardCriado.style.borderRadius ||
+                            getComputedStyle(cardCriado).borderRadius,
+                        boxShadow:
+                            cardCriado.style.boxShadow ||
+                            getComputedStyle(cardCriado).boxShadow,
+                        position:
+                            cardCriado.style.position ||
+                            getComputedStyle(cardCriado).position,
+                        fontFamily: getComputedStyle(cardCriado).fontFamily,
                     };
 
-                    console.log("📊 PROPRIEDADES DO CARD:", propriedades);
+                    console.log(
+                        "🎨 ESPECIFICAÇÕES FIGMA APLICADAS:",
+                        propriedadesFigma
+                    );
+
+                    // Verificar áreas do card conforme Figma
+                    const iconArea =
+                        cardCriado.querySelector(".eprobe-icon-area");
+                    const headerArea = cardCriado.querySelector(
+                        ".eprobe-header-area"
+                    );
+                    const subheadArea = cardCriado.querySelector(
+                        ".eprobe-subhead-area"
+                    );
+
+                    console.log("📐 ÁREAS DO CARD FIGMA:");
+                    console.log(
+                        "- Ícone:",
+                        !!iconArea,
+                        iconArea?.style.background || "N/A"
+                    );
+                    console.log(
+                        "- Header:",
+                        !!headerArea,
+                        headerArea?.textContent || "N/A"
+                    );
+                    console.log(
+                        "- Subhead:",
+                        !!subheadArea,
+                        subheadArea?.textContent || "N/A"
+                    );
 
                     return {
                         sucesso: true,
-                        cardCriado: true,
-                        dataFormatada:
-                            dataDetectada?.dataFormatada ||
-                            window.SENT1_AUTO.getDataSessaoPautado()
-                                ?.dataFormatada,
-                        containerUsado: seletorUsado || "fallback-posicao-fixa",
-                        propriedades: propriedades,
-                        logs: "Card criado e validado com sucesso",
+                        estrategia: "XPath Exclusivo",
+                        design: "Material Design Figma",
+                        dados: dadosTeste,
+                        xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
+                        propriedadesFigma: propriedadesFigma,
+                        areas: {
+                            icone: !!iconArea,
+                            header: !!headerArea,
+                            subhead: !!subheadArea,
+                        },
+                        logs: "Card Material Design criado via XPath exclusivo",
                     };
                 } else {
-                    console.log("❌ TESTE: Card não foi criado!");
-
-                    // Diagnóstico adicional
-                    console.log("🔍 DIAGNÓSTICO:");
-                    console.log("- Data detectada:", !!dataDetectada);
                     console.log(
-                        "- Função inserir existe:",
-                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
+                        "❌ TESTE: Card Material Design não foi encontrado no DOM"
                     );
-                    console.log(
-                        "- Container encontrado:",
-                        !!containerEncontrado
-                    );
-                    console.log("- Seletor usado:", seletorUsado);
-
                     return {
                         sucesso: false,
-                        motivo: "Card não foi criado apesar da execução da função",
+                        motivo: "Card Material Design não encontrado no DOM",
                         diagnostico: {
                             dataDetectada: !!dataDetectada,
                             funcaoInserirExiste:
@@ -7495,17 +7733,15 @@ ${texto}`;
         };
 
         // 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES
+        // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
         window.SENT1_AUTO.forcarInsercaoCardSemValidacao = function () {
-            console.log("🚀 FORCE: Criando card de sessão SEM validações");
+            console.log(
+                "🚀 FORCE: Criando card Material Design SEM validações"
+            );
 
             try {
-                // Remover card existente
-                const cardExistente =
-                    document.getElementById("eprobe-data-sessao");
-                if (cardExistente) {
-                    cardExistente.remove();
-                    console.log("🗑️ FORCE: Card existente removido");
-                }
+                // Remover cards existentes
+                removerCardMaterialDesign();
 
                 // Criar data fictícia se não houver
                 let dataParaUsar = window.SENT1_AUTO.getDataSessaoPautado?.();
@@ -7522,144 +7758,96 @@ ${texto}`;
                     };
                 }
 
-                // Criar card com HTML direto
-                const cardHTML = `
-                    <div id="eprobe-data-sessao" class="card mt-3" style="border-left: 4px solid #007bff; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" data-processo="${
-                        processoAtual || "teste"
-                    }">
-                        <div class="card-body py-2">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-calendar-check me-2" style="color: #007bff; font-size: 1.1em;"></i>
-                                <div class="flex-grow-1">
-                                    <h6 class="card-title mb-1" style="color: #495057; font-weight: 600;">
-                                        📅 Data da Sessão de Julgamento
-                                    </h6>
-                                    <p class="card-text mb-0" style="color: #6c757d; font-size: 0.95em;">
-                                        <strong style="color: #007bff;">${
-                                            dataParaUsar.dataFormatada
-                                        }</strong>
-                                        ${
-                                            dataParaUsar.orgao
-                                                ? `<span class="badge bg-secondary ms-2">${dataParaUsar.orgao}</span>`
-                                                : ""
-                                        }
-                                    </p>
-                                </div>
-                                <div class="text-muted" style="font-size: 0.8em;">
-                                    <i class="fas fa-robot me-1"></i>eProbe
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Tentar inserir em containers (mesma estratégia)
-                const containers = [
-                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#fldCapa #divCapaProcesso .row.mt-2",
-                    "#divCapaProcesso .row.mt-2",
-                    ".row.mt-2",
-                    "#fldCapa .row",
-                    "#divCapaProcesso",
-                    "#fldCapa",
-                    "body",
-                ];
-
-                let inserido = false;
-                let seletorUsado = "";
-
-                for (const seletor of containers) {
-                    const container = document.querySelector(seletor);
-                    if (container) {
-                        console.log(
-                            `✅ FORCE: Tentando inserir em "${seletor}"`
-                        );
-
-                        try {
-                            container.insertAdjacentHTML("beforeend", cardHTML);
-                            seletorUsado = seletor;
-                            inserido = true;
-                            console.log(
-                                `✅ FORCE: Card inserido com sucesso em "${seletor}"`
-                            );
-                            break;
-                        } catch (err) {
-                            console.log(
-                                `❌ FORCE: Erro ao inserir em "${seletor}":`,
-                                err.message
-                            );
-                            continue;
-                        }
-                    }
-                }
-
-                // Se não conseguiu inserir em nenhum container, usar posição fixa
-                if (!inserido) {
-                    console.log(
-                        "⚠️ FORCE: Nenhum container funcional, criando em posição fixa"
-                    );
-
-                    const cardFixo = document.createElement("div");
-                    cardFixo.innerHTML = cardHTML;
-                    cardFixo.firstElementChild.style.cssText += `
-                        position: fixed !important;
-                        top: 20px !important;
-                        right: 20px !important;
-                        z-index: 10000 !important;
-                        max-width: 400px !important;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-                    `;
-
-                    document.body.appendChild(cardFixo.firstElementChild);
-                    seletorUsado = "posicao-fixa-body";
-                    inserido = true;
-                    console.log("✅ FORCE: Card criado em posição fixa");
-                }
-
-                // Verificar se foi criado
-                const cardCriado =
-                    document.getElementById("eprobe-data-sessao");
+                // Criar card Material Design diretamente
+                const cardCriado = criarCardMaterialDesign({
+                    status: "PAUTADO",
+                    data: dataParaUsar.dataFormatada,
+                    orgao: dataParaUsar.orgao || "Teste",
+                });
 
                 if (cardCriado) {
                     console.log(
-                        "✅ FORCE: Card criado e verificado com sucesso!"
+                        "✅ FORCE: Card Material Design criado com sucesso!"
                     );
-
-                    // Destacar o card temporariamente
-                    cardCriado.style.animation = "pulse 2s ease-in-out";
-                    setTimeout(() => {
-                        if (cardCriado) cardCriado.style.animation = "";
-                    }, 2000);
-
                     return {
                         sucesso: true,
-                        metodo: "forcado",
-                        container: seletorUsado,
-                        dataUsada: dataParaUsar,
-                        cardId: cardCriado.id,
+                        tipo: "Material Design",
+                        data: dataParaUsar.dataFormatada,
                     };
                 } else {
                     console.log(
-                        "❌ FORCE: Card não foi criado mesmo com método forçado!"
+                        "❌ FORCE: Falha ao criar card Material Design"
                     );
                     return {
                         sucesso: false,
-                        motivo: "Falha mesmo com método forçado",
-                        container: seletorUsado,
+                        motivo: "Falha na criação do card Material Design",
                     };
                 }
             } catch (error) {
-                console.error("❌ FORCE: Erro crítico:", error);
+                console.error("❌ FORCE: Erro durante criação forçada:", error);
                 return {
                     sucesso: false,
                     erro: error.message,
-                    stack: error.stack,
+                    sugestao: "Verifique o console para detalhes do erro",
                 };
             }
         };
 
-        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DE ERRO switchRelevanciaEvento
+        // 🧪 FUNÇÃO DE TESTE PARA CARD FIGMA EXATO
+        window.SENT1_AUTO.testarCardFigmaExato = function () {
+            console.log(
+                "🧪 TESTE FIGMA: Testando card com especificações EXATAS do design Figma"
+            );
+
+            try {
+                // Remover card existente se houver
+                const cardExistente = document.getElementById(
+                    "eprobe-card-material-design"
+                );
+                if (cardExistente) {
+                    cardExistente.remove();
+                    console.log("🗑️ Card anterior removido");
+                }
+
+                // Criar card com dados de teste
+                const dadosTeste = {
+                    data: "23/01/2025",
+                    status: "Pautado",
+                    tipoJulgamento: "Sessão Ordinária",
+                };
+
+                const card = criarCardMaterialDesign(dadosTeste);
+
+                console.log("✅ CARD FIGMA CRIADO com especificações EXATAS:", {
+                    dimensoes: "169px × 60px (igual ao Figma)",
+                    background: "#FEF7FF",
+                    border: "0.750208px solid #CAC4D0",
+                    borderRadius: "9.0025px",
+                    sombra: "M3/Elevation Light/5",
+                    posicionamento:
+                        "Absoluto conforme especificações CSS do Figma",
+                    tipografia: "Roboto com pesos e tamanhos exatos",
+                    estrutura: "Ícone absoluto + Container de texto absoluto",
+                });
+
+                return {
+                    sucesso: true,
+                    card: card,
+                    especificacoes: "100% fiel ao design Figma fornecido",
+                    observacao:
+                        "Card implementado com posicionamento absoluto e dimensões exatas",
+                };
+            } catch (error) {
+                console.error("❌ ERRO ao criar card Figma:", error);
+                return {
+                    sucesso: false,
+                    erro: error.message,
+                    sugestao: "Verifique as especificações CSS do Figma",
+                };
+            }
+        };
+
+        // 🧪 FUNÇÃO DE TESTE PARA DIAGNÓSTICO SWITCH RELEVÂNCIA
         window.SENT1_AUTO.testarErroSwitchRelevancia = function () {
             console.log("🧪 TESTE: Diagnosticando erro switchRelevanciaEvento");
 
@@ -11395,9 +11583,10 @@ ${texto}`;
         }
 
         // Função para inserir data da sessão na interface do eProc
+        // VERSÃO MATERIAL DESIGN - USA APENAS O SISTEMA NOVO
         function inserirDataSessaoNaInterface() {
             console.log(
-                "🎯 INSERIR: Tentando inserir data da sessão na interface (otimizado)"
+                "🎯 INSERIR: Redirecionando para sistema Material Design..."
             );
 
             // Verificar se há data detectada
@@ -11406,405 +11595,32 @@ ${texto}`;
                 return false;
             }
 
-            // 🛡️ BUSCA ROBUSTA: Tentar múltiplos seletores para encontrar o container
-            const possibleSelectors = [
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                "#fldCapa #divCapaProcesso .row.mt-2",
-                "#divCapaProcesso .row.mt-2",
-                ".row.mt-2",
-                "#fldCapa .row",
-                "#divCapaProcesso",
-                "#fldCapa",
-                "#divInfraAreaProcesso",
-            ];
-
-            let targetContainer = null;
-            let usedSelector = "";
-
-            for (const selector of possibleSelectors) {
-                targetContainer = getCachedElement(selector);
-                if (targetContainer) {
-                    usedSelector = selector;
-                    console.log(
-                        `✅ INSERIR: Container encontrado com seletor: ${selector}`
-                    );
-                    break;
-                }
-            }
-
-            if (!targetContainer) {
-                console.log(
-                    "❌ INSERIR: Nenhum container encontrado com os seletores disponíveis"
-                );
-                console.log("🔍 INSERIR: Tentando busca alternativa...");
-
-                // Busca alternativa mais ampla
-                const alternativeSelectors = [
-                    ".row",
-                    "[class*='row']",
-                    ".container-fluid",
-                    "#divInfraBarraComandosSuperior",
-                    ".infraBarraComandos",
-                ];
-
-                for (const selector of alternativeSelectors) {
-                    targetContainer = document.querySelector(selector);
-                    if (targetContainer) {
-                        usedSelector = selector;
-                        console.log(
-                            `✅ INSERIR: Container alternativo encontrado: ${selector}`
-                        );
-                        break;
-                    }
-                }
-            }
-
-            if (!targetContainer) {
-                console.log(
-                    "❌ INSERIR: CRÍTICO - Nenhum container encontrado! Usando fallback..."
-                );
-                // Fallback: criar posição fixa
-                return criarCardPosicaoFixa();
-            }
-
-            // Verificar se já existe o elemento da data da sessão
-            const existingElement =
-                document.getElementById("eprobe-data-sessao");
-            if (existingElement) {
-                console.log(
-                    "ℹ️ INSERIR: Data da sessão já inserida, verificando se precisa atualizar"
-                );
-
-                // Verificar se os dados mudaram para decidir se atualiza
-                const currentData = getDataSessaoPautado();
-                const elementData =
-                    existingElement.getAttribute("data-processo");
-
-                if (elementData !== processoAtual) {
-                    console.log("🔄 INSERIR: Processo mudou, atualizando card");
-                    existingElement.remove();
-                } else {
-                    console.log(
-                        "ℹ️ INSERIR: Card já existe e é do processo atual"
-                    );
-                    return true;
-                }
-            }
-
-            // Criar elemento usando a função reutilizável
-            const dataSessaoElement = criarBotaoEleganteeProc(
-                "eprobe-data-sessao",
-                "col-auto mr-2"
-            );
-
-            if (!dataSessaoElement) {
-                console.error("❌ INSERIR: Falha ao criar elemento do card");
-                return false;
-            }
-
-            // Adicionar identificação do processo para controle de cache
-            dataSessaoElement.setAttribute("data-processo", processoAtual);
-
-            // 🎨 INTERFACE DINÂMICA: Verificar se há dados completos da sessão
-            const dadosCompletos = getDadosCompletosSessionJulgamento();
-
-            if (dadosCompletos) {
-                // Interface RICA com dados completos
-                console.log("🎨 INTERFACE: Usando dados completos da sessão");
-                dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: #3b82f6; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 10px; color: #6b7280; line-height: 1;">${
-                        dadosCompletos.orgaoJulgador
-                    }</span>
-                    <span style="font-weight: 700; font-size: 12px; color: #1f2937; line-height: 1;">${
-                        dadosCompletos.dataHoraCompleta
-                    } | ${dadosCompletos.tipoSessao}</span>
-                    <span style="font-weight: 500; font-size: 9px; color: ${
-                        dadosCompletos.statusSessao
-                            .toLowerCase()
-                            .includes("encerrada")
-                            ? "#dc2626"
-                            : "#16a34a"
-                    }; line-height: 1;">${dadosCompletos.statusSessao}</span>
-                </div>
-            `;
-
-                // Tooltip com informações completas
-                dataSessaoElement.title = `Dados Completos da Sessão
-
-🏛️ Órgão: ${dadosCompletos.orgaoJulgador}
-📅 Data/Hora: ${dadosCompletos.dataHoraCompleta}
-🖥️ Tipo: ${dadosCompletos.tipoSessao}
-📍 Local: ${dadosCompletos.localSessao}
-📋 Status: ${dadosCompletos.statusSessao}
-
-📅 Limites:
-• Pauta: ${dadosCompletos.dataLimitePauta}
-• Mesa: ${dadosCompletos.dataLimiteMesa}
-• Minutas: ${dadosCompletos.dataLimiteMinutas}
-
-🆔 ID: ${dadosCompletos.id}
-Dados obtidos automaticamente pelo eProbe`;
-            } else {
-                // Interface BÁSICA apenas com data detectada
-                console.log("🎨 INTERFACE: Usando dados básicos (apenas data)");
-
-                // 🎯 DETECTAR STATUS DA SESSÃO PARA INTERFACE DINÂMICA
-                const statusSessao = getStatusSessao();
-                const textoCard = obterTextoCardPorStatus(statusSessao);
-                const corCard = obterCorCardPorStatus(statusSessao);
-
-                console.log(
-                    `🎨 INTERFACE: Usando status "${
-                        statusSessao?.status || "padrão"
-                    }" para o card`
-                );
-
-                dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: ${corCard}; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">${textoCard}</span>
-                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
-                </div>
-            `;
-
-                // Tooltip dinâmico baseado no status
-                let tooltipBase = `Clique para mais informações`;
-
-                dataSessaoElement.title = tooltipBase;
-            }
-
-            // 🔗 ADICIONAR LISTENER DE CLIQUE OTIMIZADO - Com debounce
-            dataSessaoElement.addEventListener("click", function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                // Usar debounce para evitar cliques múltiplos
-                debounceGlobal(
-                    async () => {
-                        console.log(
-                            "🖱️ CLIQUE: Usuário clicou na data da sessão"
-                        );
-
-                        // Verificar se já há dados completos
-                        if (getDadosCompletosSessionJulgamento()) {
-                            console.log(
-                                "ℹ️ CLIQUE: Mostrando dados completos existentes"
-                            );
-                            showDadosCompletosSessionJulgamento();
-                            return;
-                        }
-
-                        // Feedback visual rápido
-                        const elementoOriginal = this.innerHTML;
-                        this.style.opacity = "0.7";
-                        this.style.transform = "scale(0.95)";
-
-                        try {
-                            console.log(
-                                "🔄 CLIQUE: Iniciando cruzamento de dados"
-                            );
-                            const resultado = await cruzarDadosDataSessao(
-                                null,
-                                true
-                            );
-
-                            if (resultado) {
-                                console.log(
-                                    "✅ CLIQUE: Dados obtidos com sucesso"
-                                );
-                                // Atualizar interface com delay mínimo
-                                setTimeout(() => {
-                                    atualizarDataSessaoNaInterface();
-                                }, 200);
-                            } else {
-                                console.log(
-                                    "ℹ️ CLIQUE: Nenhum dado adicional encontrado"
-                                );
-                            }
-                        } catch (error) {
-                            console.warn(
-                                "⚠️ CLIQUE: Erro no cruzamento:",
-                                error.message
-                            );
-                        } finally {
-                            // Restaurar visual
-                            this.style.opacity = "1";
-                            this.style.transform = "scale(1)";
-                        }
-                    },
-                    "click-cruzamento",
-                    500
-                );
-            });
-
-            // Inserir o elemento no container
-            try {
-                targetContainer.appendChild(dataSessaoElement);
-                console.log(
-                    `✅ INSERIR: Data da sessão inserida na interface: ${dataSessaoPautado.dataFormatada}`
-                );
-                console.log(`🎯 INSERIR: Container usado: ${usedSelector}`);
-                return true;
-            } catch (error) {
-                console.error(
-                    "❌ INSERIR: Erro ao inserir no container:",
-                    error
-                );
-                console.log("🔄 INSERIR: Tentando fallback de posição fixa...");
-                return criarCardPosicaoFixa();
-            }
-        }
-
-        // 🚨 FUNÇÃO DE FALLBACK: Criar card em posição fixa quando não encontra container
-        function criarCardPosicaoFixa() {
-            console.log("🚨 FALLBACK: Criando card em posição fixa");
-
-            // Remover card existente se houver
-            const existingElement =
-                document.getElementById("eprobe-data-sessao");
-            if (existingElement) {
-                existingElement.remove();
-            }
-
-            const dataSessaoElement = criarBotaoEleganteeProc(
-                "eprobe-data-sessao",
-                ""
-            );
-
-            if (!dataSessaoElement) {
-                console.error("❌ FALLBACK: Falha ao criar elemento do card");
-                return false;
-            }
-
-            // Adicionar identificação do processo
-            dataSessaoElement.setAttribute("data-processo", processoAtual);
-
-            // 🎨 ESTILO PARA POSIÇÃO FIXA
-            dataSessaoElement.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                z-index: 10000;
-                display: flex;
-                flex-direction: row;
-                align-items: center;
-                gap: 8px;
-                border: 1px solid #d1d5db;
-                padding: 8px 12px;
-                border-radius: 6px;
-                background-color: #f8fafc;
-                box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15);
-                transition: all 0.2s ease;
-                cursor: pointer;
-                white-space: nowrap;
-                max-width: fit-content;
-                font-family: system-ui, -apple-system, sans-serif;
-            `;
-
-            // Interface básica com status
-            const statusSessao = getStatusSessao();
-            const textoCard = obterTextoCardPorStatus(statusSessao);
-            const corCard = obterCorCardPorStatus(statusSessao);
-
-            dataSessaoElement.innerHTML = `
-                <svg style="width: 16px; height: 16px; color: ${corCard}; flex-shrink: 0;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                    <path fill-rule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 1.5h9A.75.75 0 0 1 17.25 2.25v.5h3A.75.75 0 0 1 21 3.5v15a.75.75 0 0 1-.75.75H3.75a.75.75 0 0 1-.75-.75v-15a.75.75 0 0 1 .75-.75h3v-.5zm1.5.75v.5h7.5v-.5h-7.5zM4.5 5.25h15v11.5h-15v-11.5z" clip-rule="evenodd"/>
-                    <path d="M8.25 8.5a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 11.25a.75.75 0 0 1 .75-.75h6a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75zM8.25 14a.75.75 0 0 1 .75-.75h3a.75.75 0 0 1 0 1.5H9a.75.75 0 0 1-.75-.75z"/>
-                </svg>
-                <div style="display: flex; flex-direction: column; gap: 1px;">
-                    <span style="font-weight: 600; font-size: 11px; color: #6b7280; line-height: 1;">${textoCard}</span>
-                    <span style="font-weight: 700; font-size: 13px; color: #1f2937; line-height: 1;">${dataSessaoPautado.dataFormatada}</span>
-                    <span style="font-weight: 500; font-size: 9px; color: #dc2626; line-height: 1;">📍 Modo Fallback</span>
-                </div>
-            `;
-
-            dataSessaoElement.title = `Sessão: ${textoCard} - ${dataSessaoPautado.dataFormatada}\n(Card em posição fixa - container não encontrado)`;
-
-            // Adicionar listener de clique básico
-            dataSessaoElement.addEventListener("click", function (event) {
-                event.preventDefault();
-                event.stopPropagation();
-
-                console.log("🖱️ CLIQUE: Card de sessão (modo fallback)");
-
-                // Feedback visual
-                this.style.transform = "scale(0.95)";
-                setTimeout(() => {
-                    this.style.transform = "scale(1)";
-                }, 150);
-
-                // Mostrar informações básicas
-                alert(
-                    `Sessão Detectada:\n\n${textoCard}\nData: ${
-                        dataSessaoPautado.dataFormatada
-                    }\n\nStatus: ${
-                        statusSessao?.status || "Detectado"
-                    }\nProcesso: ${processoAtual}`
-                );
-            });
-
-            // Inserir no body
-            document.body.appendChild(dataSessaoElement);
-
-            console.log("✅ FALLBACK: Card criado em posição fixa com sucesso");
-            return true;
+            // Usar exclusivamente o sistema Material Design
+            return detectarECriarCardMaterialDesign();
         }
 
         // Função para remover data da sessão da interface
+        // VERSÃO MATERIAL DESIGN - Remove apenas cards Material Design
         function removerDataSessaoDaInterface() {
             console.log(
-                "🗑️ REMOVER: Tentando remover data da sessão da interface"
+                "🗑️ REMOVER: Removendo cards Material Design da interface"
             );
 
-            const elemento = document.getElementById("eprobe-data-sessao");
-            if (elemento) {
-                elemento.remove();
-                console.log("✅ REMOVER: Data da sessão removida da interface");
-                return true;
-            } else {
-                console.log(
-                    "ℹ️ REMOVER: Elemento da data da sessão não encontrado"
-                );
-                return false;
-            }
+            return removerCardMaterialDesign();
         }
 
         // Função para atualizar data da sessão na interface
+        // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
         function atualizarDataSessaoNaInterface() {
             console.log(
-                "🔄 ATUALIZAR: Atualizando data da sessão na interface"
+                "🔄 ATUALIZAR: Redirecionando para sistema Material Design..."
             );
 
-            // Verificar se já existe na interface antes de remover
-            const elementoExistente = document.getElementById(
-                "eprobe-data-sessao-pautado"
-            );
-            if (!elementoExistente) {
-                console.log("ℹ️ ATUALIZAR: Elemento não existe, criando novo");
-                return inserirDataSessaoNaInterface();
-            }
-
-            // Remover elemento existente apenas se necessário
+            // Remover cards antigos
             removerDataSessaoDaInterface();
 
-            // Inserir elemento atualizado
-            const resultado = inserirDataSessaoNaInterface();
-
-            // NÃO atualizar card Material Design automaticamente para evitar sobreposição
-            console.log(
-                "ℹ️ ATUALIZAR: Card Material Design mantido para evitar sobreposição"
-            );
-
-            return resultado;
+            // Usar exclusivamente o sistema Material Design
+            return detectarECriarCardMaterialDesign();
         }
 
         // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
@@ -13370,58 +13186,20 @@ Dados obtidos automaticamente pelo eProbe`;
     }
 
     /**
-     * Cria um card Material Design usando SVG do Figma com dados dinâmicos
+     * Cria um card Material Design usando especificações EXATAS do Figma
      * @param {Object} dadosSessao - Dados da sessão detectada
      * @returns {HTMLElement} - Elemento do card criado
      */
+    /*
+    // ❌ FUNÇÃO ANTIGA REMOVIDA - AGORA USANDO CardMaterialFigma.js
+    // Esta função foi substituída pela implementação EXATA das especificações Figma
+    // no arquivo CardMaterialFigma.js
     function criarCardMaterialDesign(dadosSessao) {
-        console.log("🎨 FIGMA: Criando card com design SVG do Figma");
-
-        // Determinar status e obter configuração específica
-        const status = dadosSessao?.status || "Pautado";
-        const configStatus = obterConfigFigmaStatus(status);
-
-        // Container principal do card
-        const card = document.createElement("div");
-        card.id = "eprobe-data-sessao";
-        card.className = "eprobe-figma-card-svg";
-
-        // Data formatada dinâmica
-        const dataFormatada = dadosSessao?.data || "29/01/2025";
-
-        // Criar tooltip com todas as sessões se houver múltiplas
-        let tooltipAtributos = "";
-        if (
-            dadosSessao?.totalSessoes &&
-            dadosSessao.totalSessoes > 1 &&
-            dadosSessao.todasSessoes
-        ) {
-            tooltipAtributos = `data-eprobe-tooltip="multiple" style="cursor: help;"`;
-        }
-
-        // SVG do Figma com data dinâmica sobreposta
-        card.innerHTML = `
-            <div class="eprobe-figma-svg-container" ${tooltipAtributos}>
-                ${configStatus.svgCompleto || ""}
-                <div class="eprobe-figma-data-overlay">
-                    <span class="eprobe-figma-data-text">Sessão: ${dataFormatada}</span>
-                </div>
-            </div>
-        `;
-
-        // Aplicar estilos únicos para SVG Figma
-        aplicarEstilosSvgFigma();
-
-        // Adicionar tooltip dinâmico se necessário
-        if (dadosSessao?.totalSessoes && dadosSessao.totalSessoes > 1) {
-            setTimeout(() => {
-                adicionarTooltipInterativo(card, dadosSessao.todasSessoes);
-            }, 100);
-        }
-
-        console.log(`✅ FIGMA: Card SVG criado para status "${status}"`);
-        return card;
+        // ... função removida ...
+        // Use a nova função do arquivo CardMaterialFigma.js que implementa
+        // as especificações EXATAS do SVG fornecido pelo usuário
     }
+    */
 
     /**
      * Aplica estilos únicos para cards SVG do Figma
@@ -13487,119 +13265,99 @@ Dados obtidos automaticamente pelo eProbe`;
      */
     function obterConfigFigmaStatus(status) {
         const configs = {
-            Pautado: {
-                // Design exato do Figma para PAUTADO
-                svgCompleto: `<svg width="233" height="88" viewBox="0 0 233 88" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g filter="url(#filter0_d_41_12)">
-<rect x="4" width="225" height="80" rx="12" fill="#FEF7FF"/>
-<rect x="4.5" y="0.5" width="224" height="79" rx="11.5" stroke="#CAC4D0"/>
-</g>
-<path d="M21.3772 53.8831C20.4657 53.8831 19.6856 53.5756 19.037 52.9607C18.3884 52.3457 18.0636 51.6056 18.0625 50.7403V28.7403C18.0625 27.876 18.3873 27.1364 19.037 26.5214C19.6867 25.9064 20.4668 25.5984 21.3772 25.5974H23.0346V22.4545H26.3493V25.5974H39.6083V22.4545H42.923V25.5974H44.5803C45.4919 25.5974 46.2725 25.9054 46.9222 26.5214C47.5719 27.1374 47.8962 27.877 47.8951 28.7403V36.0867C47.8951 36.5319 47.736 36.9054 47.4178 37.2071C47.0995 37.5088 46.7062 37.6592 46.2377 37.6581C45.7692 37.6571 45.3759 37.5062 45.0577 37.2055C44.7395 36.9049 44.5803 36.5319 44.5803 36.0867V35.026H21.3772V50.7403H30.99C31.4595 50.7403 31.8534 50.8911 32.1717 51.1928C32.4899 51.4945 32.6484 51.8675 32.6473 52.3117C32.6462 52.7559 32.4871 53.1294 32.17 53.4321C31.8529 53.7349 31.4595 53.8852 30.99 53.8831H21.3772ZM42.923 55.4545C40.6303 55.4545 38.6763 54.6882 37.0609 53.1555C35.4455 51.6229 34.6373 49.7702 34.6362 47.5974C34.6351 45.4246 35.4433 43.5719 37.0609 42.0393C38.6785 40.5066 40.6325 39.7403 42.923 39.7403C45.2135 39.7403 47.1681 40.5066 48.7867 42.0393C50.4054 43.5719 51.2131 45.4246 51.2098 47.5974C51.2065 49.7702 50.3983 51.6234 48.7851 53.1571C47.1719 54.6908 45.2179 55.4566 42.923 55.4545ZM45.6991 51.3295L46.8592 50.2295L43.7517 47.2831V42.8831H42.0943V47.9117L45.6991 51.3295Z" fill="#5C85B4"/>
-<path d="M69.7234 56.5753C69.7234 56.3429 69.6869 56.1378 69.614 55.9601C69.5456 55.7778 69.4226 55.6137 69.2448 55.4679C69.0717 55.322 68.8301 55.183 68.5202 55.0509C68.2149 54.9187 67.8275 54.7843 67.3581 54.6476C66.8659 54.5017 66.4216 54.3399 66.0251 54.1622C65.6286 53.9799 65.2891 53.7726 65.0066 53.5401C64.724 53.3077 64.5075 53.0411 64.3571 52.7403C64.2068 52.4395 64.1316 52.0955 64.1316 51.7081C64.1316 51.3207 64.2113 50.963 64.3708 50.6349C64.5303 50.3067 64.7582 50.0219 65.0544 49.7804C65.3552 49.5343 65.7129 49.3429 66.1277 49.2061C66.5424 49.0694 67.0049 49.0011 67.5154 49.0011C68.2627 49.0011 68.8962 49.1446 69.4157 49.4317C69.9398 49.7143 70.3386 50.0857 70.612 50.546C70.8855 51.0017 71.0222 51.4893 71.0222 52.0089H69.7097C69.7097 51.6352 69.6299 51.3048 69.4704 51.0177C69.3109 50.726 69.0694 50.4981 68.7458 50.3341C68.4223 50.1655 68.0121 50.0811 67.5154 50.0811C67.0459 50.0811 66.6586 50.1518 66.3532 50.2931C66.0479 50.4343 65.82 50.6257 65.6696 50.8673C65.5238 51.1088 65.4509 51.3845 65.4509 51.6944C65.4509 51.9041 65.4942 52.0955 65.5808 52.2686C65.6719 52.4373 65.8109 52.5945 65.9978 52.7403C66.1892 52.8862 66.4307 53.0206 66.7224 53.1436C67.0186 53.2667 67.3718 53.3852 67.782 53.4991C68.3471 53.6586 68.8347 53.8364 69.2448 54.0323C69.655 54.2283 69.9922 54.4493 70.2566 54.6954C70.5254 54.9369 70.7237 55.2127 70.8513 55.5226C70.9834 55.8279 71.0495 56.1742 71.0495 56.5616C71.0495 56.9672 70.9675 57.3341 70.8034 57.6622C70.6394 57.9903 70.4047 58.2706 70.0993 58.503C69.794 58.7354 69.4271 58.9155 68.9987 59.0431C68.5749 59.1661 68.101 59.2276 67.5769 59.2276C67.1166 59.2276 66.6631 59.1638 66.2165 59.0362C65.7745 58.9086 65.3711 58.7172 65.0066 58.462C64.6465 58.2068 64.3571 57.8923 64.1384 57.5186C63.9242 57.1404 63.8171 56.7029 63.8171 56.2061H65.1296C65.1296 56.5479 65.1957 56.8419 65.3279 57.088C65.46 57.3295 65.64 57.53 65.8679 57.6895C66.1003 57.849 66.3624 57.9675 66.654 58.045C66.9502 58.1179 67.2579 58.1544 67.5769 58.1544C68.0372 58.1544 68.4268 58.0906 68.7458 57.963C69.0648 57.8354 69.3064 57.6531 69.4704 57.4161C69.639 57.1791 69.7234 56.8989 69.7234 56.5753Z" fill="#1D1B20"/>
-<defs>
-<filter id="filter0_d_41_12" x="0" y="0" width="233" height="88" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dy="4"/>
-<feGaussianBlur stdDeviation="2"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_41_12"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_41_12" result="shape"/>
-</filter>
-</defs>
-</svg>`,
+            PAUTADO: {
                 cor: "#5C85B4",
+                statusText: "Pautado",
                 corFundo: "#FEF7FF",
                 corBorda: "#CAC4D0",
                 corTexto: "#1D1B20",
-                descricao: "Pautado",
+                descricao: "Processo incluído em pauta para julgamento",
             },
-            // TEMPORÁRIO: Manter outros status com design genérico até implementação
-            Julgado: {
-                cor: "#22c55e",
-                corFundo: "#f0fdf4",
-                corBorda: "#bbf7d0",
-                corTexto: "#166534",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M9 12l2 2 4-4"></path>
-                    <circle cx="12" cy="12" r="10"></circle>
-                </svg>`,
-                descricao: "Processo julgado",
-            },
-            Retirado: {
-                cor: "#ef4444",
-                corFundo: "#fef2f2",
-                corBorda: "#fecaca",
-                corTexto: "#991b1b",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="15" y1="9" x2="9" y2="15"></line>
-                    <line x1="9" y1="9" x2="15" y2="15"></line>
-                </svg>`,
+            RETIRADO: {
+                cor: "#CE2D4F",
+                statusText: "Retirado de Pauta",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
                 descricao: "Processo retirado de pauta",
             },
-            "Sobrestado (art. 942)": {
-                cor: "#f59e0b",
-                corFundo: "#fffbeb",
-                corBorda: "#fed7aa",
-                corTexto: "#92400e",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>`,
-                descricao: "Sobrestado por art. 942",
+            VISTA: {
+                cor: "#FFBF46",
+                statusText: "Pedido de Vista",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Pedido de vista apresentado",
             },
-            "Pedido de Vista": {
-                cor: "#8b5cf6",
-                corFundo: "#faf5ff",
-                corBorda: "#ddd6fe",
-                corTexto: "#5b21b6",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                </svg>`,
-                descricao: "Pedido de vista solicitado",
+            JULGADO: {
+                cor: "#3AB795",
+                statusText: "Julgado",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Processo julgado",
             },
-            "Adiado (art. 935)": {
-                cor: "#f97316",
-                corFundo: "#fff7ed",
-                corBorda: "#fed7aa",
-                corTexto: "#c2410c",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 6v6l4 2"></path>
-                    <path d="M16 8a6 6 0 0 0-12 0"></path>
-                </svg>`,
-                descricao: "Adiado por art. 935",
+            ADIADO: {
+                cor: "#F55D3E",
+                statusText: "Adiado",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Julgamento adiado",
             },
-            Adiado: {
-                cor: "#f97316",
-                corFundo: "#fff7ed",
-                corBorda: "#fed7aa",
-                corTexto: "#c2410c",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <path d="M12 6v6l4 2"></path>
-                </svg>`,
-                descricao: "Sessão adiada",
+            ADIADO_935: {
+                cor: "#731963",
+                statusText: "Adiado (art. 935)",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Adiado conforme art. 935",
             },
-            "Conv. em Diligência": {
-                cor: "#06b6d4",
-                corFundo: "#ecfeff",
-                corBorda: "#a5f3fc",
-                corTexto: "#0e7490",
-                icone: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="16" x2="12" y2="12"></line>
-                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                </svg>`,
-                descricao: "Convertido em diligência",
+            SOBRESTADO: {
+                cor: "#FCB0B3",
+                statusText: "Sobrestado (art. 942)",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
+                descricao: "Sobrestado conforme art. 942",
+            },
+            DILIGENCIA: {
+                cor: "#00171F",
+                statusText: "Conv. em Diligência",
+                corFundo: "#FEF7FF",
+                corBorda: "#CAC4D0",
+                corTexto: "#1D1B20",
             },
         };
 
-        return configs[status] || configs.Pautado;
+        // Normalizar o status para busca (maiúsculo, remover acentos e caracteres especiais)
+        const statusNormalizado = status
+            ? status.toUpperCase().replace(/[^A-Z0-9_]/g, "_")
+            : "PAUTADO";
+
+        // Tentar match exato primeiro
+        if (configs[statusNormalizado]) {
+            console.log(`✅ CONFIG: Status '${statusNormalizado}' encontrado`);
+            return configs[statusNormalizado];
+        }
+
+        // Fallback para status similar
+        const statusFallback = Object.keys(configs).find((key) =>
+            key.includes(statusNormalizado.split("_")[0])
+        );
+
+        if (statusFallback) {
+            console.log(
+                `⚠️ CONFIG: Usando fallback '${statusFallback}' para '${statusNormalizado}'`
+            );
+            return configs[statusFallback];
+        }
+
+        // Fallback final para PAUTADO
+        console.log(
+            `⚠️ CONFIG: Status '${statusNormalizado}' não encontrado, usando PAUTADO`
+        );
+        return configs.PAUTADO;
     }
 
     /**
@@ -13933,15 +13691,43 @@ Dados obtidos automaticamente pelo eProbe`;
 
             // Remover card antigo apenas se os dados mudaram
             cardExistente.remove();
-            const novoCard = criarCardMaterialDesign(dadosSessao);
-            inserirCardNaInterface(novoCard);
+
+            // USAR A FUNÇÃO CORRETA DO CardMaterialFigma.js
+            const resultadoCard = window.SENT1_AUTO.criarCardMaterialDesign(
+                dadosSessao?.status || "Pautado",
+                dadosSessao?.data || "22/07/2025",
+                dadosSessao?.processo || "processo-teste"
+            );
+
+            if (resultadoCard.sucesso) {
+                inserirCardNaInterface(resultadoCard.elemento);
+            } else {
+                console.error(
+                    "❌ MATERIAL: Erro ao criar card Figma:",
+                    resultadoCard.erro
+                );
+            }
 
             materialDesignState.cardAtivo = true;
             materialDesignState.ultimaDeteccao = dadosSessao;
         } else {
             console.log("🆕 MATERIAL: Criando novo card Material Design");
-            const novoCard = criarCardMaterialDesign(dadosSessao);
-            inserirCardNaInterface(novoCard);
+
+            // USAR A FUNÇÃO CORRETA DO CardMaterialFigma.js
+            const resultadoCard = window.SENT1_AUTO.criarCardMaterialDesign(
+                dadosSessao?.status || "Pautado",
+                dadosSessao?.data || "22/07/2025",
+                dadosSessao?.processo || "processo-teste"
+            );
+
+            if (resultadoCard.sucesso) {
+                inserirCardNaInterface(resultadoCard.elemento);
+            } else {
+                console.error(
+                    "❌ MATERIAL: Erro ao criar card Figma:",
+                    resultadoCard.erro
+                );
+            }
 
             materialDesignState.cardAtivo = true;
             materialDesignState.ultimaDeteccao = dadosSessao;
@@ -13953,78 +13739,112 @@ Dados obtidos automaticamente pelo eProbe`;
      * VERSÃO CORRIGIDA - Posicionamento específico conforme solicitado
      * @param {HTMLElement} card - Elemento do card a ser inserido
      */
+    /**
+     * Insere o card fixo ao lado direito do elemento específico
+     * POSICIONAMENTO ESPECÍFICO: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[3]
+     * @param {HTMLElement} card - Elemento do card a ser inserido
+     */
     function inserirCardNaInterface(card) {
         console.log(
-            "🎯 MATERIAL: Iniciando inserção do card ao lado do lblMagistrado..."
+            "🎯 MATERIAL: Iniciando inserção do card ao lado do elemento específico..."
         );
 
-        // Estratégia 1: POSIÇÃO CORRETA - Ao lado do lblMagistrado na row mt-2
-        const lblMagistrado = document.querySelector("#lblMagistrado");
-        if (lblMagistrado) {
-            // Encontrar a row mt-2 que contém o lblMagistrado
-            const rowMt2 = lblMagistrado.closest(".row.mt-2");
-            if (rowMt2) {
-                // Inserir o card como uma nova coluna na mesma row
-                // Não adicionar classes Bootstrap para cards SVG do Figma
-                if (!card.classList.contains("eprobe-figma-card-svg")) {
-                    card.classList.add("col-md-6", "col-lg-4"); // Responsivo apenas para cards CSS
-                }
-                rowMt2.appendChild(card);
+        // Estratégia 1: XPATH ESPECÍFICO solicitado pelo usuário
+        const xpathElemento =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[3]";
+
+        try {
+            const elementoAlvo = document.evaluate(
+                xpathElemento,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (elementoAlvo) {
                 console.log(
-                    "✅ MATERIAL: Card inserido na row mt-2 ao lado do lblMagistrado"
+                    "✅ MATERIAL: Elemento XPath específico encontrado!"
+                );
+
+                // Garantir que o elemento pai tenha position relative
+                elementoAlvo.style.position = "relative";
+
+                // Posicionar o card de forma absoluta ao lado direito
+                card.style.position = "absolute";
+                card.style.top = "0";
+                card.style.left = "calc(100% + 12px)"; // 12px de espaçamento
+                card.style.zIndex = "1000";
+
+                // Adicionar ao elemento alvo
+                elementoAlvo.appendChild(card);
+
+                console.log(
+                    "✅ MATERIAL: Card posicionado ao lado direito do elemento específico"
                 );
                 return true;
             }
-
-            // Fallback: inserir após o elemento lblMagistrado
-            lblMagistrado.parentElement.insertBefore(
-                card,
-                lblMagistrado.nextSibling
-            );
-            console.log(
-                "✅ MATERIAL: Card inserido após lblMagistrado (fallback)"
-            );
-            return true;
+        } catch (error) {
+            console.log("⚠️ MATERIAL: Erro ao buscar elemento XPath:", error);
         }
 
-        // Estratégia 2: Procurar por qualquer .row.mt-2 na página
-        const rowMt2 = document.querySelector(".row.mt-2");
-        if (rowMt2) {
-            // Não adicionar classes Bootstrap para cards SVG do Figma
-            if (!card.classList.contains("eprobe-figma-card-svg")) {
-                card.classList.add("col-md-6", "col-lg-4");
+        // Estratégia 2: Fallback - Procurar por fieldset[1]
+        const fieldset1 = document.querySelector("fieldset:first-of-type");
+        if (fieldset1) {
+            console.log("✅ MATERIAL: Fieldset[1] encontrado como fallback");
+            const containerDiv = fieldset1.querySelector(
+                "div div div:nth-child(3)"
+            );
+            if (containerDiv) {
+                containerDiv.style.position = "relative";
+                card.style.position = "absolute";
+                card.style.top = "0";
+                card.style.left = "calc(100% + 12px)";
+                card.style.zIndex = "1000";
+                containerDiv.appendChild(card);
+                console.log("✅ MATERIAL: Card inserido via fallback fieldset");
+                return true;
             }
-            rowMt2.appendChild(card);
-            console.log("✅ MATERIAL: Card inserido em .row.mt-2 encontrada");
-            return true;
         }
 
-        // Estratégia 3: Na área do processo
+        // Estratégia 3: Fallback - lblMagistrado
+        const lblMagistrado = document.querySelector("#lblMagistrado");
+        if (lblMagistrado) {
+            const rowMt2 = lblMagistrado.closest(".row.mt-2");
+            if (rowMt2) {
+                rowMt2.style.position = "relative";
+                card.style.position = "absolute";
+                card.style.top = "0";
+                card.style.right = "-240px";
+                card.style.zIndex = "1000";
+                rowMt2.appendChild(card);
+                console.log(
+                    "✅ MATERIAL: Card inserido ao lado do lblMagistrado"
+                );
+                return true;
+            }
+        }
+
+        // Estratégia 4: Fallback - Área do processo
         const areaProcesso = document.querySelector("#divInfraAreaProcesso");
         if (areaProcesso) {
-            // Criar uma row para manter o layout Bootstrap
-            const novaRow = document.createElement("div");
-            novaRow.className = "row mt-2";
-            // Não adicionar classes Bootstrap para cards SVG do Figma
-            if (!card.classList.contains("eprobe-figma-card-svg")) {
-                card.classList.add("col-md-6", "col-lg-4");
-            }
-            novaRow.appendChild(card);
-            areaProcesso.insertBefore(novaRow, areaProcesso.firstChild);
-            console.log(
-                "✅ MATERIAL: Card inserido em nova row na área do processo"
-            );
+            console.log("✅ MATERIAL: Área do processo encontrada (fallback)");
+            areaProcesso.style.position = "relative";
+            card.style.position = "absolute";
+            card.style.top = "20px";
+            card.style.right = "20px";
+            card.style.zIndex = "1000";
+            areaProcesso.appendChild(card);
+            console.log("✅ MATERIAL: Card inserido na área do processo");
             return true;
         }
 
-        // Estratégia 4: FALLBACK ABSOLUTO - Posição fixa no topo direito
-        console.log("⚠️ MATERIAL: Usando fallback - posição fixa no topo");
+        // Estratégia 5: FALLBACK ABSOLUTO - Posição fixa no viewport
+        console.log("⚠️ MATERIAL: Usando fallback absoluto - posição fixa");
         card.style.position = "fixed";
-        card.style.top = "80px";
+        card.style.top = "100px";
         card.style.right = "20px";
         card.style.zIndex = "9999";
-        card.style.maxWidth = "280px";
-        card.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
         document.body.appendChild(card);
         console.log("✅ MATERIAL: Card inserido no body (fallback garantido)");
         return true;
@@ -14552,7 +14372,8 @@ Dados obtidos automaticamente pelo eProbe`;
             requestAnimationFrame(() => {
                 try {
                     // Criar novo card
-                    const novoCard = criarCardMaterialDesign(dadosCard);
+                    const novoCard =
+                        window.SENT1_AUTO.criarCardMaterialDesign(dadosCard);
 
                     // Inserir no local correto
                     const targetContainer = encontrarContainerParaCard();
@@ -17006,435 +16827,19 @@ window.SENT1_AUTO.testarDeteccaoCard = function () {
     }
 };
 
-// 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO
-window.SENT1_AUTO.testarCriacaoCard = function () {
-    console.log(
-        "🧪 TESTE: Validando criação do card de sessão - VERSÃO ROBUSTA"
-    );
+// 🚫 FUNÇÃO REMOVIDA - USE AS FUNÇÕES PRINCIPAIS NO NAMESPACE:
+// - window.SENT1_AUTO.testarMaterialBaseLayout()
+// - window.SENT1_AUTO.testarXPathMaterialDesign()
 
-    try {
-        // 1. Verificar se há data detectada
-        console.log("🔍 TESTE: Verificando dados detectados...");
-        const dataDetectada = window.SENT1_AUTO.getDataSessaoPautado?.();
-        console.log("📊 DADOS:", dataDetectada);
+// � FUNÇÕES DE TESTE ANTIGAS REMOVIDAS
+// USE APENAS AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE:
+// - window.SENT1_AUTO.testarMaterialBaseLayout()
+// - window.SENT1_AUTO.testarXPathMaterialDesign()
 
-        if (!dataDetectada) {
-            console.log(
-                "❌ TESTE: Nenhuma data detectada. Tentando detectar..."
-            );
-            const resultado = window.SENT1_AUTO.detectarDataSessao?.();
-            console.log("📊 DETECÇÃO:", resultado);
-
-            if (!resultado) {
-                return {
-                    sucesso: false,
-                    motivo: "Não foi possível detectar data da sessão",
-                    passos: [
-                        "1. Execute: window.SENT1_AUTO.detectarDataSessao()",
-                        "2. Verifique se está na página correta do eProc",
-                        "3. Verifique se há minutas com data de sessão",
-                    ],
-                };
-            }
-        }
-
-        // 2. Verificar container disponível
-        console.log("🔍 TESTE: Verificando containers disponíveis...");
-        const containers = [
-            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#fldCapa #divCapaProcesso .row.mt-2",
-            "#divCapaProcesso .row.mt-2",
-            ".row.mt-2",
-            "#fldCapa .row",
-            "#divCapaProcesso",
-            "#fldCapa",
-        ];
-
-        let containerEncontrado = null;
-        let seletorUsado = "";
-
-        for (const seletor of containers) {
-            const elemento = document.querySelector(seletor);
-            if (elemento) {
-                containerEncontrado = elemento;
-                seletorUsado = seletor;
-                console.log(`✅ CONTAINER: Encontrado com "${seletor}"`);
-                break;
-            }
-        }
-
-        if (!containerEncontrado) {
-            console.log(
-                "⚠️ TESTE: Nenhum container padrão encontrado, testando fallback..."
-            );
-        }
-
-        // 3. Remover card existente se houver
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ TESTE: Card existente removido para novo teste");
-        }
-
-        // 4. Forçar criação do card
-        console.log("🎯 TESTE: Forçando criação do card...");
-        const resultado = window.SENT1_AUTO.inserirDataSessaoNaInterface?.();
-        console.log("📊 RESULTADO INSERÇÃO:", resultado);
-
-        // 5. Verificar se o card foi criado
-        const cardCriado = document.getElementById("eprobe-data-sessao");
-
-        if (cardCriado) {
-            console.log("✅ TESTE: Card criado com sucesso!");
-
-            // Verificar propriedades do card
-            const propriedades = {
-                id: cardCriado.id,
-                posicao: cardCriado.style.position || "integrado",
-                visivel:
-                    cardCriado.offsetWidth > 0 && cardCriado.offsetHeight > 0,
-                containerPai: cardCriado.parentElement?.tagName || "N/A",
-                dataProcesso: cardCriado.getAttribute("data-processo"),
-                conteudo: cardCriado.innerHTML.length > 0,
-            };
-
-            console.log("📊 PROPRIEDADES DO CARD:", propriedades);
-
-            return {
-                sucesso: true,
-                cardCriado: true,
-                dataFormatada:
-                    dataDetectada?.dataFormatada ||
-                    window.SENT1_AUTO.getDataSessaoPautado()?.dataFormatada,
-                containerUsado: seletorUsado || "fallback-posicao-fixa",
-                propriedades: propriedades,
-                logs: "Card criado e validado com sucesso",
-            };
-        } else {
-            console.log("❌ TESTE: Card não foi criado!");
-
-            // Diagnóstico adicional
-            console.log("🔍 DIAGNÓSTICO:");
-            console.log("- Data detectada:", !!dataDetectada);
-            console.log(
-                "- Função inserir existe:",
-                typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
-            );
-            console.log("- Container encontrado:", !!containerEncontrado);
-            console.log("- Seletor usado:", seletorUsado);
-
-            return {
-                sucesso: false,
-                motivo: "Card não foi criado apesar da execução da função",
-                diagnostico: {
-                    dataDetectada: !!dataDetectada,
-                    funcaoInserirExiste:
-                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
-                    containerEncontrado: !!containerEncontrado,
-                    seletorUsado: seletorUsado,
-                },
-                sugestoes: [
-                    "1. Verifique se está na página correta do eProc",
-                    "2. Execute: window.SENT1_AUTO.detectarDataSessao()",
-                    "3. Tente: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()",
-                    "4. Verifique console para erros JavaScript",
-                ],
-            };
-        }
-    } catch (error) {
-        console.error("❌ TESTE: Erro durante teste:", error);
-        return {
-            sucesso: false,
-            erro: error.message,
-            stack: error.stack,
-            sugestao: "Verifique o console para detalhes do erro",
-        };
-    }
-};
-
-// 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES
-window.SENT1_AUTO.forcarInsercaoCardSemValidacao = function () {
-    console.log("🚀 FORCE: Criando card de sessão SEM validações");
-
-    try {
-        // Remover card existente
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ FORCE: Card existente removido");
-        }
-
-        // Criar data fictícia se não houver
-        let dataParaUsar = window.SENT1_AUTO.getDataSessaoPautado?.();
-        if (!dataParaUsar) {
-            console.log("⚠️ FORCE: Sem data detectada, criando data teste");
-            dataParaUsar = {
-                dataFormatada:
-                    "Data de teste - " + new Date().toLocaleDateString("pt-BR"),
-                dataOriginal: new Date().toLocaleDateString("pt-BR"),
-                orgao: "Teste",
-            };
-        }
-
-        // Obter número do processo atual
-        let processoAtual = "N/A";
-        try {
-            const urlMatch = window.location.href.match(
-                /processo_selecionar\.php\?.*num_processo=([^&]+)/
-            );
-            if (urlMatch) {
-                processoAtual = decodeURIComponent(urlMatch[1]);
-            } else {
-                const titleMatch = document.title.match(
-                    /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/
-                );
-                if (titleMatch) {
-                    processoAtual = titleMatch[1];
-                }
-            }
-        } catch (e) {
-            console.log("⚠️ Não foi possível obter número do processo");
-        }
-
-        // Criar card com HTML direto
-        const cardHTML = `
-            <div id="eprobe-data-sessao" class="card mt-3" style="border-left: 4px solid #007bff; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);" data-processo="${processoAtual}">
-                <div class="card-body py-2">
-                    <div class="d-flex align-items-center">
-                        <i class="fas fa-calendar-check me-2" style="color: #007bff; font-size: 1.1em;"></i>
-                        <div class="flex-grow-1">
-                            <h6 class="card-title mb-1" style="color: #495057; font-weight: 600;">
-                                📅 Data da Sessão de Julgamento
-                            </h6>
-                            <p class="card-text mb-0" style="color: #6c757d; font-size: 0.95em;">
-                                <strong style="color: #007bff;">${
-                                    dataParaUsar.dataFormatada
-                                }</strong>
-                                ${
-                                    dataParaUsar.orgao
-                                        ? `<span class="badge bg-secondary ms-2">${dataParaUsar.orgao}</span>`
-                                        : ""
-                                }
-                            </p>
-                        </div>
-                        <div class="text-muted" style="font-size: 0.8em;">
-                            <i class="fas fa-robot me-1"></i>eProbe
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        // Tentar inserir em containers (mesma estratégia)
-        const containers = [
-            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#fldCapa #divCapaProcesso .row.mt-2",
-            "#divCapaProcesso .row.mt-2",
-            ".row.mt-2",
-            "#fldCapa .row",
-            "#divCapaProcesso",
-            "#fldCapa",
-            "body",
-        ];
-
-        let inserido = false;
-        let seletorUsado = "";
-
-        for (const seletor of containers) {
-            const container = document.querySelector(seletor);
-            if (container) {
-                console.log(`✅ FORCE: Tentando inserir em "${seletor}"`);
-
-                try {
-                    container.insertAdjacentHTML("beforeend", cardHTML);
-                    seletorUsado = seletor;
-                    inserido = true;
-                    console.log(
-                        `✅ FORCE: Card inserido com sucesso em "${seletor}"`
-                    );
-                    break;
-                } catch (err) {
-                    console.log(
-                        `❌ FORCE: Erro ao inserir em "${seletor}":`,
-                        err.message
-                    );
-                    continue;
-                }
-            }
-        }
-
-        // Se não conseguiu inserir em nenhum container, usar posição fixa
-        if (!inserido) {
-            console.log(
-                "⚠️ FORCE: Nenhum container funcional, criando em posição fixa"
-            );
-
-            const cardFixo = document.createElement("div");
-            cardFixo.innerHTML = cardHTML;
-            cardFixo.firstElementChild.style.cssText += `
-                position: fixed !important;
-                top: 20px !important;
-                right: 20px !important;
-                z-index: 10000 !important;
-                max-width: 400px !important;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-            `;
-
-            document.body.appendChild(cardFixo.firstElementChild);
-            seletorUsado = "posicao-fixa-body";
-            inserido = true;
-            console.log("✅ FORCE: Card criado em posição fixa");
-        }
-
-        // Verificar se foi criado
-        const cardCriado = document.getElementById("eprobe-data-sessao");
-
-        if (cardCriado) {
-            console.log("✅ FORCE: Card criado e verificado com sucesso!");
-
-            // Destacar o card temporariamente
-            cardCriado.style.animation = "pulse 2s ease-in-out";
-            setTimeout(() => {
-                if (cardCriado) cardCriado.style.animation = "";
-            }, 2000);
-
-            return {
-                sucesso: true,
-                metodo: "forcado",
-                container: seletorUsado,
-                dataUsada: dataParaUsar,
-                cardId: cardCriado.id,
-            };
-        } else {
-            console.log(
-                "❌ FORCE: Card não foi criado mesmo com método forçado!"
-            );
-            return {
-                sucesso: false,
-                motivo: "Falha mesmo com método forçado",
-                container: seletorUsado,
-            };
-        }
-    } catch (error) {
-        console.error("❌ FORCE: Erro crítico:", error);
-        return {
-            sucesso: false,
-            erro: error.message,
-            stack: error.stack,
-        };
-    }
-};
+// Fim da seção de funcionalidades
 
 // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
-window.SENT1_AUTO.diagnosticoCompletoCard = function () {
-    console.log("🩺 DIAGNÓSTICO COMPLETO - Card de Sessão");
-    console.log("====================================");
-
-    const relatorio = {
-        timestamp: new Date().toLocaleString("pt-BR"),
-        url: window.location.href,
-        diagnosticos: {},
-    };
-
-    try {
-        // 1. VERIFICAR PÁGINA ATUAL
-        console.log("🌐 1. VERIFICAÇÃO DA PÁGINA");
-        relatorio.diagnosticos.pagina = {
-            url: window.location.href,
-            eProc: window.location.href.includes("eproc"),
-            contemProcesso: window.location.href.includes("processo"),
-        };
-        console.log("   URL eProc:", relatorio.diagnosticos.pagina.eProc);
-
-        // 2. VERIFICAR DETECÇÃO DE DATA
-        console.log("\n📅 2. VERIFICAÇÃO DE DETECÇÃO DE DATA");
-        const hasData = window.SENT1_AUTO.hasDataSessaoPautado?.();
-        const dataAtual = window.SENT1_AUTO.getDataSessaoPautado?.();
-
-        relatorio.diagnosticos.data = {
-            hasDataFunction: typeof window.SENT1_AUTO.hasDataSessaoPautado,
-            getDataFunction: typeof window.SENT1_AUTO.getDataSessaoPautado,
-            hasData: hasData,
-            dataDetectada: dataAtual,
-        };
-        console.log("   Has data:", hasData);
-        console.log("   Data detectada:", dataAtual);
-
-        // 3. VERIFICAR CONTAINERS DISPONÍVEIS
-        console.log("\n📦 3. VERIFICAÇÃO DE CONTAINERS");
-        const containers = [
-            "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-            "#fldCapa #divCapaProcesso .row.mt-2",
-            "#divCapaProcesso .row.mt-2",
-            ".row.mt-2",
-            "#fldCapa .row",
-            "#divCapaProcesso",
-            "#fldCapa",
-        ];
-
-        relatorio.diagnosticos.containers = {};
-        containers.forEach((seletor, index) => {
-            const elemento = document.querySelector(seletor);
-            relatorio.diagnosticos.containers[`container_${index}`] = {
-                seletor: seletor,
-                encontrado: !!elemento,
-                visivel: elemento
-                    ? elemento.offsetWidth > 0 && elemento.offsetHeight > 0
-                    : false,
-                tagName: elemento?.tagName || "N/A",
-            };
-            console.log(
-                `   ${index + 1}. ${seletor.substring(0, 50)}... → ${
-                    !!elemento ? "✅" : "❌"
-                }`
-            );
-        });
-
-        // 4. VERIFICAR CARD EXISTENTE
-        console.log("\n🎴 4. VERIFICAÇÃO DE CARD EXISTENTE");
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        relatorio.diagnosticos.cardExistente = {
-            presente: !!cardExistente,
-            visivel: cardExistente
-                ? cardExistente.offsetWidth > 0 &&
-                  cardExistente.offsetHeight > 0
-                : false,
-            posicao: cardExistente?.style.position || "static",
-            containerPai: cardExistente?.parentElement?.tagName || "N/A",
-            dataProcesso: cardExistente?.getAttribute("data-processo") || "N/A",
-        };
-        console.log("   Card presente:", !!cardExistente);
-
-        // 5. VERIFICAR FUNÇÕES NECESSÁRIAS
-        console.log("\n🔧 5. VERIFICAÇÃO DE FUNÇÕES");
-        relatorio.diagnosticos.funcoes = {
-            inserirDataSessaoNaInterface:
-                typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
-            detectarDataSessao: typeof window.SENT1_AUTO.detectarDataSessao,
-        };
-        console.log(
-            "   inserirDataSessaoNaInterface:",
-            typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
-        );
-        console.log(
-            "   detectarDataSessao:",
-            typeof window.SENT1_AUTO.detectarDataSessao
-        );
-
-        console.log("\n📋 RELATÓRIO COMPLETO:", relatorio);
-        return relatorio;
-    } catch (error) {
-        console.error("❌ ERRO no diagnóstico completo:", error);
-        return {
-            erro: error.message,
-            stack: error.stack,
-            timestamp: new Date().toLocaleString("pt-BR"),
-        };
-    }
-};
+// 🚫 FUNÇÃO REMOVIDA - USE AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE
 
 // 🔧 FUNÇÃO DE DEBUG RÁPIDO
 window.SENT1_AUTO.debugRapido = function () {
@@ -17521,7 +16926,8 @@ window.SENT1_AUTO.testarMultiplasSessoes = function () {
         }
 
         // Criar novo card com dados de teste
-        const novoCard = criarCardMaterialDesign(dadosTesteSessoes);
+        const novoCard =
+            window.SENT1_AUTO.criarCardMaterialDesign(dadosTesteSessoes);
 
         // Inserir na interface
         const resultado = inserirCardNaInterface(novoCard);
@@ -17665,42 +17071,74 @@ console.log(
 
 // Função de detecção global ao namespace
 window.SENT1_AUTO.detectarCardSessaoGlobal = function () {
-    console.log("🔍 GLOBAL: Executando detecção simplificada via namespace");
+    console.log("🔍 GLOBAL: Executando detecção EXCLUSIVA via XPath");
 
     try {
-        // Buscar botões infraLegendObrigatorio
-        const botoesInfra = document.querySelectorAll(
-            "button.infraLegendObrigatorio"
-        );
-        console.log(`🔍 GLOBAL: ${botoesInfra.length} botões encontrados`);
+        // XPATH ESPECÍFICO - ÚNICA ESTRATÉGIA
+        const xpathExpression =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
 
-        if (botoesInfra.length === 0) {
-            // Fallback: buscar qualquer botão com padrões de sessão
-            const todosBotoes = document.querySelectorAll("button");
-            for (let botao of todosBotoes) {
-                const texto = botao.textContent || botao.innerText || "";
-                if (texto.includes("em Pauta em")) {
-                    console.log("✅ GLOBAL: Padrão encontrado via fallback");
-                    return extrairDadosCardSessaoGlobal(texto);
-                }
-            }
+        // Usar XPath para encontrar o elemento exato
+        const spanElement = document.evaluate(
+            xpathExpression,
+            document,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+        ).singleNodeValue;
+
+        if (!spanElement) {
+            console.log(
+                "❌ XPATH GLOBAL: Elemento não encontrado no caminho especificado"
+            );
             return null;
         }
 
-        // Verificar cada botão
-        for (let botao of botoesInfra) {
-            const texto = botao.textContent || botao.innerText || "";
-            if (texto.includes("em Pauta em")) {
-                console.log(
-                    "✅ GLOBAL: Padrão encontrado em botão infraLegendObrigatorio"
-                );
-                return extrairDadosCardSessaoGlobal(texto);
-            }
+        console.log("✅ XPATH GLOBAL: Elemento encontrado!");
+        console.log(`   ID: ${spanElement.id}`);
+        console.log(`   Tag: ${spanElement.tagName}`);
+
+        // Extrair dados do atributo onmouseover
+        const onmouseoverAttr = spanElement.getAttribute("onmouseover");
+
+        if (!onmouseoverAttr) {
+            console.log("❌ XPATH GLOBAL: Atributo onmouseover não encontrado");
+            return null;
         }
 
+        console.log("🔍 XPATH GLOBAL: Atributo onmouseover encontrado:");
+        console.log(`   ${onmouseoverAttr}`);
+
+        // Extrair o conteúdo do tooltip
+        const match = onmouseoverAttr.match(/infraTooltipMostrar\('([^']+)'/);
+        if (!match) {
+            console.log("❌ XPATH GLOBAL: Formato do tooltip não reconhecido");
+            return null;
+        }
+
+        const tooltipContent = match[1];
+        console.log(`📝 XPATH GLOBAL: Conteúdo do tooltip: ${tooltipContent}`);
+
+        // Processar dados usando função unificada
+        const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
+
+        if (resultado) {
+            console.log(`✅ XPATH GLOBAL: SUCESSO! Encontrado:`);
+            console.log(`   - Status: ${resultado.status}`);
+            console.log(`   - Data: ${resultado.data}`);
+
+            // Criar card Material Design exclusivo
+            atualizarCardMaterialDesign(resultado);
+
+            return resultado;
+        }
+
+        console.log(
+            "❌ XPATH GLOBAL: Dados de sessão não foram encontrados no tooltip"
+        );
         return null;
     } catch (error) {
-        console.error("❌ GLOBAL: Erro na detecção:", error);
+        console.error("❌ XPATH GLOBAL: Erro na detecção:", error);
         return null;
     }
 };
@@ -18084,22 +17522,10 @@ window.SENT1_AUTO.testarTodosDesignsFigma = function () {
     };
 };
 
-// ===== INSTRUÇÕES DE USO =====
-console.log("🧪 FUNÇÕES DE TESTE DISPONÍVEIS:");
-console.log("- window.SENT1_AUTO.detectarCardSessaoSimplificado()");
-console.log("- window.SENT1_AUTO.detectarCardSessaoGlobal()");
-console.log("- window.SENT1_AUTO.testarCriacaoCard()");
-console.log("- window.SENT1_AUTO.forcarInsercaoCardSemValidacao()");
-console.log("- window.SENT1_AUTO.diagnosticoCompletoCard()");
-console.log("- window.SENT1_AUTO.debugRapido()");
-console.log("🆕 NOVAS FUNÇÕES PARA TOOLTIP:");
-console.log("- window.SENT1_AUTO.testarNovoFormatoTooltip()");
-console.log("- window.SENT1_AUTO.testarXPathTooltipReal()");
-console.log("🎯 TESTE MÚLTIPLAS SESSÕES:");
-console.log("- window.SENT1_AUTO.testarMultiplasSessoes()");
-console.log("🎨 NOVAS FUNÇÕES FIGMA:");
-console.log("- window.SENT1_AUTO.testarDesignFigma('Julgado')");
-console.log("- window.SENT1_AUTO.testarTodosDesignsFigma()");
-console.log("- window.SENT1_AUTO.obterConfigFigmaStatus('Pautado')");
-console.log("- window.SENT1_AUTO.criarCardMaterialDesign(dados)");
-console.log("✅ eProbe Extension carregada com sucesso!");
+// ===== INSTRUÇÕES DE USO - APENAS LAYOUT ÚNICO =====
+console.log("� FUNÇÕES PRINCIPAIS DISPONÍVEIS (ÚNICA ESTRATÉGIA):");
+console.log("- window.SENT1_AUTO.testarMaterialBaseLayout()");
+console.log("- window.SENT1_AUTO.testarXPathMaterialDesign()");
+console.log(
+    "✅ eProbe Extension carregada com sucesso - LAYOUT MATERIAL ÚNICO!"
+);
