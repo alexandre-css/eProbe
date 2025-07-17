@@ -16999,6 +16999,18 @@ ${texto}`;
     } else {
         setTimeout(inicializarMaterialDesign, 1000);
     }
+
+    // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE - ANTES DO FECHAMENTO DA IIFE
+    // Verificar se window.SENT1_AUTO existe, criar se necessário
+    if (typeof window.SENT1_AUTO === "undefined") {
+        window.SENT1_AUTO = {};
+    }
+
+    // Expor funções de teste dos cards
+    window.SENT1_AUTO.testarCardFigmaEspecificacoes =
+        testarCardFigmaEspecificacoes;
+    window.SENT1_AUTO.testarTodosCards = testarTodosCards;
+    window.SENT1_AUTO.obterConfigCardPorStatus = obterConfigCardPorStatus;
 })(); // Fechamento da IIFE principal
 
 // 🧪 FUNÇÕES DE TESTE E DEBUG - SEMPRE DISPONÍVEIS
@@ -17780,7 +17792,3 @@ window.eProbeExecucoes = {
 setInterval(() => {
     window.eProbeExecucoes.reset();
 }, 120000);
-
-// 🧪 FUNÇÃO DE TESTE - Disponível globalmente
-window.SENT1_AUTO.testarCardFigmaEspecificacoes = testarCardFigmaEspecificacoes;
-window.SENT1_AUTO.testarTodosCards = testarTodosCards;
