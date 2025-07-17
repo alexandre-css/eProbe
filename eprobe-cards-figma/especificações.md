@@ -48,6 +48,17 @@ Icon: #00171F
 
 Header (status da sessão): Conv. em Diligência
 
+**RESUMO**
+
+PAUTADO: "#5C85B4",
+RETIRADO: "#CE2D4F",
+VISTA: "#FFBF46",
+JULGADO: "#3AB795",
+ADIADO: "#F55D3E",
+ADIADO_935: "#731963",
+SOBRESTADO: "#FCB0B3",
+DILIGENCIA: "#00171F",
+
 # CARDS MATERIAL LIGHT PEQUENOS
 
 ## **SVG**
@@ -362,7 +373,7 @@ Header (status da sessão): Conv. em Diligência
 
 ## **CSS**
 
-/_ Diligência _/
+/_Diligência_/
 
 position: relative;
 width: 169px;
@@ -370,11 +381,11 @@ height: 60px;
 left: 201px;
 top: 255px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Diligência _/
+/_Card Diligência_/
 
 box-sizing: border-box;
 
@@ -384,14 +395,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Diligência LP _/
+/_Content Diligência LP_/
 
 position: absolute;
 width: 146.92px;
@@ -399,7 +410,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Diligência LP _/
+/_Dados sessão Diligência LP_/
 
 position: absolute;
 left: 26.04%;
@@ -407,7 +418,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -422,13 +433,13 @@ font-size: 12px;
 line-height: 14px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -441,13 +452,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconPreto _/
+/_IconPreto_/
 
 position: absolute;
 left: 6.51%;
@@ -457,7 +468,7 @@ bottom: 26.15%;
 
 background: #00171F;
 
-/_ Sobrestado _/
+/_Sobrestado_/
 
 position: relative;
 width: 169px;
@@ -465,11 +476,11 @@ height: 60px;
 left: 0px;
 top: 255px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Sobrestado _/
+/_Card Sobrestado_/
 
 box-sizing: border-box;
 
@@ -479,15 +490,15 @@ height: 60px;
 left: calc(50% - 169px/2);
 top: calc(50% - 60px/2);
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
 /_ M3/sys/light/outline-variant _/
 border: 0.75px solid #CAC4D0;
-/_ M3/Elevation Light/5 _/
+/_ M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15), 0px 4px 4px rgba(0, 0, 0, 0.3);
 border-radius: 9px;
 
-/_ Content Sobrestado LP _/
+/_Content Sobrestado LP_/
 
 position: absolute;
 width: 146.92px;
@@ -495,7 +506,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Sobrestado LP _/
+/_Dados sessão Sobrestado LP_/
 
 position: absolute;
 left: 26.04%;
@@ -503,7 +514,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -518,13 +529,13 @@ font-size: 12px;
 line-height: 14px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -537,13 +548,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconRosa _/
+/_IconRosa_/
 
 position: absolute;
 left: 6.51%;
@@ -553,7 +564,7 @@ bottom: 28.75%;
 
 background: #FCB0B3;
 
-/_ Adiado 935 _/
+/_Adiado 935_/
 
 position: relative;
 width: 169px;
@@ -561,11 +572,11 @@ height: 60px;
 left: 201px;
 top: 170px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Adiado 935 _/
+/_Card Adiado 935_/
 
 box-sizing: border-box;
 
@@ -575,14 +586,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Adiado 935 LP _/
+/_Content Adiado 935 LP_/
 
 position: absolute;
 width: 146.92px;
@@ -590,7 +601,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Adiado 935 LP _/
+/_Dados sessão Adiado 935 LP_/
 
 position: absolute;
 left: 26.04%;
@@ -598,7 +609,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -613,13 +624,13 @@ font-size: 13.5px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -632,13 +643,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconLaranja _/
+/_IconLaranja_/
 
 position: absolute;
 left: 6.51%;
@@ -648,7 +659,7 @@ bottom: 26.15%;
 
 background: #731963;
 
-/_ Adiado _/
+/_Adiado_/
 
 position: relative;
 width: 169px;
@@ -656,11 +667,11 @@ height: 60px;
 left: 0px;
 top: 170px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Adiado _/
+/_Card Adiado_/
 
 box-sizing: border-box;
 
@@ -670,14 +681,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Adiado LP _/
+/_Content Adiado LP_/
 
 position: absolute;
 width: 146.92px;
@@ -685,7 +696,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Adiado LP _/
+/_Dados sessão Adiado LP_/
 
 position: absolute;
 left: 26.04%;
@@ -693,7 +704,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -708,13 +719,13 @@ font-size: 13.5px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -727,13 +738,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconLaranja _/
+/_IconLaranja_/
 
 position: absolute;
 left: 6.51%;
@@ -743,7 +754,7 @@ bottom: 26.15%;
 
 background: #F55D3E;
 
-/_ Julgado _/
+/_Julgado_/
 
 position: relative;
 width: 169px;
@@ -751,11 +762,11 @@ height: 60px;
 left: 201px;
 top: 85px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Julgado _/
+/_Card Julgado_/
 
 box-sizing: border-box;
 
@@ -765,14 +776,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Julgado LP _/
+/_Content Julgado LP_/
 
 position: absolute;
 width: 146.92px;
@@ -780,7 +791,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Julgado LP _/
+/_Dados sessão Julgado LP_/
 
 position: absolute;
 left: 26.04%;
@@ -788,7 +799,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -803,13 +814,13 @@ font-size: 13.5px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -822,13 +833,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconVerde _/
+/_IconVerde_/
 
 position: absolute;
 left: 6.51%;
@@ -838,7 +849,7 @@ bottom: 26.15%;
 
 background: #3AB795;
 
-/_ Vista _/
+/_Vista_/
 
 position: relative;
 width: 169px;
@@ -846,11 +857,11 @@ height: 60px;
 left: 0px;
 top: 85px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Vista _/
+/_Card Vista_/
 
 box-sizing: border-box;
 
@@ -860,14 +871,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Vista LP _/
+/_Content Vista LP_/
 
 position: absolute;
 width: 146.92px;
@@ -875,7 +886,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Vista LP _/
+/_Dados sessão Vista LP_/
 
 position: absolute;
 left: 26.04%;
@@ -883,7 +894,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -898,13 +909,13 @@ font-size: 13.5px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -917,13 +928,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconAmarelo _/
+/_IconAmarelo_/
 
 position: absolute;
 left: 6.51%;
@@ -933,7 +944,7 @@ bottom: 26.15%;
 
 background: #FFBF46;
 
-/_ Retirado _/
+/_Retirado_/
 
 position: relative;
 width: 168.75px;
@@ -941,11 +952,11 @@ height: 60px;
 left: 201px;
 top: 0px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Retirado _/
+/_Card Retirado_/
 
 box-sizing: border-box;
 
@@ -955,14 +966,14 @@ right: 0%;
 top: 0%;
 bottom: 0%;
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.75px solid #CAC4D0;
 box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
 border-radius: 9px;
 
-/_ Content Retirado LP _/
+/_Content Retirado LP_/
 
 position: absolute;
 width: 146.76px;
@@ -970,7 +981,7 @@ height: 31.95px;
 left: calc(50% - 146.76px/2 + 0px);
 top: calc(50% - 31.95px/2 - 0.03px);
 
-/_ Dados sessão Retirado LP _/
+/_Dados sessão Retirado LP_/
 
 position: absolute;
 left: 26.07%;
@@ -978,7 +989,7 @@ right: 6.52%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.07%;
@@ -993,13 +1004,13 @@ font-size: 13.5px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375px solid #000000;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.07%;
@@ -1012,13 +1023,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.1875px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ IconVermelho _/
+/_IconVermelho_/
 
 position: absolute;
 left: 6.52%;
@@ -1028,7 +1039,7 @@ bottom: 31.1%;
 
 background: #CE2D4F;
 
-/_ Pautado _/
+/_Pautado_/
 
 position: relative;
 width: 169px;
@@ -1036,11 +1047,11 @@ height: 60px;
 left: 0px;
 top: 0px;
 
-/_ M3/Elevation Light/5 _/
+/_M3/Elevation Light/5_/
 box-shadow: 0px 8px 12px 6px rgba(0, 0, 0, 0.15);
 filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
 
-/_ Card Pautado _/
+/_Card Pautado_/
 
 box-sizing: border-box;
 
@@ -1050,14 +1061,14 @@ height: 60px;
 left: calc(50% - 169px/2);
 top: calc(50% - 60px/2);
 
-/_ M3/sys/light/surface _/
+/_M3/sys/light/surface _/
 background: #FEF7FF;
-/_ M3/sys/light/outline-variant _/
+/_ M3/sys/light/outline-variant_/
 border: 0.750208px solid #CAC4D0;
 box-shadow: 0px 3.00083px 3.00083px rgba(0, 0, 0, 0.25);
 border-radius: 9.0025px;
 
-/_ Content Pautado LP _/
+/_Content Pautado LP_/
 
 position: absolute;
 width: 146.92px;
@@ -1065,7 +1076,7 @@ height: 31.95px;
 left: calc(50% - 146.92px/2 - 0.04px);
 top: calc(50% - 31.95px/2 - 0.02px);
 
-/_ Dados sessão Pautado LP _/
+/_Dados sessão Pautado LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1073,7 +1084,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/_ Subhead LP _/
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1086,13 +1097,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/_ ou 136% _/
+/_ou 136%_/
 letter-spacing: 0.187552px;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/_ Header LP _/
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1107,13 +1118,13 @@ font-size: 13.5037px;
 line-height: 16px;
 text-align: justify;
 
-/_ M3/sys/light/on-surface _/
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 
 border: 0.375104px solid #000000;
 
-/_ IconAzul _/
+/_IconAzul_/
 
 position: absolute;
 left: 6.51%;
@@ -1155,10 +1166,10 @@ Card: 169 x 60px
 
 **CSS**
 
-/* Card Base LP
+/\* Card Base LP
 
 Cards are versatile containers, holding anything from images to headlines, supporting text, buttons, lists, and other components.
-*/
+\*/
 
 box-sizing: border-box;
 
@@ -1166,9 +1177,9 @@ position: absolute;
 width: 169px;
 height: 60px;
 
-/* M3/sys/light/surface */
+/_M3/sys/light/surface */
 background: #FEF7FF;
-/* M3/sys/light/outline-variant */
+/* M3/sys/light/outline-variant_/
 border: 0.750208px solid #CAC4D0;
 box-shadow: 0px 3.00083px 3.00083px rgba(0, 0, 0, 0.25);
 border-radius: 9.0025px;
@@ -1183,13 +1194,13 @@ border-radius: 9.0025px;
 
 **CSS**
 
-/* Icon Base LP */
+/_Icon Base LP_/
 
 position: absolute;
 width: 24.9px;
 height: 24.75px;
 
-/* IconAzul */
+/_IconAzul_/
 
 position: absolute;
 left: 0%;
@@ -1198,8 +1209,6 @@ top: 0%;
 bottom: 0%;
 
 background: #000000;
-
-
 
 ### TEXTO BASE
 
@@ -1213,7 +1222,7 @@ background: #000000;
 
 **CSS**
 
-/* Dados sessão Pautado LP */
+/_Dados sessão Pautado LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1221,7 +1230,7 @@ right: 6.55%;
 top: 23.33%;
 bottom: 23.42%;
 
-/* Subhead LP */
+/_Subhead LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1234,13 +1243,13 @@ font-style: normal;
 font-weight: 400;
 font-size: 11px;
 line-height: 15px;
-/* ou 136% */
+/_ou 136%_/
 letter-spacing: 0.187552px;
 
-/* M3/sys/light/on-surface */
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 
-/* Header LP */
+/_Header LP_/
 
 position: absolute;
 left: 26.04%;
@@ -1255,7 +1264,7 @@ font-size: 13.5037px;
 line-height: 16px;
 text-align: justify;
 
-/* M3/sys/light/on-surface */
+/_M3/sys/light/on-surface_/
 color: #1D1B20;
 font-stretch: 100;
 

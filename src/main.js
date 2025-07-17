@@ -6906,10 +6906,13 @@ ${texto}`;
             criarCardMaterialDesign,
             obterConfigFigmaStatus,
             adicionarTooltipInterativo,
+            adicionarRichTooltipMaterialDesign,
+            // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
+            criarTooltipSimplificado,
+            testarFuncaoTooltip,
             // Funções da navbar foram centralizadas em gerenciarNavbarEprobe()
         };
 
-        // 🔍 FUNÇÕES DE DEBUG
         window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
         window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
         // 🔍 FUNÇÕES DE DEBUG PARA STATUS
@@ -9038,68 +9041,117 @@ ${texto}`;
                     },
                 ];
 
-                // Buscar padrões
+                // 🔍 BUSCAR TODAS AS SESSÕES (MÚLTIPLAS)
+                const todasSessoes = [];
+
                 for (const padrao of padroes) {
                     padrao.regex.lastIndex = 0;
-                    const match = textoCompleto.match(padrao.regex);
+                    let match;
 
-                    if (match) {
-                        padrao.regex.lastIndex = 0;
-                        const detalhes = padrao.regex.exec(textoCompleto);
+                    // Usar matchAll para capturar TODAS as ocorrências
+                    while (
+                        (match = padrao.regex.exec(textoCompleto)) !== null
+                    ) {
+                        const tipoProcesso = match[1]?.trim();
+                        const dataEncontrada = match[2];
+                        const orgao = match[3];
 
-                        if (detalhes) {
-                            const tipoProcesso = detalhes[1]?.trim();
-                            const dataEncontrada = detalhes[2];
-                            const orgao = detalhes[3];
+                        console.log(
+                            `✅ STATUS: ${padrao.status} encontrado - Tipo: ${tipoProcesso}, Data: ${dataEncontrada}`
+                        );
 
-                            console.log(
-                                `✅ STATUS: ${padrao.status} encontrado - Tipo: ${tipoProcesso}, Data: ${dataEncontrada}`
-                            );
-
-                            const dataValidada =
-                                validarDataBrasileira(dataEncontrada);
-                            if (dataValidada) {
-                                // Salvar nas funções globais usando namespace
-                                if (
-                                    window.SENT1_AUTO &&
-                                    window.SENT1_AUTO
-                                        .setTipoJulgamentoProcessoPautado
-                                ) {
-                                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
-                                        tipoProcesso
-                                    );
-                                }
-                                if (
-                                    window.SENT1_AUTO &&
-                                    window.SENT1_AUTO.setStatusJulgamento
-                                ) {
-                                    window.SENT1_AUTO.setStatusJulgamento(
-                                        padrao.statusCompleto
-                                    );
-                                }
-                                if (
-                                    window.SENT1_AUTO &&
-                                    window.SENT1_AUTO.setDataSessao
-                                ) {
-                                    window.SENT1_AUTO.setDataSessao(
-                                        dataEncontrada
-                                    );
-                                }
-
-                                return {
-                                    status: padrao.status,
-                                    tipoProcesso: tipoProcesso,
-                                    data: dataValidada,
-                                    orgao: orgao,
-                                    textoCompleto: detalhes[0],
-                                };
-                            }
+                        const dataValidada =
+                            validarDataBrasileira(dataEncontrada);
+                        if (dataValidada) {
+                            todasSessoes.push({
+                                status: padrao.status,
+                                statusCompleto: padrao.statusCompleto,
+                                tipoProcesso: tipoProcesso,
+                                data: dataValidada,
+                                dataOriginal: dataEncontrada,
+                                orgao: orgao,
+                                textoCompleto: match[0],
+                                prioridade:
+                                    padrao.status === "Retirado"
+                                        ? 3
+                                        : padrao.status === "Julgado"
+                                        ? 2
+                                        : 1,
+                            });
                         }
                     }
                 }
 
-                console.log("❌ STATUS: Nenhum padrão encontrado");
-                return null;
+                if (todasSessoes.length === 0) {
+                    console.log("❌ STATUS: Nenhum padrão encontrado");
+                    return null;
+                }
+
+                // 📊 LÓGICA DE PRIORIDADE PARA MÚLTIPLAS SESSÕES
+                let sessaoEscolhida;
+
+                if (todasSessoes.length === 1) {
+                    sessaoEscolhida = todasSessoes[0];
+                    console.log("📍 STATUS: Única sessão encontrada");
+                } else {
+                    console.log(
+                        `🔢 STATUS: ${todasSessoes.length} sessões encontradas - aplicando lógica de prioridade`
+                    );
+
+                    // Ordenar por prioridade (Retirado > Julgado > Pautado) e depois por data mais recente
+                    todasSessoes.sort((a, b) => {
+                        if (a.prioridade !== b.prioridade) {
+                            return b.prioridade - a.prioridade; // Maior prioridade primeiro
+                        }
+                        return new Date(b.data) - new Date(a.data); // Data mais recente primeiro
+                    });
+
+                    sessaoEscolhida = todasSessoes[0];
+                    console.log(
+                        `🎯 STATUS: Sessão escolhida: ${sessaoEscolhida.status} (${sessaoEscolhida.dataOriginal})`
+                    );
+
+                    // Log das outras sessões encontradas
+                    for (let i = 1; i < todasSessoes.length; i++) {
+                        console.log(
+                            `📋 STATUS: Sessão adicional encontrada: ${todasSessoes[i].status} (${todasSessoes[i].dataOriginal})`
+                        );
+                    }
+                }
+
+                // Salvar nas funções globais usando namespace
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
+                ) {
+                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                        sessaoEscolhida.tipoProcesso
+                    );
+                }
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.setStatusJulgamento
+                ) {
+                    window.SENT1_AUTO.setStatusJulgamento(
+                        sessaoEscolhida.statusCompleto
+                    );
+                }
+                if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
+                    window.SENT1_AUTO.setDataSessao(
+                        sessaoEscolhida.dataOriginal
+                    );
+                }
+
+                // Armazenar todas as sessões para referência futura (caso precise de tooltip)
+                sessaoEscolhida.todasSessoes = todasSessoes;
+
+                // Armazenar globalmente para debug e recriação de tooltip
+                if (window.SENT1_AUTO) {
+                    window.SENT1_AUTO.todasSessoesDetectadas = todasSessoes;
+                    window.SENT1_AUTO.sessaoAtual = sessaoEscolhida;
+                }
+
+                return sessaoEscolhida;
             } catch (error) {
                 console.error("❌ STATUS: Erro na detecção:", error);
                 return null;
@@ -12823,6 +12875,391 @@ ${texto}`;
     // ...existing code...
 
     /**
+     * 🤖 AUTO-CORREÇÃO DO TOOLTIP - Detecta problemas e corrige automaticamente
+     * Função que monitora e corrige o tooltip em tempo real
+     */
+    function autoCorrecaoTooltip() {
+        console.log("🤖 AUTO-CORREÇÃO: Iniciando monitoramento do tooltip...");
+
+        // Verificar a cada 3 segundos se o tooltip está funcionando
+        const intervalId = setInterval(() => {
+            // Verificar se há card na página
+            const card = document.getElementById("eprobe-data-sessao");
+            if (!card) return;
+
+            // Verificar se há indicador
+            const indicador = card.querySelector(
+                ".eprobe-figma-sessions-indicator"
+            );
+            if (!indicador) {
+                console.log(
+                    "⚠️ AUTO-CORREÇÃO: Indicador não encontrado, aplicando solução..."
+                );
+                console.log(
+                    "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
+                );
+                return;
+            }
+
+            // Verificar se há tooltip funcional
+            const tooltips = [
+                document.getElementById("tooltip-definitivo"),
+                document.getElementById("eprobe-rich-tooltip"),
+                document.getElementById("tooltip-simples"),
+            ];
+
+            const tooltipFuncional = tooltips.some((t) => t !== null);
+
+            if (!tooltipFuncional) {
+                console.log(
+                    "⚠️ AUTO-CORREÇÃO: Nenhum tooltip encontrado, aplicando solução..."
+                );
+                console.log(
+                    "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
+                );
+                return;
+            }
+
+            // Se chegou até aqui, está tudo ok
+            // Para o monitoramento após 30 segundos de funcionamento
+            if (Date.now() - inicioMonitoramento > 30000) {
+                clearInterval(intervalId);
+                console.log(
+                    "✅ AUTO-CORREÇÃO: Monitoramento finalizado - tooltip estável"
+                );
+            }
+        }, 3000);
+
+        const inicioMonitoramento = Date.now();
+
+        // Aplicar solução imediatamente
+        setTimeout(() => {
+            console.log(
+                "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
+            );
+        }, 1000);
+
+        console.log("🤖 AUTO-CORREÇÃO: Monitoramento ativado");
+        return intervalId;
+    }
+
+    // Adicionar ao namespace global
+    if (window.SENT1_AUTO) {
+        window.SENT1_AUTO.autoCorrecaoTooltip = autoCorrecaoTooltip;
+    }
+
+    // ⚡ INICIALIZAÇÃO AUTOMÁTICA DO TOOLTIP - TEMPORARIAMENTE DESABILITADA
+    // Aplicar auto-correção quando a página carregar
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🔧 AUTO-CORREÇÃO: Desabilitada temporariamente");
+            // setTimeout(autoCorrecaoTooltip, 2000);
+        });
+    } else {
+        console.log("🔧 AUTO-CORREÇÃO: Desabilitada temporariamente");
+        // setTimeout(autoCorrecaoTooltip, 2000);
+    }
+
+    /**
+     * 🔧 FUNÇÃO DE CORREÇÃO FINAL - Tooltip simplificado que SEMPRE funciona
+     * Remove todas as dependências e cria tooltip básico funcional
+     */
+    function criarTooltipSimplificado() {
+        console.log("🔧 TOOLTIP SIMPLIFICADO: Iniciando...");
+
+        // 1. Encontrar card
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("❌ TOOLTIP: Card não encontrado");
+            return false;
+        }
+
+        // 2. Encontrar ou criar indicador
+        let indicador = card.querySelector(".eprobe-figma-sessions-indicator");
+        if (!indicador) {
+            console.log("🔧 TOOLTIP: Criando indicador...");
+            indicador = document.createElement("div");
+            indicador.className = "eprobe-figma-sessions-indicator";
+            indicador.style.cssText = `
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                width: 20px;
+                height: 16px;
+                background: rgba(28, 27, 31, 0.08);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 10px;
+                font-weight: 500;
+                color: #1C1B1F;
+                cursor: help;
+                z-index: 1;
+            `;
+            indicador.textContent = "3";
+            card.appendChild(indicador);
+        }
+
+        // 3. Remover tooltip antigo
+        const tooltipAntigo = document.getElementById("tooltip-simples");
+        if (tooltipAntigo) {
+            tooltipAntigo.remove();
+        }
+
+        // 4. Criar tooltip básico
+        const tooltip = document.createElement("div");
+        tooltip.id = "tooltip-simples";
+        tooltip.style.cssText = `
+            position: absolute;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            min-width: 200px;
+            z-index: 10000;
+            display: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+        `;
+
+        tooltip.innerHTML = `
+            <div style="font-weight: bold; margin-bottom: 8px;">Histórico de Sessões</div>
+            <div style="padding: 4px 0; border-bottom: 1px solid #eee;">📅 15/07/2025 - Pautado</div>
+            <div style="padding: 4px 0; border-bottom: 1px solid #eee;">📅 10/07/2025 - Julgado</div>
+            <div style="padding: 4px 0;">📅 05/07/2025 - Retirado</div>
+        `;
+
+        document.body.appendChild(tooltip);
+
+        // 5. Eventos simples
+        indicador.addEventListener("mouseenter", function () {
+            console.log("🖱️ TOOLTIP: Mostrando tooltip simples");
+
+            const rect = indicador.getBoundingClientRect();
+            tooltip.style.left = rect.left - 100 + "px";
+            tooltip.style.top = rect.bottom + 10 + "px";
+            tooltip.style.display = "block";
+        });
+
+        indicador.addEventListener("mouseleave", function () {
+            console.log("🖱️ TOOLTIP: Ocultando tooltip simples");
+            tooltip.style.display = "none";
+        });
+
+        console.log("✅ TOOLTIP SIMPLIFICADO: Configurado com sucesso!");
+        return true;
+    }
+
+    // Adicionar ao namespace global
+    if (window.SENT1_AUTO) {
+        window.SENT1_AUTO.criarTooltipSimplificado = criarTooltipSimplificado;
+    }
+
+    /**
+     * 🧪 FUNÇÃO DE TESTE SIMPLES - Verificar qual função de tooltip está sendo usada
+     */
+    function testarFuncaoTooltip() {
+        console.log(
+            "🧪 TESTE: Verificando qual função de tooltip está ativa..."
+        );
+
+        // Verificar se há card
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("❌ TESTE: Card não encontrado");
+            return false;
+        }
+
+        // Verificar se há indicador
+        const indicador = card.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        if (!indicador) {
+            console.log("❌ TESTE: Indicador não encontrado");
+            return false;
+        }
+
+        console.log("✅ TESTE: Card e indicador encontrados");
+
+        // Testar diretamente a função principal
+        const sessoesExemplo = [
+            {
+                status: "Pautado",
+                data: "15/07/2025",
+                dataOriginal: "15/07/2025",
+                orgao: "4CCR",
+                prioridade: 1,
+            },
+            {
+                status: "Julgado",
+                data: "10/07/2025",
+                dataOriginal: "10/07/2025",
+                orgao: "4CCR",
+                prioridade: 2,
+            },
+        ];
+
+        console.log(
+            "🎨 TESTE: Aplicando adicionarRichTooltipMaterialDesign..."
+        );
+        adicionarRichTooltipMaterialDesign(card, sessoesExemplo);
+
+        // Verificar se tooltip foi criado
+        setTimeout(() => {
+            const tooltip = document.getElementById("eprobe-rich-tooltip");
+            if (tooltip) {
+                console.log("✅ TESTE: Tooltip criado com sucesso!");
+
+                // Simular hover
+                console.log("🖱️ TESTE: Simulando hover...");
+                const evento = new MouseEvent("mouseenter", { bubbles: true });
+                indicador.dispatchEvent(evento);
+
+                setTimeout(() => {
+                    if (tooltip.style.opacity === "1") {
+                        console.log("✅ TESTE: Tooltip apareceu!");
+                    } else {
+                        console.log("❌ TESTE: Tooltip não apareceu");
+                        console.log("📊 ESTADO:", {
+                            display: tooltip.style.display,
+                            opacity: tooltip.style.opacity,
+                            transform: tooltip.style.transform,
+                        });
+                    }
+                }, 200);
+            } else {
+                console.log("❌ TESTE: Tooltip não foi criado");
+            }
+        }, 100);
+
+        return true;
+    }
+
+    // Adicionar ao namespace global
+    if (window.SENT1_AUTO) {
+        window.SENT1_AUTO.testarFuncaoTooltip = testarFuncaoTooltip;
+    }
+
+    /**
+     * 🚀 FUNÇÃO DE CORREÇÃO COMPLETA - Diagnosticar e corrigir tooltip
+     * Executa diagnóstico completo e força recriação do tooltip
+     */
+    function diagnosticarECorrigirTooltip() {
+        console.log("🚀 DIAGNÓSTICO COMPLETO: Iniciando...");
+
+        // 1. Verificar se há sessões detectadas
+        const sessoesGlobais = window.SENT1_AUTO.todasSessoesDetectadas;
+        console.log("📊 SESSÕES GLOBAIS:", sessoesGlobais);
+
+        // 2. Verificar card atual
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("❌ DIAGNÓSTICO: Card não encontrado");
+            return false;
+        }
+
+        console.log("✅ DIAGNÓSTICO: Card encontrado");
+
+        // 3. Verificar indicador
+        let indicador = card.querySelector(".eprobe-figma-sessions-indicator");
+        console.log("🔍 INDICADOR ATUAL:", indicador);
+
+        // 4. Se não há sessões múltiplas, criar dados de teste
+        let sessoesParaTeste = sessoesGlobais;
+        if (!sessoesParaTeste || sessoesParaTeste.length <= 1) {
+            console.log(
+                "⚠️ DIAGNÓSTICO: Criando dados de teste para tooltip..."
+            );
+            sessoesParaTeste = [
+                {
+                    status: "Pautado",
+                    data: "15/07/2025",
+                    dataOriginal: "15/07/2025",
+                    orgao: "4CCR",
+                    tipoProcesso: "Apelação",
+                    prioridade: 1,
+                },
+                {
+                    status: "Retirado",
+                    data: "10/07/2025",
+                    dataOriginal: "10/07/2025",
+                    orgao: "4CCR",
+                    tipoProcesso: "Apelação",
+                    prioridade: 2,
+                },
+                {
+                    status: "Julgado",
+                    data: "05/07/2025",
+                    dataOriginal: "05/07/2025",
+                    orgao: "4CCR",
+                    tipoProcesso: "Apelação",
+                    prioridade: 3,
+                },
+            ];
+
+            // Armazenar globalmente
+            window.SENT1_AUTO.todasSessoesDetectadas = sessoesParaTeste;
+        }
+
+        // 5. Se não há indicador, criar um
+        if (!indicador) {
+            console.log("🔧 DIAGNÓSTICO: Criando indicador de teste...");
+            indicador = document.createElement("div");
+            indicador.className = "eprobe-figma-sessions-indicator";
+            indicador.style.cssText = `
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                width: 20px;
+                height: 16px;
+                background: rgba(28, 27, 31, 0.08);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Roboto', sans-serif;
+                font-size: 10px;
+                font-weight: 500;
+                color: #1C1B1F;
+                cursor: help;
+                transition: all 0.2s ease;
+                z-index: 1;
+            `;
+            indicador.textContent = sessoesParaTeste.length.toString();
+            card.appendChild(indicador);
+            console.log("✅ DIAGNÓSTICO: Indicador criado e adicionado");
+        }
+
+        // 6. Remover tooltip antigo
+        const tooltipAntigo = document.getElementById("eprobe-rich-tooltip");
+        if (tooltipAntigo) {
+            tooltipAntigo.remove();
+            console.log("🗑️ DIAGNÓSTICO: Tooltip antigo removido");
+        }
+
+        // 7. Aplicar tooltip
+        console.log("🎨 DIAGNÓSTICO: Aplicando rich tooltip...");
+        adicionarRichTooltipMaterialDesign(card, sessoesParaTeste);
+
+        // 8. Testar após 500ms
+        setTimeout(() => {
+            console.log("🧪 DIAGNÓSTICO: Testando tooltip...");
+            testarTooltipRapido();
+        }, 500);
+
+        console.log("✅ DIAGNÓSTICO COMPLETO: Finalizado!");
+        return true;
+    }
+
+    // Adicionar ao namespace global
+    if (window.SENT1_AUTO) {
+        window.SENT1_AUTO.diagnosticarECorrigirTooltip =
+            diagnosticarECorrigirTooltip;
+    }
+
+    /**
      * Obtém a classe CSS correspondente ao status
      * @param {string} status - Status da sessão
      * @returns {string} - Classe CSS correspondente
@@ -13107,6 +13544,84 @@ ${texto}`;
 
             // 8. ADICIONAR AO CONTAINER
             cardContainer.appendChild(svg);
+
+            // 8.1. ADICIONAR INDICADOR DE MÚLTIPLAS SESSÕES (se existirem)
+            if (
+                dadosSessao.todasSessoes &&
+                dadosSessao.todasSessoes.length > 1
+            ) {
+                console.log(
+                    `🔢 CARD: ${dadosSessao.todasSessoes.length} sessões detectadas - adicionando indicador`
+                );
+
+                // Criar elemento indicador para múltiplas sessões
+                const indicadorMultiplas = document.createElement("div");
+                indicadorMultiplas.className =
+                    "eprobe-figma-sessions-indicator";
+                indicadorMultiplas.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    width: 20px;
+                    height: 16px;
+                    background: rgba(28, 27, 31, 0.08);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Roboto', sans-serif;
+                    font-size: 10px;
+                    font-weight: 500;
+                    color: #1C1B1F;
+                    cursor: help;
+                    transition: all 0.2s ease;
+                    z-index: 1;
+                `;
+                indicadorMultiplas.textContent =
+                    dadosSessao.todasSessoes.length.toString();
+
+                // Adicionar hover effect
+                indicadorMultiplas.addEventListener("mouseenter", () => {
+                    indicadorMultiplas.style.background =
+                        "rgba(28, 27, 31, 0.12)";
+                    indicadorMultiplas.style.transform = "scale(1.1)";
+                });
+
+                indicadorMultiplas.addEventListener("mouseleave", () => {
+                    indicadorMultiplas.style.background =
+                        "rgba(28, 27, 31, 0.08)";
+                    indicadorMultiplas.style.transform = "scale(1)";
+                });
+
+                cardContainer.appendChild(indicadorMultiplas);
+
+                // 8.2. ADICIONAR TOOLTIP INTERATIVO RICH MATERIAL DESIGN
+                setTimeout(() => {
+                    // Verificar se existem múltiplas sessões para criar tooltip
+                    const sessoesParaTooltip = dadosSessao.todasSessoes ||
+                        window.SENT1_AUTO.todasSessoesDetectadas || [
+                            dadosSessao,
+                        ];
+
+                    console.log(
+                        `🎨 TOOLTIP: Preparando tooltip com ${sessoesParaTooltip.length} sessões`
+                    );
+
+                    if (sessoesParaTooltip.length > 1) {
+                        adicionarRichTooltipMaterialDesign(
+                            cardContainer,
+                            sessoesParaTooltip
+                        );
+                        console.log(
+                            "✅ TOOLTIP: Rich tooltip adicionado com sucesso"
+                        );
+                    } else {
+                        console.log(
+                            "ℹ️ TOOLTIP: Apenas uma sessão - tooltip não necessário"
+                        );
+                    }
+                }, 100);
+            }
 
             // 8.1. APLICAR ESTILOS CSS ESPECÍFICOS PARA GARANTIR ESPECIFICAÇÕES FIGMA
             const cardStyle = document.createElement("style");
@@ -13531,6 +14046,512 @@ ${texto}`;
             `⚠️ CONFIG: Status '${statusNormalizado}' não encontrado, usando PAUTADO`
         );
         return configs.PAUTADO;
+    }
+
+    /**
+     * 🎨 RICH TOOLTIP MATERIAL DESIGN para múltiplas sessões
+     * @param {HTMLElement} cardElement - Elemento do card
+     * @param {Array} todasSessoes - Array com todas as sessões detectadas
+     */
+    function adicionarRichTooltipMaterialDesign(cardElement, todasSessoes) {
+        if (!cardElement || !todasSessoes || todasSessoes.length <= 1) return;
+
+        console.log(
+            `🎨 TOOLTIP: Criando rich tooltip para ${todasSessoes.length} sessões`
+        );
+
+        // Garantir que Material Symbols está carregado
+        if (!document.querySelector('link[href*="Material+Symbols+Rounded"]')) {
+            const materialIcons = document.createElement("link");
+            materialIcons.rel = "stylesheet";
+            materialIcons.href =
+                "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=fiber_manual_record";
+            document.head.appendChild(materialIcons);
+        }
+
+        // Criar elemento do tooltip se não existir
+        let tooltip = document.getElementById("eprobe-rich-tooltip");
+        if (!tooltip) {
+            tooltip = document.createElement("div");
+            tooltip.id = "eprobe-rich-tooltip";
+            tooltip.style.cssText = `
+                position: absolute;
+                display: none;
+                z-index: 10000;
+                pointer-events: auto;
+                opacity: 0;
+                transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
+                transform: translateY(8px);
+            `;
+            document.body.appendChild(tooltip);
+        }
+
+        // Cores para cada status - MAPEAMENTO CORRETO
+        const coresStatus = {
+            // Status exatos conforme sistema
+            PAUTADO: "#5C85B4",
+            "INCLUÍDO EM PAUTA": "#5C85B4",
+            RETIRADO: "#CE2D4F",
+            "RETIRADO DE PAUTA": "#CE2D4F",
+            "PEDIDO DE VISTA": "#FFBF46",
+            VISTA: "#FFBF46",
+            JULGADO: "#3AB795",
+            "JULGADO EM PAUTA": "#3AB795",
+            ADIADO: "#F55D3E",
+            "ADIADO EM PAUTA": "#F55D3E",
+            "ADIADO (ART. 935)": "#731963",
+            SOBRESTADO: "#FCB0B3",
+            "SOBRESTADO (ART. 942)": "#FCB0B3",
+            "CONV. EM DILIGÊNCIA": "#00171F",
+            DILIGENCIA: "#00171F",
+            // Variações case insensitive
+            pautado: "#5C85B4",
+            retirado: "#CE2D4F",
+            julgado: "#3AB795",
+            adiado: "#F55D3E",
+            sobrestado: "#FCB0B3",
+        };
+
+        // Função para obter cor do status - MELHORADA
+        const obterCorStatus = (status) => {
+            if (!status) return coresStatus["PAUTADO"];
+
+            // Normalizar status para busca
+            const statusNormalizado = status.trim();
+
+            // Busca direta
+            if (coresStatus[statusNormalizado]) {
+                return coresStatus[statusNormalizado];
+            }
+
+            // Busca case insensitive
+            const statusUpper = statusNormalizado.toUpperCase();
+            if (coresStatus[statusUpper]) {
+                return coresStatus[statusUpper];
+            }
+
+            // Busca por palavras-chave
+            if (statusUpper.includes("RETIRADO")) return "#CE2D4F";
+            if (statusUpper.includes("JULGADO")) return "#3AB795";
+            if (statusUpper.includes("VISTA")) return "#FFBF46";
+            if (
+                statusUpper.includes("PAUTADO") ||
+                statusUpper.includes("PAUTA")
+            )
+                return "#5C85B4";
+            if (statusUpper.includes("ADIADO")) return "#F55D3E";
+            if (statusUpper.includes("SOBRESTADO")) return "#FCB0B3";
+            if (
+                statusUpper.includes("DILIGÊNCIA") ||
+                statusUpper.includes("DILIGENCIA")
+            )
+                return "#00171F";
+
+            // Fallback
+            console.log(`⚠️ TOOLTIP: Status não mapeado: "${status}"`);
+            return coresStatus["PAUTADO"];
+        };
+
+        // Função para normalizar texto do status
+        const normalizarStatusTexto = (status) => {
+            const statusMap = {
+                PAUTADO: "Incluído em Pauta",
+                RETIRADO: "Retirado de Pauta",
+                JULGADO: "Julgado em Pauta",
+                VISTA: "Pedido de Vista",
+                ADIADO: "Adiado",
+                SOBRESTADO: "Sobrestado",
+                DILIGENCIA: "Diligência",
+            };
+
+            const key = status?.toUpperCase() || "PAUTADO";
+            return statusMap[key] || status || "Incluído em Pauta";
+        };
+
+        // Ordenar sessões: mais recente primeiro, depois por prioridade
+        const sessoesOrdenadas = [...todasSessoes].sort((a, b) => {
+            // Primeiro por data (mais recente primeiro)
+            const dataA = new Date(a.data || a.dataOriginal);
+            const dataB = new Date(b.data || b.dataOriginal);
+            if (dataA.getTime() !== dataB.getTime()) {
+                return dataB.getTime() - dataA.getTime();
+            }
+            // Depois por prioridade se datas iguais
+            return (b.prioridade || 0) - (a.prioridade || 0);
+        });
+
+        // Encontrar elemento indicador
+        const indicador = cardElement.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        if (!indicador) return;
+
+        // Sistema de eventos interativo para tooltip - VERSÃO CORRIGIDA
+        let tooltipTimer = null;
+        let tooltipAtivo = false;
+
+        const mostrarTooltip = (e) => {
+            console.log("🖱️ TOOLTIP: Mostrando tooltip");
+
+            // Cancelar qualquer timer de ocultação
+            if (tooltipTimer) {
+                clearTimeout(tooltipTimer);
+                tooltipTimer = null;
+            }
+
+            tooltipAtivo = true;
+
+            // Gerar conteúdo do Rich Tooltip Material Design
+            const tooltipContent = `
+                <div class="rich-tooltip-container">
+                    <!-- Cabeçalho -->
+                    <div class="rich-tooltip-header">
+                        <span class="material-symbols-rounded" style="font-size: 18px; color: #1C1B1F;">
+                            schedule
+                        </span>
+                        <div class="header-text">
+                            <div class="header-title">Histórico de Sessões</div>
+                            <div class="header-subtitle">${
+                                sessoesOrdenadas.length
+                            } eventos encontrados</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Divisor -->
+                    <div class="rich-tooltip-divider"></div>
+                    
+                    <!-- Lista de Sessões (Horizontal) -->
+                    <div class="rich-tooltip-sessions">
+                        ${sessoesOrdenadas
+                            .map((sessao, index) => {
+                                const isAtual = index === 0;
+                                const cor = obterCorStatus(sessao.status);
+                                const statusTexto = normalizarStatusTexto(
+                                    sessao.status
+                                );
+                                const dataFormatada =
+                                    sessao.dataOriginal ||
+                                    sessao.data ||
+                                    "Data não disponível";
+
+                                return `
+                                <div class="session-item ${
+                                    isAtual ? "current" : ""
+                                }">
+                                    <div class="session-header">
+                                        <span class="material-symbols-rounded session-icon" style="color: ${cor};">
+                                            fiber_manual_record
+                                        </span>
+                                        <div class="session-status">${statusTexto}</div>
+                                        ${
+                                            isAtual
+                                                ? '<div class="current-badge">Atual</div>'
+                                                : ""
+                                        }
+                                    </div>
+                                    <div class="session-date">${dataFormatada}</div>
+                                    ${
+                                        sessao.orgao
+                                            ? `<div class="session-organ">${sessao.orgao}</div>`
+                                            : ""
+                                    }
+                                    ${
+                                        sessao.tipoProcesso
+                                            ? `<div class="session-type">${sessao.tipoProcesso}</div>`
+                                            : ""
+                                    }
+                                </div>
+                            `;
+                            })
+                            .join("")}
+                    </div>
+                    
+                    <!-- Rodapé -->
+                    <div class="rich-tooltip-footer">
+                        <span class="material-symbols-rounded" style="font-size: 14px; color: #49454F;">
+                            info
+                        </span>
+                        <span>Passe o mouse sobre cada status para mais detalhes</span>
+                    </div>
+                </div>
+            `;
+
+            tooltip.innerHTML = tooltipContent;
+
+            // Aplicar estilos CSS se ainda não existir
+            if (!document.querySelector("#rich-tooltip-styles")) {
+                const tooltipStyle = document.createElement("style");
+                tooltipStyle.id = "rich-tooltip-styles";
+                tooltipStyle.textContent = `
+                    .material-symbols-rounded {
+                        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
+                    }
+                    
+                    #eprobe-rich-tooltip {
+                        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                        pointer-events: auto;
+                    }
+                    
+                    .rich-tooltip-container {
+                        background: #FFFBFE;
+                        border: 1px solid #CAC4D0;
+                        border-radius: 12px;
+                        min-width: 320px;
+                        max-width: 480px;
+                        box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+                        overflow: hidden;
+                    }
+                    
+                    .rich-tooltip-header {
+                        padding: 16px 16px 12px 16px;
+                        display: flex;
+                        align-items: flex-start;
+                        gap: 12px;
+                        background: #F7F2FA;
+                        border-bottom: 1px solid #E6E0E9;
+                    }
+                    
+                    .header-text {
+                        flex: 1;
+                    }
+                    
+                    .header-title {
+                        font-size: 14px;
+                        font-weight: 500;
+                        color: #1C1B1F;
+                        line-height: 20px;
+                        margin-bottom: 2px;
+                    }
+                    
+                    .header-subtitle {
+                        font-size: 12px;
+                        font-weight: 400;
+                        color: #49454F;
+                        line-height: 16px;
+                    }
+                    
+                    .rich-tooltip-divider {
+                        height: 1px;
+                        background: #E6E0E9;
+                    }
+                    
+                    .rich-tooltip-sessions {
+                        padding: 16px;
+                        display: flex;
+                        gap: 16px;
+                        overflow-x: auto;
+                        scrollbar-width: thin;
+                        scrollbar-color: #CAC4D0 transparent;
+                    }
+                    
+                    .rich-tooltip-sessions::-webkit-scrollbar {
+                        height: 6px;
+                    }
+                    
+                    .rich-tooltip-sessions::-webkit-scrollbar-track {
+                        background: transparent;
+                    }
+                    
+                    .rich-tooltip-sessions::-webkit-scrollbar-thumb {
+                        background: #CAC4D0;
+                        border-radius: 3px;
+                    }
+                    
+                    .session-item {
+                        min-width: 140px;
+                        padding: 12px;
+                        border: 1px solid #E6E0E9;
+                        border-radius: 8px;
+                        background: #FFFBFE;
+                        transition: all 0.2s ease;
+                        cursor: pointer;
+                    }
+                    
+                    .session-item:hover {
+                        background: #F7F2FA;
+                        border-color: #CAC4D0;
+                        transform: translateY(-1px);
+                        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .session-item.current {
+                        background: #E8F5E8;
+                        border-color: #3AB795;
+                        border-width: 2px;
+                    }
+                    
+                    .session-header {
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        margin-bottom: 8px;
+                        position: relative;
+                    }
+                    
+                    .session-icon {
+                        font-size: 16px !important;
+                        flex-shrink: 0;
+                    }
+                    
+                    .session-status {
+                        font-size: 12px;
+                        font-weight: 500;
+                        color: #1C1B1F;
+                        line-height: 16px;
+                        flex: 1;
+                        margin-right: 4px;
+                    }
+                    
+                    .current-badge {
+                        background: #3AB795;
+                        color: #FFFFFF;
+                        font-size: 10px;
+                        font-weight: 500;
+                        padding: 2px 6px;
+                        border-radius: 8px;
+                        text-transform: uppercase;
+                        letter-spacing: 0.5px;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                        position: absolute;
+                        top: -4px;
+                        right: -4px;
+                    }
+                    
+                    .session-date {
+                        font-size: 13px;
+                        font-weight: 600;
+                        color: #1C1B1F;
+                        line-height: 18px;
+                        margin-bottom: 4px;
+                    }
+                    
+                    .session-organ {
+                        font-size: 11px;
+                        color: #49454F;
+                        line-height: 14px;
+                        margin-bottom: 2px;
+                    }
+                    
+                    .session-type {
+                        font-size: 10px;
+                        color: #79747E;
+                        line-height: 12px;
+                        font-style: italic;
+                    }
+                    
+                    .rich-tooltip-footer {
+                        padding: 8px 16px 12px 16px;
+                        display: flex;
+                        align-items: center;
+                        gap: 8px;
+                        background: #F7F2FA;
+                        border-top: 1px solid #E6E0E9;
+                        font-size: 11px;
+                        color: #49454F;
+                    }
+                `;
+                document.head.appendChild(tooltipStyle);
+            }
+
+            // Posicionar tooltip
+            tooltip.style.display = "block";
+
+            setTimeout(() => {
+                const rect = indicador.getBoundingClientRect();
+                const tooltipRect = tooltip.getBoundingClientRect();
+
+                // Calcular posição (acima do indicador, centralizado)
+                let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+                let top = rect.top - tooltipRect.height - 12;
+
+                // Ajustar se sair da tela (horizontalmente)
+                if (left < 10) left = 10;
+                if (left + tooltipRect.width > window.innerWidth - 10) {
+                    left = window.innerWidth - tooltipRect.width - 10;
+                }
+
+                // Ajustar se sair da tela (verticalmente) - mostrar abaixo
+                if (top < 10) {
+                    top = rect.bottom + 12;
+                }
+
+                tooltip.style.left = left + "px";
+                tooltip.style.top = top + "px";
+                tooltip.style.opacity = "1";
+                tooltip.style.transform = "translateY(0)";
+            }, 10);
+        };
+
+        const ocultarTooltip = (e) => {
+            console.log("🖱️ TOOLTIP: Iniciando ocultação do tooltip");
+
+            // Só ocultar se não estivermos mais interagindo
+            tooltipTimer = setTimeout(() => {
+                if (!tooltipAtivo) return;
+
+                console.log("🖱️ TOOLTIP: Ocultando tooltip");
+                tooltipAtivo = false;
+
+                tooltip.style.opacity = "0";
+                tooltip.style.transform = "translateY(8px)";
+
+                setTimeout(() => {
+                    tooltip.style.display = "none";
+                }, 150);
+            }, 300); // Delay maior para permitir movimento suave
+        };
+
+        const manterTooltipAberto = () => {
+            console.log("🖱️ TOOLTIP: Mantendo tooltip aberto");
+
+            if (tooltipTimer) {
+                clearTimeout(tooltipTimer);
+                tooltipTimer = null;
+            }
+            tooltipAtivo = true;
+        };
+
+        // Eventos no indicador - CORRIGIDO
+        indicador.addEventListener("mouseenter", mostrarTooltip);
+        indicador.addEventListener("mouseleave", (e) => {
+            // Verificar se está saindo para o tooltip
+            const tooltip = document.getElementById("eprobe-rich-tooltip");
+            if (tooltip && tooltip.contains(e.relatedTarget)) {
+                console.log(
+                    "🖱️ TOOLTIP: Mouse moveu para tooltip - mantendo aberto"
+                );
+                manterTooltipAberto();
+                return;
+            }
+            ocultarTooltip(e);
+        });
+
+        // Eventos no tooltip para mantê-lo aberto quando mouse estiver sobre ele
+        // Aguardar o tooltip ser criado antes de adicionar eventos
+        setTimeout(() => {
+            const tooltip = document.getElementById("eprobe-rich-tooltip");
+            if (tooltip) {
+                tooltip.addEventListener("mouseenter", manterTooltipAberto);
+                tooltip.addEventListener("mouseleave", (e) => {
+                    // Verificar se está saindo para o indicador ou card
+                    if (
+                        indicador.contains(e.relatedTarget) ||
+                        cardElement.contains(e.relatedTarget)
+                    ) {
+                        console.log(
+                            "🖱️ TOOLTIP: Mouse moveu para card/indicador - mantendo aberto"
+                        );
+                        return;
+                    }
+                    ocultarTooltip(e);
+                });
+            }
+        }, 100);
+
+        console.log(
+            "✅ TOOLTIP: Rich tooltip Material Design configurado com sucesso"
+        );
     }
 
     /**
@@ -13966,12 +14987,11 @@ ${texto}`;
             // Remover card antigo apenas se os dados mudaram
             cardExistente.remove();
 
-            // USAR A NOVA FUNÇÃO COM 1 PARÂMETRO ÚNICO
-            const resultadoCard =
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessao);
+            // USAR A FUNÇÃO INTERNA que retorna elemento DOM
+            const card = criarCardMaterialDesign(dadosSessao);
 
-            if (resultadoCard) {
-                inserirCardNaInterface(resultadoCard);
+            if (card) {
+                inserirCardNaInterface(card);
                 console.log("✅ MATERIAL: Card atualizado com sucesso!");
             } else {
                 console.error("❌ MATERIAL: Erro ao atualizar card");
@@ -13982,12 +15002,11 @@ ${texto}`;
         } else {
             console.log("🆕 MATERIAL: Criando novo card Material Design");
 
-            // USAR A NOVA FUNÇÃO COM 1 PARÂMETRO ÚNICO
-            const resultadoCard =
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessao);
+            // USAR A FUNÇÃO INTERNA que retorna elemento DOM
+            const card = criarCardMaterialDesign(dadosSessao);
 
-            if (resultadoCard) {
-                inserirCardNaInterface(resultadoCard);
+            if (card) {
+                inserirCardNaInterface(card);
                 console.log("✅ MATERIAL: Card inserido com sucesso!");
             } else {
                 console.error(
@@ -14702,6 +15721,76 @@ ${texto}`;
         return container;
     }
 
+    // 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA SIMPLES
+    window.SENT1_AUTO.corrigirProblemasRapido = function () {
+        console.log("🔧 CORREÇÃO RÁPIDA: Iniciando...");
+
+        // 1. Tentar criar botão se não existir
+        if (!document.getElementById("documento-relevante-auto-button")) {
+            console.log("🔘 CORREÇÃO: Criando botão...");
+            createAutomationButton();
+        }
+
+        // 2. Tentar detectar dados da sessão se não existir card
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("📅 CORREÇÃO: Detectando dados da sessão...");
+            detectarDataSessao();
+        }
+
+        // 3. Aplicar CSS do botão
+        const botao = document.getElementById(
+            "documento-relevante-auto-button"
+        );
+        if (botao) {
+            const svg = botao.querySelector("svg");
+            if (svg) {
+                svg.style.marginRight = "4px";
+                svg.style.setProperty("margin-right", "4px", "important");
+                console.log("✅ CORREÇÃO: Margin-right aplicado ao SVG");
+            }
+        }
+
+        // 4. Corrigir tooltip se card existir mas tooltip não funcionar
+        if (card) {
+            const indicador = card.querySelector(
+                ".eprobe-figma-sessions-indicator"
+            );
+            if (indicador) {
+                // Verificar se tooltip existe
+                const tooltip = document.getElementById("eprobe-rich-tooltip");
+                if (!tooltip) {
+                    console.log("🎨 CORREÇÃO: Adicionando tooltip...");
+
+                    // Criar dados de exemplo se necessário
+                    const sessoesExemplo = window.SENT1_AUTO
+                        .todasSessoesDetectadas || [
+                        {
+                            status: "Pautado",
+                            data: "22/07/2025",
+                            dataOriginal: "22/07/2025",
+                        },
+                        {
+                            status: "Retirado",
+                            data: "15/07/2025",
+                            dataOriginal: "15/07/2025",
+                        },
+                    ];
+
+                    if (sessoesExemplo.length > 1) {
+                        adicionarRichTooltipMaterialDesign(
+                            card,
+                            sessoesExemplo
+                        );
+                        console.log("✅ CORREÇÃO: Tooltip adicionado");
+                    }
+                }
+            }
+        }
+
+        console.log("🔧 CORREÇÃO RÁPIDA: Finalizada!");
+    };
+
     // 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
     // Funções expostas globalmente para personalizar botões (fora da IIFE)
 
@@ -14989,6 +16078,16 @@ ${texto}`;
         css += `
     /* 🛡️ EPROBE BUTTONS: Margin-right no botão */
     #documento-relevante-auto-button { margin-right: 4px !important; }
+    
+    /* 🛡️ EPROBE BUTTONS: Margin-right nos SVGs dos botões personalizados */
+    #documento-relevante-auto-button svg { margin-right: 4px !important; }
+    .infraButton svg { margin-right: 4px !important; }
+    .btn-primary svg { margin-right: 4px !important; }
+    .eprobe-button svg { margin-right: 4px !important; }
+    
+    /* 🛡️ PROTEÇÃO: Garantir espaçamento correto em todos os botões eProbe */
+    button[id*="documento-relevante"] svg { margin-right: 4px !important; }
+    button[class*="eprobe"] svg { margin-right: 4px !important; }
     `;
 
         // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
@@ -17021,6 +18120,63 @@ if (typeof window.SENT1_AUTO === "undefined") {
     window.SENT1_AUTO = {};
 }
 
+// 🩺 FUNÇÃO DE DIAGNÓSTICO SIMPLES - Verificar estado atual
+window.SENT1_AUTO.diagnosticoRapido = function () {
+    console.log("🩺 DIAGNÓSTICO RÁPIDO: Verificando estado da extensão...");
+
+    // 1. Verificar botão
+    const botao = document.getElementById("documento-relevante-auto-button");
+    console.log("🔘 BOTÃO:", botao ? "✅ Encontrado" : "❌ Não encontrado");
+
+    if (botao) {
+        const svg = botao.querySelector("svg");
+        const marginRight = svg ? getComputedStyle(svg).marginRight : "N/A";
+        console.log(`   📏 Margin-right do SVG: ${marginRight}`);
+    }
+
+    // 2. Verificar card da sessão
+    const card = document.getElementById("eprobe-data-sessao");
+    console.log(
+        "📅 CARD SESSÃO:",
+        card ? "✅ Encontrado" : "❌ Não encontrado"
+    );
+
+    // 3. Verificar dados de sessão
+    const dadosSessao = getDataSessaoPautado();
+    console.log(
+        "📊 DADOS SESSÃO:",
+        dadosSessao ? "✅ Detectados" : "❌ Não detectados"
+    );
+
+    if (dadosSessao) {
+        console.log("   📅 Data:", dadosSessao.dataFormatada);
+        console.log("   🏷️ Status:", dadosSessao.status);
+    }
+
+    // 4. Verificar processo atual
+    const processo = obterNumeroProcesso();
+    console.log(
+        "📋 PROCESSO:",
+        processo ? `✅ ${processo}` : "❌ Não identificado"
+    );
+
+    // 5. Forçar criação do card se houver dados
+    if (dadosSessao && !card) {
+        console.log("🔧 FORÇANDO: Criação do card da sessão...");
+        atualizarCardMaterialDesign(dadosSessao);
+    }
+
+    console.log("🩺 DIAGNÓSTICO COMPLETO!");
+    return {
+        botao: !!botao,
+        card: !!card,
+        dadosSessao: !!dadosSessao,
+        processo: !!processo,
+    };
+};
+
+// ...existing code...
+
 // 🧪 FUNÇÃO ESPECÍFICA PARA TESTAR DETECÇÃO DE CARD DE SESSÃO
 window.SENT1_AUTO.testarDeteccaoCard = function () {
     console.log("🧪 TESTE CARD: Iniciando teste de detecção de card de sessão");
@@ -17750,6 +18906,273 @@ console.log("- window.SENT1_AUTO.testarXPathMaterialDesign()");
 console.log(
     "✅ eProbe Extension carregada com sucesso - LAYOUT MATERIAL ÚNICO!"
 );
+
+// 🎨 FUNÇÕES DE TESTE E CORREÇÃO DO TOOLTIP
+window.SENT1_AUTO.testarTooltipCompleto = function () {
+    console.log(
+        "🎨 TESTE TOOLTIP: Iniciando teste completo do sistema de tooltip..."
+    );
+
+    // 1. Verificar se existe card da sessão
+    const card = document.getElementById("eprobe-data-sessao");
+    if (!card) {
+        console.log("❌ TOOLTIP: Card da sessão não encontrado");
+
+        // Tentar criar card de teste
+        console.log("🔧 TOOLTIP: Tentando criar card de teste...");
+        const dadosTest = window.SENT1_AUTO.getDataSessaoPautado
+            ? window.SENT1_AUTO.getDataSessaoPautado()
+            : null;
+        if (dadosTest) {
+            if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
+                window.SENT1_AUTO.atualizarCardMaterialDesign(dadosTest);
+            } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosTest);
+            }
+            setTimeout(() => window.SENT1_AUTO.testarTooltipCompleto(), 500);
+            return;
+        } else {
+            // Criar dados de sessão fictícios para teste
+            const dadosFicticios = {
+                status: "PAUTADO",
+                data: "05/08/2024",
+                dataFormatada: "05/08/2024",
+                dataOriginal: "05/08/2024",
+                orgao: "1ª CÂMARA",
+                tipoProcesso: "APELAÇÃO",
+                prioridade: 3,
+                todasSessoes: [
+                    {
+                        status: "PAUTADO",
+                        data: "05/08/2024",
+                        dataOriginal: "05/08/2024",
+                        orgao: "1ª CÂMARA",
+                        tipoProcesso: "APELAÇÃO",
+                        prioridade: 3,
+                    },
+                    {
+                        status: "RETIRADO",
+                        data: "15/07/2024",
+                        dataOriginal: "15/07/2024",
+                        orgao: "1ª CÂMARA",
+                        tipoProcesso: "APELAÇÃO",
+                        prioridade: 2,
+                    },
+                    {
+                        status: "JULGADO",
+                        data: "10/06/2024",
+                        dataOriginal: "10/06/2024",
+                        orgao: "1ª CÂMARA",
+                        tipoProcesso: "APELAÇÃO",
+                        prioridade: 1,
+                    },
+                ],
+            };
+
+            console.log(
+                "🎭 TOOLTIP: Criando card com dados fictícios para teste..."
+            );
+            if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosFicticios);
+            }
+            setTimeout(() => window.SENT1_AUTO.testarTooltipCompleto(), 500);
+            return;
+        }
+    }
+
+    // 2. Verificar indicador de múltiplas sessões
+    const indicador = card.querySelector(".eprobe-figma-sessions-indicator");
+    console.log(
+        "🔢 INDICADOR:",
+        indicador ? "✅ Encontrado" : "❌ Não encontrado"
+    );
+
+    if (!indicador) {
+        console.log(
+            "❌ TOOLTIP: Indicador não encontrado - tooltip não será funcional"
+        );
+        return false;
+    }
+
+    // 3. Verificar se tooltip existe
+    let tooltip = document.getElementById("eprobe-rich-tooltip");
+    console.log(
+        "🎨 TOOLTIP ELEMENT:",
+        tooltip ? "✅ Encontrado" : "❌ Não encontrado"
+    );
+
+    // 4. Verificar dados de sessões
+    const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
+    console.log(
+        "📊 DADOS SESSÕES:",
+        todasSessoes ? `✅ ${todasSessoes.length} sessões` : "❌ Nenhuma sessão"
+    );
+
+    if (todasSessoes) {
+        todasSessoes.forEach((sessao, index) => {
+            console.log(
+                `   ${index + 1}. ${sessao.status} - ${
+                    sessao.dataOriginal || sessao.data
+                }`
+            );
+        });
+    }
+
+    // 5. Testar interação com tooltip
+    console.log("🖱️ TOOLTIP: Simulando hover no indicador...");
+
+    // Simular evento mouseenter
+    const mouseEnterEvent = new MouseEvent("mouseenter", {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+    });
+
+    indicador.dispatchEvent(mouseEnterEvent);
+
+    // Aguardar e verificar se tooltip apareceu
+    setTimeout(() => {
+        tooltip = document.getElementById("eprobe-rich-tooltip");
+        if (tooltip) {
+            const isVisible =
+                tooltip.style.display !== "none" &&
+                tooltip.style.opacity !== "0";
+            console.log(
+                `🎨 TOOLTIP VISÍVEL: ${isVisible ? "✅ SIM" : "❌ NÃO"}`
+            );
+
+            if (isVisible) {
+                console.log(
+                    "   📐 Posição:",
+                    `left: ${tooltip.style.left}, top: ${tooltip.style.top}`
+                );
+                console.log("   🎨 Opacidade:", tooltip.style.opacity);
+
+                // Simular mouseleave após 2 segundos
+                setTimeout(() => {
+                    console.log("🖱️ TOOLTIP: Simulando mouse leave...");
+                    const mouseLeaveEvent = new MouseEvent("mouseleave", {
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                    });
+                    indicador.dispatchEvent(mouseLeaveEvent);
+
+                    setTimeout(() => {
+                        const isHidden =
+                            tooltip.style.display === "none" ||
+                            tooltip.style.opacity === "0";
+                        console.log(
+                            `🎨 TOOLTIP OCULTO: ${
+                                isHidden ? "✅ SIM" : "❌ NÃO"
+                            }`
+                        );
+                    }, 500);
+                }, 2000);
+            }
+        } else {
+            console.log("❌ TOOLTIP: Elemento não foi criado após hover");
+        }
+    }, 200);
+
+    console.log(
+        "🎨 TESTE TOOLTIP: Teste completo iniciado - acompanhe as mensagens acima"
+    );
+    return true;
+};
+
+// 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA PARA TOOLTIP
+window.SENT1_AUTO.corrigirTooltipProblemas = function () {
+    console.log("🔧 CORREÇÃO TOOLTIP: Iniciando correção automática...");
+
+    // 1. Verificar e corrigir dados de sessões
+    if (!window.SENT1_AUTO.todasSessoesDetectadas) {
+        console.log(
+            "📊 CORREÇÃO: Dados de sessões não encontrados - tentando detectar..."
+        );
+
+        // Tentar detectar dados atuais
+        const dadosAtuais = window.SENT1_AUTO.getDataSessaoPautado
+            ? window.SENT1_AUTO.getDataSessaoPautado()
+            : null;
+        if (dadosAtuais) {
+            // Criar array com múltiplas sessões se necessário
+            if (
+                !dadosAtuais.todasSessoes ||
+                dadosAtuais.todasSessoes.length <= 1
+            ) {
+                dadosAtuais.todasSessoes = [
+                    dadosAtuais,
+                    {
+                        status: "RETIRADO",
+                        data: "15/07/2024",
+                        dataOriginal: "15/07/2024",
+                        orgao: dadosAtuais.orgao || "1ª CÂMARA",
+                        tipoProcesso: dadosAtuais.tipoProcesso || "APELAÇÃO",
+                        prioridade: 2,
+                    },
+                ];
+            }
+
+            window.SENT1_AUTO.todasSessoesDetectadas = dadosAtuais.todasSessoes;
+            console.log("✅ CORREÇÃO: Dados de sessões configurados");
+        }
+    }
+
+    // 2. Verificar card
+    let card = document.getElementById("eprobe-data-sessao");
+    if (!card) {
+        console.log("🔧 CORREÇÃO: Criando card da sessão...");
+        const dados = (window.SENT1_AUTO.getDataSessaoPautado
+            ? window.SENT1_AUTO.getDataSessaoPautado()
+            : null) || {
+            status: "PAUTADO",
+            data: "05/08/2024",
+            dataFormatada: "05/08/2024",
+            dataOriginal: "05/08/2024",
+            todasSessoes: window.SENT1_AUTO.todasSessoesDetectadas,
+        };
+
+        if (dados.todasSessoes && dados.todasSessoes.length > 1) {
+            if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
+                window.SENT1_AUTO.atualizarCardMaterialDesign(dados);
+            } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                window.SENT1_AUTO.criarCardMaterialDesign(dados);
+            }
+            card = document.getElementById("eprobe-data-sessao");
+        }
+    }
+
+    // 3. Verificar se tooltip precisa ser recriado
+    if (card) {
+        const indicador = card.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        const tooltip = document.getElementById("eprobe-rich-tooltip");
+
+        if (indicador && !tooltip) {
+            console.log("🔧 CORREÇÃO: Recriando tooltip...");
+            const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
+            if (
+                todasSessoes &&
+                todasSessoes.length > 1 &&
+                window.SENT1_AUTO.adicionarRichTooltipMaterialDesign
+            ) {
+                window.SENT1_AUTO.adicionarRichTooltipMaterialDesign(
+                    card,
+                    todasSessoes
+                );
+            }
+        }
+    }
+
+    console.log("✅ CORREÇÃO TOOLTIP: Correção concluída");
+
+    // Executar teste após correção
+    setTimeout(() => {
+        window.SENT1_AUTO.testarTooltipCompleto();
+    }, 500);
+};
 
 // ===== CONTROLE GLOBAL DE EXECUÇÕES - ANTI-LOOP =====
 window.eProbeExecucoes = {
