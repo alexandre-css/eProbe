@@ -18,108 +18,67 @@ function criarCardMaterialDesign(status, dadosSessao, processo) {
             processo,
         });
 
-        // SVG Container principal - EXATO do Figma: 205×96 com filtros
+        // SVG Container principal - CORRIGIDO: dimensões consistentes
         const svgContainer = document.createElement("div");
         svgContainer.id = "eprobe-data-sessao"; // ID para detecção no main.js
         svgContainer.style.cssText = `
-            width: 205px;
-            height: 96px;
+            width: 169px;
+            height: 60px;
             position: relative;
             margin: 5px;
+            display: inline-block;
         `;
 
-        // SVG com EXATAMENTE as especificações do Figma
+        // SVG com dimensões CORRETAS e consistentes
         const svg = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "svg"
         );
-        svg.setAttribute("width", "205");
-        svg.setAttribute("height", "96");
-        svg.setAttribute("viewBox", "0 0 205 96");
+        svg.setAttribute("width", "169");
+        svg.setAttribute("height", "60");
+        svg.setAttribute("viewBox", "0 0 169 60");
         svg.setAttribute("fill", "none");
 
-        // Definições dos filtros EXATOS do Figma
+        // Definições simplificadas - apenas uma sombra suave
         const defs = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "defs"
         );
 
-        // Filter M3/Elevation Light/5 - EXATO
-        const filter0 = document.createElementNS(
+        // Filter simplificado - apenas sombra básica Material Design
+        const filter = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "filter"
         );
-        filter0.setAttribute("id", "filter0_dd_76_366");
-        filter0.setAttribute("x", "0");
-        filter0.setAttribute("y", "0");
-        filter0.setAttribute("width", "205");
-        filter0.setAttribute("height", "96");
-        filter0.setAttribute("filterUnits", "userSpaceOnUse");
-        filter0.setAttribute("color-interpolation-filters", "sRGB");
+        filter.setAttribute("id", "card-shadow");
+        filter.setAttribute("x", "-20%");
+        filter.setAttribute("y", "-20%");
+        filter.setAttribute("width", "140%");
+        filter.setAttribute("height", "140%");
 
-        filter0.innerHTML = `
-            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-            <feOffset dy="4"/>
-            <feGaussianBlur stdDeviation="2"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.3 0"/>
-            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_76_366"/>
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-            <feMorphology radius="6" operator="dilate" in="SourceAlpha" result="effect2_dropShadow_76_366"/>
-            <feOffset dy="8"/>
-            <feGaussianBlur stdDeviation="6"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
-            <feBlend mode="normal" in2="effect1_dropShadow_76_366" result="effect2_dropShadow_76_366"/>
-            <feBlend mode="normal" in="SourceGraphic" in2="effect2_dropShadow_76_366" result="shape"/>
+        filter.innerHTML = `
+            <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.2"/>
         `;
 
-        const filter1 = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "filter"
-        );
-        filter1.setAttribute("id", "filter1_d_76_366");
-        filter1.setAttribute("x", "14.9992");
-        filter1.setAttribute("y", "10");
-        filter1.setAttribute("width", "175.002");
-        filter1.setAttribute("height", "66.0017");
-        filter1.setAttribute("filterUnits", "userSpaceOnUse");
-        filter1.setAttribute("color-interpolation-filters", "sRGB");
+        defs.appendChild(filter);
 
-        filter1.innerHTML = `
-            <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-            <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-            <feOffset dy="3.00083"/>
-            <feGaussianBlur stdDeviation="1.50042"/>
-            <feComposite in2="hardAlpha" operator="out"/>
-            <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
-            <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_76_366"/>
-            <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_76_366" result="shape"/>
-        `;
+        // Grupo principal simplificado com sombra
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("filter", "url(#card-shadow)");
 
-        defs.appendChild(filter0);
-        defs.appendChild(filter1);
-
-        // Grupo principal com filter0
-        const g1 = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g1.setAttribute("filter", "url(#filter0_dd_76_366)");
-
-        // Grupo interno com filter1
-        const g2 = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        g2.setAttribute("filter", "url(#filter1_d_76_366)");
-
-        // Retângulo do card - EXATAS especificações Figma
+        // Retângulo do card - dimensões corretas
         const rect = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "rect"
         );
-        rect.setAttribute("x", "18");
-        rect.setAttribute("y", "10");
-        rect.setAttribute("width", "169");
-        rect.setAttribute("height", "60");
-        rect.setAttribute("rx", "9.0025");
+        rect.setAttribute("x", "5");
+        rect.setAttribute("y", "5");
+        rect.setAttribute("width", "159");
+        rect.setAttribute("height", "50");
+        rect.setAttribute("rx", "9");
         rect.setAttribute("fill", "#FEF7FF");
         rect.setAttribute("stroke", "#CAC4D0");
-        rect.setAttribute("stroke-width", "0.750208");
+        rect.setAttribute("stroke-width", "0.75");
 
         // Ícone SVG - EXATO do Figma (#5C85B4)
         const iconPath = document.createElementNS(
@@ -132,68 +91,59 @@ function criarCardMaterialDesign(status, dadosSessao, processo) {
         );
         iconPath.setAttribute("fill", "#5C85B4");
 
-        // Header - EXATAS especificações Figma (left: 26.19%, top: 23.74%)
+        // Header - posições ajustadas para novo viewBox
         const textSessao = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "text"
         );
-        // Calculando X: 26.19% de 169px + 18px (rect x) = 62.26px
-        textSessao.setAttribute("x", "62.26");
-        // Calculando Y: 23.74% de 60px + 10px (rect y) + baseline ajust = 28.24px
-        textSessao.setAttribute("y", "28.24");
+        textSessao.setAttribute("x", "50");
+        textSessao.setAttribute("y", "25");
         textSessao.setAttribute("font-family", "Roboto");
         textSessao.setAttribute("font-weight", "380");
-        textSessao.setAttribute("font-size", "13.5037"); // Tamanho EXATO do Figma
-        textSessao.setAttribute("line-height", "16");
+        textSessao.setAttribute("font-size", "13.5");
         textSessao.setAttribute("fill", "#1D1B20");
         textSessao.setAttribute("text-anchor", "start");
         textSessao.setAttribute("class", "eprobe-status-text");
         textSessao.textContent = status || "Pautado";
 
-        // Subhead - EXATAS especificações Figma (left: 26.19%, top: 49.99%)
+        // Subhead - posições ajustadas para novo viewBox
         const textData = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "text"
         );
-        // Mesma posição X do Header
-        textData.setAttribute("x", "62.26");
-        // Calculando Y: 49.99% de 60px + 10px (rect y) + baseline ajust = 49.99px
-        textData.setAttribute("y", "49.99");
+        textData.setAttribute("x", "50");
+        textData.setAttribute("y", "42");
         textData.setAttribute("font-family", "Roboto");
         textData.setAttribute("font-weight", "400");
-        textData.setAttribute("font-size", "10.5029"); // Tamanho EXATO do Figma
-        textData.setAttribute("line-height", "15");
-        textData.setAttribute("letter-spacing", "0.187552px"); // Letter spacing EXATO
+        textData.setAttribute("font-size", "10.5");
         textData.setAttribute("fill", "#1D1B20");
         textData.setAttribute("text-anchor", "start");
         textData.setAttribute("class", "eprobe-date-text");
         textData.textContent = `Sessão: ${dadosSessao}`;
 
-        // Montagem do SVG
-        g2.appendChild(rect);
-        g2.appendChild(iconPath);
-        g2.appendChild(textSessao);
-        g2.appendChild(textData);
-        g1.appendChild(g2);
+        // Montagem simplificada do SVG
+        g.appendChild(rect);
+        g.appendChild(iconPath);
+        g.appendChild(textSessao);
+        g.appendChild(textData);
         svg.appendChild(defs);
-        svg.appendChild(g1);
+        svg.appendChild(g);
         svgContainer.appendChild(svg);
 
-        console.log(
-            "✅ SUCESSO: Card Figma EXATO criado - 205×96px com filtros M3"
-        );
+        console.log("✅ SUCESSO: Card Material Design simplificado - 169×60px");
 
         return {
             sucesso: true,
             elemento: svgContainer,
             especificacoes: {
-                dimensoes: "205×96px (SVG container), 169×60px (card)",
+                dimensoes: "169×60px (consistente)",
                 background: "#FEF7FF",
-                borda: "0.750208px solid #CAC4D0",
-                borderRadius: "9.0025px",
-                filtros: "M3/Elevation Light/5 (duplos)",
+                borda: "0.75px solid #CAC4D0",
+                borderRadius: "9px",
+                sombra: "Material Design simplificada",
                 icone: "#5C85B4 calendário",
-                tipografia: "Roboto 380/400 exata",
+                tipografia: "Roboto 380/400",
+                otimizacao: "SVG simplificado, sem filtros duplos",
             },
         };
     } catch (error) {

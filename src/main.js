@@ -22,12 +22,39 @@
             "mouseout",
             "mousedown",
             "mouseup",
+            "mousemove",
             "resize",
             "orientationchange",
             "contextmenu",
             "dragstart",
             "dragover",
             "drop",
+            "keydown",
+            "keyup",
+            "pointermove",
+            "pointerdown",
+            "pointerup",
+            "pointerenter",
+            "pointerleave",
+            "focus",
+            "blur",
+            "input",
+            "change",
+            "load",
+            "DOMContentLoaded",
+            "readystatechange",
+            "beforeunload",
+            "unload",
+            "error",
+            "abort",
+            "select",
+            "submit",
+            "reset",
+            "toggle",
+            "transitionend",
+            "animationend",
+            "animationstart",
+            "animationiteration",
         ];
 
         // 1. Interceptar addEventListener nativo COM FORÇA EXTRA
@@ -122,432 +149,77 @@
         setTimeout(interceptJQuery, 500);
         setTimeout(interceptJQuery, 1000);
 
-        // 3. Cache otimizado para getBoundingClientRect
-        const rectCache = new WeakMap();
-        const RECT_CACHE_DURATION = 150; // Aumentado para 150ms
-
-        window.getCachedBoundingRect = function (element) {
-            if (!element) return null;
-
-            const now = Date.now();
-            const cached = rectCache.get(element);
-
-            if (cached && now - cached.timestamp < RECT_CACHE_DURATION) {
-                return cached.rect;
-            }
-
-            const rect = element.getBoundingClientRect();
-            rectCache.set(element, { rect, timestamp: now });
-            return rect;
-        };
-
-        // 4. requestAnimationFrame otimizado com throttling
-        let rafPending = false;
-        window.scheduleLayoutOperation = function (callback) {
-            if (rafPending) return;
-            rafPending = true;
-
-            requestAnimationFrame(() => {
-                rafPending = false;
-                try {
-                    callback();
-                } catch (e) {
-                    console.warn("Erro em operação layout:", e);
-                }
-            });
-        };
-
-        // 5. INTERCEPTAÇÃO ULTRA-AGRESSIVA E DIRECIONADA PARA TIMEOUTS DO JQUERY
-        const originalSetTimeout = window.setTimeout;
-        const problematicDelays = [
-            131, 165, 83, 56, 103, 141, 60, 53, 99, 142, 255,
-        ]; // Delays específicos das violações
-        let timeoutCounter = 0;
-
-        window.setTimeout = function (callback, delay, ...args) {
-            timeoutCounter++;
-
-            // Interceptar especificamente os delays problemáticos detectados
-            if (problematicDelays.includes(delay) || delay > 50) {
-                if (window.performanceMetrics) {
-                    window.performanceMetrics.timeoutsIntercepted++;
-                }
-
-                // Log apenas as primeiras 2 interceptações para reduzir spam
-                if (timeoutCounter <= 2) {
-                    console.log(
-                        `🎯 PERFORMANCE: setTimeout ${delay}ms interceptado (#${timeoutCounter})`
-                    );
-                }
-
-                // Estratégia 1: requestIdleCallback otimizado para callbacks pesados
-                if (window.requestIdleCallback && delay > 100) {
-                    return window.requestIdleCallback(
-                        (deadline) => {
-                            const startTime = performance.now();
-                            try {
-                                // Executar callback em chunks menores durante idle time
-                                if (deadline.timeRemaining() > 5) {
-                                    callback.apply(this, args);
-                                } else {
-                                    // Se não há tempo suficiente, agendar para próximo idle
-                                    window.requestIdleCallback(
-                                        (deadline) => {
-                                            callback.apply(this, args);
-                                        },
-                                        { timeout: 50 }
-                                    ); // Timeout reduzido
-                                }
-
-                                const elapsed = performance.now() - startTime;
-                                if (elapsed > 50) {
-                                    // Limite aumentado para 50ms
-                                    console.warn(
-                                        `⚠️ PERFORMANCE: Callback lento: ${elapsed}ms`
-                                    );
-                                }
-                            } catch (e) {
-                                console.warn(
-                                    "❌ PERFORMANCE: Erro em callback idle:",
-                                    e
-                                );
-                            }
-                        },
-                        { timeout: Math.min(delay, 100) } // Timeout máximo de 100ms
-                    );
-                }
-
-                // Estratégia 2: Fragmentação temporal para delays menores
-                const targetChunkSize = 16; // 60fps
-                const chunks = Math.ceil(delay / targetChunkSize);
-                let currentChunk = 0;
-
-                const executeChunk = () => {
-                    currentChunk++;
-                    if (currentChunk >= chunks) {
-                        // Executar callback final com delay mínimo
-                        return originalSetTimeout.call(
-                            this,
-                            () => {
-                                const startTime = performance.now();
-                                try {
-                                    callback.apply(this, args);
-                                    const elapsed =
-                                        performance.now() - startTime;
-                                    if (elapsed > 50) {
-                                        // Só avisar se > 50ms
-                                        console.warn(
-                                            `⚠️ PERFORMANCE: Callback final ainda demorou ${elapsed}ms`
-                                        );
-                                    }
-                                    // Removido log de sucesso para reduzir overhead
-                                } catch (e) {
-                                    console.warn(
-                                        "❌ PERFORMANCE: Erro em callback fragmentado:",
-                                        e
-                                    );
-                                }
-                            },
-                            1
-                        ); // Delay mínimo
-                    } else {
-                        return originalSetTimeout.call(
-                            this,
-                            executeChunk,
-                            targetChunkSize
-                        );
-                    }
-                };
-
-                return originalSetTimeout.call(this, executeChunk, 1);
-            }
-
-            // Normalizar delays muito pequenos
-            if (delay < 4 && delay > 0) {
-                delay = 4; // Mínimo técnico para setTimeout
-            }
-
-            return originalSetTimeout.call(this, callback, delay, ...args);
-        };
-
-        // 6. INTERCEPTAÇÃO MEGA-AGRESSIVA PARA TODAS AS VERSÕES DO JQUERY
-        let jQueryIntercepted = false; // Flag para evitar spam de logs
-        let jQueryDetectionCount = 0; // Contador de detecções
-
-        const interceptJQueryMegaAggressive = () => {
-            // Detectar jQuery por múltiplas estratégias
-            let jQueryDetected = false;
-            let jQueryInstance = null;
-            jQueryDetectionCount++;
-
-            // Estratégia 1: jQuery clássico
-            if (typeof window.jQuery !== "undefined") {
-                jQueryInstance = window.jQuery;
-                jQueryDetected = true;
-                if (!jQueryIntercepted) {
-                    console.log("🎯 PERFORMANCE: jQuery clássico detectado");
-                }
-            }
-
-            // Estratégia 2: $ global
-            if (typeof window.$ !== "undefined" && window.$.fn) {
-                jQueryInstance = window.$;
-                jQueryDetected = true;
-                if (!jQueryIntercepted) {
-                    console.log("🎯 PERFORMANCE: $ global detectado");
-                }
-            }
-
-            // Estratégia 3: Buscar jQuery minificado/hasheado nos scripts (só logar uma vez)
-            const scripts = document.querySelectorAll('script[src*="jquery"]');
-            if (scripts.length > 0 && !jQueryDetected) {
-                console.log(
-                    `🎯 PERFORMANCE: ${scripts.length} script(s) jQuery detectado(s)`
-                );
-                jQueryDetected = true;
-            }
-
-            // Estratégia 4: Interceptar através de propriedades conhecidas do jQuery
-            for (const prop in window) {
-                if (
-                    window[prop] &&
-                    typeof window[prop] === "function" &&
-                    window[prop].fn &&
-                    window[prop].fn.jquery
-                ) {
-                    jQueryInstance = window[prop];
-                    jQueryDetected = true;
-                    if (!jQueryIntercepted) {
-                        console.log(
-                            `🎯 PERFORMANCE: jQuery detectado via propriedade ${prop}`
-                        );
-                    }
-                    break;
-                }
-            }
-
-            if (jQueryDetected && jQueryInstance && !jQueryIntercepted) {
-                const $ = jQueryInstance;
-
-                // Interceptar jQuery.ready - fonte principal de problemas
-                if ($.ready) {
-                    const originalReady = $.ready;
-                    $.ready = function (callback) {
-                        if (!jQueryIntercepted) {
-                            console.log(
-                                "🎯 PERFORMANCE: Interceptando $.ready"
-                            );
-                        }
-                        if (window.requestIdleCallback) {
-                            return window.requestIdleCallback(() => {
-                                try {
-                                    callback.call(this);
-                                } catch (e) {
-                                    console.warn(
-                                        "Erro em $.ready otimizado:",
-                                        e
-                                    );
-                                }
-                            });
-                        } else {
-                            return originalSetTimeout.call(window, callback, 1);
-                        }
-                    };
-                }
-
-                // Interceptar jQuery.fn.ready também
-                if ($.fn && $.fn.ready) {
-                    const originalFnReady = $.fn.ready;
-                    $.fn.ready = function (callback) {
-                        if (!jQueryIntercepted) {
-                            console.log(
-                                "🎯 PERFORMANCE: Interceptando $.fn.ready"
-                            );
-                        }
-                        if (window.requestIdleCallback) {
-                            window.requestIdleCallback(() => {
-                                try {
-                                    callback.call(this);
-                                } catch (e) {
-                                    console.warn(
-                                        "Erro em $.fn.ready otimizado:",
-                                        e
-                                    );
-                                }
-                            });
-                            return this;
-                        } else {
-                            return originalFnReady.call(this, callback);
-                        }
-                    };
-                }
-
-                // Interceptar jQuery.fn.on para event listeners passivos
-                if ($.fn && $.fn.on) {
-                    const originalOn = $.fn.on;
-                    $.fn.on = function (events, selector, data, handler) {
-                        if (typeof events === "string") {
-                            const eventList = events.split(" ");
-                            const hasPassiveEvent = eventList.some((event) =>
-                                passiveEvents.includes(event.split(".")[0])
-                            );
-
-                            if (hasPassiveEvent && !jQueryIntercepted) {
-                                console.log(
-                                    `🎯 PERFORMANCE: Convertendo eventos ${events} para passivos`
-                                );
-                                return this.each(function () {
-                                    eventList.forEach((eventName) => {
-                                        const cleanType =
-                                            eventName.split(".")[0];
-                                        if (passiveEvents.includes(cleanType)) {
-                                            const actualHandler =
-                                                typeof selector === "function"
-                                                    ? selector
-                                                    : typeof data === "function"
-                                                    ? data
-                                                    : handler;
-                                            if (actualHandler) {
-                                                this.addEventListener(
-                                                    cleanType,
-                                                    actualHandler,
-                                                    {
-                                                        passive: true,
-                                                        capture: false,
-                                                    }
-                                                );
-                                            }
-                                        }
-                                    });
-                                });
-                            }
-                        }
-                        return originalOn.apply(this, arguments);
-                    };
-                }
-
-                // Interceptar métodos de animação que causam timeouts longos
-                const animationMethods = [
-                    "animate",
-                    "fadeIn",
-                    "fadeOut",
-                    "slideUp",
-                    "slideDown",
-                    "show",
-                    "hide",
-                ];
-                animationMethods.forEach((method) => {
-                    if ($.fn && $.fn[method]) {
-                        const originalMethod = $.fn[method];
-                        $.fn[method] = function (...args) {
-                            // Limitar duração de animações para máximo 100ms
-                            if (
-                                args[0] &&
-                                typeof args[0] === "number" &&
-                                args[0] > 100
-                            ) {
-                                if (!jQueryIntercepted) {
-                                    console.log(
-                                        `🎯 PERFORMANCE: Limitando animação ${method} de ${args[0]}ms para 100ms`
-                                    );
-                                }
-                                args[0] = 100;
-                            }
-                            // Se for string 'slow' ou 'fast', converter para números baixos
-                            if (args[0] === "slow") args[0] = 100;
-                            if (args[0] === "fast") args[0] = 50;
-
-                            return originalMethod.apply(this, args);
-                        };
-                    }
-                });
-
-                // Interceptar jQuery queue system que pode causar timeouts
-                if ($.fn && $.fn.queue) {
-                    const originalQueue = $.fn.queue;
-                    $.fn.queue = function (type, data) {
-                        if (typeof data === "function") {
-                            const originalFunction = data;
-                            data = function () {
-                                if (window.requestIdleCallback) {
-                                    window.requestIdleCallback(() => {
-                                        originalFunction.apply(this, arguments);
-                                    });
-                                } else {
-                                    originalFunction.apply(this, arguments);
-                                }
-                            };
-                        }
-                        return originalQueue.call(this, type, data);
-                    };
-                }
-
-                // Marcar como interceptado para evitar logs repetitivos
-                jQueryIntercepted = true;
-                console.log(
-                    "✅ PERFORMANCE: jQuery MEGA-AGRESSIVO interceptado com sucesso"
-                );
-                return true;
-            }
-
-            return jQueryDetected; // Retornar sempre um booleano consistente
-        };
-
-        // Executar interceptação otimizada com limite
-        let interceptAttempts = 0;
-        const maxAttempts = 5; // Reduzido para 5 tentativas apenas
-        let jQueryDetected = false; // IMPORTANTE: Declarar variável para evitar ReferenceError
-
-        const optimizedIntercept = () => {
-            interceptAttempts++;
-            const success = interceptJQueryMegaAggressive();
-
-            // Atualizar status de detecção baseado no sucesso
-            if (success) {
-                jQueryDetected = true;
-            }
-
-            // Log apenas nas primeiras tentativas
-            if (success && !jQueryIntercepted) {
-                console.log(
-                    `✅ PERFORMANCE: jQuery interceptado na tentativa ${interceptAttempts}`
-                );
-                return; // Parar aqui se sucesso
-            } else if (interceptAttempts <= 3) {
-                console.log(
-                    `🔍 PERFORMANCE: Tentativa ${interceptAttempts}/${maxAttempts} - jQuery não encontrado`
-                );
-            }
-
-            // Parar após 5 tentativas ou se jQuery foi interceptado
-            if (
-                interceptAttempts < maxAttempts &&
-                !jQueryIntercepted &&
-                !jQueryDetected
-            ) {
-                const delay = 200 + interceptAttempts * 100; // 200ms, 300ms, 400ms, etc
-                originalSetTimeout(optimizedIntercept, delay);
-            } else {
-                if (jQueryIntercepted || jQueryDetected) {
-                    console.log(
-                        `✅ PERFORMANCE: jQuery processado após ${interceptAttempts} tentativas`
-                    );
-                } else {
-                    console.log(
-                        `⚠️ PERFORMANCE: Limite atingido (${interceptAttempts} tentativas) - prosseguindo`
-                    );
-                }
-            }
-        };
-
-        // Iniciar interceptação otimizada
-        optimizedIntercept();
-
         console.log("🚀 PERFORMANCE: Sistema otimizado carregado");
         console.log(
             "🎯 PERFORMANCE: Interceptação jQuery limitada a 5 tentativas"
         );
     })();
+
+    // 2.5. FUNÇÃO HELPER GLOBAL PARA EVENTOS PASSIVOS
+    window.addPassiveEventListener = (element, eventType, handler) => {
+        // Lista de eventos que devem ser passivos
+        const passiveEvents = [
+            "scroll",
+            "wheel",
+            "touchstart",
+            "touchmove",
+            "touchend",
+            "mouseenter",
+            "mouseleave",
+            "mouseover",
+            "mouseout",
+            "mousedown",
+            "mouseup",
+            "mousemove",
+            "resize",
+            "orientationchange",
+            "contextmenu",
+            "dragstart",
+            "dragover",
+            "drop",
+            "keydown",
+            "keyup",
+            "pointermove",
+            "pointerdown",
+            "pointerup",
+            "pointerenter",
+            "pointerleave",
+            "focus",
+            "blur",
+            "input",
+            "change",
+            "load",
+            "DOMContentLoaded",
+            "readystatechange",
+            "beforeunload",
+            "unload",
+            "error",
+            "abort",
+            "select",
+            "submit",
+            "reset",
+            "toggle",
+            "transitionend",
+            "animationend",
+            "animationstart",
+            "animationiteration",
+        ];
+
+        const options = passiveEvents.includes(eventType)
+            ? { passive: true }
+            : false;
+
+        element.addEventListener(eventType, handler, options);
+
+        if (passiveEvents.includes(eventType)) {
+            console.log(
+                `🔒 PASSIVE: Event "${eventType}" adicionado com passive=true`
+            );
+        }
+    };
+
+    // Alias local para uso interno
+    const addPassiveEventListener = window.addPassiveEventListener;
 
     // 🔧 AGUARDAR APIS DE EXTENSÃO (CORREÇÃO PARA EDGE)
     function aguardarAPIsExtensao() {
@@ -604,6 +276,13 @@
 
     // Armazenar dados completos da sessão obtidos do cruzamento
     let dadosCompletosSessionJulgamento = null;
+
+    // 🎨 CONTROLE DE ESTADO DOS CARDS MATERIAL DESIGN
+    let materialDesignState = {
+        cardAtivo: false,
+        ultimaDeteccao: null,
+        ultimoProcesso: null,
+    };
 
     // 🛡️ CONTROLE DE REQUISIÇÕES - Prevenir spam e logout
     let tentativasCruzamento = 0;
@@ -6847,17 +6526,31 @@ ${texto}`;
                 ensureButtonExists();
             }, 2000);
 
+            // ✅ VERIFICAÇÃO: Evitar loop infinito - só detectar se não foi processado
+            processoAtual = obterNumeroProcesso(); // Obter processo atual antes das verificações
+            if (processoAtual && processoJaFoiProcessado(processoAtual)) {
+                console.log(
+                    `🔐 SKIP: Processo ${processoAtual} já foi processado nesta sessão`
+                );
+                return;
+            }
+
             // Detecção de data da sessão otimizada
             setTimeout(() => {
-                console.log(
-                    "🔍 Tentando detectar data da sessão automaticamente..."
-                );
-                detectarDataSessao();
+                if (!processoAtual || !processoJaFoiProcessado(processoAtual)) {
+                    console.log(
+                        "🔍 Tentando detectar data da sessão automaticamente..."
+                    );
+                    detectarDataSessao();
+                }
             }, 500); // Reduzido de 800ms para 500ms
 
             // Segunda tentativa de detecção otimizada
             setTimeout(() => {
-                if (!hasDataSessaoPautado()) {
+                if (
+                    !hasDataSessaoPautado() &&
+                    (!processoAtual || !processoJaFoiProcessado(processoAtual))
+                ) {
                     console.log(
                         "🔍 Segunda tentativa de detecção da data da sessão..."
                     );
@@ -7341,7 +7034,7 @@ ${texto}`;
                         "❌ XPath não encontrou dados. Testando fallback..."
                     );
                     const resultadoGlobal =
-                        window.SENT1_AUTO.detectarCardSessaoGlobal?.();
+                        window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
 
                     if (!resultadoGlobal) {
                         return {
@@ -11368,8 +11061,27 @@ ${texto}`;
         }
 
         // Função principal para detectar data da sessão - VERSÃO OTIMIZADA
-        function detectarDataSessao() {
+        async function detectarDataSessao() {
             console.log("🔍 INICIANDO: Detecção da data da sessão (otimizada)");
+
+            // ✅ VERIFICAÇÃO ANTECIPADA: Evitar execuções desnecessárias
+            let processoAtual = obterNumeroProcesso();
+            if (processoJaFoiProcessado(processoAtual)) {
+                console.log(
+                    `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando loop`
+                );
+                return;
+            }
+
+            if (
+                hasDataSessaoPautado() &&
+                processoComDataSessao === processoAtual
+            ) {
+                console.log(
+                    `✅ CACHE: Dados já existem para processo ${processoAtual} - evitando reprocessamento`
+                );
+                return;
+            }
 
             // 🔐 VERIFICAÇÃO DE PROCESSO
             processoAtual = obterNumeroProcesso();
@@ -11404,12 +11116,22 @@ ${texto}`;
             console.log(`🔍 DETECÇÃO: Analisando processo ${processoAtual}...`);
 
             // 🎯 PRIORIDADE 1: Detectar com método simplificado unificado
-            const statusDetectado = detectarCardSessaoSimplificado();
+            let statusDetectado = detectarCardSessaoSimplificado();
+
+            // Se retornou uma Promise (segunda tentativa), aguardar
+            if (statusDetectado && typeof statusDetectado.then === "function") {
+                statusDetectado = await statusDetectado;
+            }
+
             if (statusDetectado) {
                 console.log(`✅ STATUS: ${statusDetectado.status} detectado`);
 
-                dataSessaoPautado = statusDetectado.data;
-                dataSessaoPautado.statusSessao = statusDetectado;
+                // ✅ CORREÇÃO: Criar objeto completo em vez de modificar string
+                dataSessaoPautado = {
+                    data: statusDetectado.data,
+                    statusSessao: statusDetectado,
+                    processo: processoAtual,
+                };
                 processoComDataSessao = processoAtual;
 
                 // 🔐 MARCAR PROCESSO COMO PROCESSADO
@@ -11588,6 +11310,24 @@ ${texto}`;
             console.log(
                 "🎯 INSERIR: Redirecionando para sistema Material Design..."
             );
+
+            // ✅ VERIFICAÇÃO: Evitar múltiplas execuções
+            const processoAtual = obterNumeroProcesso();
+            if (processoJaFoiProcessado(processoAtual)) {
+                console.log(
+                    `🔐 SKIP: Interface já criada para processo ${processoAtual}`
+                );
+                return true; // Considera sucesso pois já foi processado
+            }
+
+            // ✅ VERIFICAÇÃO: Se card já existe, não inserir novamente
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                console.log(
+                    `♻️ SKIP: Card de interface já existe - evitando duplicação`
+                );
+                return true; // Considera sucesso pois já existe
+            }
 
             // Verificar se há data detectada
             if (!hasDataSessaoPautado()) {
@@ -12460,6 +12200,10 @@ ${texto}`;
                 }
             };
 
+            // 🎯 FUNÇÕES DE DETECÇÃO DE CARDS
+            window.SENT1_AUTO.detectarCardSessaoSimplificado =
+                detectarCardSessaoSimplificado;
+
             console.log(
                 "🧪 TESTE: Função testarSistemaCompleto() disponível em window.SENT1_AUTO"
             );
@@ -12747,143 +12491,123 @@ ${texto}`;
             // Se a página já carregou, executar imediatamente
             inicializarAutomaticamente();
         }
-    })(); // Fechamento da IIFE de detecção de sessão
 
-    // ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
+        // =============================================
+        // DETECÇÃO SIMPLIFICADA DE CARDS DE SESSÃO
+        // =============================================
 
-    /**
-     * Helper para adicionar event listeners com opção passive quando apropriado
-     * Previne violações de performance no console
-     */
-    function addPassiveEventListener(element, event, handler, options = {}) {
-        const passiveEvents = [
-            "scroll",
-            "wheel",
-            "touchstart",
-            "touchmove",
-            "touchend",
-            "mouseenter",
-            "mouseleave",
-            "mousedown",
-            "mouseup",
-            "mouseover",
-            "mouseout",
-        ];
+        /**
+         * Função simplificada para detectar cards de sessão usando XPath específico
+         * NOVA ESTRATÉGIA: Buscar EXCLUSIVAMENTE no caminho XPath fornecido
+         * Caminho: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]
+         */
+        function detectarCardSessaoSimplificado() {
+            console.log(
+                "🎯 DETECÇÃO XPATH ÚNICA: Usando EXCLUSIVAMENTE o caminho fixo do eProc"
+            );
 
-        if (passiveEvents.includes(event)) {
-            options.passive = true;
-        }
-
-        element.addEventListener(event, handler, options);
-    }
-
-    // ===== CONTROLE DE ESTADO DOS CARDS =====
-
-    /**
-     * Estado global para controle dos cards Material Design
-     */
-    let materialDesignState = {
-        cardAtivo: null,
-        ultimaDeteccao: null,
-        timeoutAtualizar: null,
-        evitarRecriacaoCard: false,
-    };
-
-    /**
-     * Verifica se deve recriar o card ou apenas atualizar
-     */
-    function deveRecriarCard(novosDados) {
-        if (!materialDesignState.cardAtivo) return true;
-
-        if (!materialDesignState.ultimaDeteccao) return true;
-
-        // Se os dados mudaram significativamente, recriar
-        const dadosAtuais = materialDesignState.ultimaDeteccao;
-        if (dadosAtuais.status !== novosDados.status) return true;
-        if (dadosAtuais.data?.dataFormatada !== novosDados.data?.dataFormatada)
-            return true;
-
-        return false;
-    }
-
-    /**
-     * Controle inteligente de criação/atualização de cards
-     */
-    function gerenciarCardMaterialDesign(dadosSessao) {
-        // Evitar múltiplas atualizações simultâneas
-        if (materialDesignState.evitarRecriacaoCard) {
-            console.log("🔒 MATERIAL: Recriação temporariamente bloqueada");
-            return;
-        }
-
-        materialDesignState.evitarRecriacaoCard = true;
-
-        // Liberar bloqueio após 1 segundo
-        setTimeout(() => {
-            materialDesignState.evitarRecriacaoCard = false;
-        }, 1000);
-
-        if (deveRecriarCard(dadosSessao)) {
-            console.log("🔄 MATERIAL: Dados mudaram, recriando card");
-            atualizarCardMaterialDesign(dadosSessao);
-            materialDesignState.ultimaDeteccao = dadosSessao;
-            materialDesignState.cardAtivo = true;
-        } else {
-            console.log("ℹ️ MATERIAL: Card já atualizado, mantendo estado");
-        }
-    }
-
-    // ===== FIM DOS HELPERS =====
-
-    // =============================================
-    // MATERIAL DESIGN - CARD DE DADOS DE SESSÃO
-    // =============================================
-
-    // =============================================
-    // DETECÇÃO SIMPLIFICADA DE CARDS DE SESSÃO
-    // =============================================
-
-    /**
-     * Função simplificada para detectar cards de sessão usando XPath específico
-     * NOVA ESTRATÉGIA: Buscar EXCLUSIVAMENTE no caminho XPath fornecido
-     * Caminho: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]
-     */
-    function detectarCardSessaoSimplificado() {
-        console.log(
-            "🎯 DETECÇÃO XPATH: Buscando dados de sessão no caminho específico"
-        );
-
-        try {
-            // XPATH ESPECÍFICO fornecido pelo usuário
-            const xpathExpression =
-                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
-
-            // Usar XPath para encontrar o elemento exato
-            const spanElement = document.evaluate(
-                xpathExpression,
-                document,
-                null,
-                XPathResult.FIRST_ORDERED_NODE_TYPE,
-                null
-            ).singleNodeValue;
-
-            if (!spanElement) {
+            // ✅ VERIFICAÇÃO: Evitar múltiplas execuções desnecessárias
+            const processoAtual = obterNumeroProcesso();
+            if (processoJaFoiProcessado(processoAtual)) {
                 console.log(
-                    "❌ XPATH: Elemento não encontrado no caminho especificado"
+                    `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando múltipla detecção`
                 );
-                console.log(`   Caminho: ${xpathExpression}`);
                 return null;
             }
 
-            console.log("✅ XPATH: Elemento encontrado!");
-            console.log(`   ID: ${spanElement.id}`);
+            // ✅ VERIFICAÇÃO: Se card já existe, não detectar novamente
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                console.log(
+                    `♻️ SKIP: Card já existe para o processo atual - evitando duplicação`
+                );
+                return null;
+            }
+
+            try {
+                // 🔐 XPATH FIXO DO EPROC - ÚNICA E DEFINITIVA ESTRATÉGIA DE BUSCA
+                const xpathExpression =
+                    "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
+
+                console.log("🔍 BUSCA: Executando XPath fixo do eProc...");
+                console.log(`   Caminho: ${xpathExpression}`);
+
+                // Aguardar um pouco para garantir que o DOM está carregado
+                const tentarBusca = () => {
+                    const spanElement = document.evaluate(
+                        xpathExpression,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue;
+
+                    return spanElement;
+                };
+
+                // Primeira tentativa
+                let spanElement = tentarBusca();
+
+                // Se não encontrou, aguardar 500ms e tentar novamente (DOM pode ainda estar carregando)
+                if (!spanElement) {
+                    console.log(
+                        "⏳ XPATH: Primeira tentativa falhou, aguardando DOM carregar..."
+                    );
+
+                    // Retornar uma Promise para aguardar de forma síncrona
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            const spanElementSegundaTentativa = tentarBusca();
+                            if (spanElementSegundaTentativa) {
+                                console.log(
+                                    "✅ XPATH: Elemento encontrado na segunda tentativa!"
+                                );
+                                resolve(
+                                    processarElementoEncontrado(
+                                        spanElementSegundaTentativa
+                                    )
+                                );
+                            } else {
+                                console.log(
+                                    "❌ XPATH: Elemento não encontrado após aguardar"
+                                );
+                                console.log(`   Caminho: ${xpathExpression}`);
+                                console.log(
+                                    "   Verifique se você está na página correta do eProc"
+                                );
+                                console.log(
+                                    "   Execute no console: $x('" +
+                                        xpathExpression +
+                                        "')"
+                                );
+                                resolve(null);
+                            }
+                        }, 500);
+                    });
+                }
+
+                console.log(
+                    "✅ XPATH: Elemento encontrado na primeira tentativa!"
+                );
+                return processarElementoEncontrado(spanElement);
+            } catch (error) {
+                console.error("❌ ERRO XPATH: Falha na detecção:", error);
+                return null;
+            }
+        }
+
+        // Função auxiliar para processar o elemento encontrado
+        function processarElementoEncontrado(spanElement) {
+            console.log(`   ID: ${spanElement.id || "sem-id"}`);
             console.log(`   Tag: ${spanElement.tagName}`);
+            console.log(`   Classe: ${spanElement.className || "sem-classe"}`);
 
             // Extrair dados do atributo onmouseover
             const onmouseoverAttr = spanElement.getAttribute("onmouseover");
 
             if (!onmouseoverAttr) {
                 console.log("❌ XPATH: Atributo onmouseover não encontrado");
+                console.log("   Element HTML:", spanElement.outerHTML);
                 return null;
             }
 
@@ -12896,17 +12620,30 @@ ${texto}`;
             );
             if (!match) {
                 console.log("❌ XPATH: Formato do tooltip não reconhecido");
+                console.log("   Tentando extrair de outras formas...");
+
+                // Tentativa alternativa de extração
+                const matchAlternativo = onmouseoverAttr.match(/"([^"]+)"/);
+                if (matchAlternativo) {
+                    console.log("✅ XPATH: Formato alternativo detectado");
+                    return processarTooltipContent(matchAlternativo[1]);
+                }
+
                 return null;
             }
 
-            const tooltipContent = match[1];
+            return processarTooltipContent(match[1]);
+        }
+
+        // Função auxiliar para processar o conteúdo do tooltip
+        function processarTooltipContent(tooltipContent) {
             console.log(`📝 XPATH: Conteúdo do tooltip: ${tooltipContent}`);
 
-            // USAR NOVA FUNÇÃO que detecta o formato atualizado
+            // USAR FUNÇÃO GLOBAL que detecta o formato atualizado
             const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
 
             if (resultado) {
-                console.log(`✅ XPATH: SUCESSO! Encontrado:`);
+                console.log(`✅ XPATH: SUCESSO! Dados extraídos:`);
                 console.log(`   - Status: ${resultado.status}`);
                 console.log(
                     `   - Status Original: ${resultado.statusOriginal}`
@@ -12916,8 +12653,30 @@ ${texto}`;
                 console.log(`   - Código: ${resultado.codigo}`);
                 console.log(`   - Total Sessões: ${resultado.totalSessoes}`);
 
-                // Criar/atualizar o card
-                atualizarCardMaterialDesign(resultado);
+                // Criar/atualizar o card usando a nova função
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.criarCardMaterialDesign
+                ) {
+                    const cardResult =
+                        window.SENT1_AUTO.criarCardMaterialDesign(resultado);
+
+                    if (cardResult) {
+                        console.log(
+                            "✅ CARD: Material Design criado com sucesso!"
+                        );
+                        // Inserir o card na interface
+                        atualizarCardMaterialDesign(resultado);
+                    } else {
+                        console.log("❌ CARD: Falha ao criar Material Design");
+                    }
+                } else {
+                    console.log(
+                        "⚠️ CARD: Função criarCardMaterialDesign não disponível"
+                    );
+                    // Fallback: usar método antigo
+                    atualizarCardMaterialDesign(resultado);
+                }
 
                 // Salvar dados globalmente (adaptar formato para compatibilidade)
                 dataSessaoPautado = {
@@ -12957,76 +12716,10 @@ ${texto}`;
                 "❌ XPATH: Dados de sessão não foram encontrados no tooltip"
             );
             return null;
-        } catch (error) {
-            console.error("❌ DETECÇÃO: Erro na detecção:", error);
-            return null;
         }
-    }
+    })(); // Fechamento da IIFE de detecção de sessão
 
-    /**
-     * Valida uma data brasileira de forma simples (DD/MM/YYYY)
-     * @param {string} dataString - Data em formato brasileiro
-     * @returns {Object|null} - Objeto com data validada ou null
-     */
-    function validarDataSessaoSimples(dataString) {
-        try {
-            // Limpar e normalizar a string da data
-            const dataLimpa = dataString.trim().replace(/[^\d\/\-\.]/g, "");
-
-            // Separar por /
-            const partes = dataLimpa.split("/");
-            if (partes.length !== 3) {
-                return null;
-            }
-
-            // Assumir formato brasileiro: DD/MM/AAAA
-            const dia = parseInt(partes[0], 10);
-            const mes = parseInt(partes[1], 10);
-            const ano = parseInt(partes[2], 10);
-
-            // Validações básicas
-            if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
-                return null;
-            }
-
-            if (
-                dia < 1 ||
-                dia > 31 ||
-                mes < 1 ||
-                mes > 12 ||
-                ano < 2020 ||
-                ano > 2030
-            ) {
-                return null;
-            }
-
-            // Criar objeto Date para validação
-            const dataObj = new Date(ano, mes - 1, dia);
-
-            if (
-                dataObj.getFullYear() !== ano ||
-                dataObj.getMonth() !== mes - 1 ||
-                dataObj.getDate() !== dia
-            ) {
-                return null;
-            }
-
-            // Retornar objeto de data validada
-            return {
-                dataOriginal: dataString,
-                dataFormatada: `${dia.toString().padStart(2, "0")}/${mes
-                    .toString()
-                    .padStart(2, "0")}/${ano}`,
-                dia: dia,
-                mes: mes,
-                ano: ano,
-                timestamp: dataObj.getTime(),
-                dataObj: dataObj,
-            };
-        } catch (error) {
-            return null;
-        }
-    }
+    // ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
 
     /**
      * Extrai dados da sessão de um texto usando TODOS os padrões de status
@@ -13190,16 +12883,496 @@ ${texto}`;
      * @param {Object} dadosSessao - Dados da sessão detectada
      * @returns {HTMLElement} - Elemento do card criado
      */
-    /*
-    // ❌ FUNÇÃO ANTIGA REMOVIDA - AGORA USANDO CardMaterialFigma.js
-    // Esta função foi substituída pela implementação EXATA das especificações Figma
-    // no arquivo CardMaterialFigma.js
-    function criarCardMaterialDesign(dadosSessao) {
-        // ... função removida ...
-        // Use a nova função do arquivo CardMaterialFigma.js que implementa
-        // as especificações EXATAS do SVG fornecido pelo usuário
+    /**
+     * 🎨 CONFIGURAÇÕES DOS CARDS POR STATUS
+     * Define cor do ícone e texto do header para cada status
+     * @param {string} status - Status da sessão (pode ser null/undefined)
+     * @returns {Object} - Configuração com corIcon e statusText
+     */
+    function obterConfigCardPorStatus(status) {
+        // Normalizar status (remover espaços, lowercase)
+        const statusNormalizado = (status || "").toLowerCase().trim();
+
+        // Mapeamento completo dos 8 cards conforme especificações Figma
+        const configuracoes = {
+            pautado: {
+                corIcon: "#5C85B4",
+                statusText: "Pautado",
+            },
+            retirado: {
+                corIcon: "#CE2D4F",
+                statusText: "Retirado",
+            },
+            vista: {
+                corIcon: "#FFBF46",
+                statusText: "Vista",
+            },
+            julgado: {
+                corIcon: "#3AB795",
+                statusText: "Julgado",
+            },
+            adiado: {
+                corIcon: "#F55D3E",
+                statusText: "Adiado",
+            },
+            adiado935: {
+                corIcon: "#731963",
+                statusText: "Adiado 935",
+            },
+            sobrestado: {
+                corIcon: "#FCB0B3",
+                statusText: "Sobrestado",
+            },
+            diligencia: {
+                corIcon: "#00171F",
+                statusText: "Diligência",
+            },
+        };
+
+        // Buscar configuração exata ou fallback para Pautado
+        return configuracoes[statusNormalizado] || configuracoes["pautado"];
     }
-    */
+
+    /**
+     * 🎨 CARD FIGMA - IMPLEMENTAÇÃO DINÂMICA PARA TODOS OS STATUS
+     * Base igual para todos, muda apenas texto do header e cor do ícone
+     * @param {Object} dadosSessao - Dados da sessão (obrigatório)
+     * @returns {HTMLElement|null} - Elemento do card ou null se erro
+     */
+    function criarCardMaterialDesign(dadosSessao) {
+        // ⚠️ VALIDAÇÃO CRÍTICA: Card só funciona com dados da sessão
+        if (!dadosSessao) {
+            console.log(
+                "❌ CARD FIGMA: Sem dados da sessão - não criando card"
+            );
+            return null;
+        }
+
+        try {
+            // Obter configuração baseada no status
+            const config = obterConfigCardPorStatus(dadosSessao.status);
+            console.log(
+                `🎨 CRIANDO CARD ${config.statusText.toUpperCase()} (${
+                    config.corIcon
+                }):`,
+                dadosSessao
+            );
+
+            // 0. GARANTIR FONTE ROBOTO CARREGADA
+            if (
+                !document.querySelector(
+                    'link[href*="fonts.googleapis.com"][href*="Roboto"]'
+                )
+            ) {
+                const linkRoboto = document.createElement("link");
+                linkRoboto.rel = "stylesheet";
+                linkRoboto.href =
+                    "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap";
+                document.head.appendChild(linkRoboto);
+            }
+
+            // 1. CONTAINER PRINCIPAL - Dimensões exatas: 169x60px conforme suas especificações
+            const cardContainer = document.createElement("div");
+            cardContainer.id = "eprobe-data-sessao";
+            cardContainer.className = "eprobe-figma-card-pautado";
+            cardContainer.style.cssText = `
+                width: 169px;
+                height: 60px;
+                margin: 8px 4px;
+                display: inline-block;
+                position: relative;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+                box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
+                filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3));
+                border-radius: 9px;
+            `;
+
+            // 2. SVG BASE - Dimensões exatas 169x60px conforme especificação
+            const svg = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "svg"
+            );
+            svg.setAttribute("width", "169");
+            svg.setAttribute("height", "60");
+            svg.setAttribute("viewBox", "0 0 169 60");
+            svg.setAttribute("fill", "none");
+
+            // 3. FUNDO DO CARD - COR EXATA FIGMA
+            const backgroundRect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect"
+            );
+            backgroundRect.setAttribute("x", "0");
+            backgroundRect.setAttribute("y", "0");
+            backgroundRect.setAttribute("width", "169");
+            backgroundRect.setAttribute("height", "60");
+            backgroundRect.setAttribute("rx", "9");
+            backgroundRect.setAttribute("fill", "#FEF7FF");
+            backgroundRect.setAttribute("stroke", "#CAC4D0");
+            backgroundRect.setAttribute("stroke-width", "0.75");
+
+            // 4. ÍCONE PAUTADO - CALENDÁRIO COM RELÓGIO #5C85B4
+            // Dimensões exatas do Figma: 24.9 x 24.75px
+            const iconGroup = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g"
+            );
+
+            // Posição do ícone conforme especificações Figma exatas
+            // left: 6.51%, top: 27.65%, dimensões: 24.9 x 24.75px
+            const iconX = Math.round(169 * 0.0651); // 6.51% de 169px = ~11px
+            const iconY = Math.round(60 * 0.2765); // 27.65% de 60px = ~16.6px
+
+            // Container do ícone com dimensões exatas
+            const iconRect = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect"
+            );
+            iconRect.setAttribute("x", iconX);
+            iconRect.setAttribute("y", iconY);
+            iconRect.setAttribute("width", "24.9");
+            iconRect.setAttribute("height", "24.75");
+            iconRect.setAttribute("fill", "none"); // Invisível, apenas para definir área
+
+            // SVG do calendário com relógio - dimensões 24.9 x 24.75px
+            const iconPath = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path"
+            );
+            iconPath.setAttribute("transform", `translate(${iconX}, ${iconY})`);
+            iconPath.setAttribute(
+                "d",
+                "M2.48973 24.1623C1.80506 24.1623 1.21914 23.9317 0.731981 23.4705C0.244824 23.0093 0.00082991 22.4542 0 21.8052V5.3052C0 4.65698 0.243994 4.10227 0.731981 3.64105C1.21997 3.17984 1.80589 2.94884 2.48973 2.94805H3.7346V0.590912H6.22433V2.94805H16.1833V0.590912H18.673V2.94805H19.9179C20.6025 2.94805 21.1889 3.17905 21.6768 3.64105C22.1648 4.10305 22.4084 4.65777 22.4076 5.3052V10.815C22.4076 11.1489 22.2881 11.4291 22.0491 11.6553C21.81 11.8816 21.5146 11.9944 21.1627 11.9936C20.8108 11.9928 20.5154 11.8797 20.2764 11.6542C20.0374 11.4287 19.9179 11.1489 19.9179 10.815V10.0195H2.48973V21.8052H9.70995C10.0627 21.8052 10.3585 21.9183 10.5975 22.1446C10.8366 22.3709 10.9556 22.6506 10.9548 22.9838C10.954 23.3169 10.8345 23.597 10.5963 23.8241C10.3581 24.0512 10.0627 24.1639 9.70995 24.1623H2.48973ZM18.673 25.3409C16.9509 25.3409 15.4832 24.7662 14.2699 23.6167C13.0566 22.4672 12.4495 21.0776 12.4487 19.4481C12.4478 17.8185 13.0549 16.4289 14.2699 15.2794C15.4849 14.1299 16.9526 13.5552 18.673 13.5552C20.3934 13.5552 21.8615 14.1299 23.0773 15.2794C24.2931 16.4289 24.8998 17.8185 24.8973 19.4481C24.8948 21.0776 24.2877 22.4676 23.0761 23.6178C21.8644 24.7681 20.3967 25.3425 18.673 25.3409ZM20.7581 22.2472L21.6295 21.4222L19.2954 19.2123V15.9123H18.0506V19.6838L20.7581 22.2472Z"
+            );
+            iconPath.setAttribute("fill", config.corIcon);
+            iconPath.setAttribute("class", "eprobe-icon-dinamico");
+
+            iconGroup.appendChild(iconRect);
+            iconGroup.appendChild(iconPath);
+
+            // 5. TEXTO PRINCIPAL - "Pautado" (Header LP)
+            // Dimensões: 113.92 x 16.06px
+            // Posição: left: 26.04%, top: 23.33%, bottom: 49.9%
+            const textPrincipal = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+            // Cálculos exatos: 26.04% de 169px = 44px, 23.33% de 60px = 14px
+            const headerX = Math.round(169 * 0.2604); // 26.04% = ~44px
+            const headerY = Math.round(60 * 0.2333) + 13.5; // 23.33% + font-size para baseline = ~27.5px
+
+            textPrincipal.setAttribute("x", headerX.toString());
+            textPrincipal.setAttribute("y", headerY.toString());
+            textPrincipal.setAttribute("font-family", "Roboto, sans-serif");
+            textPrincipal.setAttribute("font-style", "normal");
+            textPrincipal.setAttribute("font-weight", "500");
+            textPrincipal.setAttribute("font-size", "13.5037px");
+            textPrincipal.setAttribute("line-height", "16");
+            textPrincipal.setAttribute("fill", "#1D1B20");
+            textPrincipal.setAttribute("text-anchor", "start");
+            textPrincipal.setAttribute("class", "eprobe-status-text");
+            textPrincipal.textContent = config.statusText;
+
+            // 6. SUBTÍTULO - "Sessão: getData()" (Subhead LP)
+            // Dimensões: 103.36 x 15.89px
+            // Posição: left: 26.04%, top: 50.1%, bottom: 24.9%
+            const dataExtraida = getData(dadosSessao);
+            const textData = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+            // Cálculos exatos: 26.04% de 169px = 44px, 50.1% de 60px = 30px
+            const subheadX = Math.round(169 * 0.2604); // 26.04% = ~44px
+            const subheadY = Math.round(60 * 0.501) + 11; // 50.1% + font-size para baseline = ~41px
+
+            textData.setAttribute("x", subheadX.toString());
+            textData.setAttribute("y", subheadY.toString());
+            textData.setAttribute("font-family", "Roboto, sans-serif");
+            textData.setAttribute("font-style", "normal");
+            textData.setAttribute("font-weight", "400");
+            textData.setAttribute("font-size", "11px");
+            textData.setAttribute("line-height", "15");
+            textData.setAttribute("letter-spacing", "0.187552px");
+            textData.setAttribute("fill", "#1D1B20");
+            textData.setAttribute("text-anchor", "start");
+            textData.setAttribute("class", "eprobe-date-text");
+            textData.textContent = `Sessão: ${dataExtraida}`;
+
+            // 7. MONTAGEM DO SVG
+            svg.appendChild(backgroundRect);
+            svg.appendChild(iconGroup);
+            svg.appendChild(textPrincipal);
+            svg.appendChild(textData);
+
+            // 8. ADICIONAR AO CONTAINER
+            cardContainer.appendChild(svg);
+
+            // 8.1. APLICAR ESTILOS CSS ESPECÍFICOS PARA GARANTIR ESPECIFICAÇÕES FIGMA
+            const cardStyle = document.createElement("style");
+            if (!document.getElementById("eprobe-card-figma-styles")) {
+                cardStyle.id = "eprobe-card-figma-styles";
+                cardStyle.textContent = `
+                    .eprobe-figma-card-pautado {
+                        font-family: 'Roboto', sans-serif !important;
+                    }
+                    
+                    .eprobe-figma-card-pautado text {
+                        font-family: 'Roboto', sans-serif !important;
+                        shape-rendering: crispEdges;
+                        text-rendering: optimizeLegibility;
+                        
+                    }
+                    
+                    /* Header LP - Especificações exatas Figma */
+                    .eprobe-status-text {
+                        font-family: 'Roboto', sans-serif !important;
+                        font-style: normal !important;
+                        font-weight: 500 !important;
+                        font-size: 13.5037px !important;
+                        line-height: 16px !important;
+                        fill: #1D1B20 !important;
+                        font-stretch: 100 !important;
+                        text-align: justify !important;
+                    }
+                    
+                    /* Subhead LP - Especificações exatas Figma */
+                    .eprobe-date-text {
+                        font-family: 'Roboto', sans-serif !important;
+                        font-style: normal !important;
+                        font-weight: 400 !important;
+                        font-size: 11px !important;
+                        line-height: 15px !important;
+                        letter-spacing: 0.187552px !important;
+                        fill: #1D1B20 !important;
+                    }
+                    
+                    /* IconAzul - Especificações Figma */
+                    .eprobe-icon-azul {
+                        background: #5C85B4 !important;
+                        width: 24.9px !important;
+                        height: 24.75px !important;
+                    }
+                `;
+                document.head.appendChild(cardStyle);
+            }
+
+            // 9. EFEITOS HOVER - MATERIAL DESIGN ELEVATION
+            addPassiveEventListener(cardContainer, "mouseenter", () => {
+                cardContainer.style.transform = "translateY(-2px)";
+                cardContainer.style.boxShadow =
+                    "0px 8px 12px 6px rgba(0, 0, 0, 0.15)";
+                cardContainer.style.filter =
+                    "drop-shadow(0px 6px 6px rgba(0, 0, 0, 0.35))";
+            });
+
+            addPassiveEventListener(cardContainer, "mouseleave", () => {
+                cardContainer.style.transform = "translateY(0)";
+                cardContainer.style.boxShadow =
+                    "0px 3px 3px rgba(0, 0, 0, 0.25)";
+                cardContainer.style.filter =
+                    "drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.3))";
+            });
+
+            // 10. LOG DE SUCESSO
+            console.log("✅ CARD PAUTADO CRIADO:", {
+                id: cardContainer.id,
+                status: "Pautado",
+                data: dataExtraida,
+                cor: "#5C85B4",
+            });
+
+            return cardContainer;
+        } catch (error) {
+            console.error("❌ ERRO AO CRIAR CARD PAUTADO:", error);
+            return null;
+        }
+    }
+
+    /**
+     * 🧪 FUNÇÃO DE TESTE - Criar card com dados mock para verificar especificações
+     */
+    function testarCardFigmaEspecificacoes() {
+        console.log("🧪 TESTE: Criando card Pautado com dados mock...");
+
+        const dadosMock = {
+            status: "Pautado",
+            data: "22/07/2025",
+            dataFormatada: "22/07/2025",
+        };
+
+        const card = criarCardMaterialDesign(dadosMock);
+        if (card) {
+            // Remover card existente se houver
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                cardExistente.remove();
+            }
+
+            // Inserir no body para teste
+            card.style.position = "fixed";
+            card.style.top = "20px";
+            card.style.right = "20px";
+            card.style.zIndex = "9999";
+            card.style.backgroundColor = "white";
+            card.style.padding = "10px";
+            card.style.border = "2px solid #007ebd";
+
+            document.body.appendChild(card);
+
+            console.log(
+                "✅ TESTE: Card criado com especificações Figma exatas:"
+            );
+            console.log("📏 DIMENSÕES:");
+            console.log("- Card: 169x60px");
+            console.log("- Icon: 24.9x24.75px");
+            console.log("- Header Text: 113.92x16.06px");
+            console.log("- Subhead Text: 103.36x15.89px");
+
+            console.log("📐 POSICIONAMENTO:");
+            console.log(
+                `- Icon: left: 6.51% (${Math.round(
+                    169 * 0.0651
+                )}px), top: 27.65% (${Math.round(60 * 0.2765)}px)`
+            );
+            console.log(
+                `- Header: left: 26.04% (${Math.round(
+                    169 * 0.2604
+                )}px), top: 23.33% (${Math.round(60 * 0.2333) + 13.5}px)`
+            );
+            console.log(
+                `- Subhead: left: 26.04% (${Math.round(
+                    169 * 0.2604
+                )}px), top: 50.1% (${Math.round(60 * 0.501) + 11}px)`
+            );
+
+            console.log("🎨 TIPOGRAFIA:");
+            console.log("- Header: Roboto 380, 13.5037px, line-height 16px");
+            console.log(
+                "- Subhead: Roboto 400, 11px, line-height 15px, letter-spacing 0.187552px"
+            );
+            console.log("- Cor texto: #1D1B20");
+            console.log("- Cor ícone: #5C85B4");
+
+            return card;
+        } else {
+            console.log("❌ TESTE: Falha ao criar card");
+            return null;
+        }
+    }
+
+    /**
+     * 🧪 TESTE FIGMA - TODOS OS 8 CARDS
+     * Demonstra todos os cards com cores e textos diferentes
+     */
+    function testarTodosCards() {
+        console.log("🧪 TESTANDO TODOS OS 8 CARDS FIGMA:");
+
+        // Dados de sessão de exemplo
+        const dadosExemplo = {
+            data: "15/03/2025",
+            orgao: "4CCR",
+        };
+
+        // Lista dos 8 status para testar
+        const statusTeste = [
+            "pautado", // #5C85B4 - Azul
+            "retirado", // #CE2D4F - Vermelho
+            "vista", // #FFBF46 - Amarelo
+            "julgado", // #3AB795 - Verde
+            "adiado", // #F55D3E - Laranja
+            "adiado935", // #731963 - Roxo
+            "sobrestado", // #FCB0B3 - Rosa
+            "diligencia", // #00171F - Preto
+        ];
+
+        // Criar container de teste
+        let containerTeste = document.getElementById("teste-cards-container");
+        if (!containerTeste) {
+            containerTeste = document.createElement("div");
+            containerTeste.id = "teste-cards-container";
+            containerTeste.style.cssText = `
+                position: fixed;
+                top: 50px;
+                right: 50px;
+                z-index: 999999;
+                background: white;
+                padding: 20px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                max-height: 80vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                min-width: 300px;
+            `;
+
+            // Título do teste
+            const titulo = document.createElement("h3");
+            titulo.textContent = "🧪 Teste dos 8 Cards Figma";
+            titulo.style.cssText =
+                "margin: 0 0 15px 0; color: #333; font-size: 16px;";
+            containerTeste.appendChild(titulo);
+
+            document.body.appendChild(containerTeste);
+        } else {
+            // Limpar cards anteriores, manter apenas o título
+            const titulo = containerTeste.querySelector("h3");
+            containerTeste.innerHTML = "";
+            if (titulo) containerTeste.appendChild(titulo);
+        }
+
+        // Criar cada card
+        statusTeste.forEach((status, index) => {
+            const dadosComStatus = { ...dadosExemplo, status: status };
+            const card = criarCardMaterialDesign(dadosComStatus);
+
+            if (card) {
+                // Wrapper para identificação
+                const wrapper = document.createElement("div");
+                wrapper.style.cssText = `
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 5px;
+                    border-radius: 4px;
+                    background: ${index % 2 === 0 ? "#f9f9f9" : "#fff"};
+                `;
+
+                // Label do status
+                const label = document.createElement("span");
+                label.textContent = `${index + 1}. ${status.toUpperCase()}:`;
+                label.style.cssText =
+                    "min-width: 100px; font-size: 12px; font-weight: bold; color: #666;";
+
+                wrapper.appendChild(label);
+                wrapper.appendChild(card);
+                containerTeste.appendChild(wrapper);
+
+                console.log(
+                    `✅ Card ${index + 1}/8 criado: ${status.toUpperCase()}`
+                );
+            } else {
+                console.log(`❌ Erro ao criar card: ${status}`);
+            }
+        });
+
+        console.log(
+            "🎨 Teste completo! Todos os 8 cards devem estar visíveis na tela."
+        );
+        console.log("📋 CORES E TEXTOS DOS CARDS:");
+        console.log("1. PAUTADO - #5C85B4 (Azul)");
+        console.log("2. RETIRADO - #CE2D4F (Vermelho)");
+        console.log("3. VISTA - #FFBF46 (Amarelo)");
+        console.log("4. JULGADO - #3AB795 (Verde)");
+        console.log("5. ADIADO - #F55D3E (Laranja)");
+        console.log("6. ADIADO 935 - #731963 (Roxo)");
+        console.log("7. SOBRESTADO - #FCB0B3 (Rosa)");
+        console.log("8. DILIGÊNCIA - #00171F (Preto)");
+
+        return containerTeste;
+    }
 
     /**
      * Aplica estilos únicos para cards SVG do Figma
@@ -13654,19 +13827,120 @@ ${texto}`;
     }
 
     /**
+     * 🔧 FUNÇÃO NORMALIZADORA - Extrai a data da sessão de qualquer estrutura
+     * ÚNICA FUNÇÃO para obter a data da sessão independente da origem dos dados
+     * @param {Object|string} dadosSessao - Dados da sessão (qualquer formato)
+     * @returns {string} - Data formatada como string (DD/MM/AAAA) ou fallback
+     */
+    function extrairDataSessaoNormalizada(dadosSessao) {
+        // REGRA CRÍTICA: Sempre declarar variáveis antes de usar
+        let dataExtraida = null;
+
+        try {
+            // 1. Se dadosSessao é string, retornar diretamente
+            if (typeof dadosSessao === "string") {
+                return dadosSessao;
+            }
+
+            // 2. Se dadosSessao é null/undefined
+            if (!dadosSessao) {
+                console.log("⚠️ NORMALIZAÇÃO: dadosSessao é null/undefined");
+                return "Data não disponível";
+            }
+
+            // 3. Tentar dadosSessao.data (estrutura do detectarCardSessaoSimplificado)
+            if (typeof dadosSessao.data === "string") {
+                dataExtraida = dadosSessao.data;
+                console.log(
+                    `✅ NORMALIZAÇÃO: Usando dadosSessao.data = "${dataExtraida}"`
+                );
+                return dataExtraida;
+            }
+
+            // 4. Tentar dadosSessao.dataFormatada (estrutura do validarDataBrasileira)
+            if (typeof dadosSessao.dataFormatada === "string") {
+                dataExtraida = dadosSessao.dataFormatada;
+                console.log(
+                    `✅ NORMALIZAÇÃO: Usando dadosSessao.dataFormatada = "${dataExtraida}"`
+                );
+                return dataExtraida;
+            }
+
+            // 5. Tentar dadosSessao.data.dataFormatada (estrutura aninhada)
+            if (
+                dadosSessao.data &&
+                typeof dadosSessao.data.dataFormatada === "string"
+            ) {
+                dataExtraida = dadosSessao.data.dataFormatada;
+                console.log(
+                    `✅ NORMALIZAÇÃO: Usando dadosSessao.data.dataFormatada = "${dataExtraida}"`
+                );
+                return dataExtraida;
+            }
+
+            // 6. Fallback: Procurar qualquer propriedade que pareça uma data
+            const propriedadesPossiveis = [
+                "dataOriginal",
+                "dataString",
+                "dataSessao",
+            ];
+            for (const prop of propriedadesPossiveis) {
+                if (
+                    dadosSessao[prop] &&
+                    typeof dadosSessao[prop] === "string"
+                ) {
+                    dataExtraida = dadosSessao[prop];
+                    console.log(
+                        `✅ NORMALIZAÇÃO: Usando dadosSessao.${prop} = "${dataExtraida}"`
+                    );
+                    return dataExtraida;
+                }
+            }
+
+            // 7. Log para debug se nenhuma propriedade foi encontrada
+            console.log(
+                "❌ NORMALIZAÇÃO: Nenhuma propriedade de data encontrada"
+            );
+            console.log("   Estrutura recebida:", Object.keys(dadosSessao));
+            console.log("   Dados completos:", dadosSessao);
+
+            return "Data não disponível";
+        } catch (error) {
+            console.error("❌ NORMALIZAÇÃO: Erro ao extrair data:", error);
+            return "Erro na data";
+        }
+    }
+
+    /**
+     * 🎯 FUNÇÃO CURTA - Versão concisa para uso diário
+     * @param {Object|string} d - Dados da sessão
+     * @returns {string} - Data como string
+     */
+    function getData(d) {
+        return extrairDataSessaoNormalizada(d);
+    }
+
+    /**
      * Atualiza o card existente com novos dados
-     * VERSÃO OTIMIZADA - Evita remoção/recriação desnecessária
+     * VERSÃO CORRIGIDA - Usa função normalizadora para extrair data
      * @param {Object} dadosSessao - Novos dados da sessão
      */
     function atualizarCardMaterialDesign(dadosSessao) {
         const cardExistente = document.getElementById("eprobe-data-sessao");
+
+        // 🔧 CORREÇÃO: Usar função curta para extrair data
+        const dataExtraida = getData(dadosSessao);
+
+        console.log(
+            `📅 MATERIAL: Data normalizada extraída: "${dataExtraida}"`
+        );
 
         if (cardExistente) {
             console.log(
                 "🔄 MATERIAL: Card existente encontrado, verificando se precisa atualizar"
             );
 
-            // Verificar se os dados realmente mudaram (adaptar para nova estrutura)
+            // Verificar se os dados realmente mudaram (usar data normalizada)
             const statusAtual = cardExistente.querySelector(
                 ".eprobe-status-text"
             )?.textContent;
@@ -13675,7 +13949,7 @@ ${texto}`;
 
             if (
                 statusAtual === dadosSessao?.status &&
-                dataAtual === dadosSessao?.data
+                dataAtual?.includes(dataExtraida)
             ) {
                 console.log(
                     "ℹ️ MATERIAL: Card já está atualizado, mantendo estado atual"
@@ -13692,20 +13966,15 @@ ${texto}`;
             // Remover card antigo apenas se os dados mudaram
             cardExistente.remove();
 
-            // USAR A FUNÇÃO CORRETA DO CardMaterialFigma.js
-            const resultadoCard = window.SENT1_AUTO.criarCardMaterialDesign(
-                dadosSessao?.status || "Pautado",
-                dadosSessao?.data || "22/07/2025",
-                dadosSessao?.processo || "processo-teste"
-            );
+            // USAR A NOVA FUNÇÃO COM 1 PARÂMETRO ÚNICO
+            const resultadoCard =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessao);
 
-            if (resultadoCard.sucesso) {
-                inserirCardNaInterface(resultadoCard.elemento);
+            if (resultadoCard) {
+                inserirCardNaInterface(resultadoCard);
+                console.log("✅ MATERIAL: Card atualizado com sucesso!");
             } else {
-                console.error(
-                    "❌ MATERIAL: Erro ao criar card Figma:",
-                    resultadoCard.erro
-                );
+                console.error("❌ MATERIAL: Erro ao atualizar card");
             }
 
             materialDesignState.cardAtivo = true;
@@ -13713,19 +13982,16 @@ ${texto}`;
         } else {
             console.log("🆕 MATERIAL: Criando novo card Material Design");
 
-            // USAR A FUNÇÃO CORRETA DO CardMaterialFigma.js
-            const resultadoCard = window.SENT1_AUTO.criarCardMaterialDesign(
-                dadosSessao?.status || "Pautado",
-                dadosSessao?.data || "22/07/2025",
-                dadosSessao?.processo || "processo-teste"
-            );
+            // USAR A NOVA FUNÇÃO COM 1 PARÂMETRO ÚNICO
+            const resultadoCard =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessao);
 
-            if (resultadoCard.sucesso) {
-                inserirCardNaInterface(resultadoCard.elemento);
+            if (resultadoCard) {
+                inserirCardNaInterface(resultadoCard);
+                console.log("✅ MATERIAL: Card inserido com sucesso!");
             } else {
                 console.error(
-                    "❌ MATERIAL: Erro ao criar card Figma:",
-                    resultadoCard.erro
+                    "❌ MATERIAL: Erro ao criar card - função retornou null"
                 );
             }
 
@@ -14005,8 +14271,9 @@ ${texto}`;
                     "🔍 MATERIAL: Executando detecção simplificada única"
                 );
 
-                // Usar a nova função simplificada
-                const resultado = detectarCardSessaoSimplificado();
+                // Usar a função através do namespace global
+                const resultado =
+                    window.SENT1_AUTO?.detectarCardSessaoSimplificado?.();
 
                 if (resultado) {
                     console.log(
@@ -16080,8 +16347,8 @@ ${texto}`;
     // ===== SISTEMA DE THROTTLING ULTRA-OTIMIZADO PARA PERFORMANCE =====
     let ultimaSubstituicaoIcones = 0;
     let contadorSubstituicoes = 0;
-    const THROTTLE_ICONES_MS = 5000; // 5 segundos mínimo entre execuções (aumentado)
-    const MAX_SUBSTITUICOES_POR_MINUTO = 5; // Máximo 5 execuções por minuto (reduzido)
+    const THROTTLE_ICONES_MS = 10000; // ✅ 10 segundos mínimo entre execuções (otimizado)
+    const MAX_SUBSTITUICOES_POR_MINUTO = 3; // ✅ Máximo 3 execuções por minuto (otimizado)
     let historicoSubstituicoes = [];
     let executandoSubstituicao = false; // Flag para evitar execuções simultâneas
 
@@ -17003,66 +17270,78 @@ window.SENT1_AUTO.testarNovoFormatoTooltip = function (textoTeste) {
     }
 };
 
-// 🔧 FUNÇÃO PARA TESTAR XPATH E TOOLTIP REAL
-window.SENT1_AUTO.testarXPathTooltipReal = function () {
-    console.log("🔧 TESTE XPATH: Testando extração do tooltip real da página");
+// 🔧 FUNÇÃO DE TESTE XPATH REMOVIDA - usar window.SENT1_AUTO.detectarCardSessaoSimplificado() diretamente
 
-    try {
-        // Usar o XPath específico mencionado nos logs
-        const xpath =
-            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
-        const elemento = document.evaluate(
-            xpath,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null
-        ).singleNodeValue;
+// 🧪 FUNÇÃO DE DEBUG XPATH ÚNICA - Para diagnosticar problemas
+window.SENT1_AUTO.debugXPathEProc = function () {
+    console.log("🔍 DEBUG XPATH: Diagnosticando busca no eProc");
 
-        if (!elemento) {
-            console.log(
-                "❌ XPATH: Elemento não encontrado no caminho especificado"
-            );
-            return { erro: "Elemento não encontrado" };
-        }
+    const xpathExpression =
+        "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
 
-        console.log("✅ XPATH: Elemento encontrado:", elemento);
+    console.log("📍 XPath:", xpathExpression);
+    console.log("📄 URL atual:", window.location.href);
+    console.log("📊 DOM readyState:", document.readyState);
 
-        // Verificar atributo onmouseover
-        const onmouseover = elemento.getAttribute("onmouseover");
-        if (!onmouseover) {
-            console.log("❌ TOOLTIP: Atributo onmouseover não encontrado");
-            return { erro: "Sem atributo onmouseover" };
-        }
+    // Teste direto no console
+    console.log("🔧 Para testar manualmente, execute no console:");
+    console.log(`   $x("${xpathExpression}")`);
 
-        console.log("📄 ONMOUSEOVER:", onmouseover);
+    // Busca pelo elemento
+    const elemento = document.evaluate(
+        xpathExpression,
+        document,
+        null,
+        XPathResult.FIRST_ORDERED_NODE_TYPE,
+        null
+    ).singleNodeValue;
 
-        // Extrair conteúdo do tooltip
-        const matchTooltip = onmouseover.match(
-            /infraTooltipMostrar\('([^']+)'/
+    if (elemento) {
+        console.log("✅ ELEMENTO ENCONTRADO!");
+        console.log("   Tag:", elemento.tagName);
+        console.log("   ID:", elemento.id || "sem-id");
+        console.log("   Classe:", elemento.className || "sem-classe");
+        console.log("   Texto:", elemento.textContent || "sem-texto");
+        console.log(
+            "   onmouseover:",
+            elemento.getAttribute("onmouseover") || "sem-onmouseover"
         );
-        if (!matchTooltip) {
-            console.log("❌ TOOLTIP: Conteúdo do tooltip não encontrado");
-            return { erro: "Padrão de tooltip não encontrado" };
+
+        // Tentar executar a detecção completa
+        const resultado = window.SENT1_AUTO.detectarCardSessaoSimplificado();
+        if (resultado) {
+            console.log("✅ DETECÇÃO COMPLETA FUNCIONOU:", resultado);
+        } else {
+            console.log("❌ DETECÇÃO COMPLETA FALHOU");
         }
-
-        const conteudoTooltip = matchTooltip[1];
-        console.log("🎯 CONTEÚDO DO TOOLTIP:", conteudoTooltip);
-
-        // Testar extração com o novo formato
-        const dadosExtraidos = extrairDadosCardSessaoGlobal(conteudoTooltip);
-
-        return {
-            elemento: !!elemento,
-            onmouseover: !!onmouseover,
-            conteudoTooltip: conteudoTooltip,
-            dadosExtraidos: dadosExtraidos,
-            sucesso: !!dadosExtraidos,
-        };
-    } catch (error) {
-        console.error("💥 ERRO no teste XPath:", error);
-        return { erro: error.message };
+    } else {
+        console.log("❌ ELEMENTO NÃO ENCONTRADO");
+        console.log("   Verifique se você está na página certa do eProc");
+        console.log("   Aguarde o carregamento completo da página");
     }
+
+    return { elemento: !!elemento, xpath: xpathExpression };
+};
+
+// 🔧 FUNÇÃO DE DEBUG PARA NORMALIZAÇÃO DE DADOS
+window.SENT1_AUTO.debugNormalizacaoData = function (dadosTest) {
+    console.log("🔍 DEBUG NORMALIZAÇÃO: Testando extração de data");
+
+    if (!dadosTest) {
+        console.log("⚠️ Forneça dados para testar:");
+        console.log(
+            "   window.SENT1_AUTO.debugNormalizacaoData({ data: '23/01/2025' })"
+        );
+        console.log(
+            "   window.SENT1_AUTO.debugNormalizacaoData({ dataFormatada: '23/01/2025' })"
+        );
+        return;
+    }
+
+    const resultado = getData(dadosTest);
+    console.log("📅 RESULTADO:", resultado);
+
+    return resultado;
 };
 
 console.log(
@@ -17070,78 +17349,8 @@ console.log(
 );
 
 // Função de detecção global ao namespace
-window.SENT1_AUTO.detectarCardSessaoGlobal = function () {
-    console.log("🔍 GLOBAL: Executando detecção EXCLUSIVA via XPath");
-
-    try {
-        // XPATH ESPECÍFICO - ÚNICA ESTRATÉGIA
-        const xpathExpression =
-            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
-
-        // Usar XPath para encontrar o elemento exato
-        const spanElement = document.evaluate(
-            xpathExpression,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null
-        ).singleNodeValue;
-
-        if (!spanElement) {
-            console.log(
-                "❌ XPATH GLOBAL: Elemento não encontrado no caminho especificado"
-            );
-            return null;
-        }
-
-        console.log("✅ XPATH GLOBAL: Elemento encontrado!");
-        console.log(`   ID: ${spanElement.id}`);
-        console.log(`   Tag: ${spanElement.tagName}`);
-
-        // Extrair dados do atributo onmouseover
-        const onmouseoverAttr = spanElement.getAttribute("onmouseover");
-
-        if (!onmouseoverAttr) {
-            console.log("❌ XPATH GLOBAL: Atributo onmouseover não encontrado");
-            return null;
-        }
-
-        console.log("🔍 XPATH GLOBAL: Atributo onmouseover encontrado:");
-        console.log(`   ${onmouseoverAttr}`);
-
-        // Extrair o conteúdo do tooltip
-        const match = onmouseoverAttr.match(/infraTooltipMostrar\('([^']+)'/);
-        if (!match) {
-            console.log("❌ XPATH GLOBAL: Formato do tooltip não reconhecido");
-            return null;
-        }
-
-        const tooltipContent = match[1];
-        console.log(`📝 XPATH GLOBAL: Conteúdo do tooltip: ${tooltipContent}`);
-
-        // Processar dados usando função unificada
-        const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
-
-        if (resultado) {
-            console.log(`✅ XPATH GLOBAL: SUCESSO! Encontrado:`);
-            console.log(`   - Status: ${resultado.status}`);
-            console.log(`   - Data: ${resultado.data}`);
-
-            // Criar card Material Design exclusivo
-            atualizarCardMaterialDesign(resultado);
-
-            return resultado;
-        }
-
-        console.log(
-            "❌ XPATH GLOBAL: Dados de sessão não foram encontrados no tooltip"
-        );
-        return null;
-    } catch (error) {
-        console.error("❌ XPATH GLOBAL: Erro na detecção:", error);
-        return null;
-    }
-};
+// Função de detecção global REMOVIDA - usar apenas detectarCardSessaoSimplificado()
+// para evitar conflitos e duplicação de lógica
 /**
  * Função auxiliar para traduzir status de sessão conforme regras específicas
  * @param {string} statusOriginal - Status original do sistema eProc
@@ -17529,3 +17738,49 @@ console.log("- window.SENT1_AUTO.testarXPathMaterialDesign()");
 console.log(
     "✅ eProbe Extension carregada com sucesso - LAYOUT MATERIAL ÚNICO!"
 );
+
+// ===== CONTROLE GLOBAL DE EXECUÇÕES - ANTI-LOOP =====
+window.eProbeExecucoes = {
+    detectarDataSessao: 0,
+    inserirInterface: 0,
+    criarCard: 0,
+    substituirIcones: 0,
+    maxExecucoesPorFuncao: 5,
+
+    // Verificar se função pode executar
+    podeExecutar: function (nomeFuncao) {
+        if (!this[nomeFuncao]) this[nomeFuncao] = 0;
+
+        if (this[nomeFuncao] >= this.maxExecucoesPorFuncao) {
+            console.log(
+                `🛑 ANTI-LOOP: ${nomeFuncao} atingiu limite de execuções (${this.maxExecucoesPorFuncao})`
+            );
+            return false;
+        }
+
+        this[nomeFuncao]++;
+        console.log(
+            `📊 EXECUÇÃO: ${nomeFuncao} (#${this[nomeFuncao]}/${this.maxExecucoesPorFuncao})`
+        );
+        return true;
+    },
+
+    // Resetar contadores (a cada 2 minutos)
+    reset: function () {
+        console.log("🔄 ANTI-LOOP: Resetando contadores de execução");
+        for (const key in this) {
+            if (typeof this[key] === "number") {
+                this[key] = 0;
+            }
+        }
+    },
+};
+
+// Auto-reset a cada 2 minutos
+setInterval(() => {
+    window.eProbeExecucoes.reset();
+}, 120000);
+
+// 🧪 FUNÇÃO DE TESTE - Disponível globalmente
+window.SENT1_AUTO.testarCardFigmaEspecificacoes = testarCardFigmaEspecificacoes;
+window.SENT1_AUTO.testarTodosCards = testarTodosCards;
