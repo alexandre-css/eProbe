@@ -428,127 +428,6 @@
             }
         }
 
-        // Detectar tipo de página e formato de documento
-        function detectPageType() {
-            const url = window.location.href;
-            log("🔍 Detectando tipo de página. URL:", url);
-
-            if (url.includes("processo_selecionar")) {
-                return "lista_documentos";
-            } else if (
-                url.includes("acessar_documento") ||
-                url.includes("processo_consultar_externo_documento")
-            ) {
-                // Detectar se é documento HTML (sentença) ou PDF (petição inicial)
-                const sectionSentenca = document.querySelector(
-                    'section[data-nome="sentenca"]'
-                );
-
-                // Buscar PDFs com múltiplos seletores
-                const pdfSelectors = [
-                    'embed[type="application/pdf"]',
-                    'iframe[src*=".pdf"]',
-                    'object[type="application/pdf"]',
-                    'iframe[title*="PDF"]',
-                    'embed[src*=".pdf"]',
-                    'object[data*=".pdf"]',
-                    'iframe[src*="pdf"]',
-                    'embed[src*="pdf"]',
-                    ".pdf-viewer",
-                    "#pdf-viewer",
-                    '[class*="pdf"]',
-                    '[id*="pdf"]',
-                ];
-
-                let pdfViewer = null;
-
-                // Testar cada seletor
-                for (const selector of pdfSelectors) {
-                    pdfViewer = document.querySelector(selector);
-                    if (pdfViewer) {
-                        log(
-                            `📄 PDF encontrado com seletor: ${selector}`,
-                            pdfViewer
-                        );
-                        break;
-                    }
-                }
-
-                // Debug: listar todos os iframes e embeds
-                const allIframes = document.querySelectorAll("iframe");
-                const allEmbeds = document.querySelectorAll("embed");
-                const allObjects = document.querySelectorAll("object");
-
-                log("🔍 Debug - Total de elementos encontrados:", {
-                    iframes: allIframes.length,
-                    embeds: allEmbeds.length,
-                    objects: allObjects.length,
-                });
-
-                // Verificar se algum iframe/embed tem características de PDF
-                [...allIframes, ...allEmbeds, ...allObjects].forEach(
-                    (element, index) => {
-                        const src = element.src || element.data || "";
-                        const type = element.type || "";
-                        const title = element.title || "";
-
-                        log(`🔍 Elemento ${index + 1}: ${element.tagName}`, {
-                            src: src.substring(0, 100),
-                            type: type,
-                            title: title,
-                            className: element.className,
-                            id: element.id,
-                        });
-
-                        // Se contém características de PDF
-                        if (
-                            src.toLowerCase().includes("pdf") ||
-                            type.toLowerCase().includes("pdf") ||
-                            title.toLowerCase().includes("pdf")
-                        ) {
-                            pdfViewer = element;
-                            log(
-                                "📄 PDF detectado por características:",
-                                element
-                            );
-                        }
-                    }
-                );
-
-                if (sectionSentenca) {
-                    log("📄 Documento HTML detectado (sentença)");
-                    return "documento_html";
-                } else if (pdfViewer) {
-                    log("📄 Documento PDF detectado");
-                    return "documento_pdf";
-                } else {
-                    log(
-                        "📄 Documento específico (tipo indefinido) - verificando conteúdo..."
-                    );
-
-                    // Verificar se há conteúdo típico de documento
-                    const hasDocumentContent =
-                        document.querySelector(".documento") ||
-                        document.querySelector(".conteudo") ||
-                        document.querySelector(".texto") ||
-                        document.querySelector("main") ||
-                        document.querySelector("article") ||
-                        document.body.textContent.length > 1000;
-
-                    if (hasDocumentContent) {
-                        log(
-                            "📄 Conteúdo de documento detectado - assumindo documento específico"
-                        );
-                        return "documento_especifico";
-                    } else {
-                        log("❌ Nenhum conteúdo de documento detectado");
-                        return "desconhecida";
-                    }
-                }
-            }
-
-            return "desconhecida";
-        }
         function isValidPageForButton() {
             // Verificar se está na página do processo (formulário frmProcessoLista + título específico)
             const formProcessoLista =
@@ -700,55 +579,9 @@
         }
 
         // Função para detectar e processar página "Meus Localizadores"
-        function detectarPaginaLocalizadores() {
-            const currentUrl = window.location.href;
 
-            // Verifica se está na página de Meus Localizadores
-            if (
-                !currentUrl.includes(
-                    "acao=usuario_tipo_monitoramento_localizador_listar"
-                )
-            ) {
-                return false;
-            }
 
-            console.log(
-                "📋 LOCALIZADORES: Página 'Meus Localizadores' detectada"
-            );
-
-            // Processa a tabela de localizadores
-            processarTabelaLocalizadores();
-
-            return true;
-        }
-
-        // Função para processar a tabela de localizadores
-        function processarTabelaLocalizadores() {
-            console.log("🔍 LOCALIZADORES: Iniciando processamento da tabela");
-
-            // Busca a tabela de localizadores
-            const tabela = document.querySelector(
-                'table.infraTable[summary*="Localizadores"]'
-            );
-
-            if (!tabela) {
-                console.log(
-                    "⚠️ LOCALIZADORES: Tabela de localizadores não encontrada"
-                );
-                return;
-            }
-
-            console.log("✅ LOCALIZADORES: Tabela encontrada, processando...");
-
-            // Destaca localizadores urgentes
-            destacarLocalizadoresUrgentes(tabela);
-
-            // Adiciona interface de separadores
-            adicionarInterfaceSeparadores(tabela);
-
-            // Restaurar separadores salvos
-            restaurarSeparadores(tabela);
-        } // Função para restaurar separadores salvos
+        // FUNÇÃO processarTabelaLocalizadores MOVIDA PARA ESCOPO PRINCIPAL (linha ~21200+) // Função para restaurar separadores salvos
         function restaurarSeparadores(tabela) {
             console.log("🔄 LOCALIZADORES: Restaurando separadores salvos");
 
@@ -824,47 +657,7 @@
             );
         }
 
-        // Função para destacar localizadores com palavra "urgente"
-        function destacarLocalizadoresUrgentes(tabela) {
-            console.log("🔴 LOCALIZADORES: Destacando localizadores urgentes");
-
-            const linhas = tabela.querySelectorAll("tbody tr");
-            let urgentesEncontrados = 0;
-
-            linhas.forEach((linha, index) => {
-                const primeiraColuna = linha.querySelector("td:first-child");
-
-                if (primeiraColuna) {
-                    const textoLocalizador =
-                        primeiraColuna.textContent.toLowerCase();
-
-                    // Verifica se contém a palavra "urgente" (case insensitive)
-                    if (textoLocalizador.includes("urgente")) {
-                        // Aplica estilo de destaque vermelho suave
-                        linha.style.backgroundColor = "#fecaca";
-                        linha.style.border = "1px solid #f87171";
-                        linha.style.transition = "all 0.2s ease";
-
-                        urgentesEncontrados++;
-                        console.log(
-                            `🔴 LOCALIZADORES: Linha ${
-                                index + 1
-                            } marcada como urgente: "${primeiraColuna.textContent.trim()}"`
-                        );
-                    }
-                }
-            });
-
-            if (urgentesEncontrados > 0) {
-                console.log(
-                    `✅ LOCALIZADORES: ${urgentesEncontrados} localizador(es) urgente(s) destacado(s)`
-                );
-            } else {
-                console.log(
-                    "ℹ️ LOCALIZADORES: Nenhum localizador urgente encontrado"
-                );
-            }
-        }
+        // FUNÇÃO destacarLocalizadoresUrgentes MOVIDA PARA ESCOPO PRINCIPAL (linha ~21200+)
 
         // Função para criar divisores editáveis na tabela de localizadores
         function criarDivisorEditavel(
@@ -1393,220 +1186,15 @@
         const MAX_BUTTON_CREATION_ATTEMPTS = 5;
         let buttonCreationTimer = null;
 
-        function ensureButtonExists() {
-            // Verificar se já existe algum botão
-            const existingButton =
-                document.getElementById("documento-relevante-auto-button") ||
-                document.getElementById("sent1-auto-button");
+        // FUNÇÃO ensureButtonExists MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
-            if (existingButton) {
-                console.log("✅ BOTÃO: Já existe, cancelando verificação");
-                buttonCreationAttempts = 0;
-                return true;
-            }
+        // FUNÇÃO debugButtonCreation MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
-            // Incrementar tentativas
-            buttonCreationAttempts++;
+        // FUNÇÃO forceCreateButton MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
-            if (buttonCreationAttempts > MAX_BUTTON_CREATION_ATTEMPTS) {
-                console.log(
-                    "⚠️ BOTÃO: Máximo de tentativas atingido, parando verificação"
-                );
-                return false;
-            }
+        // FUNÇÃO shouldShowIntegratedButton MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
-            console.log(
-                `🔄 BOTÃO: Tentativa ${buttonCreationAttempts}/${MAX_BUTTON_CREATION_ATTEMPTS} de criação`
-            );
-
-            // Verificar se a página atende aos critérios
-            const shouldShowIntegrated = shouldShowIntegratedButton();
-            const shouldShowFloating = shouldShowFloatingButton();
-
-            console.log("🔍 BOTÃO: Critérios de validação:", {
-                shouldShowIntegrated,
-                shouldShowFloating,
-                pageUrl: window.location.href,
-            });
-
-            if (shouldShowIntegrated || shouldShowFloating) {
-                createAutomationButton();
-
-                // Verificar se foi criado com sucesso após um pequeno delay
-                setTimeout(() => {
-                    const buttonAfterCreation =
-                        document.getElementById(
-                            "documento-relevante-auto-button"
-                        ) || document.getElementById("sent1-auto-button");
-
-                    if (buttonAfterCreation) {
-                        console.log("✅ BOTÃO: Criado com sucesso");
-                        buttonCreationAttempts = 0;
-                    } else {
-                        console.log(
-                            "⚠️ BOTÃO: Falha na criação, tentando novamente em 1s"
-                        );
-                        // Tentar novamente após 1 segundo
-                        setTimeout(ensureButtonExists, 1000);
-                    }
-                }, 200);
-            } else {
-                console.log(
-                    "❌ BOTÃO: Página não atende aos critérios, tentando novamente em 2s"
-                );
-                // Tentar novamente após 2 segundos em caso de página ainda carregando
-                setTimeout(ensureButtonExists, 2000);
-            }
-
-            return false;
-        }
-
-        // Funções de debug para diagnosticar problemas com o botão
-        function debugButtonCreation() {
-            console.log("=== DEBUG CRIAÇÃO DE BOTÃO ===");
-            console.log("URL atual:", window.location.href);
-            console.log("Título da página:", document.title);
-
-            const h1 = document.querySelector("h1");
-            console.log(
-                "H1 encontrado:",
-                h1 ? h1.textContent : "Não encontrado"
-            );
-
-            const formProcesso = document.querySelector("#frmProcessoLista");
-            console.log("Form processo encontrado:", !!formProcesso);
-
-            const documentLinks = document.querySelectorAll(
-                '[href*="acessar_documento"]'
-            );
-            console.log(
-                "Links de documento encontrados:",
-                documentLinks.length
-            );
-
-            const shouldIntegrated = shouldShowIntegratedButton();
-            const shouldFloating = shouldShowFloatingButton();
-
-            console.log("Deve mostrar botão integrado:", shouldIntegrated);
-            console.log("Deve mostrar botão flutuante:", shouldFloating);
-
-            const existingIntegrated = document.getElementById(
-                "documento-relevante-auto-button"
-            );
-            const existingFloating =
-                document.getElementById("sent1-auto-button");
-
-            console.log("Botão integrado existe:", !!existingIntegrated);
-            console.log("Botão flutuante existe:", !!existingFloating);
-
-            return {
-                shouldIntegrated,
-                shouldFloating,
-                hasIntegrated: !!existingIntegrated,
-                hasFloating: !!existingFloating,
-                url: window.location.href,
-            };
-        }
-
-        function forceCreateButton() {
-            console.log("🔧 FORÇANDO criação de botão...");
-            buttonCreationAttempts = 0; // Reset contador
-            ensureButtonExists();
-
-            setTimeout(() => {
-                debugButtonCreation();
-            }, 1000);
-        }
-
-        // Função melhorada para verificar se deve mostrar o botão integrado
-        function shouldShowIntegratedButton() {
-            // Verificações básicas de URL
-            const url = window.location.href;
-            if (
-                !url.includes("eproc") ||
-                (!url.includes("processo") && !url.includes("documento"))
-            ) {
-                console.log(
-                    "❌ BOTÃO INTEGRADO: URL não contém eproc + processo/documento"
-                );
-                return false;
-            }
-
-            // Verificar título da página
-            const h1Element = document.querySelector("h1");
-            if (h1Element) {
-                const titleText = h1Element.textContent.trim();
-                const hasCorrectTitle =
-                    titleText === "Consulta Processual - Detalhes do Processo";
-
-                console.log("🔍 BOTÃO INTEGRADO: Verificando título:", {
-                    titleFound: titleText,
-                    isCorrect: hasCorrectTitle,
-                });
-
-                if (hasCorrectTitle) {
-                    return true;
-                }
-            }
-
-            // Verificações alternativas para páginas de documento
-            const hasFormProcesso =
-                !!document.querySelector("#frmProcessoLista");
-            const hasDocumentContent = !!document.querySelector(
-                '[href*="acessar_documento"]'
-            );
-            const hasMinutasContent = !!document.querySelector(
-                "#conteudoMinutas, #fldMinutas"
-            );
-
-            console.log("🔍 BOTÃO INTEGRADO: Verificações alternativas:", {
-                hasFormProcesso,
-                hasDocumentContent,
-                hasMinutasContent,
-            });
-
-            return hasFormProcesso || hasDocumentContent || hasMinutasContent;
-        }
-
-        // Função melhorada para verificar se deve mostrar o botão flutuante
-        function shouldShowFloatingButton() {
-            // Se deve mostrar botão integrado, não mostrar flutuante
-            if (shouldShowIntegratedButton()) {
-                return false;
-            }
-
-            const url = window.location.href;
-
-            // Verificar se é uma página de documento específico
-            if (
-                url.includes("acessar_documento") ||
-                url.includes("processo_consultar_externo_documento")
-            ) {
-                console.log(
-                    "✅ BOTÃO FLUTUANTE: Página de documento específico detectada"
-                );
-                return true;
-            }
-
-            // Verificar conteúdo da página
-            const pageHTML = document.documentElement.outerHTML;
-            const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
-            const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
-            const hasDocumentLinks = !!document.querySelector(
-                '[href*="SENT"], [href*="INIC"], [href*="DECI"]'
-            );
-
-            console.log("🔍 BOTÃO FLUTUANTE: Verificando critérios:", {
-                hasDocumentHtml,
-                hasDocumentPdf,
-                hasDocumentLinks,
-                shouldShow:
-                    hasDocumentHtml || hasDocumentPdf || hasDocumentLinks,
-                url,
-            });
-
-            return hasDocumentHtml || hasDocumentPdf || hasDocumentLinks;
-        }
+        // FUNÇÃO shouldShowFloatingButton MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
         // Função aprimorada para encontrar descrição do evento
         function findEventDescription(linkElement) {
@@ -1856,8 +1444,12 @@
             }
 
             return "";
-        } // Encontrar documentos relevantes com informações detalhadas
-        function findDocumentosRelevantes() {
+        } 
+        
+        // FUNÇÃO findDocumentosRelevantes MOVIDA PARA ESCOPO PRINCIPAL (linha ~20100+)
+        // A implementação completa está no escopo principal para ser acessível via namespace
+
+        // Extrair texto de documento PDF (petições iniciais)
             const pageType = detectPageType();
             log(` Tipo de página detectado: ${pageType}`);
 
@@ -2366,72 +1958,9 @@
             return documentosRelevantes;
         }
 
-        // Abrir documento relevante automaticamente (com suporte a múltiplos documentos)
-        async function autoOpenDocumentoRelevante() {
-            const pageType = detectPageType();
-            log(" Tipo de página:", pageType);
+        // FUNÇÃO MOVIDA PARA O ESCOPO PRINCIPAL - VER LINHA APROXIMADAMENTE 19700+
 
-            if (pageType !== "lista_documentos") {
-                log(" Não está na página de lista de documentos");
-                return false;
-            }
-
-            const documentosRelevantes = findDocumentosRelevantes();
-
-            if (documentosRelevantes.length === 0) {
-                log(" Nenhum documento relevante encontrado");
-                showNotification(
-                    "Nenhum documento relevante encontrado nesta página",
-                    "error"
-                );
-                return false;
-            }
-
-            let selectedDocument;
-
-            if (documentosRelevantes.length === 1) {
-                // Apenas um documento encontrado
-                selectedDocument = documentosRelevantes[0];
-                log(" Um documento encontrado, selecionando automaticamente");
-            } else {
-                // Múltiplos documentos encontrados
-                log(
-                    ` ${documentosRelevantes.length} documentos encontrados, solicitando seleção do usuário`
-                );
-
-                log(
-                    " DEBUG: documentosRelevantes antes do modal:",
-                    documentosRelevantes.map((doc) => ({
-                        index: doc.index,
-                        tipo: doc.tipo.descricao,
-                        eventoDescricao: doc.eventoDescricao,
-                        seqEvento: doc.seqEvento,
-                    }))
-                );
-                selectedDocument = await showDocumentSelectionModal(
-                    documentosRelevantes
-                );
-
-                if (!selectedDocument) {
-                    log(" Usuário cancelou a seleção");
-                    return false;
-                }
-            }
-
-            log(" Abrindo documento selecionado:", selectedDocument.href);
-            showNotification(
-                `Abrindo ${selectedDocument.tipo.descricao} selecionada...`,
-                "info"
-            );
-
-            // Abrir em uma nova aba
-            window.open(selectedDocument.href, "_blank");
-
-            return true;
-        }
-
-        // Extrair texto do documento
-        async function autoExtractText() {
+        // Extrair texto de documento PDF (petições iniciais)
             const pageType = detectPageType();
             log(" Tipo de página:", pageType);
 
@@ -4108,69 +3637,6 @@ ${texto}`;
             }
         }
 
-        // Automação completa
-        async function runFullAutomation() {
-            if (isAutomationActive) {
-                log(" Automação já está ativa");
-                return;
-            }
-
-            isAutomationActive = true;
-            log(" Iniciando automação completa...");
-
-            try {
-                const pageType = detectPageType();
-
-                if (pageType === "lista_documentos") {
-                    const opened = await autoOpenDocumentoRelevante();
-                    if (opened) {
-                        showNotification(
-                            " Documento aberto! Aguarde carregar e execute novamente na nova aba",
-                            "success"
-                        );
-                    }
-                } else if (pageType === "documento_especifico") {
-                    const texto = await autoExtractText();
-                    if (texto) {
-                        const apiSent = await sendToPerplexity(texto);
-
-                        if (!apiSent) {
-                            log(
-                                " API falhou, usando método de clipboard como fallback"
-                            );
-                            showNotification(
-                                " Tentando método alternativo...",
-                                "warning"
-                            );
-
-                            const copied = await copyToClipboardWithPrefix(
-                                texto
-                            );
-                            if (copied) {
-                                showNotification(
-                                    " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
-                                    "success"
-                                );
-                            }
-                        }
-                    }
-                } else {
-                    showNotification(
-                        " Página não reconhecida. Use na página do processo ou documento",
-                        "error"
-                    );
-                }
-            } catch (error) {
-                log(" Erro na automação:", error);
-                showNotification(
-                    " Erro na automação: " + error.message,
-                    "error"
-                );
-            } finally {
-                isAutomationActive = false;
-            }
-        }
-
         // Função para prevenir sobreposição de elementos da interface
         function preventElementOverlap() {
             const floatingButton = document.getElementById("sent1-auto-button");
@@ -4227,114 +3693,12 @@ ${texto}`;
             }
         }
 
-        // Sistema de notificações
-        function showNotification(message, type = "info") {
-            // Remover notificação anterior se existir
-            const existing = document.getElementById(
-                "documento-relevante-notification"
-            );
-            if (existing) {
-                existing.remove();
-            }
-
-            // Verificar se existe botão flutuante para ajustar posição
-            const floatingButton = document.getElementById("sent1-auto-button");
-            const isFloatingButtonVisible =
-                floatingButton &&
-                floatingButton.style.display !== "none" &&
-                floatingButton.offsetParent !== null; // Verifica se está realmente visível
-
-            // Posição dinâmica baseada na presença do botão flutuante
-            let notificationTop = "20px";
-            let notificationRight = "20px";
-
-            if (isFloatingButtonVisible) {
-                // Se há botão flutuante, calcular posição para evitar sobreposição
-                const buttonRect = window.getCachedBoundingRect(floatingButton);
-                const windowWidth = window.innerWidth;
-
-                // Se há espaço à esquerda do botão, colocar a notificação lá
-                if (buttonRect.left > 300) {
-                    notificationRight =
-                        windowWidth - buttonRect.left + 10 + "px";
-                } else {
-                    // Se não há espaço, colocar acima ou abaixo do botão
-                    if (buttonRect.top > 100) {
-                        notificationTop = buttonRect.top - 80 + "px";
-                        notificationRight = "20px";
-                    } else {
-                        notificationTop = buttonRect.bottom + 10 + "px";
-                        notificationRight = "20px";
-                    }
-                }
-            }
-
-            const notification = document.createElement("div");
-            notification.id = "documento-relevante-notification";
-            notification.className = "eprobe-notification";
-            notification.style.cssText = `
- position: fixed;
- top: ${notificationTop};
- right: ${notificationRight};
- background: ${
-     type === "error"
-         ? "#dc3545"
-         : type === "warning"
-         ? "#ffc107"
-         : type === "success"
-         ? "#134377"
-         : "#134377"
- };
- color: white;
- padding: 15px 20px;
- border-radius: 5px;
- font-weight: bold;
- z-index: 10000;
- box-shadow: 0 4px 8px rgba(0,0,0,0.3);
- max-width: 280px;
- font-size: 14px;
- line-height: 1.4;
- `;
-            // Verificar se deve mostrar spinner
-            if (message.includes("Enviando para Perplexity")) {
-                notification.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <div style="position: relative; width: 24px; height: 24px;">
-                        <div style="width: 24px; height: 24px; border-top: 3px solid rgba(255,255,255,0.3); border-bottom: 3px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; top: 0; left: 0;"></div>
-                        <div style="width: 24px; height: 24px; border-top: 3px solid white; border-bottom: 3px solid white; border-radius: 50%; position: absolute; top: 0; left: 0; animation: spin 1s linear infinite;"></div>
-                    </div>
-                    <span>${message}</span>
-                </div>
-                <style>
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                </style>
-            `;
-            } else {
-                notification.textContent = message;
-            }
-
-            document.body.appendChild(notification);
-
-            // Verificar e prevenir sobreposições após um pequeno delay
-            setTimeout(() => {
-                preventElementOverlap();
-            }, 100);
-
-            // Remover após 5 segundos
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.remove();
-                }
-            }, 5000);
-        }
-
         // Verificar se a página deve mostrar o botão integrado (REMOVIDA - usar a versão melhorada)
         // Função movida para cima para evitar duplicação
 
         // Criar botão de automação integrado na página
+        // FUNÇÃO createAutomationButton MOVIDA PARA ESCOPO PRINCIPAL (linha ~21400+)
+        // (Função principal de criação de botão automático)
         function createAutomationButton() {
             console.log(" Tentando criar botão integrado...");
 
@@ -4597,7 +3961,8 @@ ${texto}`;
             }
         }
 
-        // Função para encontrar o container alvo na página
+        // FUNÇÃO findTargetContainer MOVIDA PARA ESCOPO PRINCIPAL (linha ~21400+)
+        // (Função para encontrar o container alvo na página)
         function findTargetContainer() {
             // Prioridade 1: Buscar o botão "Download Completo" na barra de comandos superior do eProc
             const commandBar = document.getElementById(
@@ -4901,7 +4266,8 @@ ${texto}`;
             return null;
         }
 
-        // Função de fallback para criar botão flutuante (caso container não seja encontrado)
+        // FUNÇÃO createFloatingButton MOVIDA PARA ESCOPO PRINCIPAL (linha ~21400+)
+        // (Função para criar botão flutuante como fallback)
         function createFloatingButton() {
             // Verificar se já existe um botão
             if (document.getElementById("sent1-auto-button")) {
@@ -5133,477 +4499,15 @@ ${texto}`;
         }
 
         // Debug avançado da API com logging estruturado
-        function debugApiCall(requestId, phase, data) {
-            if (!debugMode) return;
+        // FUNÇÃO debugApiCall MOVIDA PARA ESCOPO PRINCIPAL (linha ~20800+)
 
-            const timestamp = new Date().toISOString();
-            const phaseColors = {
-                INÍCIO: "",
-                REQUEST: "",
-                RESPONSE_HEADERS: "",
-                SUCCESS: "",
-                ERROR_DETAILS: "",
-                EXCEPTION: "",
-                TEST_START: "",
-                TEST_RESPONSE: "",
-                TEST_SUCCESS: "",
-                TEST_ERROR: "",
-            };
-
-            const icon = phaseColors[phase] || "";
-
-            console.group(`${icon} API Debug [ID: ${requestId}] - ${phase}`);
-            console.log(" Timestamp:", timestamp);
-
-            if (phase === "REQUEST") {
-                console.log(" URL:", data.url);
-                console.log(" Model:", data.model);
-                console.log("� Prompt Length:", data.promptLength);
-                console.log(" Max Tokens:", data.maxTokens);
-            } else if (phase === "RESPONSE_HEADERS") {
-                console.log("� Status:", data.status, data.statusText);
-                console.log(" Request ID:", data.requestId);
-                if (data.rateLimit) {
-                    console.log(" Rate Limits:");
-                    console.table(data.rateLimit);
-                }
-            } else if (phase === "SUCCESS") {
-                console.log(" Response ID:", data.responseId);
-                console.log(" Model Used:", data.model);
-                console.log(" Usage:", data.usage);
-                console.log(
-                    "🏁 Finish Reason:",
-                    data.choices?.[0]?.finish_reason
-                );
-                console.log(
-                    " Response Length:",
-                    data.choices?.[0]?.message?.content?.length
-                );
-            } else if (phase === "ERROR_DETAILS") {
-                console.log(" Status:", data.status, data.statusText);
-                console.log(" Error Text:", data.errorText);
-                if (data.errorJson) {
-                    console.log(" Error JSON:", data.errorJson);
-                }
-            } else if (phase === "EXCEPTION") {
-                console.log(" Error Name:", data.errorName);
-                console.log(" Error Message:", data.errorMessage);
-                console.log("📚 Stack Trace:", data.errorStack);
-            } else if (phase === "TEST_SUCCESS") {
-                console.log(" Total Models:", data.totalModels);
-                console.log(" GPT Models:", data.gptModels);
-                console.log("🏢 Organization:", data.organization);
-                console.log(" Has GPT-4:", data.hasGpt4);
-            } else {
-                console.log(" Data:", data);
-            }
-
-            console.groupEnd();
-
-            // Salvar logs críticos no localStorage para debug posterior
-            if (phase === "ERROR_DETAILS" || phase === "EXCEPTION") {
-                const errorLogs = JSON.parse(
-                    localStorage.getItem("eprobe_error_logs") || "[]"
-                );
-                errorLogs.push({
-                    requestId,
-                    phase,
-                    timestamp,
-                    data,
-                });
-
-                // Manter apenas os últimos 10 logs de erro
-                if (errorLogs.length > 10) {
-                    errorLogs.splice(0, errorLogs.length - 10);
-                }
-
-                localStorage.setItem(
-                    "eprobe_error_logs",
-                    JSON.stringify(errorLogs)
-                );
-            }
-        }
-
-        // Verificar status da API key com informações detalhadas
-        async function testApiKey() {
-            try {
-                const apiKey = await getStoredApiKey();
-                if (!apiKey) {
-                    showNotification(" Nenhuma API key configurada", "error");
-                    return false;
-                }
-
-                log(" Testando API key...");
-
-                const testId = Date.now().toString();
-                debugApiCall(testId, "TEST_START", {
-                    keyPreview: apiKey.substring(0, 10) + "...",
-                });
-
-                const response = await fetch(
-                    "https://api.perplexity.ai/chat/completions",
-                    {
-                        method: "POST",
-                        headers: {
-                            Authorization: `Bearer ${apiKey}`,
-                            "Content-Type": "application/json",
-                            "User-Agent": "eProbe-Extension/1.0",
-                        },
-                        body: JSON.stringify({
-                            model: "sonar",
-                            messages: [
-                                { role: "user", content: "Teste de conexão" },
-                            ],
-                            max_tokens: 10,
-                        }),
-                    }
-                );
-
-                const responseHeaders = Object.fromEntries(
-                    response.headers.entries()
-                );
-
-                debugApiCall(testId, "TEST_RESPONSE", {
-                    status: response.status,
-                    headers: responseHeaders,
-                    requestId: responseHeaders["x-request-id"] || "N/A",
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-
-                    log(
-                        " API key válida! Modelo usado:",
-                        data.model || "sonar"
-                    );
-
-                    debugApiCall(testId, "TEST_SUCCESS", {
-                        model: data.model,
-                        usage: data.usage,
-                        responseContent: data.choices?.[0]?.message?.content,
-                    });
-
-                    showNotification(
-                        ` API key válida!\nModelo: ${data.model || "sonar"}`,
-                        "success"
-                    );
-                    return true;
-                } else {
-                    const errorData = await response.text();
-                    let errorJson = null;
-
-                    try {
-                        errorJson = JSON.parse(errorData);
-                    } catch (e) {
-                        log(" Erro de resposta não é JSON válido");
-                    }
-
-                    debugApiCall(testId, "TEST_ERROR", {
-                        status: response.status,
-                        errorText: errorData,
-                        errorJson: errorJson,
-                    });
-
-                    if (response.status === 401) {
-                        const errorMsg =
-                            errorJson?.error?.message ||
-                            "API key inválida ou expirada";
-                        showNotification(` ${errorMsg}`, "error");
-                        await removeStoredApiKey();
-                    } else if (response.status === 429) {
-                        const rateLimitType =
-                            errorJson?.error?.type || "rate_limit_exceeded";
-
-                        if (rateLimitType === "insufficient_quota") {
-                            showNotification(
-                                " Cota da API Perplexity esgotada. Verifique em perplexity.ai/settings/api",
-                                "error"
-                            );
-                            await removeStoredApiKey();
-                        } else {
-                            showNotification(
-                                ` Rate limit atingido no teste da API`,
-                                "warning"
-                            );
-                        }
-                    } else if (response.status === 403) {
-                        showNotification(
-                            " Acesso negado. Verifique créditos da conta",
-                            "error"
-                        );
-                    } else {
-                        const errorMsg =
-                            errorJson?.error?.message ||
-                            `Erro ${response.status}`;
-                        showNotification(` ${errorMsg}`, "error");
-                    }
-                    return false;
-                }
-            } catch (error) {
-                log(" Erro de conexão no teste:", error);
-                showNotification(" Erro de conexão com Perplexity", "error");
-                return false;
-            }
-        }
+        // FUNÇÃO testApiKey MOVIDA PARA ESCOPO PRINCIPAL (linha ~20800+)
 
         // Mostrar modal para seleção de múltiplos documentos relevantes
-        function showDocumentSelectionModal(documentosRelevantes) {
-            log(
-                " DEBUG MODAL: Recebido documentosRelevantes:",
-                documentosRelevantes
-            );
-            log(" DEBUG MODAL: Detalhes de cada documento:");
-            documentosRelevantes.forEach((doc, i) => {
-                log(` DOC${i + 1}:`, {
-                    eventoDescricao: doc.eventoDescricao,
-                    seqEvento: doc.seqEvento,
-                    tipoDocumento: doc.tipoDocumento,
-                });
-            });
+        // FUNÇÃO showDocumentSelectionModal MOVIDA PARA ESCOPO PRINCIPAL (linha ~20800+)
 
-            return new Promise((resolve) => {
-                // Remover modal anterior se existir
-                const existing = document.getElementById(
-                    "document-selection-modal"
-                );
-                if (existing) {
-                    existing.remove();
-                }
-
-                const modal = document.createElement("div");
-                modal.id = "document-selection-modal";
-                modal.style.cssText = `
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.8);
- z-index: 100010;
- display: flex;
- align-items: center;
- justify-content: center;
- backdrop-filter: blur(4px);
- `;
-
-                let documentOptions = "";
-                documentosRelevantes.forEach((documento, index) => {
-                    const seqEvento = documento.seqEvento
-                        ? `Evento ${documento.seqEvento}`
-                        : `Documento ${index + 1}`;
-                    const tamanhoInfo = documento.tamanho
-                        ? ` (${documento.tamanho})`
-                        : "";
-                    const tipoInfo =
-                        documento.tipoDocumento ||
-                        TIPOS_DOCUMENTO_RELEVANTE[documento.tipo]?.descricao ||
-                        "DOCUMENTO";
-                    const eventoDesc = documento.eventoDescricao || "Documento";
-
-                    log(` DEBUG OPTION ${index + 1}:`, {
-                        seqEvento,
-                        tipoInfo,
-                        eventoDesc,
-                        tamanhoInfo,
-                        eventoMagistrado: documento.eventoMagistrado, // Debug magistrado
-                        original_eventoDescricao: documento.eventoDescricao,
-                    });
-
-                    documentOptions += `
- <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
- class="document-option" data-index="${index}">
- <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(133, 190, 255);">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- ${tipoInfo} - ${seqEvento}
- </div>
- <div style="font-size: 13px; color: rgb(243, 246, 249); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
- </svg>
- ${eventoDesc}
- </div>
- <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
- </svg>
- Documento: ${documento.texto}${tamanhoInfo}
- </div>${
-     documento.magistradoInfo && documento.magistradoInfo.tipo === "magistrado"
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.magistradoInfo.nome}
- </div>${
-     documento.magistradoInfo.vara
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M10 18v-7"/>
- <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
- <path d="M14 18v-7"/>
- <path d="M18 18v-7"/>
- <path d="M3 22h18"/>
- <path d="M6 18v-7"/>
- </svg>
- ${documento.magistradoInfo.vara}
- </div>`
-         : ""
- }`
-         : documento.magistradoInfo &&
-           documento.magistradoInfo.tipo === "advogado"
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.magistradoInfo.nome}
- </div>`
-         : documento.eventoMagistrado
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.eventoMagistrado}
- </div>`
-         : ""
- }${
-                        documento.eventoData
-                            ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/>
- <path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/>
- <path d="m2.3 2.3 7.286 7.286"/>
- <circle cx="11" cy="11" r="2"/>
- </svg>
- Assinado em ${documento.eventoData}
- </div>`
-                            : ""
-                    }
- </div>
- `;
-                });
-
-                modal.innerHTML = `
- <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
- <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
- <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(133, 190, 255);">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- Múltiplos Documentos Encontrados
- </h2>
- <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
- Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
- </p>
- </div>
- 
- <div id="document-options" style="margin-bottom: 20px;">
- ${documentOptions}
- </div>
-
- <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
- <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m18 6-12 12"/>
- <path d="m6 6 12 12"/>
- </svg>
- Cancelar
- </button>
- </div>
- </div>
- `;
-
-                document.body.appendChild(modal);
-
-                // Adicionar eventos de clique nas opções
-                modal
-                    .querySelectorAll(".document-option")
-                    .forEach((option, index) => {
-                        option.addEventListener("mouseover", () => {
-                            option.style.borderColor = "rgba(19, 67, 119, 0.6)";
-                            option.style.background = "rgb(47, 52, 61)";
-                            option.style.transform = "translateY(-1px)";
-                            option.style.boxShadow =
-                                "0 4px 12px rgba(19, 67, 119, 0.25)";
-                        });
-
-                        option.addEventListener("mouseout", () => {
-                            option.style.borderColor = "rgba(82, 82, 82, 0.3)";
-                            option.style.background = "rgb(32, 39, 51)";
-                            option.style.transform = "translateY(0)";
-                            option.style.boxShadow = "none";
-                        });
-
-                        option.addEventListener("click", () => {
-                            const selectedIndex = parseInt(
-                                option.getAttribute("data-index")
-                            );
-                            const selectedDocument =
-                                documentosRelevantes[selectedIndex];
-
-                            log(
-                                ` Documento selecionado: ${selectedDocument.eventoDescricao} - Evento ${selectedDocument.seqEvento}`
-                            );
-                            showNotification(
-                                ` Documento selecionado: ${selectedDocument.eventoDescricao}`,
-                                "success"
-                            );
-
-                            modal.remove();
-                            resolve(selectedDocument);
-                        });
-                    });
-
-                // Evento do botão cancelar
-                const cancelBtn = modal.querySelector("#cancel-selection");
-
-                // Adicionar hover vermelho no botão cancelar
-                cancelBtn.addEventListener("mouseenter", () => {
-                    cancelBtn.style.backgroundColor = "#91433d";
-                    cancelBtn.style.borderColor = "#91433d";
-                });
-
-                cancelBtn.addEventListener("mouseleave", () => {
-                    cancelBtn.style.backgroundColor = "rgb(32, 39, 51)";
-                    cancelBtn.style.borderColor = "rgba(82, 82, 82, 0.5)";
-                });
-
-                cancelBtn.addEventListener("click", () => {
-                    modal.remove();
-                    resolve(null);
-                });
-
-                modal.addEventListener("click", (e) => {
-                    if (e.target === modal) {
-                        modal.remove();
-                        resolve(null);
-                    }
-                });
-            });
-        }
-
-        // Interface melhorada para configuração da API key
+        // FUNÇÃO showApiKeyConfig MOVIDA PARA ESCOPO PRINCIPAL (linha ~21400+)
+        // (Função complexa com modal - preservada por complexidade)
         async function showApiKeyConfig() {
             const existing = document.getElementById("api-key-config");
             if (existing) {
@@ -5815,334 +4719,15 @@ ${texto}`;
         }
 
         // Função para visualizar logs de erro
-        function showErrorLogs() {
-            const logs = JSON.parse(
-                localStorage.getItem("eprobe_error_logs") || "[]"
-            );
 
-            if (logs.length === 0) {
-                showNotification("Nenhum log de erro encontrado", "info");
-                return;
-            }
-
-            const modal = document.createElement("div");
-            modal.className = "eprobe-modal";
-            modal.style.cssText = `
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.8);
- z-index: 100002;
- display: flex;
- align-items: center;
- justify-content: center;
- backdrop-filter: blur(4px);
- `;
-
-            modal.innerHTML = `
- <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
- <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
- <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
- <circle cx="11" cy="11" r="8"/>
- <path d="m21 21-4.35-4.35"/>
- </svg>
- Logs de Erro da API
- </h2>
- <button id="clear-logs" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
- <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <polyline points="3,6 5,6 21,6"/>
- <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
- </svg>
- Limpar Logs
- </button>
- </div>
- <div style="font-family: 'Roboto', monospace, sans-serif; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
- ${logs
-     .map(
-         (log, i) => `
- <div style="margin-bottom: 16px; padding: 12px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
- <strong style="color: rgb(19, 67, 119);">Log ${i + 1} - ${
-             log.timestamp
-         }</strong><br>
- <strong style="color: rgb(136, 152, 181);">Request ID:</strong> <span style="color: rgb(243, 246, 249);">${
-     log.requestId
- }</span><br>
- <strong style="color: rgb(136, 152, 181);">Phase:</strong> <span style="color: rgb(243, 246, 249);">${
-     log.phase
- }</span><br>
- <strong style="color: rgb(136, 152, 181);">Data:</strong><br>
- <pre style="background: rgb(18, 26, 39); padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.2); margin-top: 8px;">${JSON.stringify(
-     log.data,
-     null,
-     2
- )}</pre>
- </div>
- `
-     )
-     .join("")}
- </div>
- <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
- <button id="close-logs" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m18 6-12 12"/>
- <path d="m6 6 12 12"/>
- </svg>
- Fechar
- </button>
- </div>
- </div>
- `;
-
-            document.body.appendChild(modal);
-
-            modal.querySelector("#close-logs").addEventListener("click", () => {
-                modal.remove();
-            });
-
-            modal.querySelector("#clear-logs").addEventListener("click", () => {
-                localStorage.removeItem("eprobe_error_logs");
-                modal.remove();
-                showNotification("Logs de erro limpos", "info");
-            });
-
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
 
         // Mostrar informações sobre quota da API
-        function showApiQuotaInfo() {
-            const modal = document.createElement("div");
-            modal.style.cssText = `
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.7);
- z-index: 100003;
- display: flex;
- align-items: center;
- justify-content: center;
- `;
 
-            modal.innerHTML = `
- <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
- <div style="margin-bottom: 20px; text-align: center;">
- <h2 style="margin: 0; color: #dc3545; font-size: 20px;"> Créditos da API Esgotados</h2>
- </div>
- 
- <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
- <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
- 
- <p><strong>Para resolver:</strong></p>
- <ol>
- <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #134377;">perplexity.ai/settings/api</a></li>
- <li>Verifique seus créditos e limites</li>
- <li>Se necessário, adicione créditos à sua conta</li>
- <li>Ou aguarde a renovação dos créditos</li>
- </ol>
- 
- <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar em Perplexity web.</p>
- </div>
 
- <div style="text-align: center;">
- <button id="open-billing" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
- Abrir Configurações
- </button>
- <button id="config-new-key" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
- Nova API Key
- </button>
- <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
- Fechar
- </button>
- </div>
- </div>
- `;
-
-            document.body.appendChild(modal);
-
-            modal
-                .querySelector("#open-billing")
-                .addEventListener("click", () => {
-                    window.open(
-                        "https://www.perplexity.ai/settings/api",
-                        "_blank"
-                    );
-                    modal.remove();
-                });
-
-            modal
-                .querySelector("#config-new-key")
-                .addEventListener("click", () => {
-                    modal.remove();
-                    showApiKeyConfig();
-                });
-
-            modal
-                .querySelector("#close-quota-info")
-                .addEventListener("click", () => {
-                    modal.remove();
-                });
-
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) {
-                    modal.remove();
-                }
-            });
-        }
-
-        // Mostrar opções de processamento para página de lista com múltiplas sentenças
-        async function showSentenceProcessingOptions() {
-            const documentosRelevantes = findDocumentosRelevantes();
-
-            if (documentosRelevantes.length === 0) {
-                showNotification("Nenhuma sentença encontrada", "error");
-                return;
-            }
-
-            if (documentosRelevantes.length === 1) {
-                // Apenas uma sentença, abrir diretamente
-                await autoOpenDocumentoRelevante();
-                return;
-            }
-
-            // Múltiplas sentenças, mostrar opções
-            const selectedDocument = await showDocumentSelectionModal(
-                documentosRelevantes
-            );
-
-            if (!selectedDocument) {
-                return; // Usuário cancelou
-            }
-
-            // Perguntar o que fazer com o documento selecionado
-            const processChoice = await showDocumentProcessingModal();
-
-            if (processChoice) {
-                // Abrir o documento selecionado
-                log(" Abrindo documento selecionado:", selectedDocument.href);
-                showNotification(" Abrindo documento selecionado...", "info");
-                window.open(selectedDocument.href, "_blank");
-            } else {
-                // Processar diretamente via API (funcionalidade experimental)
-                showNotification(
-                    " Processamento direto via API ainda não implementado. Abrindo documento...",
-                    "warning"
-                );
-                window.open(selectedDocument.href, "_blank");
-            }
-        }
+        // FUNÇÃO showSentenceProcessingOptions MOVIDA PARA ESCOPO PRINCIPAL (linha ~20900+)
 
         // Debug completo da estrutura HTML ao redor do link SENT1
-        function debugEventStructure(linkElement) {
-            log(" === DEBUG ESTRUTURA HTML ===");
 
-            // 1. Informações sobre o próprio link
-            log(" Link SENT1:");
-            log(` Texto: "${linkElement.textContent.trim()}"`);
-            log(` Classes: "${linkElement.className}"`);
-            log(` Atributos:`, {
-                href: linkElement.getAttribute("href"),
-                onclick: linkElement.getAttribute("onclick"),
-                onmouseover: linkElement.getAttribute("onmouseover"),
-                "data-nome": linkElement.getAttribute("data-nome"),
-                "data-id": linkElement.getAttribute("data-id"),
-            });
-
-            // 2. Analisar a linha (tr) que contém o link
-            const currentRow = linkElement.closest("tr");
-            if (currentRow) {
-                log(" Linha atual (TR):");
-                log(` Classes da linha: "${currentRow.className}"`);
-
-                const cells = currentRow.querySelectorAll("td");
-                log(` Total de células: ${cells.length}`);
-
-                cells.forEach((cell, index) => {
-                    const text = cell.textContent.trim();
-                    log(
-                        ` Célula ${index}: "${text}" (classes: "${cell.className}")`
-                    );
-
-                    // Verificar se tem elementos filhos interessantes
-                    const labels = cell.querySelectorAll("label");
-                    const spans = cell.querySelectorAll("span");
-                    const divs = cell.querySelectorAll("div");
-
-                    if (labels.length > 0) {
-                        labels.forEach((label, i) => {
-                            log(
-                                ` Label ${i}: "${label.textContent.trim()}" (classes: "${
-                                    label.className
-                                }")`
-                            );
-                        });
-                    }
-                    if (spans.length > 0) {
-                        spans.forEach((span, i) => {
-                            log(
-                                ` Span ${i}: "${span.textContent.trim()}" (classes: "${
-                                    span.className
-                                }")`
-                            );
-                        });
-                    }
-                    if (divs.length > 0) {
-                        divs.forEach((div, i) => {
-                            log(
-                                ` Div ${i}: "${div.textContent.trim()}" (classes: "${
-                                    div.className
-                                }")`
-                            );
-                        });
-                    }
-                });
-            }
-
-            // 3. Analisar linhas anteriores
-            log(" Linhas anteriores:");
-            let prevRow = currentRow?.previousElementSibling;
-            let rowCount = 0;
-            while (prevRow && rowCount < 3) {
-                rowCount++;
-                const prevCells = prevRow.querySelectorAll("td");
-                log(` Linha anterior ${rowCount}: ${prevCells.length} células`);
-
-                prevCells.forEach((cell, index) => {
-                    const text = cell.textContent.trim();
-                    if (text.length > 10) {
-                        log(` Célula ${index}: "${text.substring(0, 100)}..."`);
-                    }
-                });
-
-                prevRow = prevRow.previousElementSibling;
-            }
-
-            // 4. Analisar a tabela completa
-            const table = linkElement.closest("table");
-            if (table) {
-                log(" Tabela:");
-                log(` Classes da tabela: "${table.className}"`);
-                log(` ID da tabela: "${table.id}"`);
-
-                // Procurar por cabeçalhos
-                const headers = table.querySelectorAll("th");
-                if (headers.length > 0) {
-                    log(" Cabeçalhos encontrados:");
-                    headers.forEach((header, index) => {
-                        log(` Header ${index}: "${header.textContent.trim()}"`);
-                    });
-                }
-            }
-
-            log(" === FIM DEBUG ESTRUTURA ===");
-        }
 
         // Função aprimorada para encontrar descrição do evento
         function findEventDescription(linkElement) {
@@ -6608,189 +5193,19 @@ ${texto}`;
         // 🎨 FUNÇÕES REUTILIZÁVEIS DE INTERFACE
 
         // Função para criar botão com estilo eProc elegante e discreto
-        function criarBotaoEleganteeProc(id, className = "col-auto mr-2") {
-            const botao = document.createElement("div");
-            botao.id = id;
-            botao.className = className;
 
-            // Estilo base elegante (inspirado no eprobe-data-sessao)
-            botao.style.cssText = `
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid #d1d5db;
-            padding: 8px 12px;
-            border-radius: 4px;
-            background-color: #f8fafc;
-            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-            cursor: pointer;
-            white-space: nowrap;
-            max-width: fit-content;
-        `;
-
-            // Adicionar efeitos hover discretos e elegantes
-            botao.addEventListener("mouseenter", function () {
-                this.style.backgroundColor = "#fafbfc";
-                this.style.borderColor = "#e2e8f0";
-                this.style.boxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.04)";
-            });
-
-            botao.addEventListener("mouseleave", function () {
-                this.style.backgroundColor = "#f8fafc";
-                this.style.borderColor = "#d1d5db";
-                this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
-            });
-
-            return botao;
-        }
 
         // Função específica para criar botão branco capa do processo (alias mais descritivo)
-        function botaoBrancoCapaProcesso(id, className = "col-auto mr-2") {
-            return criarBotaoEleganteeProc(id, className);
-        }
+
 
         // Função para criar botão infraButton btn-primary com estilo eProc
-        function criarInfraButtonPrimary(id, innerHTML) {
-            const button = document.createElement("button");
-            button.id = id;
-            button.className = "infraButton btn-primary";
 
-            // Conteúdo do botão (HTML interno)
-            if (innerHTML) {
-                button.innerHTML = innerHTML;
-            }
-
-            // Aplicar cor azul personalizada eProc
-            button.style.backgroundColor = "#134377";
-            button.style.borderColor = "#134377";
-
-            // FORÇAR aplicação do margin-right no SVG
-            setTimeout(() => {
-                const svg = button.querySelector("svg");
-                if (svg) {
-                    svg.style.marginRight = "4px";
-                    svg.style.setProperty("margin-right", "4px", "important");
-                    console.log(
-                        "✅ FUNÇÃO CENTRAL: Margin-right aplicado automaticamente ao SVG:",
-                        svg.style.marginRight
-                    );
-                }
-            }, 50);
-
-            // Adicionar eventos para hover, focus e blur
-            button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "#0f3a66";
-                button.style.borderColor = "#0f3a66";
-            });
-
-            button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "#134377";
-                button.style.borderColor = "#134377";
-            });
-
-            button.addEventListener("focus", () => {
-                button.style.backgroundColor = "#0f3a66";
-                button.style.borderColor = "#0f3a66";
-            });
-
-            button.addEventListener("blur", () => {
-                button.style.backgroundColor = "#134377";
-                button.style.borderColor = "#134377";
-            });
-
-            return button;
-        }
 
         // Função específica para criar botão azul eProc (alias mais descritivo)
-        function botaoAzuleProc(id, innerHTML) {
-            return criarInfraButtonPrimary(id, innerHTML);
-        }
+
 
         // 🧪 FUNÇÃO EXPERIMENTAL - Detecção de data da sessão com Semantic Kernel
-        async function detectarDataSessaoExperimental() {
-            console.log(
-                "🧪 EXPERIMENTAL: Iniciando detecção de data da sessão com Semantic Kernel"
-            );
 
-            try {
-                // Verificar se o Semantic Kernel está disponível
-                if (typeof window.eProbeSemanticKernel !== "undefined") {
-                    console.log(
-                        "🤖 Semantic Kernel disponível - tentando detecção inteligente"
-                    );
-
-                    const textoCompleto =
-                        document.body.innerText ||
-                        document.body.textContent ||
-                        "";
-
-                    // Usar o Semantic Kernel para detecção inteligente
-                    const resultadoIA =
-                        await window.eProbeSemanticKernel.detectarDataSessao(
-                            textoCompleto
-                        );
-
-                    if (resultadoIA && resultadoIA.dataEncontrada) {
-                        console.log(
-                            "✅ EXPERIMENTAL: Data detectada via IA:",
-                            resultadoIA.dataFormatada
-                        );
-
-                        // Validar a data detectada
-                        if (validarDataBrasileira(resultadoIA.dataFormatada)) {
-                            // Salvar resultado usando a mesma estrutura da função original
-                            dataSessaoPautado = {
-                                dataOriginal: resultadoIA.dataFormatada,
-                                dataFormatada: resultadoIA.dataFormatada,
-                                contextoEncontrado:
-                                    resultadoIA.contexto || "Detectado via IA",
-                                metodoDeteccao: "semantic-kernel",
-                                confianca: resultadoIA.confianca || 0.8,
-                            };
-
-                            processoComDataSessao = processoAtual;
-                            console.log(
-                                "✅ EXPERIMENTAL: Data da sessão salva via Semantic Kernel"
-                            );
-
-                            return dataSessaoPautado;
-                        } else {
-                            console.log(
-                                "❌ EXPERIMENTAL: Data detectada via IA não é válida:",
-                                resultadoIA.dataFormatada
-                            );
-                        }
-                    } else {
-                        console.log(
-                            "⚠️ EXPERIMENTAL: Semantic Kernel não encontrou data da sessão"
-                        );
-                    }
-                } else {
-                    console.log(
-                        "❌ EXPERIMENTAL: Semantic Kernel não está disponível"
-                    );
-                }
-
-                // Fallback para método tradicional
-                console.log(
-                    "🔄 EXPERIMENTAL: Usando fallback para método tradicional"
-                );
-                return detectarDataSessao();
-            } catch (error) {
-                console.error(
-                    "🚨 EXPERIMENTAL: Erro na detecção experimental:",
-                    error
-                );
-
-                // Fallback para método tradicional em caso de erro
-                console.log(
-                    "🔄 EXPERIMENTAL: Fallback para método tradicional devido a erro"
-                );
-                return detectarDataSessao();
-            }
-        }
 
         // Inicializar - VERSÃO SEGURA (sem interferência na navbar)
         init();
@@ -6939,6 +5354,300 @@ ${texto}`;
 
         // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE (movidas para namespace principal)
     })(); // Fechamento da IIFE principal
+
+    // ===============================================
+    // FUNÇÕES PRINCIPAIS MOVIDAS PARA ESCOPO GLOBAL
+    // ===============================================
+
+    // Variáveis de controle para automação
+    let isAutomationActive = false;
+
+    // Função de logging simplificada
+    function log(message, ...args) {
+        console.log("🔍 eProbe:", message, ...args);
+    }
+
+    // Detectar tipo de página e formato de documento
+    function detectPageType() {
+        const url = window.location.href;
+        log("🔍 Detectando tipo de página. URL:", url);
+
+        if (url.includes("processo_selecionar")) {
+            return "lista_documentos";
+        } else if (
+            url.includes("acessar_documento") ||
+            url.includes("processo_consultar_externo_documento")
+        ) {
+            // Detectar se é documento HTML (sentença) ou PDF (petição inicial)
+            const sectionSentenca = document.querySelector(
+                'section[data-nome="sentenca"]'
+            );
+
+            // Buscar PDFs com múltiplos seletores
+            const pdfSelectors = [
+                'embed[type="application/pdf"]',
+                'iframe[src*=".pdf"]',
+                'object[type="application/pdf"]',
+                'iframe[title*="PDF"]',
+                'embed[src*=".pdf"]',
+                'object[data*=".pdf"]',
+                'iframe[src*="pdf"]',
+                'embed[src*="pdf"]',
+                ".pdf-viewer",
+                "#pdf-viewer",
+                '[class*="pdf"]',
+                '[id*="pdf"]',
+            ];
+
+            let pdfViewer = null;
+
+            // Testar cada seletor
+            for (const selector of pdfSelectors) {
+                pdfViewer = document.querySelector(selector);
+                if (pdfViewer) {
+                    log(
+                        `📄 PDF encontrado com seletor: ${selector}`,
+                        pdfViewer
+                    );
+                    break;
+                }
+            }
+
+            // Debug: listar todos os iframes e embeds
+            const allIframes = document.querySelectorAll("iframe");
+            const allEmbeds = document.querySelectorAll("embed");
+            const allObjects = document.querySelectorAll("object");
+
+            log("🔍 Debug - Total de elementos encontrados:", {
+                iframes: allIframes.length,
+                embeds: allEmbeds.length,
+                objects: allObjects.length,
+            });
+
+            // Verificar se algum iframe/embed tem características de PDF
+            [...allIframes, ...allEmbeds, ...allObjects].forEach(
+                (element, index) => {
+                    const src = element.src || element.data || "";
+                    const type = element.type || "";
+                    const title = element.title || "";
+
+                    log(`🔍 Elemento ${index + 1}: ${element.tagName}`, {
+                        src: src.substring(0, 100),
+                        type: type,
+                        title: title,
+                        className: element.className,
+                        id: element.id,
+                    });
+
+                    // Se contém características de PDF
+                    if (
+                        src.toLowerCase().includes("pdf") ||
+                        type.toLowerCase().includes("pdf") ||
+                        title.toLowerCase().includes("pdf")
+                    ) {
+                        pdfViewer = element;
+                        log("📄 PDF detectado por características:", element);
+                    }
+                }
+            );
+
+            if (sectionSentenca) {
+                log("📄 Documento HTML detectado (sentença)");
+                return "documento_html";
+            } else if (pdfViewer) {
+                log("📄 Documento PDF detectado");
+                return "documento_pdf";
+            } else {
+                log(
+                    "📄 Documento específico (tipo indefinido) - verificando conteúdo..."
+                );
+
+                // Verificar se há conteúdo típico de documento
+                const hasDocumentContent =
+                    document.querySelector(".documento") ||
+                    document.querySelector(".conteudo") ||
+                    document.querySelector(".texto") ||
+                    document.querySelector("main") ||
+                    document.querySelector("article") ||
+                    document.body.textContent.length > 1000;
+
+                if (hasDocumentContent) {
+                    log(
+                        "📄 Conteúdo de documento detectado - assumindo documento específico"
+                    );
+                    return "documento_especifico";
+                } else {
+                    log("❌ Nenhum conteúdo de documento detectado");
+                    return "desconhecida";
+                }
+            }
+        }
+
+        return "desconhecida";
+    }
+
+    // Sistema de notificações
+    function showNotification(message, type = "info") {
+        // Remover notificação anterior se existir
+        const existing = document.getElementById(
+            "documento-relevante-notification"
+        );
+        if (existing) {
+            existing.remove();
+        }
+
+        // Verificar se existe botão flutuante para ajustar posição
+        const floatingButton = document.getElementById("sent1-auto-button");
+        const isFloatingButtonVisible =
+            floatingButton &&
+            floatingButton.style.display !== "none" &&
+            floatingButton.offsetParent !== null; // Verifica se está realmente visível
+
+        // Posição dinâmica baseada na presença do botão flutuante
+        let notificationTop = "20px";
+        let notificationRight = "20px";
+
+        if (isFloatingButtonVisible) {
+            // Se há botão flutuante, calcular posição para evitar sobreposição
+            const buttonRect = window.getCachedBoundingRect(floatingButton);
+            const windowWidth = window.innerWidth;
+
+            // Se há espaço à esquerda do botão, colocar a notificação lá
+            if (buttonRect.left > 300) {
+                notificationRight = windowWidth - buttonRect.left + 10 + "px";
+            } else {
+                // Se não há espaço, colocar acima ou abaixo do botão
+                if (buttonRect.top > 100) {
+                    notificationTop = buttonRect.top - 80 + "px";
+                    notificationRight = "20px";
+                } else {
+                    notificationTop = buttonRect.bottom + 10 + "px";
+                    notificationRight = "20px";
+                }
+            }
+        }
+
+        const notification = document.createElement("div");
+        notification.id = "documento-relevante-notification";
+        notification.className = "eprobe-notification";
+        notification.style.cssText = `
+position: fixed;
+top: ${notificationTop};
+right: ${notificationRight};
+background: ${
+            type === "error"
+                ? "#dc3545"
+                : type === "warning"
+                ? "#ffc107"
+                : type === "success"
+                ? "#134377"
+                : "#134377"
+        };
+color: white;
+padding: 15px 20px;
+border-radius: 5px;
+font-weight: bold;
+z-index: 10000;
+box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+max-width: 280px;
+font-size: 14px;
+line-height: 1.4;
+`;
+        // Verificar se deve mostrar spinner
+        if (message.includes("Enviando para Perplexity")) {
+            notification.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="position: relative; width: 24px; height: 24px;">
+                    <div style="width: 24px; height: 24px; border-top: 3px solid rgba(255,255,255,0.3); border-bottom: 3px solid rgba(255,255,255,0.3); border-radius: 50%; position: absolute; top: 0; left: 0;"></div>
+                    <div style="width: 24px; height: 24px; border-top: 3px solid white; border-bottom: 3px solid white; border-radius: 50%; position: absolute; top: 0; left: 0; animation: spin 1s linear infinite;"></div>
+                </div>
+                <span>${message}</span>
+            </div>
+            <style>
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+            </style>
+        `;
+        } else {
+            notification.textContent = message;
+        }
+
+        document.body.appendChild(notification);
+
+        // Verificar e prevenir sobreposições após um pequeno delay
+        setTimeout(() => {
+            if (typeof preventElementOverlap === "function") {
+                preventElementOverlap();
+            }
+        }, 100);
+
+        // Remover após 5 segundos
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+
+    // Função principal de automação (movida do escopo aninhado)
+    async function runFullAutomation() {
+        if (isAutomationActive) {
+            log("Automação já está ativa");
+            return;
+        }
+
+        isAutomationActive = true;
+        log("Iniciando automação completa...");
+
+        try {
+            const pageType = detectPageType();
+
+            if (pageType === "lista_documentos") {
+                const opened = await autoOpenDocumentoRelevante();
+                if (opened) {
+                    showNotification(
+                        "Documento aberto! Aguarde carregar e execute novamente na nova aba",
+                        "success"
+                    );
+                }
+            } else if (pageType === "documento_especifico") {
+                const texto = await autoExtractText();
+                if (texto) {
+                    const apiSent = await sendToPerplexity(texto);
+
+                    if (!apiSent) {
+                        log(
+                            "API falhou, usando método de clipboard como fallback"
+                        );
+                        showNotification(
+                            "Tentando método alternativo...",
+                            "warning"
+                        );
+
+                        const copied = await copyToClipboardWithPrefix(texto);
+                        if (copied) {
+                            showNotification(
+                                "Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
+                                "success"
+                            );
+                        }
+                    }
+                }
+            } else {
+                showNotification(
+                    "Página não reconhecida. Use na página do processo ou documento",
+                    "error"
+                );
+            }
+        } catch (error) {
+            log("Erro na automação:", error);
+            showNotification("Erro na automação: " + error.message, "error");
+        } finally {
+            isAutomationActive = false;
+        }
+    }
 
     // ========================================
     // VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO
@@ -9321,62 +8030,9 @@ ${texto}`;
         return textoLimpo;
     }
 
-    // Função para configurar o observer de mudanças na interface
-    function setupInterfaceObserver() {
-        // Observer para detectar mudanças nos elementos da interface
-        const observer = new MutationObserver((mutations) => {
-            let shouldCheckOverlap = false;
+    // FUNÇÃO setupInterfaceObserver MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
 
-            mutations.forEach((mutation) => {
-                // Se elementos foram adicionados ou removidos
-                if (mutation.type === "childList") {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === Node.ELEMENT_NODE) {
-                            const id = node.id;
-                            if (
-                                id === "sent1-auto-button" ||
-                                id === "documento-relevante-notification" ||
-                                id === "documento-relevante-options-menu"
-                            ) {
-                                shouldCheckOverlap = true;
-                            }
-                        }
-                    });
-                }
-
-                // Se atributos de estilo mudaram
-                if (
-                    mutation.type === "attributes" &&
-                    mutation.attributeName === "style" &&
-                    mutation.target.id &&
-                    (mutation.target.id === "sent1-auto-button" ||
-                        mutation.target.id ===
-                            "documento-relevante-notification" ||
-                        mutation.target.id ===
-                            "documento-relevante-options-menu")
-                ) {
-                    shouldCheckOverlap = true;
-                }
-            });
-
-            if (shouldCheckOverlap) {
-                setTimeout(preventElementOverlap, 50);
-            }
-        });
-
-        // Observar mudanças no body
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ["style"],
-        });
-
-        return observer;
-    }
-
-    // Função para prevenir sobreposição de elementos da interface (precisa estar disponível)
-    function preventElementOverlap() {
+    // FUNÇÃO preventElementOverlap MOVIDA PARA ESCOPO PRINCIPAL (linha ~21300+)
         const floatingButton = document.getElementById("sent1-auto-button");
         const notification = document.getElementById(
             "documento-relevante-notification"
@@ -11563,6 +10219,614 @@ ${texto}`;
             `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete estilizados`
         );
         return true;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos vermelhos
+     */
+    function estilizarDivLembreteVermelho() {
+        console.log(
+            "🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete vermelhos"
+        );
+
+        // Buscar elementos com background-color:#db8080
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#db8080"], div.divLembrete[style*="background-color: #db8080"]'
+        );
+
+        if (elementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento divLembrete com background vermelho encontrado"
+            );
+            return false;
+        }
+
+        elementos.forEach((elemento, index) => {
+            // Aplicar gradiente vermelho
+            elemento.style.background = "linear-gradient(#FAAFAF, #F78D8D)";
+            elemento.style.border = "2px solid #d42626";
+            elemento.style.borderRadius = "8px";
+            elemento.style.boxShadow = "0 2px 8px rgba(212, 38, 38, 0.3)";
+            elemento.style.padding = "12px";
+            elemento.style.margin = "8px 0";
+            elemento.style.transition = "all 0.3s ease";
+
+            // Adicionar hover effect
+            elemento.addEventListener("mouseenter", function () {
+                this.style.transform = "scale(1.02)";
+                this.style.boxShadow = "0 4px 12px rgba(212, 38, 38, 0.5)";
+            });
+
+            elemento.addEventListener("mouseleave", function () {
+                this.style.transform = "scale(1)";
+                this.style.boxShadow = "0 2px 8px rgba(212, 38, 38, 0.3)";
+            });
+
+            console.log(
+                `✅ Estilizado divLembrete vermelho ${index + 1} (ID: ${
+                    elemento.id
+                })`
+            );
+        });
+
+        console.log(
+            `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete vermelhos estilizados`
+        );
+        return true;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos azuis
+     */
+    function estilizarDivLembreteAzul() {
+        console.log("🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete azuis");
+
+        // Buscar elementos com background-color:#87adcd
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#87adcd"], div.divLembrete[style*="background-color: #87adcd"]'
+        );
+
+        if (elementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento divLembrete com background azul encontrado"
+            );
+            return false;
+        }
+
+        elementos.forEach((elemento, index) => {
+            // Aplicar gradiente azul
+            elemento.style.background = "linear-gradient(#AFCFFA, #8DC0F7)";
+            elemento.style.border = "2px solid #2663d4";
+            elemento.style.borderRadius = "8px";
+            elemento.style.boxShadow = "0 2px 8px rgba(38, 99, 212, 0.3)";
+            elemento.style.padding = "12px";
+            elemento.style.margin = "8px 0";
+            elemento.style.transition = "all 0.3s ease";
+
+            // Adicionar hover effect
+            elemento.addEventListener("mouseenter", function () {
+                this.style.transform = "scale(1.02)";
+                this.style.boxShadow = "0 4px 12px rgba(38, 99, 212, 0.5)";
+            });
+
+            elemento.addEventListener("mouseleave", function () {
+                this.style.transform = "scale(1)";
+                this.style.boxShadow = "0 2px 8px rgba(38, 99, 212, 0.3)";
+            });
+
+            console.log(
+                `✅ Estilizado divLembrete azul ${index + 1} (ID: ${
+                    elemento.id
+                })`
+            );
+        });
+
+        console.log(
+            `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete azuis estilizados`
+        );
+        return true;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos verdes
+     */
+    function estilizarDivLembreteVerde() {
+        console.log("🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete verdes");
+
+        // Buscar elementos com background-color:#a7eda7
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#a7eda7"], div.divLembrete[style*="background-color: #a7eda7"]'
+        );
+
+        if (elementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento divLembrete com background verde encontrado"
+            );
+            return false;
+        }
+
+        elementos.forEach((elemento, index) => {
+            // Aplicar gradiente verde
+            elemento.style.background = "linear-gradient(#AFFAB6, #8DF792)";
+            elemento.style.border = "2px solid #26d454";
+            elemento.style.borderRadius = "8px";
+            elemento.style.boxShadow = "0 2px 8px rgba(38, 212, 84, 0.3)";
+            elemento.style.padding = "12px";
+            elemento.style.margin = "8px 0";
+            elemento.style.transition = "all 0.3s ease";
+
+            // Adicionar hover effect
+            elemento.addEventListener("mouseenter", function () {
+                this.style.transform = "scale(1.02)";
+                this.style.boxShadow = "0 4px 12px rgba(38, 212, 84, 0.5)";
+            });
+
+            elemento.addEventListener("mouseleave", function () {
+                this.style.transform = "scale(1)";
+                this.style.boxShadow = "0 2px 8px rgba(38, 212, 84, 0.3)";
+            });
+
+            console.log(
+                `✅ Estilizado divLembrete verde ${index + 1} (ID: ${
+                    elemento.id
+                })`
+            );
+        });
+
+        console.log(
+            `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete verdes estilizados`
+        );
+        return true;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos laranjas
+     */
+    function estilizarDivLembreteLaranja() {
+        console.log(
+            "🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete laranjas"
+        );
+
+        // Buscar elementos com background-color:#f5b574
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#f5b574"], div.divLembrete[style*="background-color: #f5b574"]'
+        );
+
+        if (elementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento divLembrete com background laranja encontrado"
+            );
+            return false;
+        }
+
+        elementos.forEach((elemento, index) => {
+            // Aplicar gradiente laranja
+            elemento.style.background = "linear-gradient(#FAD3AF, #F7C68D)";
+            elemento.style.border = "2px solid #d4851a";
+            elemento.style.borderRadius = "8px";
+            elemento.style.boxShadow = "0 2px 8px rgba(212, 133, 26, 0.3)";
+            elemento.style.padding = "12px";
+            elemento.style.margin = "8px 0";
+            elemento.style.transition = "all 0.3s ease";
+
+            // Adicionar hover effect
+            elemento.addEventListener("mouseenter", function () {
+                this.style.transform = "scale(1.02)";
+                this.style.boxShadow = "0 4px 12px rgba(212, 133, 26, 0.5)";
+            });
+
+            elemento.addEventListener("mouseleave", function () {
+                this.style.transform = "scale(1)";
+                this.style.boxShadow = "0 2px 8px rgba(212, 133, 26, 0.3)";
+            });
+
+            console.log(
+                `✅ Estilizado divLembrete laranja ${index + 1} (ID: ${
+                    elemento.id
+                })`
+            );
+        });
+
+        console.log(
+            `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete laranjas estilizados`
+        );
+        return true;
+    }
+
+    /**
+     * 🎨 FUNÇÃO MASTER - Aplicar estilos a TODOS os divLembrete coloridos
+     */
+    function estilizarTodosDivLembrete() {
+        console.log(
+            "🎨 ESTILIZAÇÃO MASTER: Aplicando estilos a todos os divLembrete coloridos"
+        );
+
+        const resultados = {
+            amarelos: 0,
+            vermelhos: 0,
+            azuis: 0,
+            verdes: 0,
+            laranjas: 0,
+            total: 0,
+        };
+
+        try {
+            // Aplicar estilo amarelo
+            if (estilizarDivLembrete()) {
+                const amarelos = document.querySelectorAll(
+                    'div.divLembrete[style*="background-color:#efef8f"]'
+                );
+                resultados.amarelos = amarelos.length;
+            }
+
+            // Aplicar estilo vermelho
+            if (estilizarDivLembreteVermelho()) {
+                const vermelhos = document.querySelectorAll(
+                    'div.divLembrete[style*="background-color:#db8080"]'
+                );
+                resultados.vermelhos = vermelhos.length;
+            }
+
+            // Aplicar estilo azul
+            if (estilizarDivLembreteAzul()) {
+                const azuis = document.querySelectorAll(
+                    'div.divLembrete[style*="background-color:#87adcd"]'
+                );
+                resultados.azuis = azuis.length;
+            }
+
+            // Aplicar estilo verde
+            if (estilizarDivLembreteVerde()) {
+                const verdes = document.querySelectorAll(
+                    'div.divLembrete[style*="background-color:#a7eda7"]'
+                );
+                resultados.verdes = verdes.length;
+            }
+
+            // Aplicar estilo laranja
+            if (estilizarDivLembreteLaranja()) {
+                const laranjas = document.querySelectorAll(
+                    'div.divLembrete[style*="background-color:#f5b574"]'
+                );
+                resultados.laranjas = laranjas.length;
+            }
+
+            resultados.total =
+                resultados.amarelos +
+                resultados.vermelhos +
+                resultados.azuis +
+                resultados.verdes +
+                resultados.laranjas;
+
+            console.log("🎯 RESULTADO MASTER:", resultados);
+            console.log(
+                `✅ MASTER CONCLUÍDO: ${resultados.total} elementos divLembrete estilizados no total`
+            );
+
+            return resultados;
+        } catch (error) {
+            console.error("❌ ERRO na estilização master:", error);
+            return resultados;
+        }
+    }
+
+    /**
+     * 🔍 FUNÇÃO DE DEBUG MASTER - Identificar TODOS os divLembrete coloridos
+     */
+    function debugTodosDivLembrete() {
+        console.log(
+            "🔍 DEBUG MASTER: Procurando TODOS os divLembrete coloridos na página"
+        );
+
+        const cores = [
+            {
+                nome: "Amarelos",
+                cor: "#efef8f",
+                selector: 'div.divLembrete[style*="background-color:#efef8f"]',
+            },
+            {
+                nome: "Vermelhos",
+                cor: "#db8080",
+                selector: 'div.divLembrete[style*="background-color:#db8080"]',
+            },
+            {
+                nome: "Azuis",
+                cor: "#87adcd",
+                selector: 'div.divLembrete[style*="background-color:#87adcd"]',
+            },
+            {
+                nome: "Verdes",
+                cor: "#a7eda7",
+                selector: 'div.divLembrete[style*="background-color:#a7eda7"]',
+            },
+            {
+                nome: "Laranjas",
+                cor: "#f5b574",
+                selector: 'div.divLembrete[style*="background-color:#f5b574"]',
+            },
+        ];
+
+        const resumo = {
+            total: 0,
+            detalhes: {},
+        };
+
+        cores.forEach(({ nome, cor, selector }) => {
+            const elementos = document.querySelectorAll(selector);
+            resumo.detalhes[nome] = elementos.length;
+            resumo.total += elementos.length;
+
+            console.log(
+                `📋 ${nome} (${cor}): ${elementos.length} elementos encontrados`
+            );
+
+            elementos.forEach((elemento, index) => {
+                console.log(`   ${nome} ${index + 1}:`, {
+                    id: elemento.id || "sem-id",
+                    classes: elemento.className || "sem-classe",
+                    conteudo: elemento.textContent.substring(0, 50) + "...",
+                });
+            });
+        });
+
+        console.log("📊 RESUMO GERAL:", resumo);
+        console.log(
+            `✅ DEBUG MASTER CONCLUÍDO: ${resumo.total} elementos divLembrete coloridos encontrados no total`
+        );
+
+        return resumo;
+    }
+
+    /**
+     * 🧪 FUNÇÃO DE TESTE COMPLETA - Testa todo o sistema de estilização
+     */
+    function testarSistemaEstilizacaoCompleto() {
+        console.log(
+            "🧪 TESTE SISTEMA: Iniciando teste completo do sistema de estilização"
+        );
+
+        // 1. Debug inicial - verificar elementos na página
+        console.log("\n=== ETAPA 1: DEBUG INICIAL ===");
+        const resultadoDebug = debugTodosDivLembrete();
+
+        if (resultadoDebug.total === 0) {
+            console.log(
+                "❌ TESTE: Nenhum elemento divLembrete encontrado na página"
+            );
+            console.log(
+                "💡 DICA: Certifique-se de estar em uma página do eProc com lembretes"
+            );
+            return { sucesso: false, motivo: "nenhum_elemento_encontrado" };
+        }
+
+        // 2. Aplicar estilizações
+        console.log("\n=== ETAPA 2: APLICAÇÃO DE ESTILOS ===");
+        const resultadoEstilizacao = estilizarTodosDivLembrete();
+
+        // 3. Verificar se os estilos foram aplicados
+        console.log("\n=== ETAPA 3: VERIFICAÇÃO ===");
+
+        const verificacao = {
+            amarelos: document.querySelectorAll(
+                'div.divLembrete[style*="background-color:#efef8f"][style*="border: 2px solid"]'
+            ).length,
+            vermelhos: document.querySelectorAll(
+                'div.divLembrete[style*="background-color:#db8080"][style*="linear-gradient"]'
+            ).length,
+            azuis: document.querySelectorAll(
+                'div.divLembrete[style*="background-color:#87adcd"][style*="linear-gradient"]'
+            ).length,
+            verdes: document.querySelectorAll(
+                'div.divLembrete[style*="background-color:#a7eda7"][style*="linear-gradient"]'
+            ).length,
+            laranjas: document.querySelectorAll(
+                'div.divLembrete[style*="background-color:#f5b574"][style*="linear-gradient"]'
+            ).length,
+        };
+
+        console.log("🔍 VERIFICAÇÃO DOS ESTILOS APLICADOS:", verificacao);
+
+        const totalEstilizados =
+            verificacao.amarelos +
+            verificacao.vermelhos +
+            verificacao.azuis +
+            verificacao.verdes +
+            verificacao.laranjas;
+
+        const resultado = {
+            sucesso: totalEstilizados > 0,
+            debug: resultadoDebug,
+            estilizacao: resultadoEstilizacao,
+            verificacao: verificacao,
+            totalEstilizados: totalEstilizados,
+        };
+
+        if (resultado.sucesso) {
+            console.log(
+                `✅ TESTE CONCLUÍDO: ${totalEstilizados} elementos foram estilizados com sucesso!`
+            );
+        } else {
+            console.log("❌ TESTE FALHOU: Nenhum elemento foi estilizado");
+            console.log("🔍 POSSÍVEIS CAUSAS:");
+            console.log(
+                "   - Seletores CSS não estão encontrando os elementos"
+            );
+            console.log(
+                "   - Elementos não têm as cores de background esperadas"
+            );
+            console.log("   - JavaScript está sendo bloqueado ou tem erros");
+        }
+
+        return resultado;
+    }
+
+    /**
+     * 🔍 FUNÇÃO DE DEBUG AVANÇADA - Analisa elementos específicos
+     */
+    function debugElementosEspecificos() {
+        console.log(
+            "🔍 DEBUG ESPECÍFICO: Analisando todos os elementos divLembrete da página"
+        );
+
+        // Buscar de forma mais ampla
+        const todosElementos = document.querySelectorAll(
+            'div[class*="divLembrete"], div[id*="divLembrete"], div.divLembrete'
+        );
+
+        console.log(`📊 Elementos encontrados: ${todosElementos.length}`);
+
+        if (todosElementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento com classe ou ID 'divLembrete' encontrado"
+            );
+            console.log("🔍 Tentando busca mais ampla...");
+
+            // Busca mais ampla por elementos com background colorido
+            const elementosColoridos = document.querySelectorAll(
+                'div[style*="background-color:#efef8f"], div[style*="background-color:#db8080"], div[style*="background-color:#87adcd"], div[style*="background-color:#a7eda7"], div[style*="background-color:#f5b574"]'
+            );
+
+            console.log(
+                `📊 Elementos com backgrounds coloridos: ${elementosColoridos.length}`
+            );
+
+            elementosColoridos.forEach((el, index) => {
+                console.log(`${index + 1}. Elemento:`, {
+                    tagName: el.tagName,
+                    id: el.id,
+                    className: el.className,
+                    style: el.getAttribute("style"),
+                    conteudo: el.textContent.substring(0, 50) + "...",
+                });
+            });
+
+            return {
+                elementos: elementosColoridos.length,
+                detalhes: Array.from(elementosColoridos),
+            };
+        }
+
+        // Analisar cada elemento encontrado
+        const analise = [];
+        todosElementos.forEach((el, index) => {
+            const info = {
+                indice: index + 1,
+                tagName: el.tagName,
+                id: el.id,
+                className: el.className,
+                style: el.getAttribute("style"),
+                temBackgroundColorido: false,
+                corDetectada: null,
+            };
+
+            const style = el.getAttribute("style") || "";
+
+            // Verificar cores específicas
+            const cores = [
+                { nome: "amarelo", hex: "#efef8f" },
+                { nome: "vermelho", hex: "#db8080" },
+                { nome: "azul", hex: "#87adcd" },
+                { nome: "verde", hex: "#a7eda7" },
+                { nome: "laranja", hex: "#f5b574" },
+            ];
+
+            cores.forEach((cor) => {
+                if (style.includes(cor.hex)) {
+                    info.temBackgroundColorido = true;
+                    info.corDetectada = cor.nome;
+                }
+            });
+
+            analise.push(info);
+
+            console.log(
+                `${info.indice}. ${info.tagName}${
+                    info.id ? "#" + info.id : ""
+                }${info.className ? "." + info.className : ""}`
+            );
+            console.log(
+                `   Background colorido: ${
+                    info.temBackgroundColorido
+                        ? "✅ " + info.corDetectada
+                        : "❌"
+                }`
+            );
+            console.log(`   Style: ${style}`);
+        });
+
+        const elementosComCor = analise.filter(
+            (el) => el.temBackgroundColorido
+        );
+        console.log(
+            `\n📊 RESUMO: ${elementosComCor.length} elementos com background colorido de ${analise.length} total`
+        );
+
+        return {
+            total: analise.length,
+            comCor: elementosComCor.length,
+            analise,
+        };
+    }
+
+    /**
+     * 🔧 FUNÇÃO DE DIAGNÓSTICO DO NAMESPACE - Verificar se as funções estão disponíveis
+     */
+    function diagnosticarNamespace() {
+        console.log(
+            "🔍 DIAGNÓSTICO NAMESPACE: Verificando disponibilidade das funções"
+        );
+
+        const funcoesProcuradas = [
+            "testarSistemaEstilizacaoCompleto",
+            "debugElementosEspecificos",
+            "debugTodosDivLembrete",
+            "estilizarTodosDivLembrete",
+            "estilizarDivLembreteVermelho",
+            "estilizarDivLembreteAzul",
+            "estilizarDivLembreteVerde",
+            "estilizarDivLembreteLaranja",
+        ];
+
+        console.log("📊 VERIFICANDO NAMESPACE:", typeof window.SENT1_AUTO);
+
+        if (typeof window.SENT1_AUTO === "undefined") {
+            console.log("❌ window.SENT1_AUTO não existe!");
+            return { erro: "namespace_nao_existe" };
+        }
+
+        const resultado = {
+            namespace_existe: true,
+            funcoes_encontradas: {},
+            funcoes_faltando: [],
+            total_funcoes: Object.keys(window.SENT1_AUTO).length,
+        };
+
+        console.log(
+            `📊 Total de funções no namespace: ${resultado.total_funcoes}`
+        );
+
+        funcoesProcuradas.forEach((nomeFuncao) => {
+            const existe = typeof window.SENT1_AUTO[nomeFuncao] === "function";
+            resultado.funcoes_encontradas[nomeFuncao] = existe;
+
+            if (existe) {
+                console.log(`✅ ${nomeFuncao}: ENCONTRADA`);
+            } else {
+                console.log(`❌ ${nomeFuncao}: NÃO ENCONTRADA`);
+                resultado.funcoes_faltando.push(nomeFuncao);
+            }
+        });
+
+        if (resultado.funcoes_faltando.length > 0) {
+            console.log("🔧 SOLUÇÕES POSSÍVEIS:");
+            console.log("   1. Recarregar a página (F5)");
+            console.log("   2. Verificar se há erros JavaScript no console");
+            console.log(
+                "   3. Verificar se a extensão está carregada corretamente"
+            );
+        }
+
+        return resultado;
     }
 
     /**
@@ -18909,129 +18173,6 @@ indicador.onmouseleave = () => {
         "🤖 AUTO-EXECUÇÃO: Tooltip será corrigido no card original em 2 segundos"
     );
 
-    // Função para estilizar divLembrete com background amarelo
-    function estilizarDivLembrete() {
-        // CORREÇÃO: Usar seletor mais flexível
-        const divs = document.querySelectorAll('div[id^="divLembrete"]');
-
-        console.log(
-            `🔍 LEMBRETES: ${divs.length} divs com ID divLembrete* encontradas`
-        );
-
-        let processados = 0;
-
-        divs.forEach((div) => {
-            // Verificar se tem background amarelo no style
-            const style = div.getAttribute("style") || "";
-            const hasYellowBackground =
-                style.includes("background-color:#efef8f") ||
-                style.includes("background-color: #efef8f");
-
-            if (hasYellowBackground) {
-                console.log(`✅ LEMBRETES: Processando div ${div.id}`);
-
-                // Procurar textarea dentro da div
-                const textarea = div.querySelector("textarea");
-                if (textarea) {
-                    // Aplicar estilos apenas se ainda não foram aplicados
-                    if (!textarea.hasAttribute("data-eprobe-styled")) {
-                        textarea.style.lineHeight = "1.5";
-                        textarea.style.border = "0";
-                        textarea.style.borderRadius = "3px";
-                        textarea.style.background =
-                            "linear-gradient(#F9EFAF, #F7E98D)";
-                        textarea.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
-                        textarea.style.overflow = "hidden";
-                        textarea.style.fontSmooth = "subpixel-antialiased";
-
-                        // Marcar como processado
-                        textarea.setAttribute("data-eprobe-styled", "true");
-                        processados++;
-
-                        console.log(
-                            `✅ LEMBRETES: Textarea estilizada em ${div.id}`
-                        );
-                    }
-                } else {
-                    console.log(
-                        `⚠️ LEMBRETES: Nenhuma textarea encontrada em ${div.id}`
-                    );
-                }
-            }
-        });
-
-        console.log(`🎨 LEMBRETES: ${processados} textareas processadas`);
-        return processados;
-    }
-
-    // Função de debug melhorada - CORRIGIDA
-    function debugDivLembrete() {
-        console.log("🔍 DEBUG LEMBRETES: Analisando elementos...");
-
-        // REGRA CRÍTICA: SEMPRE declarar variáveis antes de usar
-        let todosDivs = null;
-        let comBackgroundAmarelo = 0;
-        let comTextarea = 0;
-
-        try {
-            // Buscar todos os divs com ID divLembrete
-            todosDivs = document.querySelectorAll('div[id^="divLembrete"]');
-            console.log(`📊 Total de divs encontrados: ${todosDivs.length}`);
-
-            if (!todosDivs || todosDivs.length === 0) {
-                console.log(
-                    "❌ DEBUG LEMBRETES: Nenhum div divLembrete* encontrado"
-                );
-                return {
-                    total: 0,
-                    comBackgroundAmarelo: 0,
-                    comTextarea: 0,
-                };
-            }
-
-            todosDivs.forEach((div, index) => {
-                // REGRA CRÍTICA: Verificar se div existe antes de usar
-                if (!div) {
-                    console.log(`⚠️ DEBUG LEMBRETES: Div ${index} é null`);
-                    return;
-                }
-
-                const style = div.getAttribute("style") || "";
-                const hasYellow = style.includes("#efef8f");
-                const textarea = div.querySelector("textarea");
-
-                if (hasYellow) comBackgroundAmarelo++;
-                if (textarea) comTextarea++;
-
-                console.log(`${index + 1}. ID: ${div.id}`);
-                console.log(`   ├─ Style: ${style}`);
-                console.log(
-                    `   ├─ Background amarelo: ${hasYellow ? "✅" : "❌"}`
-                );
-                console.log(`   └─ Tem textarea: ${textarea ? "✅" : "❌"}`);
-            });
-
-            console.log(`\n📊 RESUMO:`);
-            console.log(`├─ Total de divs: ${todosDivs.length}`);
-            console.log(`├─ Com background amarelo: ${comBackgroundAmarelo}`);
-            console.log(`└─ Com textarea: ${comTextarea}`);
-
-            return {
-                total: todosDivs.length,
-                comBackgroundAmarelo,
-                comTextarea,
-            };
-        } catch (error) {
-            console.error("❌ DEBUG LEMBRETES: Erro na função:", error);
-            return {
-                total: 0,
-                comBackgroundAmarelo: 0,
-                comTextarea: 0,
-                erro: error.message,
-            };
-        }
-    }
-
     // EXPOR A FUNÇÃO NO NAMESPACE GLOBAL
     if (typeof window.SENT1_AUTO === "undefined") {
         window.SENT1_AUTO = {};
@@ -19151,6 +18292,1290 @@ indicador.onmouseleave = () => {
     console.log("✅ FUNÇÃO DEBUG DIRETO: Disponível");
     console.log("💡 USO: window.SENT1_AUTO.debugTooltipDireto()");
 
+    // ============================================================================
+    // 🔧 FUNÇÃO MOVIDA PARA ESCOPO PRINCIPAL - autoOpenDocumentoRelevante
+    // ============================================================================
+
+    // Abrir documento relevante automaticamente (com suporte a múltiplos documentos)
+    async function autoOpenDocumentoRelevante() {
+        const pageType = detectPageType();
+        log("🔍 Tipo de página:", pageType);
+
+        if (pageType !== "lista_documentos") {
+            log("⚠️ Não está na página de lista de documentos");
+            return false;
+        }
+
+        const documentosRelevantes = findDocumentosRelevantes();
+
+        if (documentosRelevantes.length === 0) {
+            log("❌ Nenhum documento relevante encontrado");
+            showNotification(
+                "Nenhum documento relevante encontrado nesta página",
+                "error"
+            );
+            return false;
+        }
+
+        let selectedDocument;
+
+        if (documentosRelevantes.length === 1) {
+            // Apenas um documento encontrado
+            selectedDocument = documentosRelevantes[0];
+            log("✅ Um documento encontrado, selecionando automaticamente");
+        } else {
+            // Múltiplos documentos encontrados
+            log(
+                `🔍 ${documentosRelevantes.length} documentos encontrados, solicitando seleção do usuário`
+            );
+
+            log(
+                "🐛 DEBUG: documentosRelevantes antes do modal:",
+                documentosRelevantes.map((doc) => ({
+                    index: doc.index,
+                    tipo: doc.tipo.descricao,
+                    eventoDescricao: doc.eventoDescricao,
+                    seqEvento: doc.seqEvento,
+                }))
+            );
+            selectedDocument = await showDocumentSelectionModal(
+                documentosRelevantes
+            );
+
+            if (!selectedDocument) {
+                log("❌ Usuário cancelou a seleção");
+                return false;
+            }
+        }
+
+        log("🚀 Abrindo documento selecionado:", selectedDocument.href);
+        showNotification(
+            `Abrindo ${selectedDocument.tipo.descricao} selecionada...`,
+            "info"
+        );
+
+        // Abrir em uma nova aba
+        window.open(selectedDocument.href, "_blank");
+
+        return true;
+    }
+
+    // ============================================================================
+    // 🔧 FUNÇÃO MOVIDA PARA ESCOPO PRINCIPAL - autoExtractText
+    // ============================================================================
+
+    // Extrair texto do documento
+    async function autoExtractText() {
+        const pageType = detectPageType();
+        log("🔍 Tipo de página:", pageType);
+
+        // Aceitar múltiplos tipos de página de documento
+        const validDocumentTypes = [
+            "documento_especifico",
+            "documento_html",
+            "documento_pdf",
+        ];
+
+        if (!validDocumentTypes.includes(pageType)) {
+            // Se não é um tipo de documento reconhecido, verificar se há documentos na página
+            const pageHTML = document.documentElement.outerHTML;
+            const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
+            const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
+
+            console.log("🔍 Verificação adicional para página não reconhecida:", {
+                pageType: pageType,
+                hasDocumentHtml: hasDocumentHtml,
+                hasDocumentPdf: hasDocumentPdf,
+            });
+
+            if (!hasDocumentHtml && !hasDocumentPdf) {
+                log("⚠️ Não está na página do documento específico");
+                showNotification("Execute na página do documento, não na lista", "error");
+                return null;
+            } else {
+                log("✅ Página contém documentos, prosseguindo com extração...");
+            }
+        }
+
+        // Aguardar documento carregar completamente
+        await waitForDocumentLoad();
+
+        // DETECTAR SE É PDF PRIMEIRO (múltiplas estratégias)
+        log("🔍 Verificando tipo de documento...");
+
+        // Buscar elementos PDF na página
+        const pdfElements = [
+            ...document.querySelectorAll('embed[type="application/pdf"]'),
+            ...document.querySelectorAll('iframe[src*=".pdf"]'),
+            ...document.querySelectorAll('object[type="application/pdf"]'),
+            ...document.querySelectorAll('iframe[title*="PDF"], iframe[title*="pdf"]'),
+            ...document.querySelectorAll('embed[src*=".pdf"]'),
+            ...document.querySelectorAll('object[data*=".pdf"]'),
+            ...document.querySelectorAll('[class*="pdf"]'),
+            ...document.querySelectorAll('[id*="pdf"]'),
+        ];
+
+        // Também buscar por indicações na URL e página
+        const currentUrl = window.location.href;
+        const pageHTML = document.documentElement.outerHTML;
+        const pageContainsPdfPattern = /pdf|acessar_documento.*doc=/i.test(currentUrl);
+        const pageHasPdfLinks = pageHTML.includes("pdf") || pageHTML.includes("PDF");
+
+        // Buscar também por elementos de PDF no DOM
+        const pdfEmbed = document.querySelector("embed[type*='pdf']");
+        const pdfObject = document.querySelector("object[type*='pdf']");
+        const pdfIframe = document.querySelector("iframe[src*='pdf']");
+        const urlContainsPdf = currentUrl.toLowerCase().includes("pdf");
+
+        // Buscar por viewer de PDF genérico
+        const hasPdfViewer = document.querySelector(".pdf-viewer") ||
+                            document.querySelector("#pdf-viewer") ||
+                            document.querySelector('[class*="pdfview"]') ||
+                            document.querySelector('[id*="pdfview"]');
+
+        const isPdfDocument = pdfElements.length > 0 || 
+                             pageContainsPdfPattern ||
+                             pdfEmbed ||
+                             pdfObject ||
+                             pdfIframe ||
+                             urlContainsPdf ||
+                             hasPdfViewer;
+
+        log(`🔍 Detecção de PDF: ${isPdfDocument ? "SIM" : "NÃO"}`, {
+            eproc_currentUrl: pageContainsPdfPattern,
+            eproc_pageLinks: pageHasPdfLinks,
+            pdfEmbed: !!pdfEmbed,
+            pdfObject: !!pdfObject,
+            pdfIframe: !!pdfIframe,
+            urlContainsPdf: urlContainsPdf,
+            hasPdfViewer: !!hasPdfViewer,
+        });
+
+        if (isPdfDocument) {
+            log("📄 PDF detectado!");
+            // Usar a função de extração de PDF existente
+            return await extractTextFromPDF();
+        }
+
+        // Se não é PDF, prosseguir com extração de HTML
+        log("🔍 Não é PDF, tentando extrair de HTML...");
+
+        // Buscar seção principal do documento usando seletores mais específicos do eProc
+        const seletoresDocumento = [
+            "#divInfraAreaConteudo", // eProc principal
+            "#divInfraAreaPaginacao",
+            "#divInfraAreaTabela",
+            "#divInfraAreaFormulario",
+            '[id*="divInfra"]',
+            "#fldConteudo", // Campo de conteúdo específico
+            '[id*="fldConteudo"]',
+            "#textoDocumento", // Texto do documento
+            '[id*="textoDocumento"]',
+            '[class*="conteudo"]', // Classes relacionadas a conteúdo
+            '[class*="documento"]',
+            '[class*="texto"]',
+            ".main-content", // Seletores genéricos como fallback
+            ".content",
+            "main",
+            "article",
+            ".document-content",
+        ];
+
+        let sectionDocumento = null;
+        for (const seletor of seletoresDocumento) {
+            sectionDocumento = document.querySelector(seletor);
+            if (sectionDocumento) {
+                log(`📄 Seção do documento encontrada: ${seletor}`);
+                break;
+            }
+        }
+
+        if (!sectionDocumento) {
+            log("⚠️ Seção específica do documento não encontrada");
+            log("🔄 Usando body como fallback...");
+            sectionDocumento = document.body;
+        }
+
+        // Validar se há conteúdo relevante na seção
+        const textoPrevio = sectionDocumento.innerText || "";
+        log(`📏 Texto encontrado na seção: ${textoPrevio.length} caracteres`);
+
+        if (textoPrevio.length < 100) {
+            log("⚠️ Conteúdo insuficiente encontrado");
+            
+            // Verificar se é possível que seja um PDF "disfarçado"
+            const bodyText = document.body.innerText.toLowerCase();
+            const bodyHtml = document.body.innerHTML.toLowerCase();
+
+            const possiblePdf = bodyText.includes("pdf") ||
+                               bodyText.includes("adobe") ||
+                               bodyText.includes("acrobat") ||
+                               bodyHtml.includes("acao=acessar_documento&doc=") || // eProc específico
+                               document.querySelector("embed, object") ||
+                               window.location.href.includes("doc=") ||
+                               window.location.href.includes("documento");
+
+            if (possiblePdf) {
+                showNotification(
+                    "Possível PDF detectado!\n\n" +
+                    "Se este é um documento PDF:\n" +
+                    "1. Recarregue a página e tente novamente\n" +
+                    "2. Ou baixe o PDF e use Perplexity com upload\n\n" +
+                    "Se for HTML: verifique se o documento carregou completamente",
+                    "warning"
+                );
+            } else {
+                showNotification(
+                    "❌ Conteúdo do documento não encontrado\n\n" +
+                    "Possíveis causas:\n" +
+                    "• Documento ainda está carregando\n" +
+                    "• Formato não suportado\n" +
+                    "• Página de erro ou acesso negado\n\n" +
+                    "⏳ Tente recarregar a página",
+                    "error"
+                );
+            }
+            return null;
+        }
+
+        // Extrair usando classes específicas do eProc
+        const seletorParagrafos = [
+            "p.paragrafoPadrao",
+            "p.paragrafoComRecuo", 
+            "p.paragrafoCentralizado",
+            "p.paragrafoSemRecuo",
+            "p.citacao",
+            "p.citacao2",
+            "span.dispositivo",
+            "div.paragrafoPadrao",
+            "div.paragrafoComRecuo",
+            "div.paragrafoCentralizado", 
+            "div.paragrafoSemRecuo",
+        ].join(", ");
+
+        const paragrafosTexto = sectionDocumento.querySelectorAll(seletorParagrafos);
+        log(`📝 Encontrados ${paragrafosTexto.length} parágrafos com classes específicas`);
+
+        let textosParágrafos = [];
+
+        if (paragrafosTexto.length > 0) {
+            // Extrair texto dos parágrafos com classes específicas
+            paragrafosTexto.forEach((paragrafo, idx) => {
+                const textoP = paragrafo.innerText || paragrafo.textContent || "";
+                if (textoP.trim().length > 0) {
+                    textosParágrafos.push(textoP.trim());
+                    log(`📄 P${idx + 1} (${paragrafo.className}): ${textoP.substring(0, 100)}...`);
+                }
+            });
+        } else {
+            log("❌ Nenhum parágrafo com classes específicas encontrado");
+            log("🔄 Tentando extração da seção completa...");
+
+            // Fallback: extrair texto completo da seção (limpo)
+            const elementoLimpo = sectionDocumento.cloneNode(true);
+
+            // Remover elementos indesejados
+            const elementosParaRemover = elementoLimpo.querySelectorAll(
+                "nav, header, footer, .menu, .navbar, .breadcrumb, .navigation, " +
+                '[class*="link"], [class*="menu"], [class*="nav"], [class*="toolbar"], ' +
+                '[class*="button"], [class*="btn"], [id*="menu"], [id*="nav"], ' +
+                "a, button, input, select, textarea, script, style, " +
+                '[class*="infra"], [id*="infra"], [class*="processo"], [id*="processo"], ' +
+                '[class*="evento"], [id*="evento"], [class*="documento"], [id*="documento"], ' +
+                ".fechar, .copiar, .print, .imprimir, .voltar, .close"
+            );
+
+            elementosParaRemover.forEach((el) => el.remove());
+
+            const textoCompleto = elementoLimpo.innerText || elementoLimpo.textContent || "";
+            if (textoCompleto.trim().length > 0) {
+                textosParágrafos.push(textoCompleto.trim());
+            }
+        }
+
+        if (textosParágrafos.length === 0) {
+            log("❌ Nenhum texto válido encontrado");
+            showNotification("❌ Nenhum texto válido encontrado no documento", "error");
+            return null;
+        }
+
+        const textoFinal = textosParágrafos.join("\n\n");
+
+        // Limpeza final de metadados residuais
+        const texto = textoFinal
+            .replace(/processo\s+\d+[-\d.]+\/\w+/gi, "") // Remove números de processo
+            .replace(/evento\s+\d+/gi, "") // Remove referências a eventos
+            .replace(/SENT\d+/gi, "") // Remove referências SENT
+            .replace(/DOC\d+/gi, "") // Remove referências DOC
+            .replace(/\d+\.\d+/g, "") // Remove números de seção
+            .replace(/Fechar|Copiar|Print|Imprimir|Voltar/gi, "") // Remove textos de botões
+            .replace(/Copiar link para documento:/gi, "") // Remove texto específico
+            .replace(/^\s*[^\w\s]*\s*/, "") // Remove caracteres especiais do início
+            .replace(/\s+/g, " ") // Normaliza espaços
+            .trim();
+
+        log(`📊 Texto extraído: ${texto.length} caracteres`);
+        log(`👀 Prévia do texto: ${texto.substring(0, 200)}...`);
+
+        if (texto.trim().length < 100) {
+            log("⚠️ Texto muito pequeno");
+            showNotification("Texto extraído é muito pequeno", "warning");
+            return null;
+        }
+
+        showNotification(`✅ Texto extraído: ${texto.length} caracteres`, "success");
+        return texto.trim();
+    }
+
+    // ============================================================================
+    // 🔧 FUNÇÕES AUXILIARES MOVIDAS PARA ESCOPO PRINCIPAL
+    // ============================================================================
+
+    // Aguardar documento carregar completamente
+    function waitForDocumentLoad() {
+        return new Promise((resolve) => {
+            if (document.readyState === "complete") {
+                resolve();
+            } else {
+                window.addEventListener("load", resolve);
+            }
+        });
+    }
+
+    // Copiar para clipboard
+    async function copyToClipboard(text) {
+        try {
+            await navigator.clipboard.writeText(text);
+            log("✅ Texto copiado para clipboard");
+            showNotification("Texto copiado para clipboard!", "success");
+            return true;
+        } catch (error) {
+            log("❌ Erro ao copiar:", error);
+            showNotification("Erro ao copiar texto", "error");
+            return false;
+        }
+    }
+
+    // Limpar caracteres invisíveis que podem causar problemas no clipboard
+    function cleanInvisibleChars(text) {
+        return text
+            .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width chars
+            .replace(/[\u00A0]/g, " ") // Replace non-breaking space with regular space
+            .replace(/[\u2000-\u200A]/g, " ") // Replace various unicode spaces
+            .replace(/[\u2028\u2029]/g, "\n") // Replace line/paragraph separators
+            .trim();
+    }
+
+    // Enviar texto diretamente para Perplexity usando API
+    async function sendToPerplexity(texto) {
+        const requestId = Date.now().toString();
+
+        try {
+            log("🔄 Enviando texto para Perplexity via API...");
+            showNotification("Enviando para Perplexity...", "info");
+
+            const apiKey = await getStoredApiKey();
+            if (!apiKey) {
+                log("❌ Erro ao obter chave API");
+                showNotification("❌ Erro ao obter chave API", "error");
+                return false;
+            }
+
+            const prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
+
+tipo de ação,
+
+partes,
+
+pedido(s) do autor,
+
+decisão (improcedente/procedente/parcialmente procedente),
+
+fundamentos centrais,
+
+condenação (custas/honorários se houver).
+Seja objetivo e direto, sem redação em texto corrido.
+
+DOCUMENTO:
+
+${texto}`;
+
+            const requestBody = {
+                model: "sonar",
+                messages: [
+                    {
+                        role: "system",
+                        content: "Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.",
+                    },
+                    {
+                        role: "user",
+                        content: prompt,
+                    },
+                ],
+                max_tokens: 1200,
+                temperature: 0.1,
+                top_p: 0.9,
+            };
+
+            const response = await fetch("https://api.perplexity.ai/chat/completions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${apiKey}`,
+                },
+                body: JSON.stringify(requestBody),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                let errorJson = null;
+
+                try {
+                    errorJson = JSON.parse(errorData);
+                } catch (e) {
+                    log("⚠️ Resposta de erro não é JSON válido");
+                }
+
+                if (response.status === 401) {
+                    const errorMsg = errorJson?.error?.message || "Chave API inválida";
+                    log("❌ Erro 401:", errorMsg);
+                    showNotification(`❌ ${errorMsg}. Configure uma nova chave API do Perplexity.`, "error");
+                    await removeStoredApiKey();
+                    return false;
+                } else if (response.status === 429) {
+                    const rateLimitType = errorJson?.error?.type || "rate_limit_exceeded";
+                    
+                    if (rateLimitType === "insufficient_quota") {
+                        showNotification("❌ Cota da API Perplexity esgotada. Verifique seus créditos em perplexity.ai/settings/api", "error");
+                    } else {
+                        showNotification("⚠️ Limite de requests atingido. Aguarde alguns minutos antes de tentar novamente.", "warning");
+                    }
+                    return false;
+                } else {
+                    log("❌ Erro da API Perplexity:", response.status);
+                    showNotification(`❌ Erro da API Perplexity (${response.status}). Usando método manual...`, "warning");
+                    return await fallbackToManual(texto);
+                }
+            }
+
+            const data = await response.json();
+            const resultado = data.choices?.[0]?.message?.content;
+
+            if (!resultado) {
+                log("❌ Resposta da API sem conteúdo");
+                showNotification("❌ Resposta da API sem conteúdo", "error");
+                return await fallbackToManual(texto);
+            }
+
+            log("✅ Resultado obtido da Perplexity:", resultado.substring(0, 200) + "...");
+            
+            // Copiar resultado para clipboard
+            const copied = await copyToClipboard(resultado);
+            if (copied) {
+                showNotification("✅ Resumo da Perplexity copiado para clipboard!", "success");
+                return true;
+            } else {
+                showNotification("⚠️ Falha ao copiar resumo", "warning");
+                return false;
+            }
+
+        } catch (error) {
+            log("❌ Erro ao enviar para Perplexity:", error);
+            showNotification("❌ Erro de conexão na API. Usando método manual...", "warning");
+            return await fallbackToManual(texto);
+        }
+    }
+
+    // Função auxiliar para fallback manual
+    async function fallbackToManual(texto) {
+        log("🔄 Executando fallback para método manual");
+        const copied = await copyToClipboard(texto);
+        if (copied) {
+            showNotification("✅ Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)", "info");
+        } else {
+            log("❌ Falha ao copiar texto no fallback");
+            showNotification("❌ Falha ao copiar texto", "error");
+        }
+        return false;
+    }
+
+    // Gerenciar chave API
+    async function getStoredApiKey() {
+        let apiKey = localStorage.getItem("perplexity_api_key");
+
+        if (!apiKey) {
+            // Chave codificada em Base64 para ofuscação básica
+            const encodedKey = "cHBseC1LUEFHYXhYZVZ4Yk1wUWJ5QzNCNmpZUERPd1luSk1ka3MxcUR6YmF1N2s3c05nbUo=";
+            apiKey = atob(encodedKey);
+            localStorage.setItem("perplexity_api_key", apiKey);
+            log("✅ API key do Perplexity configurada automaticamente");
+        }
+
+        return apiKey;
+    }
+
+    async function storeApiKey(apiKey) {
+        if (!apiKey || !apiKey.startsWith("pplx-")) {
+            throw new Error('Chave API inválida. Deve começar com "pplx-"');
+        }
+        localStorage.setItem("perplexity_api_key", apiKey);
+        log("✅ Chave API do Perplexity armazenada com sucesso");
+    }
+
+    async function removeStoredApiKey() {
+        localStorage.removeItem("perplexity_api_key");
+        log("✅ Chave API do Perplexity removida");
+    }
+
+    // Verificar se a página é válida para mostrar o botão
+    function isValidPageForButton() {
+        // Verificar se está na página do processo (formulário frmProcessoLista + título específico)
+        const formProcessoLista = document.querySelector("#frmProcessoLista");
+        const tituloConsultaProcessual = document.querySelector("h1");
+
+        const hasTituloCorreto = tituloConsultaProcessual &&
+            tituloConsultaProcessual.textContent.includes("Consulta Processual - Detalhes do Processo");
+
+        if (formProcessoLista && hasTituloCorreto) {
+            console.log("✅ Página válida detectada: formulário #frmProcessoLista E título 'Consulta Processual - Detalhes do Processo' encontrados");
+            return true;
+        }
+
+        // Para compatibilidade com documento específico
+        const pageType = detectPageType();
+        if (pageType === "documento_especifico" || pageType === "documento_html" || pageType === "documento_pdf") {
+            console.log("✅ Página válida detectada: documento específico");
+            return true;
+        }
+
+        console.log("⚠️ Página não válida para exibir botão");
+        return false;
+    }
+
+    // Encontrar documentos relevantes com informações detalhadas
+    function findDocumentosRelevantes() {
+        const pageType = detectPageType();
+        log(`🔍 Tipo de página detectado: ${pageType}`);
+
+        // Construir seletor dinamicamente baseado nos tipos configurados
+        const selectors = Object.values(TIPOS_DOCUMENTO_RELEVANTE)
+            .map((tipo) => [
+                `a.infraLinkDocumento[data-nome="${tipo.dataNome}"]`,
+                `a[data-nome="${tipo.dataNome}"]`,
+            ])
+            .flat()
+            .join(", ");
+
+        const links = document.querySelectorAll(selectors);
+        log("🔍 Links de documentos relevantes encontrados:", links.length);
+
+        const documentosData = [];
+
+        // PRIMEIRA ETAPA: Coletar informações básicas dos links
+        links.forEach((link, i) => {
+            const texto = link.textContent.trim();
+            const href = link.getAttribute("href");
+
+            log(`🔍 DOC ${i + 1}:`, {
+                texto: texto,
+                href: href,
+                dataId: link.getAttribute("data-id"),
+                onClick: link.getAttribute("onclick"),
+                element: link,
+            });
+
+            // Verificar se é um dos tipos configurados
+            const tipoEncontrado = Object.values(
+                TIPOS_DOCUMENTO_RELEVANTE
+            ).find(
+                (tipo) => texto === tipo.nome || texto.includes(tipo.nome)
+            );
+
+            if (tipoEncontrado) {
+                // Extrair informações do tooltip para diferenciar as sentenças
+                const onmouseover = link.getAttribute("onmouseover") || "";
+                const dadosIconLink =
+                    href.match(/dadosIconLink=([^&]+)/)?.[1] || "";
+
+                // Tentar extrair número do evento da URL
+                const eventoMatch = href.match(/evento=([^&]+)/);
+                const docMatch = href.match(/doc=([^&]+)/);
+                const seqEventoMatch = href.match(/numSeqEvento.*?(\d+)/);
+
+                // Extrair informações do tooltip se disponível
+                let tipoDocumento = "";
+                let tamanho = "";
+                let seqEvento = "";
+
+                if (onmouseover.includes("infraTooltipMostrar")) {
+                    const tooltipMatch = onmouseover.match(
+                        /infraTooltipMostrar\('([^']+)'/
+                    );
+                    if (tooltipMatch) {
+                        const tooltipContent = tooltipMatch[1];
+                        const tipoMatch = tooltipContent.match(
+                            /Tipo Documento:.*?<font[^>]*>([^<]+)/
+                        );
+                        const tamanhoMatch = tooltipContent.match(
+                            /Tamanho:.*?<font[^>]*>([^<]+)/
+                        );
+
+                        if (tipoMatch) tipoDocumento = tipoMatch[1].trim();
+                        if (tamanhoMatch) tamanho = tamanhoMatch[1].trim();
+                    }
+                }
+
+                // Tentar extrair sequência do evento dos dados codificados
+                if (dadosIconLink) {
+                    try {
+                        const decoded = atob(dadosIconLink);
+                        const seqMatch = decoded.match(
+                            /"numSeqEvento";s:\d+:"(\d+)"/
+                        );
+                        if (seqMatch) seqEvento = seqMatch[1];
+                    } catch (e) {
+                        log("🔍 Erro ao decodificar dadosIconLink:", e);
+                    }
+                }
+
+                // Armazenar dados básicos do link
+                documentosData.push({
+                    element: link,
+                    href: href,
+                    texto: texto,
+                    tipo: tipoEncontrado,
+                    eventoId: eventoMatch?.[1] || "",
+                    docId: docMatch?.[1] || "",
+                    seqEvento: seqEvento || seqEventoMatch?.[1] || "",
+                    tipoDocumento:
+                        tipoDocumento || tipoEncontrado.descricao,
+                    tamanho: tamanho || "",
+                    index: i + 1,
+                });
+
+                log(
+                    `✅ Documento encontrado: ${texto} (${tipoEncontrado.descricao})!`,
+                    {
+                        index: i + 1,
+                        url: href,
+                        eventoId: eventoMatch?.[1],
+                        seqEvento: seqEvento,
+                        tipoDocumento: tipoDocumento,
+                        tamanho: tamanho,
+                    }
+                );
+            }
+        });
+
+        // SEGUNDA ETAPA: Se estivermos na página da lista de documentos, buscar as descrições dos eventos
+        if (pageType === "lista_documentos" && documentosData.length > 0) {
+            log(
+                "🔍 Página da lista de documentos detectada - buscando descrições dos eventos..."
+            );
+
+            // Para cada documento relevante, encontrar a descrição na mesma linha (tr)
+            documentosData.forEach((linkData, index) => {
+                log(`🔍 Buscando descrição para documento #${index + 1}...`);
+
+                let eventoDescricao = "";
+                let eventoData = "";
+                let eventoMagistrado = "";
+                const linkElement = linkData.element; // Encontrar a linha (tr) do evento que contém o link
+                // O link está em uma tabela aninhada, então precisamos buscar o tr principal
+                const eventRow =
+                    linkElement.closest("tr[id^='trEvento']") ||
+                    linkElement.closest("tr[id*='Evento']") ||
+                    linkElement.closest("tr[data-parte]");
+
+                if (eventRow) {
+                    log(
+                        `🔍 Link está na linha do evento: ${
+                            eventRow.id ||
+                            eventRow.getAttribute("data-parte") ||
+                            "identificador não encontrado"
+                        }`
+                    );
+
+                    // Buscar a célula de descrição do evento na mesma linha
+                    const eventDescCell = eventRow.querySelector(
+                        "td.infraEventoDescricao"
+                    );
+
+                    if (eventDescCell) {
+                        eventoDescricao = eventDescCell.textContent.trim();
+                        log(
+                            `📝 Descrição encontrada na linha do evento: "${eventoDescricao}"`
+                        );
+                    } else {
+                        log(
+                            "⚠️ Célula td.infraEventoDescricao não encontrada na linha do evento"
+                        );
+
+                        // Fallback: buscar qualquer elemento com classe infraEventoDescricao na linha
+                        const fallbackDescElement = eventRow.querySelector(
+                            ".infraEventoDescricao"
+                        );
+                        if (fallbackDescElement) {
+                            eventoDescricao =
+                                fallbackDescElement.textContent.trim();
+                            log(
+                                `📝 Descrição encontrada via fallback: "${eventoDescricao}"`
+                            );
+                        } else {
+                            // Debug: mostrar todas as células da linha para entender a estrutura
+                            const allCells =
+                                eventRow.querySelectorAll("td");
+                            log(
+                                `🔍 Debug - Total de células na linha: ${allCells.length}`
+                            );
+                            allCells.forEach((cell, index) => {
+                                log(
+                                    `📋 Célula ${
+                                        index + 1
+                                    }: "${cell.textContent
+                                        .trim()
+                                        .substring(0, 50)}" (classe: ${
+                                        cell.className
+                                    })`
+                                );
+                            });
+                        }
+                    }
+
+                    // Buscar informações do magistrado/vara
+                    const magistradoCell =
+                        eventRow.querySelector(
+                            "label.infraEventoUsuario"
+                        ) ||
+                        eventRow.querySelector("td.infraEventoUsuario");
+
+                    log(
+                        `🔍 Debug Magistrado - Célula encontrada: ${!!magistradoCell} (${
+                            magistradoCell
+                                ? magistradoCell.tagName.toLowerCase()
+                                : "N/A"
+                        })`
+                    );
+                    if (magistradoCell) {
+                        log(
+                            `🔍 Debug Magistrado - Elemento: <${magistradoCell.tagName.toLowerCase()}> com classe: ${
+                                magistradoCell.className
+                            }`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Conteúdo da célula: "${magistradoCell.textContent.trim()}"`
+                        );
+
+                        const onmouseoverAttr =
+                            magistradoCell.getAttribute("onmouseover");
+                        const titleAttr =
+                            magistradoCell.getAttribute("title");
+                        const tooltipAttr =
+                            magistradoCell.getAttribute("data-tooltip");
+
+                        log(
+                            `🔍 Debug Magistrado - Atributo onmouseover: ${!!onmouseoverAttr}`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Atributo title: ${!!titleAttr}`
+                        );
+                        log(
+                            `🔍 Debug Magistrado - Atributo data-tooltip: ${!!tooltipAttr}`
+                        );
+
+                        // Tentar extrair de onmouseover primeiro
+                        if (onmouseoverAttr) {
+                            log(
+                                `🔍 Debug Magistrado - Conteúdo onmouseover: "${onmouseoverAttr}"`
+                            );
+
+                            // Estratégias múltiplas para extrair o texto do magistrado
+                            let magistradoEncontrado = false;
+
+                            // Estratégia 1: Texto entre aspas simples ou duplas
+                            const magistradoMatch1 =
+                                onmouseoverAttr.match(/['"]([^'"]+)['"]/);
+                            if (magistradoMatch1 && magistradoMatch1[1]) {
+                                eventoMagistrado =
+                                    magistradoMatch1[1].trim();
+                                magistradoEncontrado = true;
+                                log(
+                                    `🔍 Estratégia 1 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                );
+                            }
+
+                            // Estratégia 2: Texto após "infraTooltipMostrar"
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch2 =
+                                    onmouseoverAttr.match(
+                                        /infraTooltipMostrar\(['"]([^'"]+)['"]\)/
+                                    );
+                                if (
+                                    magistradoMatch2 &&
+                                    magistradoMatch2[1]
+                                ) {
+                                    eventoMagistrado =
+                                        magistradoMatch2[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 2 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            // Estratégia 3: Qualquer texto que pareça nome/cargo entre parênteses ou tags
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch3 =
+                                    onmouseoverAttr.match(
+                                        />\s*([^<>]+(?:juiz|magistrad|vara|gabinete)[^<>]*)\s*</i
+                                    );
+                                if (
+                                    magistradoMatch3 &&
+                                    magistradoMatch3[1]
+                                ) {
+                                    eventoMagistrado =
+                                        magistradoMatch3[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 3 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            // Estratégia 4: Fallback - qualquer texto substancial
+                            if (!magistradoEncontrado) {
+                                const magistradoMatch4 =
+                                    onmouseoverAttr.match(
+                                        />\s*([A-Za-zÀ-ÿ\s]{10,})\s*</
+                                    );
+                                if (
+                                    magistradoMatch4 &&
+                                    magistradoMatch4[1]
+                                ) {
+                                    eventoMagistrado =
+                                        magistradoMatch4[1].trim();
+                                    magistradoEncontrado = true;
+                                    log(
+                                        `🔍 Estratégia 4 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                    );
+                                }
+                            }
+
+                            if (!magistradoEncontrado) {
+                                log(
+                                    `❌ Nenhuma estratégia conseguiu extrair texto do onmouseover`
+                                );
+                            }
+                        }
+
+                        // Se não conseguiu pelo onmouseover, tentar title
+                        if (!eventoMagistrado && titleAttr) {
+                            log(
+                                `🔍 Tentando extrair do atributo title: "${titleAttr}"`
+                            );
+                            if (titleAttr.length > 5) {
+                                eventoMagistrado = titleAttr.trim();
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no title: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Se não conseguiu pelo title, tentar data-tooltip
+                        if (!eventoMagistrado && tooltipAttr) {
+                            log(
+                                `🔍 Tentando extrair do atributo data-tooltip: "${tooltipAttr}"`
+                            );
+                            if (tooltipAttr.length > 5) {
+                                eventoMagistrado = tooltipAttr.trim();
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no data-tooltip: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Fallback final: usar o texto da própria célula se tiver conteúdo
+                        if (!eventoMagistrado) {
+                            const cellText =
+                                magistradoCell.textContent.trim();
+                            if (
+                                cellText &&
+                                cellText.length > 3 &&
+                                !cellText.match(/^\d+$/)
+                            ) {
+                                eventoMagistrado = cellText;
+                                log(
+                                    `🔍 Magistrado/Vara encontrado no texto da célula: "${eventoMagistrado}"`
+                                );
+                            }
+                        }
+
+                        // Formatar informações do magistrado/advogado
+                        if (eventoMagistrado) {
+                            const magistradoFormatado =
+                                formatarMagistradoAdvogado(
+                                    eventoMagistrado
+                                );
+                            if (
+                                typeof magistradoFormatado === "object" &&
+                                magistradoFormatado.tipo
+                            ) {
+                                // Armazenar informações estruturadas
+                                linkData.magistradoInfo =
+                                    magistradoFormatado;
+                                eventoMagistrado = magistradoFormatado.nome;
+                            } else {
+                                eventoMagistrado = magistradoFormatado;
+                            }
+                            log(
+                                `🔍 Informações formatadas: "${eventoMagistrado}"`
+                            );
+                        }
+
+                        if (!eventoMagistrado) {
+                            log(
+                                `❌ Nenhuma informação de magistrado/advogado encontrada`
+                            );
+                        }
+                    } else {
+                        log(
+                            `❌ Elemento label.infraEventoUsuario OU td.infraEventoUsuario não encontrado`
+                        );
+
+                        // Debug: verificar todas as células da linha para encontrar possíveis alternativas
+                        const allCells =
+                            eventRow.querySelectorAll("td, label");
+                        log(
+                            `🔍 Debug - Verificando todos os ${allCells.length} elementos (td/label) da linha:`
+                        );
+                        allCells.forEach((cell, idx) => {
+                            log(
+                                `📋 Elemento ${
+                                    idx + 1
+                                }: <${cell.tagName.toLowerCase()}> classe="${
+                                    cell.className
+                                }", texto="${cell.textContent
+                                    .trim()
+                                    .substring(
+                                        0,
+                                        30
+                                    )}", onmouseover="${!!cell.getAttribute(
+                                    "onmouseover"
+                                )}"`
+                            );
+                        });
+                    }
+
+                    // Buscar a célula de data do evento na mesma linha (geralmente é a 3ª coluna)
+                    const eventCells = eventRow.querySelectorAll("td");
+                    if (eventCells.length >= 3) {
+                        // A data geralmente está na 3ª célula (índice 2)
+                        const dateCell = eventCells[2];
+                        if (dateCell) {
+                            const dateText = dateCell.textContent.trim();
+                            // Verificar se parece uma data (formato XX/XX/XXXX)
+                            if (dateText.match(/\d{2}\/\d{2}\/\d{4}/)) {
+                                eventoData = dateText;
+                                log(
+                                    `📅 Data encontrada na linha do evento: "${eventoData}"`
+                                );
+                            }
+                        }
+                    }
+
+                    if (!eventoData) {
+                        // Fallback: buscar qualquer texto que pareça uma data na linha
+                        const allText = eventRow.textContent;
+                        const dateMatch = allText.match(
+                            /(\d{2}\/\d{2}\/\d{4}[\s\d:]*)/
+                        );
+                        if (dateMatch) {
+                            eventoData = dateMatch[1].trim();
+                            log(
+                                `📅 Data encontrada via fallback: "${eventoData}"`
+                            );
+                        }
+                    }
+                } else {
+                    log(
+                        "🔍 Não foi possível encontrar a linha (tr) do evento que contém o link do documento"
+                    );
+
+                    // Debug: verificar estrutura ao redor do link
+                    log("🔍 Debug - Estrutura ao redor do link:");
+                    let parent = linkElement.parentElement;
+                    let level = 0;
+                    while (parent && level < 5) {
+                        log(
+                            `🔍 Nível ${level}: ${parent.tagName} (id: ${
+                                parent.id || "N/A"
+                            }, classe: ${parent.className || "N/A"})`
+                        );
+                        parent = parent.parentElement;
+                        level++;
+                    }
+                }
+
+                // Adicionar a descrição, data e magistrado encontrados ao objeto do link
+                linkData.eventoDescricao =
+                    eventoDescricao || linkData.tipo.descricao;
+                linkData.eventoData = eventoData || "";
+                linkData.eventoMagistrado = eventoMagistrado || "";
+                log(
+                    `📋 Dados finais para documento #${
+                        index + 1
+                    }: Descrição: "${linkData.eventoDescricao}", Data: "${
+                        linkData.eventoData
+                    }", Magistrado: "${linkData.eventoMagistrado}"`
+                );
+            });
+        } else {
+            log(
+                "🔍 Não é página de lista de documentos ou não há documentos relevantes - descrições não serão buscadas"
+            );
+            // Se não estivermos na lista de documentos, usar descrição padrão do tipo
+            documentosData.forEach((linkData) => {
+                linkData.eventoDescricao = linkData.tipo.descricao;
+                linkData.eventoData = "";
+                linkData.eventoMagistrado = "";
+            });
+        }
+
+        // Converter dados coletados para o formato final
+        const documentosRelevantes = documentosData.map((linkData) => ({
+            element: linkData.element,
+            href: linkData.href,
+            texto: linkData.texto,
+            tipo: linkData.tipo,
+            eventoId: linkData.eventoId,
+            docId: linkData.docId,
+            seqEvento: linkData.seqEvento,
+            tipoDocumento: linkData.tipoDocumento,
+            tamanho: linkData.tamanho,
+            eventoDescricao: linkData.eventoDescricao,
+            eventoData: linkData.eventoData,
+            eventoMagistrado: linkData.eventoMagistrado,
+            magistradoInfo: linkData.magistradoInfo, // Informações estruturadas
+            index: linkData.index,
+        }));
+
+        return documentosRelevantes;
+    }
+
+    // Verificar status da API key com informações detalhadas
+    async function testApiKey() {
+        try {
+            const apiKey = await getStoredApiKey();
+            if (!apiKey) {
+                showNotification("🔑 Nenhuma API key configurada", "error");
+                return false;
+            }
+
+            log("🔍 Testando API key...");
+
+            const testId = Date.now().toString();
+            debugApiCall(testId, "TEST_START", {
+                keyPreview: apiKey.substring(0, 10) + "...",
+            });
+
+            const response = await fetch(
+                "https://api.perplexity.ai/chat/completions",
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`,
+                        "Content-Type": "application/json",
+                        "User-Agent": "eProbe-Extension/1.0",
+                    },
+                    body: JSON.stringify({
+                        model: "sonar",
+                        messages: [
+                            { role: "user", content: "Teste de conexão" },
+                        ],
+                        max_tokens: 10,
+                    }),
+                }
+            );
+
+            const responseHeaders = Object.fromEntries(
+                response.headers.entries()
+            );
+
+            debugApiCall(testId, "TEST_RESPONSE", {
+                status: response.status,
+                headers: responseHeaders,
+                requestId: responseHeaders["x-request-id"] || "N/A",
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+
+                log(
+                    "✅ API key válida! Modelo usado:",
+                    data.model || "sonar"
+                );
+
+                debugApiCall(testId, "TEST_SUCCESS", {
+                    model: data.model,
+                    usage: data.usage,
+                    responseContent: data.choices?.[0]?.message?.content,
+                });
+
+                showNotification(
+                    `✅ API key válida!\nModelo: ${data.model || "sonar"}`,
+                    "success"
+                );
+                return true;
+            } else {
+                const errorData = await response.text();
+                let errorJson = null;
+
+                try {
+                    errorJson = JSON.parse(errorData);
+                } catch (e) {
+                    log("🔍 Erro de resposta não é JSON válido");
+                }
+
+                debugApiCall(testId, "TEST_ERROR", {
+                    status: response.status,
+                    errorText: errorData,
+                    errorJson: errorJson,
+                });
+
+                if (response.status === 401) {
+                    const errorMsg =
+                        errorJson?.error?.message ||
+                        "API key inválida ou expirada";
+                    showNotification(`🔑 ${errorMsg}`, "error");
+                    await removeStoredApiKey();
+                } else if (response.status === 429) {
+                    const rateLimitType =
+                        errorJson?.error?.type || "rate_limit_exceeded";
+
+                    if (rateLimitType === "insufficient_quota") {
+                        showNotification(
+                            "💳 Cota da API Perplexity esgotada. Verifique em perplexity.ai/settings/api",
+                            "error"
+                        );
+                        await removeStoredApiKey();
+                    } else {
+                        showNotification(
+                            `⏱️ Rate limit atingido no teste da API`,
+                            "warning"
+                        );
+                    }
+                } else if (response.status === 403) {
+                    showNotification(
+                        "🚫 Acesso negado. Verifique créditos da conta",
+                        "error"
+                    );
+                } else {
+                    const errorMsg =
+                        errorJson?.error?.message ||
+                        `Erro ${response.status}`;
+                    showNotification(`❌ ${errorMsg}`, "error");
+                }
+                return false;
+            }
+        } catch (error) {
+            log("❌ Erro de conexão no teste:", error);
+            showNotification("❌ Erro de conexão com Perplexity", "error");
+            return false;
+        }
+    }
+
+    // Debug avançado da API com logging estruturado
+    function debugApiCall(requestId, phase, data) {
+        if (!debugMode) return;
+
+        const timestamp = new Date().toISOString();
+        const phaseColors = {
+            INÍCIO: "🚀",
+            REQUEST: "📤",
+            RESPONSE_HEADERS: "📥",
+            SUCCESS: "✅",
+            ERROR_DETAILS: "❌",
+            EXCEPTION: "💥",
+            TEST_START: "🧪",
+            TEST_RESPONSE: "📊",
+            TEST_SUCCESS: "✅",
+            TEST_ERROR: "❌",
+        };
+
+        const icon = phaseColors[phase] || "🔍";
+
+        console.group(`${icon} API Debug [ID: ${requestId}] - ${phase}`);
+        console.log("🕐 Timestamp:", timestamp);
+
+        if (phase === "REQUEST") {
+            console.log("🌐 URL:", data.url);
+            console.log("🤖 Model:", data.model);
+            console.log("📏 Prompt Length:", data.promptLength);
+            console.log("🔢 Max Tokens:", data.maxTokens);
+        } else if (phase === "RESPONSE_HEADERS") {
+            console.log("📊 Status:", data.status, data.statusText);
+            console.log("🆔 Request ID:", data.requestId);
+            if (data.rateLimit) {
+                console.log("⏱️ Rate Limits:");
+                console.table(data.rateLimit);
+            }
+        } else if (phase === "SUCCESS") {
+            console.log("🆔 Response ID:", data.responseId);
+            console.log("🤖 Model Used:", data.model);
+            console.log("📊 Usage:", data.usage);
+            console.log(
+                "🏁 Finish Reason:",
+                data.choices?.[0]?.finish_reason
+            );
+            console.log(
+                "📏 Response Length:",
+                data.choices?.[0]?.message?.content?.length
+            );
+        } else if (phase === "ERROR_DETAILS") {
+            console.log("📊 Status:", data.status, data.statusText);
+            console.log("📝 Error Text:", data.errorText);
+            if (data.errorJson) {
+                console.log("🔍 Error JSON:", data.errorJson);
+            }
+        } else if (phase === "EXCEPTION") {
+            console.log("❌ Error Name:", data.errorName);
+            console.log("💬 Error Message:", data.errorMessage);
+            console.log("📚 Stack Trace:", data.errorStack);
+        } else if (phase === "TEST_SUCCESS") {
+            console.log("🔢 Total Models:", data.totalModels);
+            console.log("🤖 GPT Models:", data.gptModels);
+            console.log("🏢 Organization:", data.organization);
+            console.log("✨ Has GPT-4:", data.hasGpt4);
+        } else {
+            console.log("📋 Data:", data);
+        }
+
+        console.groupEnd();
+
+        // Salvar logs críticos no localStorage para debug posterior
+        if (phase === "ERROR_DETAILS" || phase === "EXCEPTION") {
+            const errorLogs = JSON.parse(
+                localStorage.getItem("eprobe_error_logs") || "[]"
+            );
+            errorLogs.push({
+                requestId,
+                phase,
+                timestamp,
+                data,
+            });
+
+            // Manter apenas os últimos 10 logs de erro
+            if (errorLogs.length > 10) {
+                errorLogs.splice(0, errorLogs.length - 10);
+            }
+
+            localStorage.setItem(
+                "eprobe_error_logs",
+                JSON.stringify(errorLogs)
+            );
+        }
+    }
+
     // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 
     window.SENT1_AUTO = {
@@ -19168,6 +19593,8 @@ indicador.onmouseleave = () => {
         storeApiKey,
         removeStoredApiKey,
         testApiKey,
+        showDocumentSelectionModal, // 🎨 Função de UI para seleção de múltiplos documentos
+        showSentenceProcessingOptions, // 🎨 Função de UI para processamento de sentenças
         showErrorLogs,
         debugApiCall,
         showApiQuotaInfo,
@@ -19227,9 +19654,11 @@ indicador.onmouseleave = () => {
         // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
         criarTooltipSimplificado,
         testarFuncaoTooltip,
-        // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete
-        debugDivLembrete,
-        estilizarDivLembrete,
+        // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete (APENAS EMERGÊNCIA - FUNCIONANDO)
+        debugTodosDivLembrete: window.debugTodosDivLembreteEmergencia,
+        estilizarTodosDivLembrete: window.estilizarTodosDivLembreteEmergencia,
+        debugElementosEspecificos: window.debugElementosEspecificosEmergencia,
+        testarSistemaEstilizacaoCompleto: window.testeAutomaticoEmergencia,
         // 🔍 FUNÇÕES DE DEBUG PARA STATUS
         debugPadraoRetirado,
         debugStatusCompleto,
@@ -19278,7 +19707,31 @@ indicador.onmouseleave = () => {
         setupInterfaceObserver,
         preventElementOverlap,
 
-        // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
+        // 🎨 FUNÇÕES DE CRIAÇÃO DE BOTÃO E INTERFACE
+        showApiKeyConfig,
+        createAutomationButton,
+        findTargetContainer,
+        createFloatingButton,
+
+        // 📄 FUNÇÃO DE PROCESSAMENTO DE SENTENÇAS
+        showSentenceProcessingOptions,
+
+        // 📊 FUNÇÃO DE LOGS E DIAGNÓSTICOS
+        showErrorLogs,
+
+        // 🔧 FUNÇÕES DE QUOTA E CONFIGURAÇÃO
+        showApiQuotaInfo,
+
+        // 🐛 FUNÇÕES DE DEBUG E ESTRUTURA
+        debugEventStructure,
+
+        // 🧪 FUNCIONALIDADES EXPERIMENTAIS
+        detectarDataSessaoExperimental,
+
+        // � FUNÇÕES DE INTERFACE E BOTÕES
+        criarBotaoEleganteeProc,
+
+        // �🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
         getTipoJulgamentoProcessoPautado,
         setTipoJulgamentoProcessoPautado,
         getStatusJulgamento,
@@ -19577,6 +20030,542 @@ indicador.onmouseleave = () => {
         },
     };
 
+    // Mostrar opções de processamento para página de lista com múltiplas sentenças
+    async function showSentenceProcessingOptions() {
+        const documentosRelevantes = findDocumentosRelevantes();
+
+        if (documentosRelevantes.length === 0) {
+            showNotification("Nenhuma sentença encontrada", "error");
+            return;
+        }
+
+        if (documentosRelevantes.length === 1) {
+            // Apenas uma sentença, abrir diretamente
+            await autoOpenDocumentoRelevante();
+            return;
+        }
+
+        // Múltiplas sentenças, mostrar opções
+        const selectedDocument = await showDocumentSelectionModal(documentosRelevantes);
+
+        if (!selectedDocument) {
+            return; // Usuário cancelou
+        }
+
+        // Perguntar o que fazer com o documento selecionado
+        const processChoice = await showDocumentProcessingModal();
+
+        if (processChoice) {
+            // Abrir o documento selecionado
+            log("📖 Abrindo documento selecionado:", selectedDocument.href);
+            showNotification("🔄 Abrindo documento selecionado...", "info");
+            window.open(selectedDocument.href, "_blank");
+        } else {
+            // Processar diretamente via API (funcionalidade experimental)
+            showNotification(
+                "⚠️ Processamento direto via API ainda não implementado. Abrindo documento...",
+                "warning"
+            );
+            window.open(selectedDocument.href, "_blank");
+        }
+    }
+
+    // Mostrar logs de erro da API
+    function showErrorLogs() {
+        const logs = JSON.parse(
+            localStorage.getItem("eprobe_error_logs") || "[]"
+        );
+
+        if (logs.length === 0) {
+            showNotification("Nenhum log de erro encontrado", "info");
+            return;
+        }
+
+        const modal = document.createElement("div");
+        modal.className = "eprobe-modal";
+        modal.style.cssText = `
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.8);
+ z-index: 100002;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ backdrop-filter: blur(4px);
+ `;
+
+        modal.innerHTML = `
+ <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 80%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+ <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+ <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(19, 67, 119);">
+ <circle cx="11" cy="11" r="8"/>
+ <path d="m21 21-4.35-4.35"/>
+ </svg>
+ Logs de Erro da API
+ </h2>
+ <button id="clear-logs" style="background: rgb(220, 38, 38); color: white; border: 1px solid rgb(220, 38, 38); padding: 8px 12px; border-radius: 6px; cursor: pointer; margin-top: 12px; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <polyline points="3,6 5,6 21,6"/>
+ <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+ </svg>
+ Limpar Logs
+ </button>
+ </div>
+ <div style="font-family: 'Roboto', monospace, sans-serif; font-size: 12px; line-height: 1.4; color: rgb(243, 246, 249);">
+ ${logs
+     .map(
+         (log, i) => `
+ <div style="margin-bottom: 16px; padding: 12px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51);">
+ <strong style="color: rgb(19, 67, 119);">Log ${i + 1} - ${
+             log.timestamp
+         }</strong><br>
+ <strong style="color: rgb(136, 152, 181);">Request ID:</strong> <span style="color: rgb(243, 246, 249);">${
+     log.requestId
+ }</span><br>
+ <strong style="color: rgb(136, 152, 181);">Phase:</strong> <span style="color: rgb(243, 246, 249);">${
+     log.phase
+ }</span><br>
+ <strong style="color: rgb(136, 152, 181);">Data:</strong><br>
+ <pre style="background: rgb(18, 26, 39); padding: 10px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.2); margin-top: 8px;">${JSON.stringify(
+     log.data,
+     null,
+     2
+ )}</pre>
+ </div>
+ `
+     )
+     .join("")}
+ </div>
+ <div style="text-align: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+ <button id="close-logs" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+ <path d="m18 6-12 12"/>
+ <path d="m6 6 12 12"/>
+ </svg>
+ Fechar
+ </button>
+ </div>
+ </div>
+ `;
+
+        document.body.appendChild(modal);
+
+        modal.querySelector("#close-logs").addEventListener("click", () => {
+            modal.remove();
+        });
+
+        modal.querySelector("#clear-logs").addEventListener("click", () => {
+            localStorage.removeItem("eprobe_error_logs");
+            modal.remove();
+            showNotification("Logs de erro limpos", "info");
+        });
+
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Mostrar informações sobre quota da API
+    function showApiQuotaInfo() {
+        const modal = document.createElement("div");
+        modal.style.cssText = `
+ position: fixed;
+ top: 0;
+ left: 0;
+ width: 100%;
+ height: 100%;
+ background: rgba(0,0,0,0.7);
+ z-index: 100003;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `;
+
+        modal.innerHTML = `
+ <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+ <div style="margin-bottom: 20px; text-align: center;">
+ <h2 style="margin: 0; color: #dc3545; font-size: 20px;"> Créditos da API Esgotados</h2>
+ </div>
+ 
+ <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+ <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
+ 
+ <p><strong>Para resolver:</strong></p>
+ <ol>
+ <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #134377;">perplexity.ai/settings/api</a></li>
+ <li>Verifique seus créditos e limites</li>
+ <li>Se necessário, adicione créditos à sua conta</li>
+ <li>Ou aguarde a renovação dos créditos</li>
+ </ol>
+ 
+ <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar em Perplexity web.</p>
+ </div>
+
+ <div style="text-align: center;">
+ <button id="open-billing" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+ Abrir Configurações
+ </button>
+ <button id="config-new-key" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+ Nova API Key
+ </button>
+ <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+ Fechar
+ </button>
+ </div>
+ </div>
+ `;
+
+        document.body.appendChild(modal);
+
+        modal
+            .querySelector("#open-billing")
+            .addEventListener("click", () => {
+                window.open(
+                    "https://www.perplexity.ai/settings/api",
+                    "_blank"
+                );
+                modal.remove();
+            });
+
+        modal
+            .querySelector("#config-new-key")
+            .addEventListener("click", () => {
+                modal.remove();
+                showApiKeyConfig();
+            });
+
+        modal
+            .querySelector("#close-quota-info")
+            .addEventListener("click", () => {
+                modal.remove();
+            });
+
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    // Debug completo da estrutura HTML ao redor do link SENT1
+    function debugEventStructure(linkElement) {
+        log(" === DEBUG ESTRUTURA HTML ===");
+
+        // 1. Informações sobre o próprio link
+        log(" Link SENT1:");
+        log(` Texto: "${linkElement.textContent.trim()}"`);
+        log(` Classes: "${linkElement.className}"`);
+        log(` Atributos:`, {
+            href: linkElement.getAttribute("href"),
+            onclick: linkElement.getAttribute("onclick"),
+            onmouseover: linkElement.getAttribute("onmouseover"),
+            "data-nome": linkElement.getAttribute("data-nome"),
+            "data-id": linkElement.getAttribute("data-id"),
+        });
+
+        // 2. Analisar a linha (tr) que contém o link
+        const currentRow = linkElement.closest("tr");
+        if (currentRow) {
+            log(" Linha atual (TR):");
+            log(` Classes da linha: "${currentRow.className}"`);
+
+            const cells = currentRow.querySelectorAll("td");
+            log(` Total de células: ${cells.length}`);
+
+            cells.forEach((cell, index) => {
+                const text = cell.textContent.trim();
+                log(
+                    ` Célula ${index}: "${text}" (classes: "${cell.className}")`
+                );
+
+                // Verificar se tem elementos filhos interessantes
+                const labels = cell.querySelectorAll("label");
+                const spans = cell.querySelectorAll("span");
+                const divs = cell.querySelectorAll("div");
+
+                if (labels.length > 0) {
+                    labels.forEach((label, i) => {
+                        log(
+                            ` Label ${i}: "${label.textContent.trim()}" (classes: "${
+                                label.className
+                            }")`
+                        );
+                    });
+                }
+                if (spans.length > 0) {
+                    spans.forEach((span, i) => {
+                        log(
+                            ` Span ${i}: "${span.textContent.trim()}" (classes: "${
+                                span.className
+                            }")`
+                        );
+                    });
+                }
+                if (divs.length > 0) {
+                    divs.forEach((div, i) => {
+                        log(
+                            ` Div ${i}: "${div.textContent.trim()}" (classes: "${
+                                div.className
+                            }")`
+                        );
+                    });
+                }
+            });
+        }
+
+        // 3. Analisar linhas anteriores
+        log(" Linhas anteriores:");
+        let prevRow = currentRow?.previousElementSibling;
+        let rowCount = 0;
+        while (prevRow && rowCount < 3) {
+            rowCount++;
+            const prevCells = prevRow.querySelectorAll("td");
+            log(` Linha anterior ${rowCount}: ${prevCells.length} células`);
+
+            prevCells.forEach((cell, index) => {
+                const text = cell.textContent.trim();
+                if (text.length > 10) {
+                    log(` Célula ${index}: "${text.substring(0, 100)}..."`);
+                }
+            });
+
+            prevRow = prevRow.previousElementSibling;
+        }
+
+        // 4. Analisar a tabela completa
+        const table = linkElement.closest("table");
+        if (table) {
+            log(" Tabela:");
+            log(` Classes da tabela: "${table.className}"`);
+            log(` ID da tabela: "${table.id}"`);
+
+            // Procurar por cabeçalhos
+            const headers = table.querySelectorAll("th");
+            if (headers.length > 0) {
+                log(" Cabeçalhos encontrados:");
+                headers.forEach((header, index) => {
+                    log(` Header ${index}: "${header.textContent.trim()}"`);
+                });
+            }
+        }
+
+        log(" === FIM DEBUG ESTRUTURA ===");
+    }
+
+    // Detectar data da sessão usando IA experimental (Semantic Kernel)
+    async function detectarDataSessaoExperimental() {
+        console.log(
+            "🧪 EXPERIMENTAL: Iniciando detecção de data da sessão com Semantic Kernel"
+        );
+
+        try {
+            // Verificar se o Semantic Kernel está disponível
+            if (typeof window.eProbeSemanticKernel !== "undefined") {
+                console.log(
+                    "🤖 Semantic Kernel disponível - tentando detecção inteligente"
+                );
+
+                const textoCompleto =
+                    document.body.innerText ||
+                    document.body.textContent ||
+                    "";
+
+                // Usar o Semantic Kernel para detecção inteligente
+                const resultadoIA =
+                    await window.eProbeSemanticKernel.detectarDataSessao(
+                        textoCompleto
+                    );
+
+                if (resultadoIA && resultadoIA.dataEncontrada) {
+                    console.log(
+                        "✅ EXPERIMENTAL: Data detectada via IA:",
+                        resultadoIA.dataFormatada
+                    );
+
+                    // Validar a data detectada
+                    if (validarDataBrasileira(resultadoIA.dataFormatada)) {
+                        // Salvar resultado usando a mesma estrutura da função original
+                        dataSessaoPautado = {
+                            dataOriginal: resultadoIA.dataFormatada,
+                            dataFormatada: resultadoIA.dataFormatada,
+                            contextoEncontrado:
+                                resultadoIA.contexto || "Detectado via IA",
+                            metodoDeteccao: "semantic-kernel",
+                            confianca: resultadoIA.confianca || 0.8,
+                        };
+
+                        processoComDataSessao = processoAtual;
+                        console.log(
+                            "✅ EXPERIMENTAL: Data da sessão salva via Semantic Kernel"
+                        );
+
+                        return dataSessaoPautado;
+                    } else {
+                        console.log(
+                            "❌ EXPERIMENTAL: Data detectada via IA não é válida:",
+                            resultadoIA.dataFormatada
+                        );
+                    }
+                } else {
+                    console.log(
+                        "⚠️ EXPERIMENTAL: Semantic Kernel não encontrou data da sessão"
+                    );
+                }
+            } else {
+                console.log(
+                    "❌ EXPERIMENTAL: Semantic Kernel não está disponível"
+                );
+            }
+
+            // Fallback para método tradicional
+            console.log(
+                "🔄 EXPERIMENTAL: Usando fallback para método tradicional"
+            );
+            return detectarDataSessao();
+        } catch (error) {
+            console.error(
+                "🚨 EXPERIMENTAL: Erro na detecção experimental:",
+                error
+            );
+
+            // Fallback para método tradicional em caso de erro
+            console.log(
+                "🔄 EXPERIMENTAL: Fallback para método tradicional devido a erro"
+            );
+            return detectarDataSessao();
+        }
+    }
+
+    // Função para criar botão com estilo eProc elegante e discreto
+    function criarBotaoEleganteeProc(id, className = "col-auto mr-2") {
+        const botao = document.createElement("div");
+        botao.id = id;
+        botao.className = className;
+
+        // Estilo base elegante (inspirado no eprobe-data-sessao)
+        botao.style.cssText = `
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        border: 1px solid #d1d5db;
+        padding: 8px 12px;
+        border-radius: 4px;
+        background-color: #f8fafc;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        white-space: nowrap;
+        max-width: fit-content;
+    `;
+
+        // Adicionar efeitos hover discretos e elegantes
+        botao.addEventListener("mouseenter", function () {
+            this.style.backgroundColor = "#fafbfc";
+            this.style.borderColor = "#e2e8f0";
+            this.style.boxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.04)";
+        });
+
+        botao.addEventListener("mouseleave", function () {
+            this.style.backgroundColor = "#f8fafc";
+            this.style.borderColor = "#d1d5db";
+            this.style.boxShadow = "0 1px 2px 0 rgba(0, 0, 0, 0.05)";
+        });
+
+        return botao;
+    }
+
+    // Função específica para criar botão branco capa do processo (alias mais descritivo)
+    function botaoBrancoCapaProcesso(id, className = "col-auto mr-2") {
+        return criarBotaoEleganteeProc(id, className);
+    }
+
+    // Função para criar botão infraButton btn-primary com estilo eProc
+    function criarInfraButtonPrimary(id, innerHTML) {
+        const button = document.createElement("button");
+        button.id = id;
+        button.className = "infraButton btn-primary";
+
+        // Conteúdo do botão (HTML interno)
+        if (innerHTML) {
+            button.innerHTML = innerHTML;
+        }
+
+        // Aplicar cor azul personalizada eProc
+        button.style.backgroundColor = "#134377";
+        button.style.borderColor = "#134377";
+
+        // FORÇAR aplicação do margin-right no SVG
+        setTimeout(() => {
+            const svg = button.querySelector("svg");
+            if (svg) {
+                svg.style.marginRight = "4px";
+                svg.style.setProperty("margin-right", "4px", "important");
+                console.log(
+                    "✅ FUNÇÃO CENTRAL: Margin-right aplicado automaticamente ao SVG:",
+                    svg.style.marginRight
+                );
+            }
+        }, 50);
+
+        // Adicionar eventos para hover, focus e blur
+        button.addEventListener("mouseenter", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("mouseleave", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        button.addEventListener("focus", () => {
+            button.style.backgroundColor = "#0f3a66";
+            button.style.borderColor = "#0f3a66";
+        });
+
+        button.addEventListener("blur", () => {
+            button.style.backgroundColor = "#134377";
+            button.style.borderColor = "#134377";
+        });
+
+        return button;
+    }
+
+    // Função específica para criar botão azul eProc (alias mais descritivo)
+    function botaoAzuleProc(id, innerHTML) {
+        return criarInfraButtonPrimary(id, innerHTML);
+    }
+
+    // Função para detectar página de localizadores
+    function detectarPaginaLocalizadores() {
+        const currentUrl = window.location.href;
+
+        // Verifica se está na página de Meus Localizadores
+        if (
+            !currentUrl.includes(
+                "acao=usuario_tipo_monitoramento_localizador_listar"
+            )
+        ) {
+            return false;
+        }
+
+        console.log(
+            "📋 LOCALIZADORES: Página 'Meus Localizadores' detectada"
+        );
+
+        // Processa a tabela de localizadores
+        processarTabelaLocalizadores();
+
+        return true;
+    }
+
     // Fim da seção de funcionalidades
     console.log(
         "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
@@ -19586,3 +20575,802 @@ indicador.onmouseleave = () => {
 
     // Fechamento da IIFE principal assíncrona
 })();
+
+// ============================================================================
+// 🚨 FUNÇÃO DE EMERGÊNCIA - GARANTIR FUNÇÕES DE ESTILIZAÇÃO NO NAMESPACE
+// ============================================================================
+
+/**
+ * 🚨 FUNÇÃO DE EMERGÊNCIA - Garantir que as funções de estilização estejam disponíveis
+ * Esta função roda FORA da IIFE para garantir execução
+ */
+window.garantirFuncoesEstilizacao = function () {
+    console.log(
+        "🚨 EMERGÊNCIA: Verificando e garantindo funções de estilização..."
+    );
+
+    // Verificar se namespace existe
+    if (typeof window.SENT1_AUTO === "undefined") {
+        console.log("❌ EMERGÊNCIA: window.SENT1_AUTO não existe! Criando...");
+        window.SENT1_AUTO = {};
+    }
+
+    // Lista das funções que devem existir
+    const funcoesNecessarias = [
+        "debugTodosDivLembrete",
+        "estilizarTodosDivLembrete",
+        "testarSistemaEstilizacaoCompleto",
+        "debugElementosEspecificos",
+        "estilizarDivLembreteVermelho",
+        "estilizarDivLembreteAzul",
+        "estilizarDivLembreteVerde",
+        "estilizarDivLembreteLaranja",
+    ];
+
+    // Verificar quais funções estão faltando
+    const funcoesFaltando = funcoesNecessarias.filter(
+        (nome) => typeof window.SENT1_AUTO[nome] !== "function"
+    );
+
+    if (funcoesFaltando.length === 0) {
+        console.log("✅ EMERGÊNCIA: Todas as funções estão disponíveis!");
+        return { status: "ok", todas_disponiveis: true };
+    }
+
+    console.log(
+        `⚠️ EMERGÊNCIA: ${funcoesFaltando.length} funções faltando:`,
+        funcoesFaltando
+    );
+
+    // Criar implementações de emergência para as funções faltando
+    funcoesFaltando.forEach((nomeFuncao) => {
+        console.log(`🔧 EMERGÊNCIA: Criando função ${nomeFuncao}...`);
+
+        window.SENT1_AUTO[nomeFuncao] = function (...args) {
+            console.log(`🚨 FUNÇÃO EMERGÊNCIA: ${nomeFuncao} executada`);
+            console.log(
+                "💡 DICA: Recarregue a página (F5) para carregar as funções originais"
+            );
+
+            // Implementações básicas de emergência
+            switch (nomeFuncao) {
+                case "debugTodosDivLembrete":
+                    return (
+                        window.debugTodosDivLembreteEmergencia?.() || {
+                            total: 0,
+                        }
+                    );
+
+                case "estilizarTodosDivLembrete":
+                    return (
+                        window.estilizarTodosDivLembreteEmergencia?.() || {
+                            total: 0,
+                        }
+                    );
+
+                case "testarSistemaEstilizacaoCompleto":
+                    console.log(
+                        "🧪 TESTE EMERGÊNCIA: Execute as funções individuais"
+                    );
+                    return {
+                        status: "emergencia",
+                        dica: "use_funcoes_individuais",
+                    };
+
+                case "debugElementosEspecificos":
+                    return (
+                        window.debugElementosEspecificosEmergencia?.() || {
+                            total: 0,
+                        }
+                    );
+
+                default:
+                    console.log(
+                        `⚠️ ${nomeFuncao}: Função de emergência criada`
+                    );
+                    return { status: "emergencia", funcao: nomeFuncao };
+            }
+        };
+    });
+
+    console.log("🔧 EMERGÊNCIA: Funções de emergência criadas!");
+    console.log("💡 PARA USAR: window.SENT1_AUTO.nomeDaFuncao()");
+
+    return {
+        status: "emergencia_ativa",
+        funcoes_criadas: funcoesFaltando.length,
+        funcoes: funcoesFaltando,
+    };
+};
+
+// Executar automaticamente a verificação de emergência
+setTimeout(() => {
+    if (typeof window.garantirFuncoesEstilizacao === "function") {
+        window.garantirFuncoesEstilizacao();
+    }
+}, 1000);
+
+console.log(
+    "🚨 SISTEMA EMERGÊNCIA: Função garantirFuncoesEstilizacao() disponível globalmente"
+);
+console.log("💡 USO: window.garantirFuncoesEstilizacao()");
+
+// ============================================================================
+// 🚨 IMPLEMENTAÇÕES DE EMERGÊNCIA - FUNÇÕES BÁSICAS QUE SEMPRE FUNCIONAM
+// ============================================================================
+
+/**
+ * 🚨 IMPLEMENTAÇÃO DE EMERGÊNCIA - Debug básico dos elementos
+ */
+window.debugTodosDivLembreteEmergencia = function () {
+    console.log("🔍 DEBUG EMERGÊNCIA: Procurando elementos divLembrete...");
+
+    const cores = [
+        { nome: "Amarelos", hex: "#efef8f" },
+        { nome: "Vermelhos", hex: "#db8080" },
+        { nome: "Azuis", hex: "#87adcd" },
+        { nome: "Verdes", hex: "#a7eda7" },
+        { nome: "Laranjas", hex: "#f5b574" },
+    ];
+
+    const resultado = { total: 0, detalhes: {} };
+
+    cores.forEach((cor) => {
+        const elementos = document.querySelectorAll(
+            `div.divLembrete[style*="background-color:${cor.hex}"]`
+        );
+        resultado.detalhes[cor.nome] = elementos.length;
+        resultado.total += elementos.length;
+
+        console.log(`📋 ${cor.nome}: ${elementos.length} elementos`);
+
+        elementos.forEach((el, i) => {
+            console.log(
+                `   ${i + 1}. ID: ${el.id || "sem-id"}, Classe: ${
+                    el.className || "sem-classe"
+                }`
+            );
+        });
+    });
+
+    console.log(`📊 TOTAL: ${resultado.total} elementos encontrados`);
+    return resultado;
+};
+
+/**
+ * 🚨 IMPLEMENTAÇÃO DE EMERGÊNCIA - Estilização básica que sempre funciona
+ */
+window.estilizarTodosDivLembreteEmergencia = function () {
+    console.log("🎨 ESTILIZAÇÃO EMERGÊNCIA: Aplicando estilos básicos...");
+
+    const estilos = [
+        {
+            cor: "#efef8f",
+            gradiente: "linear-gradient(#F9EFAF, #F7E98D)",
+            nome: "amarelos",
+        },
+        {
+            cor: "#db8080",
+            gradiente: "linear-gradient(#FAAFAF, #F78D8D)",
+            nome: "vermelhos",
+        },
+        {
+            cor: "#87adcd",
+            gradiente: "linear-gradient(#AFCFFA, #8DC0F7)",
+            nome: "azuis",
+        },
+        {
+            cor: "#a7eda7",
+            gradiente: "linear-gradient(#AFFAB6, #8DF792)",
+            nome: "verdes",
+        },
+        {
+            cor: "#f5b574",
+            gradiente: "linear-gradient(#FAD3AF, #F7C68D)",
+            nome: "laranjas",
+        },
+    ];
+
+    const resultado = { total: 0 };
+
+    estilos.forEach((estilo) => {
+        const elementos = document.querySelectorAll(
+            `div.divLembrete[style*="background-color:${estilo.cor}"]`
+        );
+
+        elementos.forEach((el, i) => {
+            // Aplicar apenas se não foi estilizado antes
+            if (!el.hasAttribute("data-eprobe-emergency-styled")) {
+                el.style.lineHeight = "1.5";
+                el.style.border = "0";
+                el.style.borderRadius = "3px";
+                el.style.background = estilo.gradiente;
+                el.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+                el.style.overflow = "hidden";
+                el.style.fontSmoothing = "subpixel-antialiased";
+                el.style.WebkitFontSmoothing = "subpixel-antialiased";
+
+                // Marcar como estilizado
+                el.setAttribute("data-eprobe-emergency-styled", "true");
+                resultado.total++;
+
+                console.log(`✅ ${estilo.nome} ${i + 1}: Estilizado`);
+            }
+        });
+
+        resultado[estilo.nome] = elementos.length;
+    });
+
+    console.log(`🎨 EMERGÊNCIA: ${resultado.total} elementos estilizados`);
+    return resultado;
+};
+
+/**
+ * 🚨 IMPLEMENTAÇÃO DE EMERGÊNCIA - Debug específico que sempre funciona
+ */
+window.debugElementosEspecificosEmergencia = function () {
+    console.log("🔍 DEBUG ESPECÍFICO EMERGÊNCIA: Analisando elementos...");
+
+    // Busca mais ampla
+    const todosElementos = document.querySelectorAll(
+        'div[class*="divLembrete"], div[id*="divLembrete"], div.divLembrete, div[style*="background-color:#efef8f"], div[style*="background-color:#db8080"], div[style*="background-color:#87adcd"], div[style*="background-color:#a7eda7"], div[style*="background-color:#f5b574"]'
+    );
+
+    console.log(`📊 ELEMENTOS ENCONTRADOS: ${todosElementos.length}`);
+
+    let comCor = 0;
+    todosElementos.forEach((el, i) => {
+        const style = el.getAttribute("style") || "";
+        const temCor =
+            style.includes("#efef8f") ||
+            style.includes("#db8080") ||
+            style.includes("#87adcd") ||
+            style.includes("#a7eda7") ||
+            style.includes("#f5b574");
+
+        if (temCor) comCor++;
+
+        console.log(
+            `${i + 1}. ${el.tagName}${el.id ? "#" + el.id : ""}${
+                el.className ? "." + el.className : ""
+            }`
+        );
+        console.log(
+            `   Colorido: ${temCor ? "✅" : "❌"}, Style: ${style.substring(
+                0,
+                100
+            )}...`
+        );
+    });
+
+    console.log(
+        `📊 RESUMO: ${comCor} elementos coloridos de ${todosElementos.length} total`
+    );
+
+    return {
+        total: todosElementos.length,
+        comCor: comCor,
+        elementos: Array.from(todosElementos),
+    };
+};
+
+console.log("🚨 FUNÇÕES EMERGÊNCIA: Implementações básicas carregadas");
+console.log(
+    "💡 DISPONÍVEIS: debugTodosDivLembreteEmergencia, estilizarTodosDivLembreteEmergencia, debugElementosEspecificosEmergencia"
+);
+
+// ============================================================================
+// 🚨 SISTEMA DE TESTE AUTOMÁTICO - EXECUTA SOZINHO APÓS 2 SEGUNDOS
+// ============================================================================
+
+/**
+ * 🚨 TESTE AUTOMÁTICO - Roda sozinho para verificar se tudo funciona
+ */
+window.testeAutomaticoEmergencia = function () {
+    console.log("🚀 TESTE AUTOMÁTICO EMERGÊNCIA: Iniciando...");
+
+    // 1. Primeiro debug
+    const debugResult = window.debugTodosDivLembreteEmergencia();
+
+    // 2. Se encontrou elementos, tenta estilizar
+    if (debugResult.total > 0) {
+        console.log("🎯 Elementos encontrados! Aplicando estilos...");
+        const stylizeResult = window.estilizarTodosDivLembreteEmergencia();
+
+        console.log("✅ TESTE AUTOMÁTICO: Concluído com sucesso!");
+        console.log(
+            `📊 RESULTADO: ${stylizeResult.total} elementos estilizados`
+        );
+
+        return { success: true, debugResult, stylizeResult };
+    } else {
+        console.log(
+            "⚠️ TESTE AUTOMÁTICO: Nenhum elemento encontrado para estilizar"
+        );
+
+        // Teste mais específico
+        const specificResult = window.debugElementosEspecificosEmergencia();
+
+        return { success: false, debugResult, specificResult };
+    }
+};
+
+/**
+ * 🚨 MONITORAMENTO CONTÍNUO - Verifica mudanças na página
+ */
+window.monitoramentoContinuoEmergencia = function () {
+    console.log("👁️ MONITORAMENTO CONTÍNUO: Iniciado");
+
+    let ultimaVerificacao = 0;
+
+    const verificarPagina = () => {
+        const agora = Date.now();
+
+        // Só verifica a cada 3 segundos para não sobrecarregar
+        if (agora - ultimaVerificacao > 3000) {
+            ultimaVerificacao = agora;
+
+            console.log("👁️ MONITORAMENTO: Verificando página...");
+            const result = window.debugTodosDivLembreteEmergencia();
+
+            if (result.total > 0) {
+                console.log(
+                    "🎯 MONITORAMENTO: Elementos detectados! Aplicando estilos..."
+                );
+                window.estilizarTodosDivLembreteEmergencia();
+            }
+        }
+    };
+
+    // Observa mudanças no DOM
+    const observer = new MutationObserver(verificarPagina);
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+
+    console.log("👁️ MONITORAMENTO: Observer ativo");
+    return observer;
+};
+
+// ========================================
+// 🔍 FUNÇÕES DE LOCALIZADORES - MOVIDAS DO ESCOPO ANINHADO
+// ========================================
+
+// processarTabelaLocalizadores - Função movida do escopo aninhado
+function processarTabelaLocalizadores() {
+    console.log("🔍 LOCALIZADORES: Iniciando processamento da tabela");
+
+    // Busca a tabela de localizadores
+    const tabela = document.querySelector(
+        'table.infraTable[summary*="Localizadores"]'
+    );
+
+    if (!tabela) {
+        console.log(
+            "⚠️ LOCALIZADORES: Tabela de localizadores não encontrada"
+        );
+        return;
+    }
+
+    console.log("✅ LOCALIZADORES: Tabela encontrada, processando...");
+
+    // Destaca localizadores urgentes
+    destacarLocalizadoresUrgentes(tabela);
+
+    // Adiciona interface de separadores
+    adicionarInterfaceSeparadores(tabela);
+
+    // Restaurar separadores salvos
+    restaurarSeparadores(tabela);
+}
+
+// destacarLocalizadoresUrgentes - Função movida do escopo aninhado
+function destacarLocalizadoresUrgentes(tabela) {
+    console.log("🔴 LOCALIZADORES: Destacando localizadores urgentes");
+
+    const linhas = tabela.querySelectorAll("tbody tr");
+    let urgentesEncontrados = 0;
+
+    linhas.forEach((linha, index) => {
+        const primeiraColuna = linha.querySelector("td:first-child");
+
+        if (primeiraColuna) {
+            const textoLocalizador =
+                primeiraColuna.textContent.toLowerCase();
+
+            // Verifica se contém a palavra "urgente" (case insensitive)
+            if (textoLocalizador.includes("urgente")) {
+                // Aplica estilo de destaque vermelho suave
+                linha.style.backgroundColor = "#fecaca";
+                linha.style.border = "1px solid #f87171";
+                linha.style.transition = "all 0.2s ease";
+
+                urgentesEncontrados++;
+                console.log(
+                    `🔴 LOCALIZADORES: Linha ${
+                        index + 1
+                    } marcada como urgente: "${primeiraColuna.textContent.trim()}"`
+                );
+            }
+        }
+    });
+
+    if (urgentesEncontrados > 0) {
+        console.log(
+            `✅ LOCALIZADORES: ${urgentesEncontrados} localizador(es) urgente(s) destacado(s)`
+        );
+    } else {
+        console.log(
+            "ℹ️ LOCALIZADORES: Nenhum localizador urgente encontrado"
+        );
+    }
+}
+
+// ========================================
+// 🔧 FUNÇÕES DE DEBUG PARA BOTÃO - MOVIDAS DO ESCOPO ANINHADO
+// ========================================
+
+// ensureButtonExists - Função movida do escopo aninhado
+function ensureButtonExists() {
+    // Verificar se já existe algum botão
+    const existingButton =
+        document.getElementById("documento-relevante-auto-button") ||
+        document.getElementById("sent1-auto-button");
+
+    if (existingButton) {
+        console.log("✅ BOTÃO: Já existe, cancelando verificação");
+        buttonCreationAttempts = 0;
+        return true;
+    }
+
+    // Incrementar tentativas
+    buttonCreationAttempts++;
+
+    if (buttonCreationAttempts > MAX_BUTTON_CREATION_ATTEMPTS) {
+        console.log(
+            "⚠️ BOTÃO: Máximo de tentativas atingido, parando verificação"
+        );
+        return false;
+    }
+
+    console.log(
+        `🔄 BOTÃO: Tentativa ${buttonCreationAttempts}/${MAX_BUTTON_CREATION_ATTEMPTS} de criação`
+    );
+
+    // Verificar se a página atende aos critérios
+    const shouldShowIntegrated = shouldShowIntegratedButton();
+    const shouldShowFloating = shouldShowFloatingButton();
+
+    console.log("🔍 BOTÃO: Critérios de validação:", {
+        shouldShowIntegrated,
+        shouldShowFloating,
+        pageUrl: window.location.href,
+    });
+
+    if (shouldShowIntegrated || shouldShowFloating) {
+        createAutomationButton();
+
+        // Verificar se foi criado com sucesso após um pequeno delay
+        setTimeout(() => {
+            const buttonAfterCreation =
+                document.getElementById(
+                    "documento-relevante-auto-button"
+                ) || document.getElementById("sent1-auto-button");
+
+            if (buttonAfterCreation) {
+                console.log("✅ BOTÃO: Criado com sucesso");
+                buttonCreationAttempts = 0;
+            } else {
+                console.log(
+                    "⚠️ BOTÃO: Falha na criação, tentando novamente em 1s"
+                );
+                // Tentar novamente após 1 segundo
+                setTimeout(ensureButtonExists, 1000);
+            }
+        }, 200);
+    } else {
+        console.log(
+            "❌ BOTÃO: Página não atende aos critérios, tentando novamente em 2s"
+        );
+        // Tentar novamente após 2 segundos em caso de página ainda carregando
+        setTimeout(ensureButtonExists, 2000);
+    }
+
+    return false;
+}
+
+// debugButtonCreation - Função movida do escopo aninhado
+function debugButtonCreation() {
+    console.log("=== DEBUG CRIAÇÃO DE BOTÃO ===");
+    console.log("URL atual:", window.location.href);
+    console.log("Título da página:", document.title);
+
+    const h1 = document.querySelector("h1");
+    console.log(
+        "H1 encontrado:",
+        h1 ? h1.textContent : "Não encontrado"
+    );
+
+    const formProcesso = document.querySelector("#frmProcessoLista");
+    console.log("Form processo encontrado:", !!formProcesso);
+
+    const documentLinks = document.querySelectorAll(
+        '[href*="acessar_documento"]'
+    );
+    console.log(
+        "Links de documento encontrados:",
+        documentLinks.length
+    );
+
+    const shouldIntegrated = shouldShowIntegratedButton();
+    const shouldFloating = shouldShowFloatingButton();
+
+    console.log("Deve mostrar botão integrado:", shouldIntegrated);
+    console.log("Deve mostrar botão flutuante:", shouldFloating);
+
+    const existingIntegrated = document.getElementById(
+        "documento-relevante-auto-button"
+    );
+    const existingFloating =
+        document.getElementById("sent1-auto-button");
+
+    console.log("Botão integrado existe:", !!existingIntegrated);
+    console.log("Botão flutuante existe:", !!existingFloating);
+
+    return {
+        shouldIntegrated,
+        shouldFloating,
+        hasIntegrated: !!existingIntegrated,
+        hasFloating: !!existingFloating,
+        url: window.location.href,
+    };
+}
+
+// forceCreateButton - Função movida do escopo aninhado
+function forceCreateButton() {
+    console.log("🔧 FORÇANDO criação de botão...");
+    buttonCreationAttempts = 0; // Reset contador
+    ensureButtonExists();
+
+    setTimeout(() => {
+        debugButtonCreation();
+    }, 1000);
+}
+
+// ========================================
+// 🎯 FUNÇÕES DE INTERFACE E VALIDAÇÃO - MOVIDAS DO ESCOPO ANINHADO
+// ========================================
+
+// shouldShowIntegratedButton - Função movida do escopo aninhado
+function shouldShowIntegratedButton() {
+    // Verificações básicas de URL
+    const url = window.location.href;
+    if (
+        !url.includes("eproc") ||
+        (!url.includes("processo") && !url.includes("documento"))
+    ) {
+        console.log(
+            "❌ BOTÃO INTEGRADO: URL não contém eproc + processo/documento"
+        );
+        return false;
+    }
+
+    // Verificar título da página
+    const h1Element = document.querySelector("h1");
+    if (h1Element) {
+        const titleText = h1Element.textContent.trim();
+        const hasCorrectTitle =
+            titleText === "Consulta Processual - Detalhes do Processo";
+
+        console.log("🔍 BOTÃO INTEGRADO: Verificando título:", {
+            titleFound: titleText,
+            isCorrect: hasCorrectTitle,
+        });
+
+        if (hasCorrectTitle) {
+            return true;
+        }
+    }
+
+    // Verificações alternativas para páginas de documento
+    const hasFormProcesso =
+        !!document.querySelector("#frmProcessoLista");
+    const hasDocumentContent = !!document.querySelector(
+        '[href*="acessar_documento"]'
+    );
+    const hasMinutasContent = !!document.querySelector(
+        "#conteudoMinutas, #fldMinutas"
+    );
+
+    console.log("🔍 BOTÃO INTEGRADO: Verificações alternativas:", {
+        hasFormProcesso,
+        hasDocumentContent,
+        hasMinutasContent,
+    });
+
+    return hasFormProcesso || hasDocumentContent || hasMinutasContent;
+}
+
+// shouldShowFloatingButton - Função movida do escopo aninhado
+function shouldShowFloatingButton() {
+    // Se deve mostrar botão integrado, não mostrar flutuante
+    if (shouldShowIntegratedButton()) {
+        return false;
+    }
+
+    const url = window.location.href;
+
+    // Verificar se é uma página de documento específico
+    if (
+        url.includes("acessar_documento") ||
+        url.includes("processo_consultar_externo_documento")
+    ) {
+        console.log(
+            "✅ BOTÃO FLUTUANTE: Página de documento específico detectada"
+        );
+        return true;
+    }
+
+    // Verificar conteúdo da página
+    const pageHTML = document.documentElement.outerHTML;
+    const hasDocumentHtml = pageHTML.includes("acessar_documento&id");
+    const hasDocumentPdf = pageHTML.includes("acessar_documento&amp");
+    const hasDocumentLinks = !!document.querySelector(
+        '[href*="SENT"], [href*="INIC"], [href*="DECI"]'
+    );
+
+    console.log("🔍 BOTÃO FLUTUANTE: Verificando critérios:", {
+        hasDocumentHtml,
+        hasDocumentPdf,
+        hasDocumentLinks,
+        shouldShow:
+            hasDocumentHtml || hasDocumentPdf || hasDocumentLinks,
+        url,
+    });
+
+    return hasDocumentHtml || hasDocumentPdf || hasDocumentLinks;
+}
+
+// setupInterfaceObserver - Função movida do escopo aninhado
+function setupInterfaceObserver() {
+    // Observer para detectar mudanças nos elementos da interface
+    const observer = new MutationObserver((mutations) => {
+        let shouldCheckOverlap = false;
+
+        mutations.forEach((mutation) => {
+            // Se elementos foram adicionados ou removidos
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        const id = node.id;
+                        if (
+                            id === "sent1-auto-button" ||
+                            id === "documento-relevante-notification" ||
+                            id === "documento-relevante-options-menu"
+                        ) {
+                            shouldCheckOverlap = true;
+                        }
+                    }
+                });
+            }
+
+            // Se atributos de estilo mudaram
+            if (
+                mutation.type === "attributes" &&
+                mutation.attributeName === "style" &&
+                mutation.target.id &&
+                (mutation.target.id === "sent1-auto-button" ||
+                    mutation.target.id ===
+                        "documento-relevante-notification" ||
+                    mutation.target.id ===
+                        "documento-relevante-options-menu")
+            ) {
+                shouldCheckOverlap = true;
+            }
+        });
+
+        if (shouldCheckOverlap) {
+            setTimeout(preventElementOverlap, 50);
+        }
+    });
+
+    // Observar mudanças no body
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["style"],
+    });
+
+    return observer;
+}
+
+// preventElementOverlap - Função movida do escopo aninhado
+function preventElementOverlap() {
+    const floatingButton = document.getElementById("sent1-auto-button");
+    const notification = document.getElementById(
+        "documento-relevante-notification"
+    );
+    const optionsMenu = document.getElementById(
+        "documento-relevante-options-menu"
+    );
+
+    if (!floatingButton || floatingButton.style.display === "none") {
+        return;
+    }
+
+    // Verificar sobreposição com notificação
+    if (notification) {
+        const buttonRect = floatingButton.getBoundingClientRect();
+        const notificationRect = notification.getBoundingClientRect();
+
+        // Se há sobreposição vertical
+        if (
+            buttonRect.top < notificationRect.bottom + 10 &&
+            buttonRect.bottom > notificationRect.top - 10
+        ) {
+            // Mover botão para baixo
+            const newTop = notificationRect.bottom + 10;
+            floatingButton.style.top = newTop + "px";
+            console.log(
+                "🔧 OVERLAP: Botão movido para evitar sobreposição com notificação"
+            );
+        }
+    }
+
+    // Verificar sobreposição com menu de opções
+    if (optionsMenu) {
+        const buttonRect = floatingButton.getBoundingClientRect();
+        const menuRect = optionsMenu.getBoundingClientRect();
+
+        // Se há sobreposição
+        if (
+            buttonRect.right > menuRect.left - 10 &&
+            buttonRect.left < menuRect.right + 10 &&
+            buttonRect.top < menuRect.bottom + 10 &&
+            buttonRect.bottom > menuRect.top - 10
+        ) {
+            // Mover botão para a esquerda
+            const newRight = window.innerWidth - menuRect.left + 10;
+            floatingButton.style.right = newRight + "px";
+            console.log(
+                "🔧 OVERLAP: Botão movido para evitar sobreposição com menu"
+            );
+        }
+    }
+}
+
+// ============================================================================
+// 🚀 EXECUÇÃO AUTOMÁTICA - RODA SOZINHO
+// ============================================================================
+
+setTimeout(() => {
+    console.log("🚀 EXECUÇÃO AUTOMÁTICA: Iniciando teste após 2 segundos...");
+
+    try {
+        const resultado = window.testeAutomaticoEmergencia();
+
+        if (resultado.success) {
+            console.log("🎉 SUCESSO AUTOMÁTICO: Sistema funcionando!");
+
+            // Inicia monitoramento contínuo se deu certo
+            window.monitoramentoContinuoEmergencia();
+        } else {
+            console.log(
+                "⚠️ EXECUÇÃO AUTOMÁTICA: Nada para estilizar no momento"
+            );
+            console.log("💡 O sistema vai continuar monitorando a página...");
+
+            // Inicia monitoramento mesmo se não encontrou nada agora
+            window.monitoramentoContinuoEmergencia();
+        }
+    } catch (error) {
+        console.error("❌ ERRO AUTOMÁTICO:", error);
+    }
+}, 2000);
+
+console.log(
+    "🚀 SISTEMA EMERGÊNCIA: Configurado para executar automaticamente em 2s"
+);
