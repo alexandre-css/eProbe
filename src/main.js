@@ -4227,60 +4227,6 @@ ${texto}`;
             }
         }
 
-        // Função para configurar o observer de mudanças na interface
-        function setupInterfaceObserver() {
-            // Observer para detectar mudanças nos elementos da interface
-            const observer = new MutationObserver((mutations) => {
-                let shouldCheckOverlap = false;
-
-                mutations.forEach((mutation) => {
-                    // Se elementos foram adicionados ou removidos
-                    if (mutation.type === "childList") {
-                        mutation.addedNodes.forEach((node) => {
-                            if (node.nodeType === Node.ELEMENT_NODE) {
-                                const id = node.id;
-                                if (
-                                    id === "sent1-auto-button" ||
-                                    id === "documento-relevante-notification" ||
-                                    id === "documento-relevante-options-menu"
-                                ) {
-                                    shouldCheckOverlap = true;
-                                }
-                            }
-                        });
-                    }
-
-                    // Se atributos de estilo mudaram
-                    if (
-                        mutation.type === "attributes" &&
-                        mutation.attributeName === "style" &&
-                        mutation.target.id &&
-                        (mutation.target.id === "sent1-auto-button" ||
-                            mutation.target.id ===
-                                "documento-relevante-notification" ||
-                            mutation.target.id ===
-                                "documento-relevante-options-menu")
-                    ) {
-                        shouldCheckOverlap = true;
-                    }
-                });
-
-                if (shouldCheckOverlap) {
-                    setTimeout(preventElementOverlap, 50);
-                }
-            });
-
-            // Observar mudanças no body
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true,
-                attributes: true,
-                attributeFilter: ["style"],
-            });
-
-            return observer;
-        }
-
         // Sistema de notificações
         function showNotification(message, type = "info") {
             // Remover notificação anterior se existir
@@ -9373,6 +9319,111 @@ ${texto}`;
 
         // Fallback final
         return textoLimpo;
+    }
+
+    // Função para configurar o observer de mudanças na interface
+    function setupInterfaceObserver() {
+        // Observer para detectar mudanças nos elementos da interface
+        const observer = new MutationObserver((mutations) => {
+            let shouldCheckOverlap = false;
+
+            mutations.forEach((mutation) => {
+                // Se elementos foram adicionados ou removidos
+                if (mutation.type === "childList") {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            const id = node.id;
+                            if (
+                                id === "sent1-auto-button" ||
+                                id === "documento-relevante-notification" ||
+                                id === "documento-relevante-options-menu"
+                            ) {
+                                shouldCheckOverlap = true;
+                            }
+                        }
+                    });
+                }
+
+                // Se atributos de estilo mudaram
+                if (
+                    mutation.type === "attributes" &&
+                    mutation.attributeName === "style" &&
+                    mutation.target.id &&
+                    (mutation.target.id === "sent1-auto-button" ||
+                        mutation.target.id ===
+                            "documento-relevante-notification" ||
+                        mutation.target.id ===
+                            "documento-relevante-options-menu")
+                ) {
+                    shouldCheckOverlap = true;
+                }
+            });
+
+            if (shouldCheckOverlap) {
+                setTimeout(preventElementOverlap, 50);
+            }
+        });
+
+        // Observar mudanças no body
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["style"],
+        });
+
+        return observer;
+    }
+
+    // Função para prevenir sobreposição de elementos da interface (precisa estar disponível)
+    function preventElementOverlap() {
+        const floatingButton = document.getElementById("sent1-auto-button");
+        const notification = document.getElementById(
+            "documento-relevante-notification"
+        );
+        const optionsMenu = document.getElementById(
+            "documento-relevante-options-menu"
+        );
+
+        // Verificar sobreposição com notificação
+        if (floatingButton && notification) {
+            const buttonRect = floatingButton.getBoundingClientRect();
+            const notificationRect = notification.getBoundingClientRect();
+
+            // Se há sobreposição, ajustar posição da notificação
+            if (
+                buttonRect.left < notificationRect.right + 10 &&
+                buttonRect.top < notificationRect.bottom + 10 &&
+                buttonRect.bottom > notificationRect.top - 10 &&
+                buttonRect.right > notificationRect.left - 10
+            ) {
+                console.log(
+                    "🔧 Ajustando posição da notificação para evitar sobreposição"
+                );
+                notification.style.right = "240px"; // Mover mais à esquerda
+            }
+        }
+
+        // Verificar sobreposição com menu de opções
+        if (floatingButton && optionsMenu) {
+            const buttonRect = floatingButton.getBoundingClientRect();
+            const menuRect = optionsMenu.getBoundingClientRect();
+
+            // Se há sobreposição, mover menu
+            if (
+                buttonRect.left < menuRect.right + 10 &&
+                buttonRect.top < menuRect.bottom + 10 &&
+                buttonRect.bottom > menuRect.top - 10
+            ) {
+                console.log(
+                    "🔧 Ajustando posição do menu para evitar sobreposição"
+                );
+                const newLeft = buttonRect.left - menuRect.width - 10;
+                if (newLeft > 0) {
+                    optionsMenu.style.left = newLeft + "px";
+                }
+            }
+        }
     }
 
     // Inicializar observer para prevenir sobreposições
@@ -19224,6 +19275,8 @@ indicador.onmouseleave = () => {
         ensureButtonExists,
         shouldShowIntegratedButton,
         shouldShowFloatingButton,
+        setupInterfaceObserver,
+        preventElementOverlap,
 
         // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
         getTipoJulgamentoProcessoPautado,
