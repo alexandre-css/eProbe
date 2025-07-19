@@ -60,6 +60,56 @@ if (typeof window.jQuery !== "undefined") {
 }
 ```
 
+### 🎯 NAMESPACE CONSOLIDADO - REGRA OBRIGATÓRIA
+
+**REGRA ABSOLUTA**: SEMPRE atualizar o namespace `window.SENT1_AUTO` ao criar novas funções públicas.
+
+**LOCALIZAÇÃO DO NAMESPACE**: Entre as linhas marcadas com:
+
+```javascript
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+window.SENT1_AUTO = {
+    // ... todas as funções públicas aqui
+};
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
+```
+
+**CHECKLIST OBRIGATÓRIO ao criar nova função:**
+
+1. ✅ A função foi declarada ANTES da seção do namespace?
+2. ✅ A função foi adicionada ao objeto `window.SENT1_AUTO`?
+3. ✅ A função está categorizada corretamente (debug, teste, API, interface)?
+4. ✅ A função possui comentário explicativo no namespace?
+5. ✅ Não há duplicação de funções no namespace?
+
+**PADRÃO CORRETO:**
+
+```javascript
+// 1. DECLARAR a função primeiro (dentro da IIFE)
+function minhaNovaFuncao() {
+    // implementação
+    return resultado;
+}
+
+// 2. ADICIONAR ao namespace (na seção consolidada)
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+window.SENT1_AUTO = {
+    // ... outras funções existentes...
+
+    // 🔧 MINHA CATEGORIA
+    minhaNovaFuncao, // <- SEMPRE ADICIONAR AQUI
+
+    // ... resto do namespace...
+};
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
+```
+
+**❌ NUNCA FAZER:**
+
+-   Criar `window.SENT1_AUTO.novaFuncao =` fora do namespace consolidado
+-   Duplicar funções no namespace
+-   Esquecer de adicionar novas funções ao namespace
+
 ## Project Overview
 
 eProbe is a Chrome extension that automates document detection and text extraction from the Brazilian court system (eProc/TJSC). It intelligently identifies legal documents (SENT1, INIC1), extracts text content, and facilitates AI-powered document analysis.
@@ -81,17 +131,39 @@ eProbe is a Chrome extension that automates document detection and text extracti
 
 #### Global Namespace Design
 
-All public functions are exposed via `window.SENT1_AUTO` namespace for debugging and external access:
+**NAMESPACE ÚNICO CONSOLIDADO**: Todas as funções públicas são expostas via `window.SENT1_AUTO` em um único local no arquivo `src/main.js`:
 
 ```javascript
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 window.SENT1_AUTO = {
-    runFullAutomation, // Main workflow orchestrator
-    detectarDataSessao, // Session date detection from court minutes
-    getDadosCompletosMinutas, // Extract complete session data
-    debugTextoMinutas, // Debug function for text analysis
-    // ... 50+ other functions
+    // 🚀 AUTOMAÇÃO PRINCIPAL
+    runFullAutomation, // Orquestrador principal do workflow
+    autoOpenDocumentoRelevante, // Navegação automática para documentos
+    autoExtractText, // Extração de texto com múltiplas estratégias
+
+    // 📅 DETECÇÃO DE DATA DE SESSÃO
+    detectarDataSessao, // Detecção de data de sessão nas atas do tribunal
+    getDadosCompletosMinutas, // Extração completa de dados de sessão
+
+    // 🔧 DEBUG E TESTES
+    debugTextoMinutas, // Função de debug para análise de texto
+    testarSistemaCompleto, // Testes abrangentes do sistema
+
+    // ... 50+ outras funções organizadas por categoria
 };
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
 ```
+
+**LOCALIZAÇÃO**: Aproximadamente linha ~19100 no arquivo `src/main.js`
+
+**ORGANIZAÇÃO**: Funções agrupadas por categoria:
+
+-   🚀 Automação Principal
+-   📅 Detecção de Sessão
+-   🎨 Interface Material Design
+-   🔧 Debug e Testes
+-   🌐 API e Dados Globais
+-   📋 Localizadores (sub-namespace)
 
 #### Theme System Architecture
 
@@ -222,6 +294,34 @@ function detectarAlgo() {
 }
 ```
 
+#### Namespace Consolidado - Regra Crítica
+
+```javascript
+// ❌ ERRO CRÍTICO - NÃO FAZER:
+// Criar funções expostas fora do namespace consolidado
+window.SENT1_AUTO.minhaNovaFuncao = function() { ... }; // ERRADO!
+
+// ✅ PADRÃO CORRETO - SEMPRE FAZER:
+// 1. Declarar a função dentro da IIFE
+function minhaNovaFuncao() {
+    // implementação
+    return resultado;
+}
+
+// 2. Adicionar ao namespace consolidado ÚNICO
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+window.SENT1_AUTO = {
+    // ... funções existentes...
+    minhaNovaFuncao,    // <- ADICIONAR AQUI
+    // ... resto das funções...
+};
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
+
+// ❌ NUNCA criar múltiplos namespaces espalhados pelo arquivo
+// ❌ NUNCA esquecer de adicionar novas funções ao namespace
+// ❌ NUNCA duplicar funções no namespace
+```
+
 ### Function Naming & Organization
 
 -   **Portuguese naming**: Core domain functions use Portuguese (`detectarDataSessao`, `getDadosCompletos`)
@@ -304,11 +404,22 @@ getDadosCompletosMinutas(),
     showDadosCompletosMinutas();
 ```
 
-**Namespace Access Errors**: Functions must be explicitly added to `window.SENT1_AUTO`:
+**Namespace Access Errors**: Functions must be explicitly added to the consolidated `window.SENT1_AUTO` namespace:
 
 ```javascript
-window.SENT1_AUTO.debugTextoMinutas = debugTextoMinutas;
+// ❌ Wrong: Creating scattered namespace assignments
+window.SENT1_AUTO.debugTextoMinutas = debugTextoMinutas; // SCATTERED!
+
+// ✅ Correct: Single consolidated namespace at end of file
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+window.SENT1_AUTO = {
+    debugTextoMinutas, // All functions in ONE place
+    // ... all other functions...
+};
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
 ```
+
+**Critical Rule**: All `window.SENT1_AUTO` assignments must be in the consolidated section marked between `// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####` and `// ##### FIM DO NAMESPACE CONSOLIDADO #####`
 
 **Theme System Issues**: Theme buttons must use proper message passing:
 
@@ -505,6 +616,15 @@ function detectSomething() {
     // ...logic...
     return detected; // Always boolean
 }
+
+// 5. Always update consolidated namespace when creating public functions
+// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+window.SENT1_AUTO = {
+    // ... existing functions...
+    detectSomething, // <- ADD NEW FUNCTIONS HERE
+    // ... rest of functions...
+};
+// ##### FIM DO NAMESPACE CONSOLIDADO #####
 ```
 
 **❌ NEVER Do:**
@@ -527,4 +647,7 @@ function processData() {
 
 // 4. DON'T assume global availability
 $.ready(() => { ... }); // jQuery might not exist!
+
+// 5. DON'T create scattered namespace assignments
+window.SENT1_AUTO.newFunction = newFunction; // WRONG! Use consolidated namespace only!
 ```

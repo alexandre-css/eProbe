@@ -5,6 +5,13 @@ Write-Host ">> EMPACOTANDO EPROBE PARA CHROME WEB STORE" -ForegroundColor Cyan
 Write-Host "=============================================" -ForegroundColor Cyan
 Write-Host ""
 
+# ⚠️ LEMBRETE: Antes do empacotamento, sempre verificar:
+# ✅ Namespace consolidado está correto (src/main.js linhas ~19100)
+# ✅ Todas as novas funções foram adicionadas entre os marcadores:
+#     // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+#     // ##### FIM DO NAMESPACE CONSOLIDADO #####
+Write-Host "LEMBRETE: Verificar namespace consolidado em src/main.js antes do empacotamento" -ForegroundColor Magenta
+
 # Verificar se estamos na pasta correta
 if (-Not (Test-Path "manifest.json")) {
     Write-Host "ERRO: Execute este script na pasta raiz do eProbe (onde esta o manifest.json)" -ForegroundColor Red

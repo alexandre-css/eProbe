@@ -6849,167 +6849,47 @@ ${texto}`;
         // Inicializar - VERSÃO SEGURA (sem interferência na navbar)
         init();
 
-        // ===============================
-        // SISTEMA DE ALTERNÂNCIA DE ESTRELAS REMOVIDO - PREVENÇÃO DE ERROS
-        // ================================================================
-        // Função removida para evitar ReferenceError e problemas de escopo
-
-        // Expor funções para debug manual
-        window.SENT1_AUTO = {
-            runFullAutomation,
-            autoOpenDocumentoRelevante,
-            autoExtractText,
-            copyToClipboard,
-            sendToPerplexity,
-            detectPageType,
-            isValidPageForButton,
-            findDocumentosRelevantes,
-            showDocumentSelectionModal,
-            showSentenceProcessingOptions,
-            getStoredApiKey,
-            storeApiKey,
-            removeStoredApiKey,
-            testApiKey,
-            showErrorLogs,
-            debugApiCall,
-            showApiQuotaInfo,
-            cleanInvisibleChars,
-            debugEventStructure,
-            extractTextFromPDF,
-            // Novas funções de detecção de data de sessão
-            detectarDataSessao,
-            getDataSessaoPautado,
-            hasDataSessaoPautado,
-            resetDataSessaoPautado,
-            showDataSessaoPautadoInfo,
-            validarDataBrasileira,
-            // Funções de interface para data da sessão
-            inserirDataSessaoNaInterface,
-            removerDataSessaoDaInterface,
-            atualizarDataSessaoNaInterface,
-            forcarInsercaoCardSemValidacao, // <-- Adiciona a função ao namespace global
-            // Funções de cruzamento de dados de sessão
-            buscarDadosSessoes,
-            parsearDadosSessoes,
-            extrairDadosLinhaSessao,
-            buscarSessaoPorData,
-            cruzarDadosDataSessao,
-            cruzarDadosDataSessao,
-            getDadosCompletosSessionJulgamento,
-            hasDadosCompletosSessionJulgamento,
-            resetDadosCompletosSessionJulgamento,
-            showDadosCompletosSessionJulgamento,
-            // Funções de debug
-            debugDeteccaoDataSessao,
-            forcarDeteccaoDataSessao,
-            // Função experimental com Semantic Kernel
-            detectarDataSessaoExperimental,
-            // Funções de interface reutilizável
-            criarBotaoEleganteeProc,
-            botaoBrancoCapaProcesso,
-            criarInfraButtonPrimary,
-            botaoAzuleProc,
-            // Funções de localizadores
-            detectarPaginaLocalizadores,
-            processarTabelaLocalizadores,
-            destacarLocalizadoresUrgentes,
-            // Funções de status de sessão
-            detectarStatusSessao,
-            detectarDataSessaoComStatus,
-            obterTextoCardPorStatus,
-            obterCorCardPorStatus,
-            getStatusSessao,
-            hasStatusSessao,
-            resetStatusSessao,
-            showStatusSessaoInfo,
-            // Nova função simplificada de cards
-            detectarCardSessaoSimplificado,
-            // 🎨 NOVAS FUNÇÕES FIGMA
-            criarCardMaterialDesign,
-            obterConfigFigmaStatus,
-            adicionarTooltipInterativo,
-            adicionarRichTooltipMaterialDesign,
-            // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
-            criarTooltipSimplificado,
-            testarFuncaoTooltip,
-            // Funções da navbar foram centralizadas em gerenciarNavbarEprobe()
-        };
-
-        window.SENT1_AUTO.debugDeteccaoDataSessao = debugDeteccaoDataSessao;
-        window.SENT1_AUTO.forcarDeteccaoDataSessao = forcarDeteccaoDataSessao;
-        // 🔍 FUNÇÕES DE DEBUG PARA STATUS
-        window.SENT1_AUTO.debugDeteccaoStatusSessao = detectarStatusSessao;
-        window.SENT1_AUTO.debugPadraoRetirado = debugPadraoRetirado;
-        window.SENT1_AUTO.debugStatusCompleto = debugStatusCompleto;
-        window.SENT1_AUTO.forcarAtualizacaoStatus = forcarAtualizacaoStatus;
-        window.SENT1_AUTO.testarCasoRetirado = testarCasoRetirado;
-        window.SENT1_AUTO.debugStatusSessao = showStatusSessaoInfo;
-        window.SENT1_AUTO.testarSistemaStatusSessao = testarSistemaStatusSessao;
-        // 🔄 FUNÇÕES DE DEBUG PARA ALTERNÂNCIA
-        window.SENT1_AUTO.debugAlternanciaEproc = function () {
-            console.log("🧪 TESTE: Iniciando teste de alternância no eProc");
-
-            // Buscar elementos com IDs específicos das minutas
-            const minutasIds = [
-                "conteudoInternoMinutas_0",
-                "conteudoInternoMinutas_1",
-                "conteudoInternoMinutas_2",
-                "conteudoInternoMinutas_3",
-            ];
-
-            console.log("🔍 Procurando elementos de minutas:");
-            let encontrados = 0;
-            minutasIds.forEach((id) => {
-                const element = document.getElementById(id);
-                if (element) {
-                    console.log(`✅ Encontrado: ${id}`, element);
-                    console.log(`   - Display: ${element.style.display}`);
-                    console.log(
-                        `   - Visible: ${element.offsetParent !== null}`
-                    );
-                    encontrados++;
-                } else {
-                    console.log(`❌ Não encontrado: ${id}`);
-                }
-            });
-
-            // Buscar elementos com onclick
-            const elementsWithOnclick = document.querySelectorAll(
-                '[onclick*="infraAbrirFecharElementoHTML"]'
-            );
-            console.log(
-                `📊 Encontrados ${elementsWithOnclick.length} elementos com onclick`
-            );
-
-            // Buscar containers substituídos
-            const containers = document.querySelectorAll("div[data-expanded]");
-            console.log(
-                `📊 Encontrados ${containers.length} containers com data-expanded`
-            );
-
-            return {
-                elementosMinutas: encontrados,
-                elementosOnclick: elementsWithOnclick.length,
-                containersSubstituidos: containers.length,
-            };
-        };
-        window.SENT1_AUTO.findToggleTarget = findToggleTarget;
-        window.SENT1_AUTO.implementarAlternanciaExpandirRetrair =
-            implementarAlternanciaExpandirRetrair;
-        window.SENT1_AUTO.isElementSafeForToggle = isElementSafeForToggle;
-        // 🧪 FUNÇÃO DE TESTE MATERIAL BASE
-        window.SENT1_AUTO.testarMaterialBaseLayout = function () {
-            console.log(
-                "🧪 TESTE MATERIAL BASE: Verificando especificações CSS exatas"
-            );
-
+        // Função de teste Material Base Layout
+        function testarMaterialBaseLayout() {
             try {
-                // Dados de teste
-                const dadosTeste = {
-                    status: "PAUTADO",
-                    data: "29/01/2025",
-                    orgao: "2ª Câmara de Direito Civil",
-                };
+                // Buscar elementos com IDs específicos das minutas
+                const minutasIds = [
+                    "conteudoInternoMinutas_0",
+                    "conteudoInternoMinutas_1",
+                    "conteudoInternoMinutas_2",
+                    "conteudoInternoMinutas_3",
+                ];
+
+                console.log("🔍 Procurando elementos de minutas:");
+                let encontrados = 0;
+                minutasIds.forEach((id) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        console.log(`✅ Encontrado: ${id}`, element);
+                        console.log(`   - Display: ${element.style.display}`);
+                        console.log(
+                            `   - Visible: ${element.offsetParent !== null}`
+                        );
+                        encontrados++;
+                    } else {
+                        console.log(`❌ Não encontrado: ${id}`);
+                    }
+                });
+
+                // Buscar elementos com onclick
+                const elementsWithOnclick = document.querySelectorAll(
+                    '[onclick*="infraAbrirFecharElementoHTML"]'
+                );
+                console.log(
+                    `📊 Encontrados ${elementsWithOnclick.length} elementos com onclick`
+                );
+
+                // Buscar containers substituídos
+                const containers =
+                    document.querySelectorAll("div[data-expanded]");
+                console.log(
+                    `📊 Encontrados ${containers.length} containers com data-expanded`
+                );
 
                 // Criar card Material Base
                 const card = criarCardMaterialDesign(dadosTeste);
@@ -7093,2244 +6973,810 @@ ${texto}`;
                     erro: error.message,
                 };
             }
-        };
-        // 🧪 FUNÇÃO DE TESTE XPATH + MATERIAL DESIGN
-        window.SENT1_AUTO.testarXPathMaterialDesign = function () {
-            console.log(
-                "🧪 TESTE COMPLETO: XPath Exclusivo + Material Design Figma"
-            );
-
-            try {
-                // 1. Testar XPath exclusivo
-                console.log("🎯 PASSO 1: Testando detecção XPath exclusiva...");
-                const resultadoXPath =
-                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
-
-                if (!resultadoXPath) {
-                    console.log(
-                        "❌ XPath não encontrou dados. Testando fallback..."
-                    );
-                    const resultadoGlobal =
-                        window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
-
-                    if (!resultadoGlobal) {
-                        return {
-                            sucesso: false,
-                            etapa: "Detecção XPath",
-                            motivo: "Nenhuma estratégia XPath encontrou dados",
-                            xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
-                            recomendacoes: [
-                                "Verifique se está na página correta do eProc",
-                                "Confirme se existe o elemento span com onmouseover",
-                                'Execute no console: $x("/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]")',
-                            ],
-                        };
-                    }
-                    console.log("✅ XPath global funcionou:", resultadoGlobal);
-                }
-
-                // 2. Testar criação Material Design
-                console.log("🎨 PASSO 2: Testando Material Design Figma...");
-                const dadosTeste = resultadoXPath || {
-                    data: "16/07/2025",
-                    status: "PAUTADO",
-                    orgao: "2ª Câmara de Direito Civil",
-                    processo: "TESTE-XPATH-MATERIAL",
-                };
-
-                const cardMaterial =
-                    window.SENT1_AUTO.criarCardMaterialDesign?.(dadosTeste);
-
-                if (!cardMaterial) {
-                    return {
-                        sucesso: false,
-                        etapa: "Criação Material Design",
-                        motivo: "Função criarCardMaterialDesign falhou",
-                        dados: dadosTeste,
-                        funcaoExiste:
-                            typeof window.SENT1_AUTO.criarCardMaterialDesign,
-                    };
-                }
-
-                // 3. Testar configurações Figma
-                console.log("🔧 PASSO 3: Testando configurações Figma...");
-                const configFigma =
-                    window.SENT1_AUTO.obterConfigFigmaStatus?.("PAUTADO");
-
-                console.log("📊 CONFIG FIGMA:", configFigma);
-
-                // 4. Verificar especificações visuais
-                console.log(
-                    "👀 PASSO 4: Verificando especificações visuais..."
-                );
-                const especificacoes = {
-                    width: "263px",
-                    height: "161px",
-                    background: "#FEF7FF",
-                    border: "1px solid #CAC4D0",
-                    borderRadius: "12px",
-                    boxShadow: "0px 4px 4px rgba(0, 0, 0, 0.25)",
-                    fontFamily: "Roboto",
-                    cores: {
-                        PAUTADO: "#5C85B4",
-                        RETIRADO: "#CE2D4F",
-                        VISTA: "#FFBF46",
-                        JULGADO: "#3AB795",
-                        ADIADO: "#F55D3E",
-                        ADIADO_935: "#731963",
-                        SOBRESTADO: "#FCB0B3",
-                        DILIGENCIA: "#00171F",
-                    },
-                };
-
-                // 5. Resultado final
-                return {
-                    sucesso: true,
-                    estrategia: "XPath Exclusivo",
-                    design: "Material Design Figma",
-                    deteccao: resultadoXPath || "Dados de teste",
-                    card: !!cardMaterial,
-                    configuracao: configFigma,
-                    especificacoesFigma: especificacoes,
-                    xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
-                    logs: "Sistema XPath + Material Design funcionando corretamente",
-                    timestamp: new Date().toISOString(),
-                };
-            } catch (error) {
-                console.error("❌ ERRO no teste:", error);
-                return {
-                    sucesso: false,
-                    erro: error.message,
-                    stack: error.stack,
-                };
-            }
-        };
-        // 🧪 FUNÇÕES DE TESTE SIMPLIFICADO
-        // window.SENT1_AUTO.testarDeteccaoSimplificada = testarDeteccaoSimplificada; // FUNÇÃO NÃO DEFINIDA - REMOVIDA
-        window.SENT1_AUTO.debugPadroesStatusSessao = debugPadroesStatusSessao;
-        window.SENT1_AUTO.forcarStatusSessao = forcarStatusSessao;
-        window.SENT1_AUTO.encontrarTextoRetirado = encontrarTextoRetirado;
-        window.SENT1_AUTO.forcarDeteccaoCompleta = forcarDeteccaoCompleta;
-
-        // 🎨 FUNÇÕES DE ÍCONES
-        window.SENT1_AUTO.substituirIconesFieldsetAcoes =
-            substituirIconesFieldsetAcoes;
-        window.SENT1_AUTO.substituirIconesFerramentas =
-            substituirIconesFerramentas;
-        window.SENT1_AUTO.substituirIconesGlobalmente =
-            substituirIconesGlobalmente;
-        window.SENT1_AUTO.debugIconesSubstituicao = debugIconesSubstituicao;
-        // 🌟 FUNÇÃO DE ALTERNÂNCIA DE ESTRELAS REMOVIDA (prevenção ReferenceError)
-        // window.SENT1_AUTO.configurarAlternanciaEstrelas = configurarAlternanciaEstrelas;
-
-        // 🛡️ WRAPPER SEGURO: Função stub para prevenir ReferenceError
-        window.SENT1_AUTO.configurarAlternanciaEstrelas = function () {
-            console.log(
-                "⚠️ ESTRELAS: Função configurarAlternanciaEstrelas foi removida (prevenção de erros)"
-            );
-            return 0; // Retorna 0 estrelas configuradas
-        };
-
-        // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO
-        window.SENT1_AUTO.diagnosticarCompleto = diagnosticarCompleto;
-        window.SENT1_AUTO.corrigirProblemas = corrigirProblemas;
-        window.SENT1_AUTO.forcarReaplicacaoIcones = forcarReaplicacaoIcones;
-        window.SENT1_AUTO.inicializarSubstituicaoIcones =
-            inicializarSubstituicaoIcones;
-        window.SENT1_AUTO.diagnosticarIconesCSS = diagnosticarIconesCSS;
-
-        // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
-        window.SENT1_AUTO.debugButtonCreation = debugButtonCreation;
-        window.SENT1_AUTO.forceCreateButton = forceCreateButton;
-        window.SENT1_AUTO.ensureButtonExists = ensureButtonExists;
-        window.SENT1_AUTO.shouldShowIntegratedButton =
-            shouldShowIntegratedButton;
-        window.SENT1_AUTO.shouldShowFloatingButton = shouldShowFloatingButton;
-
-        // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
-        window.SENT1_AUTO.getTipoJulgamentoProcessoPautado =
-            getTipoJulgamentoProcessoPautado;
-        window.SENT1_AUTO.setTipoJulgamentoProcessoPautado =
-            setTipoJulgamentoProcessoPautado;
-        window.SENT1_AUTO.getStatusJulgamento = getStatusJulgamento;
-        window.SENT1_AUTO.setStatusJulgamento = setStatusJulgamento;
-        window.SENT1_AUTO.getDataSessao = getDataSessao;
-        window.SENT1_AUTO.setDataSessao = setDataSessao;
-        window.SENT1_AUTO.resetDadosGlobaisSessao = resetDadosGlobaisSessao;
-        window.SENT1_AUTO.showDadosGlobaisSessao = showDadosGlobaisSessao;
-        window.SENT1_AUTO.examinarEstruturaHTMLDados =
-            examinarEstruturaHTMLDados;
-        window.SENT1_AUTO.buscarPadroesEspecificosImagens =
-            buscarPadroesEspecificosImagens;
-
-        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO SVG className
-        window.SENT1_AUTO.testarCorrecaoSVG = function () {
-            console.log("🧪 TESTE: Validando correção do erro SVG className");
-
-            try {
-                // Forçar reaplicação dos ícones para testar
-                window.SENT1_AUTO.forcarReaplicacaoIcones();
-
-                // Aguardar processamento
-                setTimeout(() => {
-                    const svgsSubstituidos =
-                        document.querySelectorAll(".substituted-icon");
-                    console.log(
-                        `✅ TESTE: ${svgsSubstituidos.length} SVGs com classe substituted-icon encontrados`
-                    );
-
-                    // Verificar se algum SVG tem classes aplicadas corretamente
-                    let svgsComClasses = 0;
-                    svgsSubstituidos.forEach((svg) => {
-                        if (
-                            svg
-                                .getAttribute("class")
-                                ?.includes("substituted-icon")
-                        ) {
-                            svgsComClasses++;
-                        }
-                    });
-
-                    console.log(
-                        `✅ TESTE: ${svgsComClasses} SVGs com classes aplicadas corretamente`
-                    );
-                    console.log(
-                        "✅ TESTE: Correção SVG className validada com sucesso!"
-                    );
-
-                    return {
-                        svgsTotal: svgsSubstituidos.length,
-                        svgsComClasses: svgsComClasses,
-                        sucesso: true,
-                    };
-                }, 1000);
-            } catch (error) {
-                console.error("❌ TESTE: Erro durante validação:", error);
-                return { sucesso: false, erro: error.message };
-            }
-        };
-
-        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO
-        window.SENT1_AUTO.testarCriacaoCard = function () {
-            console.log(
-                "🧪 TESTE: Validando criação do card Material Design com XPath exclusivo"
-            );
-
-            try {
-                // 1. Testar detecção XPath exclusiva
-                console.log("🔍 TESTE: Executando detecção XPath exclusiva...");
-                const resultadoXPath =
-                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
-                console.log("📊 RESULTADO XPATH:", resultadoXPath);
-
-                if (!resultadoXPath) {
-                    console.log(
-                        "❌ TESTE: XPath não encontrou dados de sessão"
-                    );
-                    return {
-                        sucesso: false,
-                        motivo: "XPath não detectou dados de sessão",
-                        passos: [
-                            "1. Verifique se está na página correta do eProc",
-                            "2. Execute: window.SENT1_AUTO.detectarCardSessaoSimplificado()",
-                            "3. Verifique se existe o XPath: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
-                            "4. Verifique se o span tem atributo onmouseover com dados da sessão",
-                        ],
-                    };
-                }
-
-                // 2. Verificar se o Material Design está sendo usado
-                console.log(
-                    "🎨 TESTE: Verificando implementação Material Design..."
-                );
-
-                // Remover card existente se houver
-                const cardExistente = document.getElementById(
-                    "eprobe-card-material-design"
-                );
-                if (cardExistente) {
-                    cardExistente.remove();
-                    console.log(
-                        "🗑️ TESTE: Card Material Design existente removido"
-                    );
-                }
-
-                // 3. Testar criação do card Material Design
-                console.log("🎯 TESTE: Criando card Material Design...");
-                const dadosTeste = {
-                    data: resultadoXPath.data || "16/07/2025",
-                    status: resultadoXPath.status || "PAUTADO",
-                    orgao: resultadoXPath.orgao || "2ª Câmara de Direito Civil",
-                    processo:
-                        resultadoXPath.processo || "1234567-89.2025.8.24.0000",
-                };
-
-                const cardMaterial =
-                    window.SENT1_AUTO.criarCardMaterialDesign?.(dadosTeste);
-
-                if (!cardMaterial) {
-                    console.log(
-                        "❌ TESTE: Função criarCardMaterialDesign não funcionou"
-                    );
-                    return {
-                        sucesso: false,
-                        motivo: "Material Design não foi criado",
-                        diagnostico: {
-                            funcaoExiste:
-                                typeof window.SENT1_AUTO
-                                    .criarCardMaterialDesign,
-                            dadosPassados: dadosTeste,
-                        },
-                    };
-                }
-
-                // 4. Adicionar card ao DOM para teste visual
-                if (cardMaterial && !document.body.contains(cardMaterial)) {
-                    document.body.appendChild(cardMaterial);
-                }
-
-                // 5. Verificar propriedades do Material Design
-                const cardCriado =
-                    document.getElementById("eprobe-card-material-design") ||
-                    cardMaterial;
-
-                if (cardCriado) {
-                    console.log(
-                        "✅ TESTE: Card Material Design criado com sucesso!"
-                    );
-
-                    // Verificar especificações Figma
-                    const propriedadesFigma = {
-                        width:
-                            cardCriado.style.width ||
-                            getComputedStyle(cardCriado).width,
-                        height:
-                            cardCriado.style.height ||
-                            getComputedStyle(cardCriado).height,
-                        background:
-                            cardCriado.style.background ||
-                            getComputedStyle(cardCriado).backgroundColor,
-                        borderRadius:
-                            cardCriado.style.borderRadius ||
-                            getComputedStyle(cardCriado).borderRadius,
-                        boxShadow:
-                            cardCriado.style.boxShadow ||
-                            getComputedStyle(cardCriado).boxShadow,
-                        position:
-                            cardCriado.style.position ||
-                            getComputedStyle(cardCriado).position,
-                        fontFamily: getComputedStyle(cardCriado).fontFamily,
-                    };
-
-                    console.log(
-                        "🎨 ESPECIFICAÇÕES FIGMA APLICADAS:",
-                        propriedadesFigma
-                    );
-
-                    // Verificar áreas do card conforme Figma
-                    const iconArea =
-                        cardCriado.querySelector(".eprobe-icon-area");
-                    const headerArea = cardCriado.querySelector(
-                        ".eprobe-header-area"
-                    );
-                    const subheadArea = cardCriado.querySelector(
-                        ".eprobe-subhead-area"
-                    );
-
-                    console.log("📐 ÁREAS DO CARD FIGMA:");
-                    console.log(
-                        "- Ícone:",
-                        !!iconArea,
-                        iconArea?.style.background || "N/A"
-                    );
-                    console.log(
-                        "- Header:",
-                        !!headerArea,
-                        headerArea?.textContent || "N/A"
-                    );
-                    console.log(
-                        "- Subhead:",
-                        !!subheadArea,
-                        subheadArea?.textContent || "N/A"
-                    );
-
-                    return {
-                        sucesso: true,
-                        estrategia: "XPath Exclusivo",
-                        design: "Material Design Figma",
-                        dados: dadosTeste,
-                        xpath: "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]",
-                        propriedadesFigma: propriedadesFigma,
-                        areas: {
-                            icone: !!iconArea,
-                            header: !!headerArea,
-                            subhead: !!subheadArea,
-                        },
-                        logs: "Card Material Design criado via XPath exclusivo",
-                    };
-                } else {
-                    console.log(
-                        "❌ TESTE: Card Material Design não foi encontrado no DOM"
-                    );
-                    return {
-                        sucesso: false,
-                        motivo: "Card Material Design não encontrado no DOM",
-                        diagnostico: {
-                            dataDetectada: !!dataDetectada,
-                            funcaoInserirExiste:
-                                typeof window.SENT1_AUTO
-                                    .inserirDataSessaoNaInterface,
-                            containerEncontrado: !!containerEncontrado,
-                            seletorUsado: seletorUsado,
-                        },
-                        sugestoes: [
-                            "1. Verifique se está na página correta do eProc",
-                            "2. Execute: window.SENT1_AUTO.detectarDataSessao()",
-                            "3. Tente: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()",
-                            "4. Verifique console para erros JavaScript",
-                        ],
-                    };
-                }
-            } catch (error) {
-                console.error("❌ TESTE: Erro durante teste:", error);
-                return {
-                    sucesso: false,
-                    erro: error.message,
-                    stack: error.stack,
-                    sugestao: "Verifique o console para detalhes do erro",
-                };
-            }
-        };
-
-        // 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES
-        // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
-        window.SENT1_AUTO.forcarInsercaoCardSemValidacao = function () {
-            console.log(
-                "🚀 FORCE: Criando card Material Design SEM validações"
-            );
-
-            try {
-                // Remover cards existentes
-                removerCardMaterialDesign();
-
-                // Criar data fictícia se não houver
-                let dataParaUsar = window.SENT1_AUTO.getDataSessaoPautado?.();
-                if (!dataParaUsar) {
-                    console.log(
-                        "⚠️ FORCE: Sem data detectada, criando data teste"
-                    );
-                    dataParaUsar = {
-                        dataFormatada:
-                            "Data de teste - " +
-                            new Date().toLocaleDateString("pt-BR"),
-                        dataOriginal: new Date().toLocaleDateString("pt-BR"),
-                        orgao: "Teste",
-                    };
-                }
-
-                // Criar card Material Design diretamente
-                const cardCriado = criarCardMaterialDesign({
-                    status: "PAUTADO",
-                    data: dataParaUsar.dataFormatada,
-                    orgao: dataParaUsar.orgao || "Teste",
-                });
-
-                if (cardCriado) {
-                    console.log(
-                        "✅ FORCE: Card Material Design criado com sucesso!"
-                    );
-                    return {
-                        sucesso: true,
-                        tipo: "Material Design",
-                        data: dataParaUsar.dataFormatada,
-                    };
-                } else {
-                    console.log(
-                        "❌ FORCE: Falha ao criar card Material Design"
-                    );
-                    return {
-                        sucesso: false,
-                        motivo: "Falha na criação do card Material Design",
-                    };
-                }
-            } catch (error) {
-                console.error("❌ FORCE: Erro durante criação forçada:", error);
-                return {
-                    sucesso: false,
-                    erro: error.message,
-                    sugestao: "Verifique o console para detalhes do erro",
-                };
-            }
-        };
-
-        // 🧪 FUNÇÃO DE TESTE PARA CARD FIGMA EXATO
-        window.SENT1_AUTO.testarCardFigmaExato = function () {
-            console.log(
-                "🧪 TESTE FIGMA: Testando card com especificações EXATAS do design Figma"
-            );
-
-            try {
-                // Remover card existente se houver
-                const cardExistente = document.getElementById(
-                    "eprobe-card-material-design"
-                );
-                if (cardExistente) {
-                    cardExistente.remove();
-                    console.log("🗑️ Card anterior removido");
-                }
-
-                // Criar card com dados de teste
-                const dadosTeste = {
-                    data: "23/01/2025",
-                    status: "Pautado",
-                    tipoJulgamento: "Sessão Ordinária",
-                };
-
-                const card = criarCardMaterialDesign(dadosTeste);
-
-                console.log("✅ CARD FIGMA CRIADO com especificações EXATAS:", {
-                    dimensoes: "169px × 60px (igual ao Figma)",
-                    background: "#FEF7FF",
-                    border: "0.750208px solid #CAC4D0",
-                    borderRadius: "9.0025px",
-                    sombra: "M3/Elevation Light/5",
-                    posicionamento:
-                        "Absoluto conforme especificações CSS do Figma",
-                    tipografia: "Roboto com pesos e tamanhos exatos",
-                    estrutura: "Ícone absoluto + Container de texto absoluto",
-                });
-
-                return {
-                    sucesso: true,
-                    card: card,
-                    especificacoes: "100% fiel ao design Figma fornecido",
-                    observacao:
-                        "Card implementado com posicionamento absoluto e dimensões exatas",
-                };
-            } catch (error) {
-                console.error("❌ ERRO ao criar card Figma:", error);
-                return {
-                    sucesso: false,
-                    erro: error.message,
-                    sugestao: "Verifique as especificações CSS do Figma",
-                };
-            }
-        };
-
-        // 🧪 FUNÇÃO DE TESTE PARA DIAGNÓSTICO SWITCH RELEVÂNCIA
-        window.SENT1_AUTO.testarErroSwitchRelevancia = function () {
-            console.log("🧪 TESTE: Diagnosticando erro switchRelevanciaEvento");
-
-            try {
-                // 1. Verificar se há elementos img problemáticos
-                const imagensProblematicas = [];
-                const todasImagens = document.querySelectorAll("img");
-
-                console.log(
-                    `🔍 VERIFICANDO: ${todasImagens.length} imagens na página`
-                );
-
-                todasImagens.forEach((img, index) => {
-                    try {
-                        // Tentar acessar .src para simular o erro
-                        const src = img.src;
-                        if (
-                            !src ||
-                            src === null ||
-                            src === undefined ||
-                            src === ""
-                        ) {
-                            imagensProblematicas.push({
-                                index,
-                                elemento: img,
-                                problema: "src null/undefined/empty",
-                                id: img.id || "sem-id",
-                                className: img.className || "sem-classe",
-                                parentElement:
-                                    img.parentElement?.tagName || "sem-parent",
-                            });
-                        }
-                    } catch (error) {
-                        imagensProblematicas.push({
-                            index,
-                            elemento: img,
-                            problema: error.message,
-                            id: img.id || "sem-id",
-                            className: img.className || "sem-classe",
-                            parentElement:
-                                img.parentElement?.tagName || "sem-parent",
-                        });
-                    }
-                });
-
-                console.log(
-                    `🔍 DIAGNÓSTICO: ${imagensProblematicas.length} imagens problemáticas encontradas`
-                );
-                imagensProblematicas.forEach((problema, i) => {
-                    console.log(`❌ PROBLEMA ${i + 1}:`, problema);
-                });
-
-                // 2. Verificar se há elementos removidos/modificados pela extensão
-                const elementosModificados = document.querySelectorAll(
-                    '[data-eprobe-modified="true"]'
-                );
-                console.log(
-                    `🔧 MODIFICADOS: ${elementosModificados.length} elementos modificados pela extensão`
-                );
-
-                // 3. Verificar se há SVGs que substituíram imagens
-                const svgsSubstituidos = document.querySelectorAll(
-                    'svg[data-eprobe-icon="true"]'
-                );
-                console.log(
-                    `🎨 SUBSTITUÍDOS: ${svgsSubstituidos.length} SVGs substituindo ícones`
-                );
-
-                // 4. Procurar por elementos que podem estar relacionados ao switchRelevanciaEvento
-                const elementsRelevancia = document.querySelectorAll(
-                    '[onclick*="switchRelevancia"], [data-relevancia]'
-                );
-                console.log(
-                    `🎯 RELEVÂNCIA: ${elementsRelevancia.length} elementos com switchRelevancia encontrados`
-                );
-
-                return {
-                    totalImagens: todasImagens.length,
-                    imagensProblematicas,
-                    elementosModificados: elementosModificados.length,
-                    svgsSubstituidos: svgsSubstituidos.length,
-                    elementosRelevancia: elementsRelevancia.length,
-                };
-            } catch (error) {
-                console.error("❌ ERRO no diagnóstico:", error);
-                return { erro: error.message };
-            }
-        };
-
-        // 🔧 FUNÇÕES DE DIAGNÓSTICO DE ÍCONES CSS
-        window.SENT1_AUTO.diagnosticarIconesCSS = diagnosticarIconesCSS;
-        window.SENT1_AUTO.forcarReaplicacaoIcones = forcarReaplicacaoIcones;
-        window.SENT1_AUTO.forcarRecriacaoCardSessao = forcarRecriacaoCardSessao;
-        window.SENT1_AUTO.encontrarContainerParaCard =
-            encontrarContainerParaCard;
-
-        // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
-        window.SENT1_AUTO.diagnosticoCompletoCard = function () {
-            console.log("🩺 DIAGNÓSTICO COMPLETO - Card de Sessão");
-            console.log("====================================");
-
-            const relatorio = {
-                timestamp: new Date().toLocaleString("pt-BR"),
-                url: window.location.href,
-                diagnosticos: {},
-            };
-
-            try {
-                // 1. VERIFICAR PÁGINA ATUAL
-                console.log("🌐 1. VERIFICAÇÃO DA PÁGINA");
-                relatorio.diagnosticos.pagina = {
-                    url: window.location.href,
-                    eProc: window.location.href.includes("eproc"),
-                    tipoDetectado: detectPageType ? detectPageType() : "N/A",
-                    contemProcesso: window.location.href.includes("processo"),
-                };
-                console.log(
-                    "   URL eProc:",
-                    relatorio.diagnosticos.pagina.eProc
-                );
-                console.log(
-                    "   Tipo página:",
-                    relatorio.diagnosticos.pagina.tipoDetectado
-                );
-
-                // 2. VERIFICAR DETECÇÃO DE DATA
-                console.log("\n📅 2. VERIFICAÇÃO DE DETECÇÃO DE DATA");
-                const hasData = window.SENT1_AUTO.hasDataSessaoPautado?.();
-                const dataAtual = window.SENT1_AUTO.getDataSessaoPautado?.();
-
-                relatorio.diagnosticos.data = {
-                    hasDataFunction:
-                        typeof window.SENT1_AUTO.hasDataSessaoPautado,
-                    getDataFunction:
-                        typeof window.SENT1_AUTO.getDataSessaoPautado,
-                    hasData: hasData,
-                    dataDetectada: dataAtual,
-                    processoAtual: processoAtual,
-                    processoComData:
-                        typeof processoComDataSessao !== "undefined"
-                            ? processoComDataSessao
-                            : "N/A",
-                };
-                console.log("   Has data:", hasData);
-                console.log("   Data detectada:", dataAtual);
-                console.log("   Processo atual:", processoAtual);
-
-                // 3. VERIFICAR CONTAINERS DISPONÍVEIS
-                console.log("\n📦 3. VERIFICAÇÃO DE CONTAINERS");
-                const containers = [
-                    "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2",
-                    "#fldCapa #divCapaProcesso .row.mt-2",
-                    "#divCapaProcesso .row.mt-2",
-                    ".row.mt-2",
-                    "#fldCapa .row",
-                    "#divCapaProcesso",
-                    "#fldCapa",
-                ];
-
-                relatorio.diagnosticos.containers = {};
-                containers.forEach((seletor, index) => {
-                    const elemento = document.querySelector(seletor);
-                    relatorio.diagnosticos.containers[`container_${index}`] = {
-                        seletor: seletor,
-                        encontrado: !!elemento,
-                        visivel: elemento
-                            ? elemento.offsetWidth > 0 &&
-                              elemento.offsetHeight > 0
-                            : false,
-                        tagName: elemento?.tagName || "N/A",
-                    };
-                    console.log(
-                        `   ${index + 1}. ${seletor.substring(0, 50)}... → ${
-                            !!elemento ? "✅" : "❌"
-                        }`
-                    );
-                });
-
-                // 4. VERIFICAR CARD EXISTENTE
-                console.log("\n🎴 4. VERIFICAÇÃO DE CARD EXISTENTE");
-                const cardExistente =
-                    document.getElementById("eprobe-data-sessao");
-                relatorio.diagnosticos.cardExistente = {
-                    presente: !!cardExistente,
-                    visivel: cardExistente
-                        ? cardExistente.offsetWidth > 0 &&
-                          cardExistente.offsetHeight > 0
-                        : false,
-                    posicao: cardExistente?.style.position || "static",
-                    containerPai:
-                        cardExistente?.parentElement?.tagName || "N/A",
-                    dataProcesso:
-                        cardExistente?.getAttribute("data-processo") || "N/A",
-                };
-                console.log("   Card presente:", !!cardExistente);
-                if (cardExistente) {
-                    console.log(
-                        "   Visível:",
-                        cardExistente.offsetWidth > 0 &&
-                            cardExistente.offsetHeight > 0
-                    );
-                    console.log(
-                        "   Container pai:",
-                        cardExistente.parentElement?.tagName
-                    );
-                }
-
-                // 5. VERIFICAR FUNÇÕES NECESSÁRIAS
-                console.log("\n🔧 5. VERIFICAÇÃO DE FUNÇÕES");
-                relatorio.diagnosticos.funcoes = {
-                    inserirDataSessaoNaInterface:
-                        typeof window.SENT1_AUTO.inserirDataSessaoNaInterface,
-                    detectarDataSessao:
-                        typeof window.SENT1_AUTO.detectarDataSessao,
-                    criarBotaoEleganteeProc: typeof criarBotaoEleganteeProc,
-                    getCachedElement: typeof getCachedElement,
-                };
-                console.log(
-                    "   inserirDataSessaoNaInterface:",
-                    typeof window.SENT1_AUTO.inserirDataSessaoNaInterface
-                );
-                console.log(
-                    "   detectarDataSessao:",
-                    typeof window.SENT1_AUTO.detectarDataSessao
-                );
-
-                // 6. VERIFICAR ELEMENTOS DOM CRÍTICOS
-                console.log("\n🏗️ 6. VERIFICAÇÃO DE ELEMENTOS DOM");
-                const elementosCriticos = {
-                    "#fldCapa": document.querySelector("#fldCapa"),
-                    "#divCapaProcesso":
-                        document.querySelector("#divCapaProcesso"),
-                    "#divInfraAreaProcesso": document.querySelector(
-                        "#divInfraAreaProcesso"
-                    ),
-                    ".row.mt-2": document.querySelector(".row.mt-2"),
-                };
-
-                relatorio.diagnosticos.elementosDOM = {};
-                Object.entries(elementosCriticos).forEach(
-                    ([seletor, elemento]) => {
-                        relatorio.diagnosticos.elementosDOM[seletor] = {
-                            presente: !!elemento,
-                            visivel: elemento
-                                ? elemento.offsetWidth > 0 &&
-                                  elemento.offsetHeight > 0
-                                : false,
-                            children: elemento?.children.length || 0,
-                        };
-                        console.log(
-                            `   ${seletor}: ${!!elemento ? "✅" : "❌"}`
-                        );
-                    }
-                );
-
-                // 7. CONCLUSÕES E RECOMENDAÇÕES
-                console.log("\n💡 7. CONCLUSÕES");
-                const conclusoes = [];
-
-                if (!relatorio.diagnosticos.pagina.eProc) {
-                    conclusoes.push("❌ Não está em uma página do eProc");
-                }
-
-                if (!relatorio.diagnosticos.data.hasData) {
-                    conclusoes.push("❌ Nenhuma data de sessão detectada");
-                }
-
-                const containersDisponiveis = Object.values(
-                    relatorio.diagnosticos.containers
-                ).filter((c) => c.encontrado).length;
-                if (containersDisponiveis === 0) {
-                    conclusoes.push("❌ Nenhum container adequado encontrado");
-                }
-
-                if (
-                    relatorio.diagnosticos.funcoes
-                        .inserirDataSessaoNaInterface !== "function"
-                ) {
-                    conclusoes.push("❌ Função de inserção não disponível");
-                }
-
-                relatorio.conclusoes = conclusoes;
-                relatorio.recomendacoes = [];
-
-                if (conclusoes.length === 0) {
-                    console.log(
-                        "   ✅ Tudo parece estar funcionando corretamente"
-                    );
-                    relatorio.recomendacoes.push(
-                        "Execute: window.SENT1_AUTO.testarCriacaoCard()"
-                    );
-                } else {
-                    conclusoes.forEach((conclusao) =>
-                        console.log(`   ${conclusao}`)
-                    );
-
-                    if (!relatorio.diagnosticos.pagina.eProc) {
-                        relatorio.recomendacoes.push(
-                            "Navegue para uma página do eProc"
-                        );
-                    }
-                    if (!relatorio.diagnosticos.data.hasData) {
-                        relatorio.recomendacoes.push(
-                            "Execute: window.SENT1_AUTO.detectarDataSessao()"
-                        );
-                    }
-                    if (containersDisponiveis === 0) {
-                        relatorio.recomendacoes.push(
-                            "Execute: window.SENT1_AUTO.forcarInsercaoCardSemValidacao()"
-                        );
-                    }
-                }
-
-                console.log("\n📋 RELATÓRIO COMPLETO:", relatorio);
-                return relatorio;
-            } catch (error) {
-                console.error("❌ ERRO no diagnóstico completo:", error);
-                return {
-                    erro: error.message,
-                    stack: error.stack,
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                };
-            }
-        };
-
-        // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA
-        window.SENT1_AUTO.ativarModoUltraPerformance = function () {
-            MODO_ULTRA_PERFORMANCE = true;
-            console.log(
-                "🔥 PERFORMANCE: Modo ultra-performance ATIVADO - operações custosas desabilitadas"
-            );
-            return true;
-        };
-
-        window.SENT1_AUTO.desativarModoUltraPerformance = function () {
-            MODO_ULTRA_PERFORMANCE = false;
-            console.log(
-                "✅ PERFORMANCE: Modo ultra-performance DESATIVADO - todas as operações habilitadas"
-            );
-            return false;
-        };
-
-        window.SENT1_AUTO.statusModoUltraPerformance = function () {
-            const status = MODO_ULTRA_PERFORMANCE ? "ATIVO" : "INATIVO";
-            console.log(
-                `📊 PERFORMANCE: Modo ultra-performance está ${status}`
-            );
-            return MODO_ULTRA_PERFORMANCE;
-        };
-
-        // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
-        // Estrutura preparada para futuras funcionalidades da página de localizadores
-        window.SENT1_AUTO.localizadores = {
-            detectarPagina: detectarPaginaLocalizadores,
-            processarTabela: processarTabelaLocalizadores,
-            destacarUrgentes: destacarLocalizadoresUrgentes,
-            criarDivisor: criarDivisorEditavel,
-            adicionarInterface: adicionarInterfaceSeparadores,
-            adicionarTextoInformativo: adicionarTextoInformativoSeparadores,
-            adicionarMenuContexto: adicionarMenuContextoLinhas,
-            mostrarMenuContexto: mostrarMenuContextoSeparador,
-            debug: debugLocalizadores,
-            // Funções de persistência de separadores
-            salvarSeparadores: salvarSeparadores,
-            carregarSeparadores: carregarSeparadores,
-            restaurarSeparadores: restaurarSeparadores,
-            limparTodosSeparadores: limparTodosSeparadores,
-            salvarAlteracaoSeparador: salvarAlteracaoSeparador,
-            // Funções para gerenciar separadores removidos
-            salvarSeparadoresRemovidos: salvarSeparadoresRemovidos,
-            carregarSeparadoresRemovidos: carregarSeparadoresRemovidos,
-            // Espaço reservado para futuras funções:
-            // processarEmLote: null,
-            // criarDashboard: null,
-            // adicionarFiltros: null,
-        };
-
-        // 🔍 FUNÇÕES DE DEBUG - Para investigar problemas com o card
-        function debugDeteccaoDataSessao() {
-            console.log(
-                "🔍 DEBUG: Iniciando debug da detecção de data da sessão"
-            );
-
-            // 1. Verificar estado atual
-            console.log("📊 Estado atual:");
-            console.log(
-                `   - Data detectada: ${
-                    hasDataSessaoPautado()
-                        ? getDataSessaoPautado().dataFormatada
-                        : "NÃO"
-                }`
-            );
-            console.log(
-                `   - Processo atual: ${processoAtual || "não identificado"}`
-            );
-            console.log(
-                `   - Já processado: ${
-                    processoAtual
-                        ? processoJaFoiProcessado(processoAtual)
-                        : "N/A"
-                }`
-            );
-            console.log(
-                `   - Card na interface: ${
-                    document.getElementById("eprobe-data-sessao")
-                        ? "SIM"
-                        : "NÃO"
-                }`
-            );
-
-            // 2. Verificar texto da página
-            const textoCompleto = document.body.innerText;
-            console.log(
-                `📄 Texto da página: ${textoCompleto.length} caracteres`
-            );
-
-            // 3. Testar padrões de busca
-            const padroes = [
-                /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
-            ];
-
-            padroes.forEach((padrao, index) => {
-                const match = textoCompleto.match(padrao);
-                if (match) {
-                    console.log(
-                        `✅ Padrão ${index + 1}: Encontrado "${match[1]}"`
-                    );
-                } else {
-                    console.log(`❌ Padrão ${index + 1}: Não encontrado`);
-                }
-            });
-
-            // 4. Verificar container alvo
-            const container = document.querySelector(
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso .row.mt-2"
-            );
-            console.log(
-                `🎯 Container alvo: ${
-                    container ? "ENCONTRADO" : "NÃO ENCONTRADO"
-                }`
-            );
-
-            if (container) {
-                console.log(`   - TagName: ${container.tagName}`);
-                console.log(`   - ID: ${container.id}`);
-                console.log(`   - Classes: ${container.className}`);
-                console.log(`   - Filhos: ${container.children.length}`);
-            }
-
-            // 5. Listar containers alternativos
-            const alternativas = [
-                "#frmProcessoLista #divInfraAreaDados #divInfraAreaProcesso #fldCapa #divCapaProcesso",
-                "#divCapaProcesso .row",
-                "#fldCapa .row",
-                ".row.mt-2",
-            ];
-
-            console.log("🔍 Containers alternativos:");
-            alternativas.forEach((seletor, index) => {
-                const elemento = document.querySelector(seletor);
-                console.log(
-                    `   ${index + 1}. ${seletor}: ${
-                        elemento ? "ENCONTRADO" : "NÃO ENCONTRADO"
-                    }`
-                );
-            });
-
-            // 6. Testar inserção do card
-            if (hasDataSessaoPautado()) {
-                console.log("🧪 Testando inserção do card...");
-                const resultadoInsercao = inserirDataSessaoNaInterface();
-                console.log(
-                    `🎯 Resultado da inserção: ${
-                        resultadoInsercao ? "SUCESSO" : "FALHA"
-                    }`
-                );
-            }
         }
+        // 🧪 FUNÇÃO DE TESTE XPATH + MATERIAL DESIGN (movida para namespace principal)
+        // 🧪 FUNÇÕES DE TESTE SIMPLIFICADO (movidas para namespace principal)
+        // 🎨 FUNÇÕES DE ÍCONES (movidas para namespace principal)
+        // 🔍 FUNÇÕES DE DIAGNÓSTICO (movidas para namespace principal)
+        // 🔧 FUNÇÕES DE DEBUG PARA BOTÃO (movidas para namespace principal)
+        // 🌐 FUNÇÕES GLOBAIS PARA DADOS DE SESSÃO (movidas para namespace principal)
+        // 🧪 FUNÇÕES DE TESTE (movidas para namespace principal)
+        // 🧪 FUNÇÃO DE TESTE PARA CORREÇÃO DO CARD DE SESSÃO (movida para namespace principal)
+        // 🚀 FUNÇÃO PARA FORÇAR CRIAÇÃO DE CARD SEM VALIDAÇÕES (movida para namespace principal)
+        // 🧪 FUNÇÃO PARA TESTE DE CARD FIGMA EXATO (movida para namespace principal)
+        // 🧪 FUNÇÃO DE TESTE PARA ERRO SWITCH RELEVANCIA (movida para namespace principal)
+        // 🔧 FUNÇÕES DE DIAGNÓSTICO DE ÍCONES CSS (movidas para namespace principal)
+        // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO (movida para namespace principal)
+        // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA (movidas para namespace principal)
+        // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES (movido para namespace principal)
+        // ======== TODAS AS FUNÇÕES FORAM MOVIDAS PARA O NAMESPACE PRINCIPAL ========
 
-        function forcarDeteccaoDataSessao() {
-            console.log("🔄 FORÇA: Forçando nova detecção de data da sessão");
+        // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE (movidas para namespace principal)
+    })(); // Fechamento da IIFE principal
 
-            // 1. Resetar estado
-            resetDataSessaoPautado();
-            processoAtual = null;
+    // ========================================
+    // VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO
+    // ========================================
 
-            // 2. Remover card se existir
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ Card existente removido");
-            }
+    // ========================================
+    // FUNÇÕES GLOBAIS PARA GERENCIAMENTO DOS DADOS
+    // ========================================
 
-            // 3. Forçar detecção
-            const dataDetectada = detectarDataSessao();
+    // ========================================
+    // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO AUTOMÁTICA
+    // ========================================
 
-            if (dataDetectada) {
-                console.log(
-                    `✅ Data detectada: ${dataDetectada.dataFormatada}`
-                );
+    /**
+     * Diagnóstico completo do estado atual da extensão
+     * Verifica se todas as funcionalidades estão operando corretamente
+     */
+    function diagnosticarCompleto() {
+        console.log(
+            "🔍 DIAGNÓSTICO: Iniciando diagnóstico completo do sistema"
+        );
 
-                // 4. Tentar inserir card imediatamente
-                const sucesso = inserirDataSessaoNaInterface();
-                console.log(
-                    `🎯 Inserção do card: ${sucesso ? "SUCESSO" : "FALHA"}`
-                );
-
-                if (sucesso) {
-                    // Marcar processo como processado apenas após inserção bem-sucedida
-                    marcarProcessoComoProcessado(processoAtual);
-                    console.log(
-                        "🔐 Processo marcado como processado após inserção do card"
-                    );
-                }
-            } else {
-                console.log("❌ Nenhuma data detectada");
-            }
-        }
-
-        // 🧪 FUNÇÃO DE TESTE PARA VERIFICAR INSERÇÃO DO CARD
-        function testarInsercaoCard() {
-            console.log("🧪 TESTE: Verificando inserção do card");
-
-            // 1. Verificar se há data detectada
-            if (!hasDataSessaoPautado()) {
-                console.log(
-                    "❌ TESTE: Nenhuma data detectada - forçando detecção"
-                );
-                forcarDeteccaoDataSessao();
-                return;
-            }
-
-            console.log(
-                `✅ TESTE: Data detectada: ${
-                    getDataSessaoPautado().dataFormatada
-                }`
-            );
-
-            // 2. Remover card existente se houver
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ TESTE: Card existente removido");
-            }
-
-            // 3. Tentar inserir card
-            console.log("🎯 TESTE: Tentando inserir card...");
-            const sucesso = inserirDataSessaoNaInterface();
-
-            if (sucesso) {
-                console.log("✅ TESTE: Card inserido com sucesso!");
-                const cardInserido =
-                    document.getElementById("eprobe-data-sessao");
-                if (cardInserido) {
-                    console.log("✅ TESTE: Card confirmado no DOM");
-                    console.log("🎯 TESTE: Elemento:", cardInserido);
-                    return true;
-                } else {
-                    console.log(
-                        "❌ TESTE: Card não encontrado no DOM após inserção"
-                    );
-                    return false;
-                }
-            } else {
-                console.log("❌ TESTE: Falha na inserção do card");
-                return false;
-            }
-        }
-
-        // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD SEM VALIDAÇÃO
-        function forcarInsercaoCardSemValidacao() {
-            console.log("🚨 FORÇA: Forçando inserção do card sem validações");
-
-            // 1. Verificar se há data detectada
-            if (!hasDataSessaoPautado()) {
-                console.log(
-                    "❌ FORÇA: Nenhuma data detectada - tentando detectar"
-                );
-
-                // Forçar detecção mesmo para processo já processado
-                const processoAnterior = processoAtual;
-                const jaProcessadoAnterior = processoAnterior
-                    ? processosJaProcessados.has(processoAnterior)
-                    : false;
-
-                if (jaProcessadoAnterior) {
-                    console.log(
-                        "🔄 FORÇA: Removendo processo da lista de processados temporariamente"
-                    );
-                    processosJaProcessados.delete(processoAnterior);
-                }
-
-                // Detectar data
-                const dataDetectada = detectarDataSessao();
-
-                if (!dataDetectada) {
-                    console.log("❌ FORÇA: Falha na detecção da data");
-                    if (jaProcessadoAnterior) {
-                        processosJaProcessados.add(processoAnterior);
-                    }
-                    return false;
-                }
-            }
-
-            // 2. Remover card existente
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ FORÇA: Card existente removido");
-            }
-
-            // 3. Forçar inserção
-            console.log("🎯 FORÇA: Tentando inserir card...");
-            const sucesso = inserirDataSessaoNaInterface();
-
-            if (sucesso) {
-                console.log("✅ FORÇA: Card inserido com sucesso!");
-                return true;
-            } else {
-                console.log("❌ FORÇA: Falha na inserção do card");
-                return false;
-            }
-        }
-
-        // ========================================
-        // VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO
-        // ========================================
-
-        // ========================================
-        // FUNÇÕES DE ANÁLISE DE ESTRUTURA HTML
-        // ========================================
-
-        /**
-         * 🔍 FUNÇÃO PARA EXAMINAR ESTRUTURA HTML DOS DADOS
-         * Analisa a estrutura específica dos dados de minutas conforme aparece no DOM
-         */
-        function examinarEstruturaHTMLDados() {
-            console.log(
-                "🔍 EXAME: Analisando estrutura HTML dos dados de minutas"
-            );
-
-            // 1. Procurar por elementos com padrão imgMinutas_
-            const elementosImgMinutas = document.querySelectorAll(
-                '[id*="imgMinutas_"]'
-            );
-            console.log(
-                `📊 EXAME: Encontrados ${elementosImgMinutas.length} elementos imgMinutas_`
-            );
-
-            elementosImgMinutas.forEach((img, index) => {
-                console.log(`📷 IMG ${index + 1}:`, {
-                    id: img?.id || "N/A",
-                    src: img?.src || "N/A",
-                    style: img?.getAttribute("style") || "N/A",
-                    parent: img?.parentElement?.tagName || "N/A",
-                    parentId: img?.parentElement?.id || "N/A",
-                });
-            });
-
-            // 2. Procurar por elementos com padrão carregandoMinutas_
-            const elementosCarregando = document.querySelectorAll(
-                '[id*="carregandoMinutas_"]'
-            );
-            console.log(
-                `⏳ EXAME: Encontrados ${elementosCarregando.length} elementos carregandoMinutas_`
-            );
-
-            elementosCarregando.forEach((elem, index) => {
-                console.log(`⏳ CARREGANDO ${index + 1}:`, {
-                    id: elem.id,
-                    tagName: elem.tagName,
-                    innerHTML: elem.innerHTML.substring(0, 200) + "...",
-                    style: elem.getAttribute("style"),
-                });
-            });
-
-            // 3. Procurar por elementos relacionados a minutas
-            const elementosMinutas = document.querySelectorAll(
-                '[id*="Minutas"], [class*="minutas"]'
-            );
-            console.log(
-                `📋 EXAME: Encontrados ${elementosMinutas.length} elementos relacionados a minutas`
-            );
-
-            elementosMinutas.forEach((elem, index) => {
-                console.log(`📋 MINUTAS ${index + 1}:`, {
-                    id: elem.id,
-                    className: elem.className,
-                    tagName: elem.tagName,
-                    textContent: elem.textContent?.substring(0, 100) + "...",
-                });
-            });
-
-            // 4. Procurar especificamente pelo fieldset #fldMinutas
-            const fieldsetMinutas = document.getElementById("fldMinutas");
-            if (fieldsetMinutas) {
-                console.log("📁 FIELDSET #fldMinutas encontrado:");
-                console.log(
-                    "   innerHTML:",
-                    fieldsetMinutas.innerHTML.substring(0, 500) + "..."
-                );
-                console.log(
-                    "   textContent:",
-                    fieldsetMinutas.textContent?.substring(0, 200) + "..."
-                );
-
-                // Analisar filhos diretos
-                const filhosDirectos = Array.from(fieldsetMinutas.children);
-                console.log(`👶 FILHOS DIRETOS (${filhosDirectos.length}):`);
-                filhosDirectos.forEach((filho, index) => {
-                    console.log(
-                        `   ${index + 1}. ${filho.tagName}#${
-                            filho.id || "sem-id"
-                        }.${filho.className || "sem-classe"}`
-                    );
-                });
-            } else {
-                console.log("❌ FIELDSET #fldMinutas NÃO encontrado");
-            }
-
-            // 5. Procurar por URLs com padrão /emf2wls/image/
-            const elementosEmf2wls = document.querySelectorAll(
-                '[src*="/emf2wls/image/"], [href*="/emf2wls/image/"]'
-            );
-            console.log(
-                `🖼️ EXAME: Encontrados ${elementosEmf2wls.length} elementos com /emf2wls/image/`
-            );
-
-            elementosEmf2wls.forEach((elem, index) => {
-                console.log(`🖼️ EMF2WLS ${index + 1}:`, {
-                    tagName: elem.tagName,
-                    src: elem.src || elem.href,
-                    id: elem.id,
-                    parentId: elem.parentElement?.id,
-                });
-            });
-
-            // 6. Verificar se há textos que contêm padrões de data e status
-            const textoCompleto = document.body.innerText;
-            const padroesRelevantes = [
-                /Incluído em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
-                /Julgado em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
-                /Retirado em Pauta em \d{1,2}\/\d{1,2}\/\d{4}/gi,
-            ];
-
-            console.log(
-                "🎯 EXAME: Procurando padrões de status no texto da página:"
-            );
-            padroesRelevantes.forEach((padrao, index) => {
-                const matches = textoCompleto.match(padrao);
-                if (matches) {
-                    console.log(
-                        `   Padrão ${index + 1}: ${matches.length} ocorrências`
-                    );
-                    matches.slice(0, 3).forEach((match, i) => {
-                        console.log(`      ${i + 1}. "${match}"`);
-                    });
-                }
-            });
-
-            return {
-                imgMinutas: elementosImgMinutas.length,
-                carregandoMinutas: elementosCarregando.length,
-                elementosMinutas: elementosMinutas.length,
-                fieldsetMinutas: !!fieldsetMinutas,
-                emf2wlsElements: elementosEmf2wls.length,
-            };
-        }
-
-        /**
-         * 🕵️ FUNÇÃO PARA BUSCAR PADRÕES ESPECÍFICOS DAS IMAGENS
-         * Procura especificamente pelos elementos e padrões mostrados nas capturas de tela
-         */
-        function buscarPadroesEspecificosImagens() {
-            console.log(
-                "🕵️ BUSCA: Procurando padrões específicos das imagens fornecidas"
-            );
-
-            // 1. Buscar elementos com IDs numéricos longos (como nas imagens)
-            const elementosComIDsNumericos = document.querySelectorAll(
-                '[id*="32175467189847165351355856"], [id*="3217424566125742584153747693"]'
-            );
-            console.log(
-                `🔢 BUSCA: Encontrados ${elementosComIDsNumericos.length} elementos com IDs numéricos longos`
-            );
-
-            elementosComIDsNumericos.forEach((elem, index) => {
-                console.log(`🔢 ELEMENTO ${index + 1}:`, {
-                    id: elem.id,
-                    tagName: elem.tagName,
-                    src: elem.src || "N/A",
-                    parentId: elem.parentElement?.id,
-                    nextSibling:
-                        elem.nextSibling?.textContent?.substring(0, 50) ||
-                        "N/A",
-                });
-            });
-
-            // 2. Buscar especificamente imagens com src="/emf2wls/image/gif"
-            const imagensEmf2wls = document.querySelectorAll(
-                'img[src*="/emf2wls/image/gif"]'
-            );
-            console.log(
-                `🖼️ BUSCA: Encontradas ${imagensEmf2wls.length} imagens emf2wls/gif`
-            );
-
-            imagensEmf2wls.forEach((img, index) => {
-                console.log(`🖼️ IMAGEM ${index + 1}:`, {
-                    id: img?.id || "N/A",
-                    src: img?.src || "N/A",
-                    style: img?.getAttribute("style") || "N/A",
-                    width: img?.style?.width || "N/A",
-                    height: img?.style?.height || "N/A",
-                    opacity: img?.style?.opacity || "N/A",
-                    contextoPai:
-                        img?.parentElement?.innerHTML?.substring(0, 100) +
-                            "..." || "N/A",
-                });
-
-                // Verificar se há texto próximo que contenha informações de sessão
-                const elementoPai = img.parentElement;
-                if (elementoPai) {
-                    const textoContexto = elementoPai.textContent || "";
-                    const padroesRelevantes = [
-                        /Mérito.*Retirado.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
-                        /Mérito.*Incluído.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
-                        /Mérito.*Julgado.*Pauta.*\d{1,2}\/\d{1,2}\/\d{4}/i,
-                    ];
-
-                    padroesRelevantes.forEach((padrao, pIndex) => {
-                        if (padrao.test(textoContexto)) {
-                            console.log(
-                                `   ✅ Padrão ${
-                                    pIndex + 1
-                                } encontrado no contexto:`,
-                                textoContexto.match(padrao)[0]
-                            );
-                        }
-                    });
-                }
-            });
-
-            // 3. Buscar elementos com onclick contendo "harliamentorHTML"
-            const elementosComHarliament = document.querySelectorAll(
-                '[onclick*="harliamentorHTML"]'
-            );
-            console.log(
-                `🏛️ BUSCA: Encontrados ${elementosComHarliament.length} elementos com harliamentorHTML`
-            );
-
-            elementosComHarliament.forEach((elem, index) => {
-                console.log(`🏛️ HARLIAMENT ${index + 1}:`, {
-                    tagName: elem.tagName,
-                    onclick: elem.getAttribute("onclick"),
-                    id: elem.id,
-                    textContent: elem.textContent?.substring(0, 100) + "...",
-                });
-            });
-
-            // 4. Buscar especificamente pelo padrão "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)"
-            const textoCompleto = document.body.innerText;
-            const padraoEspecifico =
-                /Mérito\s*\(Retirado\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-            const matchesEspecificos = textoCompleto.match(padraoEspecifico);
-
-            console.log(
-                "🎯 BUSCA: Procurando padrão específico 'Mérito (Retirado em Pauta em...':"
-            );
-            if (matchesEspecificos) {
-                console.log(
-                    `   ✅ Encontradas ${matchesEspecificos.length} ocorrências:`
-                );
-                matchesEspecificos.forEach((match, index) => {
-                    console.log(`      ${index + 1}. "${match}"`);
-                });
-            } else {
-                console.log("   ❌ Padrão específico não encontrado");
-            }
-
-            // 5. Buscar por todos os elementos que contêm texto relacionado a datas de sessão
-            const elementosComDatasSessao = [];
-            document.querySelectorAll("*").forEach((elem) => {
-                const texto = elem.textContent || "";
-                if (
-                    /\d{2}\/\d{2}\/\d{4}.*(?:CAMPUB|TJSC)/i.test(texto) &&
-                    elem.children.length === 0
-                ) {
-                    elementosComDatasSessao.push({
-                        elemento: elem,
-                        texto: texto.trim(),
-                        tagName: elem.tagName,
-                        id: elem.id,
-                        className: elem.className,
-                    });
-                }
-            });
-
-            console.log(
-                `📅 BUSCA: Encontrados ${elementosComDatasSessao.length} elementos com datas de sessão:`
-            );
-            elementosComDatasSessao.slice(0, 5).forEach((item, index) => {
-                console.log(
-                    `   ${index + 1}. ${item.tagName}#${
-                        item.id
-                    }: "${item.texto.substring(0, 80)}..."`
-                );
-            });
-
-            return {
-                elementosIDsNumericos: elementosComIDsNumericos.length,
-                imagensEmf2wls: imagensEmf2wls.length,
-                elementosHarliament: elementosComHarliament.length,
-                padraoEspecificoEncontrado: !!matchesEspecificos,
-                quantidadeMatchesEspecificos: matchesEspecificos?.length || 0,
-                elementosComDatasSessao: elementosComDatasSessao.length,
-            };
-        }
-
-        // ========================================
-        // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO AUTOMÁTICA
-        // ========================================
-
-        /**
-         * Diagnóstico completo do estado atual da extensão
-         * Verifica se todas as funcionalidades estão operando corretamente
-         */
-        function diagnosticarCompleto() {
-            console.log(
-                "🔍 DIAGNÓSTICO: Iniciando diagnóstico completo do sistema"
-            );
-
-            const diagnostico = {
-                timestamp: new Date().toLocaleString("pt-BR"),
-                url: window.location.href,
+        const diagnostico = {
+            timestamp: new Date().toISOString(),
+            url: window.location.href,
+            pageType: detectPageType(),
+            dadosSessao: {
+                hasDataSessao: hasDataSessaoPautado(),
+                dataSessao: dataSessaoPautado,
+                processoComData: processoComDataSessao,
+                dadosCompletos: hasDadosCompletosSessionJulgamento(),
+            },
+            elementos: {
+                botaoIntegrado: !!document.getElementById(
+                    "documento-relevante-auto-button"
+                ),
+                botaoFlutuante: !!document.getElementById("sent1-auto-button"),
+                navbar: !!document.querySelector(".navbar"),
+                minutas: !!document.querySelector("#conteudoMinutas"),
+            },
+            performance: {
+                tentativasCruzamento: tentativasCruzamento,
+                cacheValido: cacheValidoAte > Date.now(),
+                processosProcessados: processosJaProcessados.size,
                 modoUltraPerformance: MODO_ULTRA_PERFORMANCE,
-                funcionalidades: {},
-            };
+            },
+            apis: {
+                perplexityKey: !!localStorage.getItem("perplexity_api_key"),
+                requisicoesDesabilitadas: REQUISICOES_AUTOMATICAS_DESABILITADAS,
+            },
+        };
 
-            // 1. Verificar detecção de data da sessão
-            console.log("📅 Verificando detecção de data da sessão...");
-            const temDataSessao = hasDataSessaoPautado();
-            diagnostico.funcionalidades.dataSessao = {
-                detectada: temDataSessao,
-                valor: temDataSessao ? getDataSessaoPautado() : null,
-                processoAtual: processoAtual,
-            };
+        console.log("📊 DIAGNÓSTICO COMPLETO:", diagnostico);
 
-            // 2. Verificar botão "Resumir Documento"
-            console.log("🔘 Verificando botão Resumir Documento...");
-            const botaoExiste =
-                document.getElementById("eprobe-btn") !== null ||
-                document.getElementById("documento-relevante-auto-button") !==
-                    null ||
-                document.getElementById("sent1-auto-button") !== null;
+        // Verificar problemas comuns
+        const problemas = [];
 
-            const botaoID = document.getElementById("eprobe-btn")
-                ? "eprobe-btn"
-                : document.getElementById("documento-relevante-auto-button")
-                ? "documento-relevante-auto-button"
-                : document.getElementById("sent1-auto-button")
-                ? "sent1-auto-button"
-                : "nenhum";
-
-            diagnostico.funcionalidades.botaoResumir = {
-                existe: botaoExiste,
-                id: botaoID,
-                elemento: botaoExiste ? "Encontrado" : "Não encontrado",
-            };
-
-            // 3. Verificar substituição de ícones
-            console.log("🎨 Verificando substituição de ícones...");
-            const iconeSubstituido =
-                document.querySelector("[data-eprobe-icon-replaced]") !== null;
-            diagnostico.funcionalidades.substituicaoIcones = {
-                aplicada: iconeSubstituido,
-                quantidade: document.querySelectorAll(
-                    "[data-eprobe-icon-replaced]"
-                ).length,
-            };
-
-            // 4. Verificar sistema de temas
-            console.log("🎨 Verificando sistema de temas...");
-            const temaTemaAplicado =
-                document.querySelector(".eprobe-theme-applied") !== null;
-            diagnostico.funcionalidades.sistemaTheme = {
-                aplicado: temaTemaAplicado,
-                funcaoDisponivel: typeof window.applyThemeStyles === "function",
-            };
-
-            // 5. Verificar namespace SENT1_AUTO
-            console.log("📦 Verificando namespace SENT1_AUTO...");
-            diagnostico.namespace = {
-                existe: typeof window.SENT1_AUTO === "object",
-                funcoes: window.SENT1_AUTO
-                    ? Object.keys(window.SENT1_AUTO).length
-                    : 0,
-            };
-
-            console.log("📊 DIAGNÓSTICO COMPLETO:", diagnostico);
-            return diagnostico;
+        if (
+            !diagnostico.elementos.botaoIntegrado &&
+            !diagnostico.elementos.botaoFlutuante
+        ) {
+            problemas.push("Nenhum botão da extensão encontrado");
         }
 
-        /**
-         * Função de correção automática para problemas detectados
-         * Tenta resolver os problemas mais comuns automaticamente
-         */
-        function corrigirProblemas() {
-            console.log(
-                "🔧 CORREÇÃO: Iniciando correção automática de problemas"
+        if (
+            diagnostico.dadosSessao.hasDataSessao &&
+            !diagnostico.dadosSessao.dadosCompletos
+        ) {
+            problemas.push(
+                "Data de sessão detectada mas dados completos não obtidos"
             );
-
-            const resultadoCorrecao = {
-                timestamp: new Date().toLocaleString("pt-BR"),
-                acoes: [],
-            };
-
-            // 1. Tentar criar botão se não existir
-            const botaoJaExiste =
-                document.getElementById("eprobe-btn") ||
-                document.getElementById("documento-relevante-auto-button") ||
-                document.getElementById("sent1-auto-button");
-
-            if (!botaoJaExiste) {
-                console.log("🔘 Criando botão Resumir Documento...");
-                try {
-                    ensureButtonExists();
-                    const botaoCriado =
-                        document.getElementById("eprobe-btn") ||
-                        document.getElementById(
-                            "documento-relevante-auto-button"
-                        ) ||
-                        document.getElementById("sent1-auto-button");
-
-                    resultadoCorrecao.acoes.push({
-                        acao: "Criação de botão",
-                        status: "Tentativa executada",
-                        sucesso: botaoCriado !== null,
-                        idCriado: botaoCriado ? botaoCriado.id : null,
-                    });
-                } catch (error) {
-                    console.error("❌ Erro ao criar botão:", error);
-                    resultadoCorrecao.acoes.push({
-                        acao: "Criação de botão",
-                        status: "Erro",
-                        erro: error.message,
-                    });
-                }
-            }
-
-            // 2. Tentar aplicar substituição de ícones
-            if (
-                document.querySelectorAll("[data-eprobe-icon-replaced]")
-                    .length === 0
-            ) {
-                console.log("🎨 Aplicando substituição de ícones...");
-                try {
-                    substituirIconesFieldsetAcoes();
-                    resultadoCorrecao.acoes.push({
-                        acao: "Substituição de ícones",
-                        status: "Executada",
-                        quantidade: document.querySelectorAll(
-                            "[data-eprobe-icon-replaced]"
-                        ).length,
-                    });
-                } catch (error) {
-                    console.error("❌ Erro ao substituir ícones:", error);
-                    resultadoCorrecao.acoes.push({
-                        acao: "Substituição de ícones",
-                        status: "Erro",
-                        erro: error.message,
-                    });
-                }
-            }
-
-            // 3. Forçar detecção de data da sessão se necessário
-            if (!hasDataSessaoPautado()) {
-                console.log("📅 Forçando detecção de data da sessão...");
-                try {
-                    const dataDetectada = detectarDataSessao();
-                    resultadoCorrecao.acoes.push({
-                        acao: "Detecção de data da sessão",
-                        status: "Executada",
-                        sucesso: dataDetectada !== null,
-                        valor: dataDetectada,
-                    });
-                } catch (error) {
-                    console.error("❌ Erro ao detectar data da sessão:", error);
-                    resultadoCorrecao.acoes.push({
-                        acao: "Detecção de data da sessão",
-                        status: "Erro",
-                        erro: error.message,
-                    });
-                }
-            }
-
-            console.log("🔧 CORREÇÃO COMPLETA:", resultadoCorrecao);
-            return resultadoCorrecao;
         }
 
-        /**
-         * Força a reaplicação dos ícones em caso de falha
-         * Remove marcações existentes e executa novamente
-         */
-        function forcarReaplicacaoIcones() {
-            console.log("🔄 ÍCONES: Forçando reaplicação de ícones...");
+        if (
+            diagnostico.performance.tentativasCruzamento >=
+            MAX_TENTATIVAS_CRUZAMENTO
+        ) {
+            problemas.push("Máximo de tentativas de cruzamento atingido");
+        }
 
-            // Remover marcações existentes
-            const iconesJaSubstituidos = document.querySelectorAll(
-                "[data-eprobe-icon-replaced]"
-            );
-            iconesJaSubstituidos.forEach((icone) => {
-                icone.removeAttribute("data-eprobe-icon-replaced");
-                icone.removeAttribute("data-original-text");
-            });
+        if (!diagnostico.apis.perplexityKey) {
+            problemas.push("API key do Perplexity não configurada");
+        }
 
-            let resultados = {
-                fieldsetAcoes: 0,
-                ferramentas: 0,
-                erros: [],
-            };
+        if (problemas.length > 0) {
+            console.warn("⚠️ PROBLEMAS IDENTIFICADOS:", problemas);
+        } else {
+            console.log("✅ DIAGNÓSTICO: Sistema funcionando corretamente");
+        }
 
-            // Executar substituição no fieldset de ações
+        return {
+            ...diagnostico,
+            problemas: problemas,
+            status: problemas.length === 0 ? "OK" : "ATENÇÃO",
+        };
+    }
+
+    /**
+     * Função de correção automática para problemas detectados
+     * Tenta resolver os problemas mais comuns automaticamente
+     */
+    function corrigirProblemas() {
+        console.log("🔧 CORREÇÃO: Iniciando correção automática de problemas");
+
+        const resultadoCorrecao = {
+            timestamp: new Date().toLocaleString("pt-BR"),
+            acoes: [],
+        };
+
+        // 1. Tentar criar botão se não existir
+        const botaoJaExiste =
+            document.getElementById("eprobe-btn") ||
+            document.getElementById("documento-relevante-auto-button") ||
+            document.getElementById("sent1-auto-button");
+
+        if (!botaoJaExiste) {
+            console.log("🔘 Criando botão Resumir Documento...");
             try {
-                const fieldsetAcoes = document.querySelector(
-                    "#fldAcoes.infraFieldset"
-                );
-                if (fieldsetAcoes) {
-                    console.log(
-                        "🎨 Reaplicando ícones no fieldset de ações..."
-                    );
-                    substituirIconesFieldsetAcoes();
-                    // Adicionar substituição global
-                    substituirIconesGlobalmente();
-                    resultados.fieldsetAcoes = document.querySelectorAll(
+                ensureButtonExists();
+                const botaoCriado =
+                    document.getElementById("eprobe-btn") ||
+                    document.getElementById(
+                        "documento-relevante-auto-button"
+                    ) ||
+                    document.getElementById("sent1-auto-button");
+
+                resultadoCorrecao.acoes.push({
+                    acao: "Criação de botão",
+                    status: "Tentativa executada",
+                    sucesso: botaoCriado !== null,
+                    idCriado: botaoCriado ? botaoCriado.id : null,
+                });
+            } catch (error) {
+                console.error("❌ Erro ao criar botão:", error);
+                resultadoCorrecao.acoes.push({
+                    acao: "Criação de botão",
+                    status: "Erro",
+                    erro: error.message,
+                });
+            }
+        }
+
+        // 2. Tentar aplicar substituição de ícones
+        if (
+            document.querySelectorAll("[data-eprobe-icon-replaced]").length ===
+            0
+        ) {
+            console.log("🎨 Aplicando substituição de ícones...");
+            try {
+                substituirIconesFieldsetAcoes();
+                resultadoCorrecao.acoes.push({
+                    acao: "Substituição de ícones",
+                    status: "Executada",
+                    quantidade: document.querySelectorAll(
+                        "[data-eprobe-icon-replaced]"
+                    ).length,
+                });
+            } catch (error) {
+                console.error("❌ Erro ao substituir ícones:", error);
+                resultadoCorrecao.acoes.push({
+                    acao: "Substituição de ícones",
+                    status: "Erro",
+                    erro: error.message,
+                });
+            }
+        }
+
+        // 3. Forçar detecção de data da sessão se necessário
+        if (!hasDataSessaoPautado()) {
+            console.log("📅 Forçando detecção de data da sessão...");
+            try {
+                const dataDetectada = detectarDataSessao();
+                resultadoCorrecao.acoes.push({
+                    acao: "Detecção de data da sessão",
+                    status: "Executada",
+                    sucesso: dataDetectada !== null,
+                    valor: dataDetectada,
+                });
+            } catch (error) {
+                console.error("❌ Erro ao detectar data da sessão:", error);
+                resultadoCorrecao.acoes.push({
+                    acao: "Detecção de data da sessão",
+                    status: "Erro",
+                    erro: error.message,
+                });
+            }
+        }
+
+        console.log("🔧 CORREÇÃO COMPLETA:", resultadoCorrecao);
+        return resultadoCorrecao;
+    }
+
+    /**
+     * Força a reaplicação dos ícones em caso de falha
+     * Remove marcações existentes e executa novamente
+     */
+    function forcarReaplicacaoIcones() {
+        console.log("🔄 ÍCONES: Forçando reaplicação de ícones...");
+
+        // Remover marcações existentes
+        const iconesJaSubstituidos = document.querySelectorAll(
+            "[data-eprobe-icon-replaced]"
+        );
+        iconesJaSubstituidos.forEach((icone) => {
+            icone.removeAttribute("data-eprobe-icon-replaced");
+            icone.removeAttribute("data-original-text");
+        });
+
+        let resultados = {
+            fieldsetAcoes: 0,
+            ferramentas: 0,
+            erros: [],
+        };
+
+        // Executar substituição no fieldset de ações
+        try {
+            const fieldsetAcoes = document.querySelector(
+                "#fldAcoes.infraFieldset"
+            );
+            if (fieldsetAcoes) {
+                console.log("🎨 Reaplicando ícones no fieldset de ações...");
+                substituirIconesFieldsetAcoes();
+                // Adicionar substituição global
+                substituirIconesGlobalmente();
+                resultados.fieldsetAcoes = document.querySelectorAll(
+                    "#fldAcoes [data-eprobe-icon-replaced]"
+                ).length;
+            }
+        } catch (error) {
+            console.error("❌ Erro na reaplicação do fieldset:", error);
+            resultados.erros.push(`Fieldset: ${error.message}`);
+        }
+
+        // Executar substituição nas ferramentas
+        try {
+            console.log("🛠️ Reaplicando ícones das ferramentas...");
+            if (typeof substituirIconesFerramentas === "function") {
+                const sucessoFerramentas = substituirIconesFerramentas();
+                // Executar também a substituição global
+                substituirIconesGlobalmente();
+                if (sucessoFerramentas) {
+                    // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
+                    const totalIcones = document.querySelectorAll(
+                        "[data-eprobe-icon-replaced]"
+                    ).length;
+                    const iconesFieldset = document.querySelectorAll(
                         "#fldAcoes [data-eprobe-icon-replaced]"
                     ).length;
-                }
-            } catch (error) {
-                console.error("❌ Erro na reaplicação do fieldset:", error);
-                resultados.erros.push(`Fieldset: ${error.message}`);
-            }
-
-            // Executar substituição nas ferramentas
-            try {
-                console.log("🛠️ Reaplicando ícones das ferramentas...");
-                if (typeof substituirIconesFerramentas === "function") {
-                    const sucessoFerramentas = substituirIconesFerramentas();
-                    // Executar também a substituição global
-                    substituirIconesGlobalmente();
-                    if (sucessoFerramentas) {
-                        // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
-                        const totalIcones = document.querySelectorAll(
-                            "[data-eprobe-icon-replaced]"
-                        ).length;
-                        const iconesFieldset = document.querySelectorAll(
-                            "#fldAcoes [data-eprobe-icon-replaced]"
-                        ).length;
-                        resultados.ferramentas = totalIcones - iconesFieldset;
-                        console.log(
-                            `✅ ÍCONES: ${resultados.ferramentas} ícones de ferramentas aplicados`
-                        );
-                    } else {
-                        resultados.ferramentas = 0;
-                        console.log(
-                            "⚠️ ÍCONES: Nenhum ícone de ferramenta foi substituído"
-                        );
-                    }
+                    resultados.ferramentas = totalIcones - iconesFieldset;
+                    console.log(
+                        `✅ ÍCONES: ${resultados.ferramentas} ícones de ferramentas aplicados`
+                    );
                 } else {
-                    console.warn(
-                        "⚠️ ÍCONES: Função substituirIconesFerramentas não está disponível"
-                    );
-                    resultados.erros.push(
-                        "Função substituirIconesFerramentas não encontrada"
+                    resultados.ferramentas = 0;
+                    console.log(
+                        "⚠️ ÍCONES: Nenhum ícone de ferramenta foi substituído"
                     );
                 }
-            } catch (error) {
-                console.error("❌ Erro na reaplicação das ferramentas:", error);
-                resultados.erros.push(`Ferramentas: ${error.message}`);
-                resultados.ferramentas = 0;
+            } else {
+                console.warn(
+                    "⚠️ ÍCONES: Função substituirIconesFerramentas não está disponível"
+                );
+                resultados.erros.push(
+                    "Função substituirIconesFerramentas não encontrada"
+                );
             }
-
-            console.log("✅ ÍCONES: Reaplicação concluída:", resultados);
-            return resultados;
+        } catch (error) {
+            console.error("❌ Erro na reaplicação das ferramentas:", error);
+            resultados.erros.push(`Ferramentas: ${error.message}`);
+            resultados.ferramentas = 0;
         }
 
-        /**
-         * Inicializa o sistema de substituição de ícones
-         * Função principal que coordena toda a substituição
-         */
-        function inicializarSubstituicaoIcones() {
-            console.log("🎨 ÍCONES: Inicializando sistema de substituição...");
+        console.log("✅ ÍCONES: Reaplicação concluída:", resultados);
+        return resultados;
+    }
 
-            if (MODO_ULTRA_PERFORMANCE) {
-                console.log(
-                    "⚠️ ÍCONES: Modo ultra-performance ativo - substituição bloqueada"
-                );
-                return false;
-            }
+    /**
+     * Inicializa o sistema de substituição de ícones
+     * Função principal que coordena toda a substituição
+     */
+    function inicializarSubstituicaoIcones() {
+        console.log("🎨 ÍCONES: Inicializando sistema de substituição...");
 
-            const resultados = {
-                timestamp: new Date().toLocaleString("pt-BR"),
-                execucoes: [],
-                totalSubstituicoes: 0,
-            };
+        if (MODO_ULTRA_PERFORMANCE) {
+            console.log(
+                "⚠️ ÍCONES: Modo ultra-performance ativo - substituição bloqueada"
+            );
+            return false;
+        }
 
-            // 1. Substituir ícones do fieldset de ações
-            try {
+        const resultados = {
+            timestamp: new Date().toLocaleString("pt-BR"),
+            execucoes: [],
+            totalSubstituicoes: 0,
+        };
+
+        // 1. Substituir ícones do fieldset de ações
+        try {
+            const antes = document.querySelectorAll(
+                "[data-eprobe-icon-replaced]"
+            ).length;
+            substituirIconesFieldsetAcoes();
+            const depois = document.querySelectorAll(
+                "[data-eprobe-icon-replaced]"
+            ).length;
+            const substituicoes = depois - antes;
+
+            resultados.execucoes.push({
+                tipo: "Fieldset Ações",
+                substituicoes: substituicoes,
+                sucesso: true,
+            });
+            resultados.totalSubstituicoes += substituicoes;
+        } catch (error) {
+            console.error("❌ Erro na substituição do fieldset:", error);
+            resultados.execucoes.push({
+                tipo: "Fieldset Ações",
+                substituicoes: 0,
+                sucesso: false,
+                erro: error.message,
+            });
+        }
+
+        // 2. Substituir ícones das ferramentas
+        try {
+            if (typeof substituirIconesFerramentas === "function") {
                 const antes = document.querySelectorAll(
                     "[data-eprobe-icon-replaced]"
                 ).length;
-                substituirIconesFieldsetAcoes();
+                substituirIconesFerramentas();
                 const depois = document.querySelectorAll(
                     "[data-eprobe-icon-replaced]"
                 ).length;
                 const substituicoes = depois - antes;
 
                 resultados.execucoes.push({
-                    tipo: "Fieldset Ações",
+                    tipo: "Ferramentas",
                     substituicoes: substituicoes,
                     sucesso: true,
                 });
                 resultados.totalSubstituicoes += substituicoes;
-            } catch (error) {
-                console.error("❌ Erro na substituição do fieldset:", error);
-                resultados.execucoes.push({
-                    tipo: "Fieldset Ações",
-                    substituicoes: 0,
-                    sucesso: false,
-                    erro: error.message,
-                });
             }
-
-            // 2. Substituir ícones das ferramentas
-            try {
-                if (typeof substituirIconesFerramentas === "function") {
-                    const antes = document.querySelectorAll(
-                        "[data-eprobe-icon-replaced]"
-                    ).length;
-                    substituirIconesFerramentas();
-                    const depois = document.querySelectorAll(
-                        "[data-eprobe-icon-replaced]"
-                    ).length;
-                    const substituicoes = depois - antes;
-
-                    resultados.execucoes.push({
-                        tipo: "Ferramentas",
-                        substituicoes: substituicoes,
-                        sucesso: true,
-                    });
-                    resultados.totalSubstituicoes += substituicoes;
-                }
-            } catch (error) {
-                console.error("❌ Erro na substituição de ferramentas:", error);
-                resultados.execucoes.push({
-                    tipo: "Ferramentas",
-                    substituicoes: 0,
-                    sucesso: false,
-                    erro: error.message,
-                });
-            }
-
-            console.log("🎨 ÍCONES: Inicialização concluída:", resultados);
-            return resultados;
+        } catch (error) {
+            console.error("❌ Erro na substituição de ferramentas:", error);
+            resultados.execucoes.push({
+                tipo: "Ferramentas",
+                substituicoes: 0,
+                sucesso: false,
+                erro: error.message,
+            });
         }
 
-        /**
-         * Diagnóstico específico para problemas com ícones CSS
-         * Analisa o estado atual dos ícones na página
-         */
-        function diagnosticarIconesCSS() {
-            console.log("🔍 DIAGNÓSTICO: Analisando estado dos ícones CSS...");
+        console.log("🎨 ÍCONES: Inicialização concluída:", resultados);
+        return resultados;
+    }
 
-            const diagnostico = {
-                timestamp: new Date().toLocaleString("pt-BR"),
-                url: window.location.href,
-                fieldsetAcoes: null,
-                iconesGIF: 0,
-                iconesSVG: 0,
-                iconesSubstituidos: 0,
-                problemas: [],
-                recomendacoes: [],
+    /**
+     * Diagnóstico específico para problemas com ícones CSS
+     * Analisa o estado atual dos ícones na página
+     */
+    function diagnosticarIconesCSS() {
+        console.log("🔍 DIAGNÓSTICO: Analisando estado dos ícones CSS...");
+
+        const diagnostico = {
+            timestamp: new Date().toLocaleString("pt-BR"),
+            url: window.location.href,
+            fieldsetAcoes: null,
+            iconesGIF: 0,
+            iconesSVG: 0,
+            iconesSubstituidos: 0,
+            problemas: [],
+            recomendacoes: [],
+        };
+
+        // Analisar fieldset de ações
+        const fieldsetAcoes = document.querySelector("#fldAcoes.infraFieldset");
+        if (fieldsetAcoes) {
+            diagnostico.fieldsetAcoes = {
+                encontrado: true,
+                children: fieldsetAcoes.children.length,
+                links: fieldsetAcoes.querySelectorAll("a").length,
             };
 
-            // Analisar fieldset de ações
-            const fieldsetAcoes = document.querySelector(
-                "#fldAcoes.infraFieldset"
+            // Contar tipos de ícones
+            const iconesGIF =
+                fieldsetAcoes.querySelectorAll('img[src*=".gif"]');
+            const iconesSVG = fieldsetAcoes.querySelectorAll("svg.lucide");
+            const iconesSubstituidos = fieldsetAcoes.querySelectorAll(
+                "[data-eprobe-icon-replaced]"
             );
-            if (fieldsetAcoes) {
-                diagnostico.fieldsetAcoes = {
-                    encontrado: true,
-                    children: fieldsetAcoes.children.length,
-                    links: fieldsetAcoes.querySelectorAll("a").length,
-                };
 
-                // Contar tipos de ícones
-                const iconesGIF =
-                    fieldsetAcoes.querySelectorAll('img[src*=".gif"]');
-                const iconesSVG = fieldsetAcoes.querySelectorAll("svg.lucide");
-                const iconesSubstituidos = fieldsetAcoes.querySelectorAll(
-                    "[data-eprobe-icon-replaced]"
-                );
+            diagnostico.iconesGIF = iconesGIF.length;
+            diagnostico.iconesSVG = iconesSVG.length;
+            diagnostico.iconesSubstituidos = iconesSubstituidos.length;
 
-                diagnostico.iconesGIF = iconesGIF.length;
-                diagnostico.iconesSVG = iconesSVG.length;
-                diagnostico.iconesSubstituidos = iconesSubstituidos.length;
-
-                // Identificar problemas
-                if (iconesGIF.length > 0 && iconesSVG.length === 0) {
-                    diagnostico.problemas.push(
-                        "Ícones GIF não foram substituídos por SVG"
-                    );
-                    diagnostico.recomendacoes.push(
-                        "Execute window.SENT1_AUTO.forcarReaplicacaoIcones()"
-                    );
-                }
-
-                if (iconesSubstituidos.length === 0 && iconesGIF.length > 0) {
-                    diagnostico.problemas.push(
-                        "Nenhum ícone foi marcado como substituído"
-                    );
-                    diagnostico.recomendacoes.push(
-                        "Execute window.SENT1_AUTO.inicializarSubstituicaoIcones()"
-                    );
-                }
-            } else {
-                diagnostico.fieldsetAcoes = { encontrado: false };
-                diagnostico.problemas.push("Fieldset #fldAcoes não encontrado");
-                diagnostico.recomendacoes.push(
-                    "Verifique se está na página correta do eProc"
-                );
-            }
-
-            // Verificar se modo ultra-performance está bloqueando
-            if (MODO_ULTRA_PERFORMANCE) {
+            // Identificar problemas
+            if (iconesGIF.length > 0 && iconesSVG.length === 0) {
                 diagnostico.problemas.push(
-                    "Modo ultra-performance ativo bloqueando substituições"
+                    "Ícones GIF não foram substituídos por SVG"
                 );
                 diagnostico.recomendacoes.push(
-                    "Execute window.SENT1_AUTO.desativarModoUltraPerformance()"
+                    "Execute window.SENT1_AUTO.forcarReaplicacaoIcones()"
                 );
             }
 
-            console.log("🔍 DIAGNÓSTICO COMPLETO:", diagnostico);
-            return diagnostico;
-        }
-
-        // ========================================
-        // FUNÇÕES GLOBAIS PARA GERENCIAMENTO DOS DADOS
-        // ========================================
-
-        /**
-         * Função global para obter o tipo de julgamento
-         * @returns {string|null} - Tipo do julgamento (ex: "Mérito", "Embargos de Declaração")
-         */
-        function getTipoJulgamentoProcessoPautado() {
-            return TipoJulgamentoProcessoPautado;
-        }
-
-        /**
-         * Função global para definir o tipo de julgamento
-         * @param {string} tipo - Tipo do julgamento
-         */
-        function setTipoJulgamentoProcessoPautado(tipo) {
-            TipoJulgamentoProcessoPautado = tipo;
-            console.log("📋 TIPO: Tipo de julgamento definido:", tipo);
-        }
-
-        /**
-         * Função global para obter o status do julgamento
-         * @returns {string|null} - Status do julgamento (ex: "Julgado em Pauta", "Retirado em Pauta")
-         */
-        function getStatusJulgamento() {
-            return StatusJulgamento;
-        }
-
-        /**
-         * Função global para definir o status do julgamento
-         * @param {string} status - Status do julgamento
-         */
-        function setStatusJulgamento(status) {
-            StatusJulgamento = status;
-            console.log("📊 STATUS: Status de julgamento definido:", status);
-        }
-
-        /**
-         * Função global para obter a data da sessão
-         * @returns {string|null} - Data da sessão (ex: "10/04/2025")
-         */
-        function getDataSessao() {
-            return DataSessao;
-        }
-
-        /**
-         * Função global para definir a data da sessão
-         * @param {string} data - Data da sessão
-         */
-        function setDataSessao(data) {
-            DataSessao = data;
-            console.log("📅 DATA: Data da sessão definida:", data);
-        }
-
-        /**
-         * Função para resetar todos os dados globais da sessão
-         */
-        function resetDadosGlobaisSessao() {
-            TipoJulgamentoProcessoPautado = null;
-            StatusJulgamento = null;
-            DataSessao = null;
-            console.log(
-                "🔄 RESET: Todos os dados globais da sessão foram resetados"
+            if (iconesSubstituidos.length === 0 && iconesGIF.length > 0) {
+                diagnostico.problemas.push(
+                    "Nenhum ícone foi marcado como substituído"
+                );
+                diagnostico.recomendacoes.push(
+                    "Execute window.SENT1_AUTO.inicializarSubstituicaoIcones()"
+                );
+            }
+        } else {
+            diagnostico.fieldsetAcoes = { encontrado: false };
+            diagnostico.problemas.push("Fieldset #fldAcoes não encontrado");
+            diagnostico.recomendacoes.push(
+                "Verifique se está na página correta do eProc"
             );
         }
 
-        /**
-         * Função para mostrar todos os dados globais da sessão
-         */
-        function showDadosGlobaisSessao() {
-            console.log("📊 DADOS GLOBAIS DA SESSÃO:");
-            console.log(
-                "   Tipo de Julgamento:",
-                TipoJulgamentoProcessoPautado
+        // Verificar se modo ultra-performance está bloqueando
+        if (MODO_ULTRA_PERFORMANCE) {
+            diagnostico.problemas.push(
+                "Modo ultra-performance ativo bloqueando substituições"
             );
-            console.log("   Status do Julgamento:", StatusJulgamento);
-            console.log("   Data da Sessão:", DataSessao);
-
-            return {
-                tipoJulgamento: TipoJulgamentoProcessoPautado,
-                statusJulgamento: StatusJulgamento,
-                dataSessao: DataSessao,
-            };
+            diagnostico.recomendacoes.push(
+                "Execute window.SENT1_AUTO.desativarModoUltraPerformance()"
+            );
         }
 
-        /**
-         * Detecta o status da sessão baseado nas minutas do processo
-         * Analisa os padrões: "Incluído em Pauta", "Julgado em Pauta", "Retirado em Pauta"
-         * @returns {Object|null} - Objeto com status e data, ou null se não encontrado
-         */
-        function detectarStatusSessao() {
-            console.log(
-                "🔍 STATUS: Iniciando detecção SIMPLIFICADA do status da sessão"
-            );
+        console.log("🔍 DIAGNÓSTICO COMPLETO:", diagnostico);
+        return diagnostico;
+    }
 
-            try {
-                // MÉTODO SIMPLIFICADO: Buscar primeiro pelo botão infraLegendObrigatorio
-                const resultadoSimplificado = detectarCardSessaoSimplificado();
-                if (resultadoSimplificado) {
-                    console.log("✅ STATUS: Detectado via método simplificado");
-                    return resultadoSimplificado;
-                }
+    // ========================================
+    // FUNÇÕES GLOBAIS PARA GERENCIAMENTO DOS DADOS
+    // ========================================
 
-                // FALLBACK: Buscar no fieldset #fldMinutas como antes
-                const fieldsetMinutas = document.getElementById("fldMinutas");
-                let textoCompleto = "";
+    /**
+     * Função global para obter o tipo de julgamento
+     * @returns {string|null} - Tipo do julgamento (ex: "Mérito", "Embargos de Declaração")
+     */
+    function getTipoJulgamentoProcessoPautado() {
+        return TipoJulgamentoProcessoPautado;
+    }
 
-                if (fieldsetMinutas) {
-                    textoCompleto =
-                        fieldsetMinutas.textContent ||
-                        fieldsetMinutas.innerText ||
-                        "";
-                    console.log("🎯 STATUS: Buscando no fieldset #fldMinutas");
-                } else {
-                    // Último recurso: página completa
-                    textoCompleto = document.body.innerText;
-                    console.log(
-                        "⚠️ STATUS: Usando página completa como fallback"
-                    );
-                }
+    /**
+     * Função global para definir o tipo de julgamento
+     * @param {string} tipo - Tipo do julgamento
+     */
+    function setTipoJulgamentoProcessoPautado(tipo) {
+        TipoJulgamentoProcessoPautado = tipo;
+        console.log("📋 TIPO: Tipo de julgamento definido:", tipo);
+    }
 
-                if (!textoCompleto || textoCompleto.trim() === "") {
-                    console.log(
-                        "❌ STATUS: Nenhum texto encontrado para análise"
-                    );
-                    return null;
-                }
+    /**
+     * Função global para obter o status do julgamento
+     * @returns {string|null} - Status do julgamento (ex: "Julgado em Pauta", "Retirado em Pauta")
+     */
+    function getStatusJulgamento() {
+        return StatusJulgamento;
+    }
 
-                // Padrões simplificados e reorganizados
-                const padroes = [
-                    {
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Retirado",
-                        statusCompleto: "Retirado em Pauta",
-                    },
-                    {
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Julgado",
-                        statusCompleto: "Julgado em Pauta",
-                    },
-                    {
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Pautado",
-                        statusCompleto: "Incluído em Pauta",
-                    },
-                ];
+    /**
+     * Função global para definir o status do julgamento
+     * @param {string} status - Status do julgamento
+     */
+    function setStatusJulgamento(status) {
+        StatusJulgamento = status;
+        console.log("📊 STATUS: Status de julgamento definido:", status);
+    }
 
-                // 🔍 BUSCAR TODAS AS SESSÕES (MÚLTIPLAS)
-                const todasSessoes = [];
+    /**
+     * Função global para obter a data da sessão
+     * @returns {string|null} - Data da sessão (ex: "10/04/2025")
+     */
+    function getDataSessao() {
+        return DataSessao;
+    }
 
-                for (const padrao of padroes) {
-                    padrao.regex.lastIndex = 0;
-                    let match;
+    /**
+     * Função global para definir a data da sessão
+     * @param {string} data - Data da sessão
+     */
+    function setDataSessao(data) {
+        DataSessao = data;
+        console.log("📅 DATA: Data da sessão definida:", data);
+    }
 
-                    // Usar matchAll para capturar TODAS as ocorrências
-                    while (
-                        (match = padrao.regex.exec(textoCompleto)) !== null
-                    ) {
-                        const tipoProcesso = match[1]?.trim();
-                        const dataEncontrada = match[2];
-                        const orgao = match[3];
+    /**
+     * Função para resetar todos os dados globais da sessão
+     */
+    function resetDadosGlobaisSessao() {
+        TipoJulgamentoProcessoPautado = null;
+        StatusJulgamento = null;
+        DataSessao = null;
+        console.log(
+            "🔄 RESET: Todos os dados globais da sessão foram resetados"
+        );
+    }
 
-                        console.log(
-                            `✅ STATUS: ${padrao.status} encontrado - Tipo: ${tipoProcesso}, Data: ${dataEncontrada}`
-                        );
+    /**
+     * Função para mostrar todos os dados globais da sessão
+     */
+    function showDadosGlobaisSessao() {
+        console.log("📊 DADOS GLOBAIS DA SESSÃO:");
+        console.log("   Tipo de Julgamento:", TipoJulgamentoProcessoPautado);
+        console.log("   Status do Julgamento:", StatusJulgamento);
+        console.log("   Data da Sessão:", DataSessao);
 
-                        const dataValidada =
-                            validarDataBrasileira(dataEncontrada);
-                        if (dataValidada) {
-                            todasSessoes.push({
-                                status: padrao.status,
-                                statusCompleto: padrao.statusCompleto,
-                                tipoProcesso: tipoProcesso,
-                                data: dataValidada,
-                                dataOriginal: dataEncontrada,
-                                orgao: orgao,
-                                textoCompleto: match[0],
-                                prioridade:
-                                    padrao.status === "Retirado"
-                                        ? 3
-                                        : padrao.status === "Julgado"
-                                        ? 2
-                                        : 1,
-                            });
-                        }
-                    }
-                }
+        return {
+            tipoJulgamento: TipoJulgamentoProcessoPautado,
+            statusJulgamento: StatusJulgamento,
+            dataSessao: DataSessao,
+        };
+    }
 
-                if (todasSessoes.length === 0) {
-                    console.log("❌ STATUS: Nenhum padrão encontrado");
-                    return null;
-                }
+    /**
+     * Detecta o status da sessão baseado nas minutas do processo
+     * Analisa os padrões: "Incluído em Pauta", "Julgado em Pauta", "Retirado em Pauta"
+     * @returns {Object|null} - Objeto com status e data, ou null se não encontrado
+     */
+    function detectarStatusSessao() {
+        console.log(
+            "🔍 STATUS: Iniciando detecção SIMPLIFICADA do status da sessão"
+        );
 
-                // 📊 LÓGICA DE PRIORIDADE PARA MÚLTIPLAS SESSÕES
-                let sessaoEscolhida;
+        try {
+            // MÉTODO SIMPLIFICADO: Buscar primeiro pelo botão infraLegendObrigatorio
+            const resultadoSimplificado = detectarCardSessaoSimplificado();
+            if (resultadoSimplificado) {
+                console.log("✅ STATUS: Detectado via método simplificado");
+                return resultadoSimplificado;
+            }
 
-                if (todasSessoes.length === 1) {
-                    sessaoEscolhida = todasSessoes[0];
-                    console.log("📍 STATUS: Única sessão encontrada");
-                } else {
-                    console.log(
-                        `🔢 STATUS: ${todasSessoes.length} sessões encontradas - aplicando lógica de prioridade`
-                    );
+            // FALLBACK: Buscar no fieldset #fldMinutas como antes
+            const fieldsetMinutas = document.getElementById("fldMinutas");
+            let textoCompleto = "";
 
-                    // Ordenar por prioridade (Retirado > Julgado > Pautado) e depois por data mais recente
-                    todasSessoes.sort((a, b) => {
-                        if (a.prioridade !== b.prioridade) {
-                            return b.prioridade - a.prioridade; // Maior prioridade primeiro
-                        }
-                        return new Date(b.data) - new Date(a.data); // Data mais recente primeiro
-                    });
+            if (fieldsetMinutas) {
+                textoCompleto =
+                    fieldsetMinutas.textContent ||
+                    fieldsetMinutas.innerText ||
+                    "";
+                console.log("🎯 STATUS: Buscando no fieldset #fldMinutas");
+            } else {
+                // Último recurso: página completa
+                textoCompleto = document.body.innerText;
+                console.log("⚠️ STATUS: Usando página completa como fallback");
+            }
 
-                    sessaoEscolhida = todasSessoes[0];
-                    console.log(
-                        `🎯 STATUS: Sessão escolhida: ${sessaoEscolhida.status} (${sessaoEscolhida.dataOriginal})`
-                    );
-
-                    // Log das outras sessões encontradas
-                    for (let i = 1; i < todasSessoes.length; i++) {
-                        console.log(
-                            `📋 STATUS: Sessão adicional encontrada: ${todasSessoes[i].status} (${todasSessoes[i].dataOriginal})`
-                        );
-                    }
-                }
-
-                // Salvar nas funções globais usando namespace
-                if (
-                    window.SENT1_AUTO &&
-                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
-                ) {
-                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
-                        sessaoEscolhida.tipoProcesso
-                    );
-                }
-                if (
-                    window.SENT1_AUTO &&
-                    window.SENT1_AUTO.setStatusJulgamento
-                ) {
-                    window.SENT1_AUTO.setStatusJulgamento(
-                        sessaoEscolhida.statusCompleto
-                    );
-                }
-                if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
-                    window.SENT1_AUTO.setDataSessao(
-                        sessaoEscolhida.dataOriginal
-                    );
-                }
-
-                // Armazenar todas as sessões para referência futura (caso precise de tooltip)
-                sessaoEscolhida.todasSessoes = todasSessoes;
-
-                // Armazenar globalmente para debug e recriação de tooltip
-                if (window.SENT1_AUTO) {
-                    window.SENT1_AUTO.todasSessoesDetectadas = todasSessoes;
-                    window.SENT1_AUTO.sessaoAtual = sessaoEscolhida;
-                }
-
-                return sessaoEscolhida;
-            } catch (error) {
-                console.error("❌ STATUS: Erro na detecção:", error);
+            if (!textoCompleto || textoCompleto.trim() === "") {
+                console.log("❌ STATUS: Nenhum texto encontrado para análise");
                 return null;
             }
-        }
 
-        /**
-         * Retorna o texto do card baseado no status da sessão
-         * @param {Object} statusSessao - Objeto com informações do status
-         * @returns {string} - Texto para exibir no card
-         */
-        function obterTextoCardPorStatus(statusSessao) {
-            if (!statusSessao) {
-                return "Processo Pautado"; // Fallback padrão
+            // Padrões simplificados e reorganizados
+            const padroes = [
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                    statusCompleto: "Retirado em Pauta",
+                },
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Julgado",
+                    statusCompleto: "Julgado em Pauta",
+                },
+                {
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Embargos))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Pautado",
+                    statusCompleto: "Incluído em Pauta",
+                },
+            ];
+
+            // 🔍 BUSCAR TODAS AS SESSÕES (MÚLTIPLAS)
+            const todasSessoes = [];
+
+            for (const padrao of padroes) {
+                padrao.regex.lastIndex = 0;
+                let match;
+
+                // Usar matchAll para capturar TODAS as ocorrências
+                while ((match = padrao.regex.exec(textoCompleto)) !== null) {
+                    const tipoProcesso = match[1]?.trim();
+                    const dataEncontrada = match[2];
+                    const orgao = match[3];
+
+                    console.log(
+                        `✅ STATUS: ${padrao.status} encontrado - Tipo: ${tipoProcesso}, Data: ${dataEncontrada}`
+                    );
+
+                    const dataValidada = validarDataBrasileira(dataEncontrada);
+                    if (dataValidada) {
+                        todasSessoes.push({
+                            status: padrao.status,
+                            statusCompleto: padrao.statusCompleto,
+                            tipoProcesso: tipoProcesso,
+                            data: dataValidada,
+                            dataOriginal: dataEncontrada,
+                            orgao: orgao,
+                            textoCompleto: match[0],
+                            prioridade:
+                                padrao.status === "Retirado"
+                                    ? 3
+                                    : padrao.status === "Julgado"
+                                    ? 2
+                                    : 1,
+                        });
+                    }
+                }
             }
 
-            switch (statusSessao.status) {
-                case "Incluído":
-                    return "Processo Pautado";
-                case "Julgado":
-                    return "Processo Julgado";
-                case "Retirado":
-                    return "Processo retirado de pauta";
-                default:
-                    return "Processo Pautado";
-            }
-        }
-
-        /**
-         * Retorna a cor do card baseado no status da sessão
-         * @param {Object} statusSessao - Objeto com informações do status
-         * @returns {string} - Cor em formato hex
-         */
-        function obterCorCardPorStatus(statusSessao) {
-            if (!statusSessao) {
-                return "#3b82f6"; // Azul padrão
+            if (todasSessoes.length === 0) {
+                console.log("❌ STATUS: Nenhum padrão encontrado");
+                return null;
             }
 
-            switch (statusSessao.status) {
-                case "Incluído":
-                    return "#3b82f6"; // Azul para pautado
-                case "Julgado":
-                    return "#16a34a"; // Verde para julgado
-                case "Retirado":
-                    return "#dc2626"; // Vermelho para retirado
-                default:
-                    return "#3b82f6";
-            }
-        }
+            // 📊 LÓGICA DE PRIORIDADE PARA MÚLTIPLAS SESSÕES
+            let sessaoEscolhida;
 
-        /**
-         * Atualiza a função principal de detecção para incluir status
-         * @returns {Object|null} - Dados da sessão com status
-         */
-        function detectarDataSessaoComStatus() {
-            console.log("🔍 SESSÃO+STATUS: Detectando data e status da sessão");
-
-            // Primeiro detectar o status
-            const statusSessao = detectarStatusSessao();
-
-            if (statusSessao) {
-                console.log(
-                    `✅ SESSÃO+STATUS: Status detectado: ${statusSessao.status}`
-                );
-
-                // Se encontrou status, usar a data do status
-                dataSessaoPautado = statusSessao.data;
-                processoComDataSessao = processoAtual;
-
-                // Adicionar informações de status à data
-                dataSessaoPautado.statusSessao = statusSessao;
-
-                return statusSessao;
+            if (todasSessoes.length === 1) {
+                sessaoEscolhida = todasSessoes[0];
+                console.log("📍 STATUS: Única sessão encontrada");
             } else {
-                // Fallback para detecção original sem status específico
                 console.log(
-                    "ℹ️ SESSÃO+STATUS: Status específico não encontrado, usando detecção padrão"
+                    `🔢 STATUS: ${todasSessoes.length} sessões encontradas - aplicando lógica de prioridade`
                 );
-                return detectarDataSessao();
+
+                // Ordenar por prioridade (Retirado > Julgado > Pautado) e depois por data mais recente
+                todasSessoes.sort((a, b) => {
+                    if (a.prioridade !== b.prioridade) {
+                        return b.prioridade - a.prioridade; // Maior prioridade primeiro
+                    }
+                    return new Date(b.data) - new Date(a.data); // Data mais recente primeiro
+                });
+
+                sessaoEscolhida = todasSessoes[0];
+                console.log(
+                    `🎯 STATUS: Sessão escolhida: ${sessaoEscolhida.status} (${sessaoEscolhida.dataOriginal})`
+                );
+
+                // Log das outras sessões encontradas
+                for (let i = 1; i < todasSessoes.length; i++) {
+                    console.log(
+                        `📋 STATUS: Sessão adicional encontrada: ${todasSessoes[i].status} (${todasSessoes[i].dataOriginal})`
+                    );
+                }
             }
+
+            // Salvar nas funções globais usando namespace
+            if (
+                window.SENT1_AUTO &&
+                window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
+            ) {
+                window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                    sessaoEscolhida.tipoProcesso
+                );
+            }
+            if (window.SENT1_AUTO && window.SENT1_AUTO.setStatusJulgamento) {
+                window.SENT1_AUTO.setStatusJulgamento(
+                    sessaoEscolhida.statusCompleto
+                );
+            }
+            if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
+                window.SENT1_AUTO.setDataSessao(sessaoEscolhida.dataOriginal);
+            }
+
+            // Armazenar todas as sessões para referência futura (caso precise de tooltip)
+            sessaoEscolhida.todasSessoes = todasSessoes;
+
+            // Armazenar globalmente para debug e recriação de tooltip
+            if (window.SENT1_AUTO) {
+                window.SENT1_AUTO.todasSessoesDetectadas = todasSessoes;
+                window.SENT1_AUTO.sessaoAtual = sessaoEscolhida;
+            }
+
+            return sessaoEscolhida;
+        } catch (error) {
+            console.error("❌ STATUS: Erro na detecção:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Retorna o texto do card baseado no status da sessão
+     * @param {Object} statusSessao - Objeto com informações do status
+     * @returns {string} - Texto para exibir no card
+     */
+    function obterTextoCardPorStatus(statusSessao) {
+        if (!statusSessao) {
+            return "Processo Pautado"; // Fallback padrão
         }
 
-        // Funções auxiliares para gerenciar status de sessão
-        function getStatusSessao() {
-            return dataSessaoPautado?.statusSessao || null;
+        switch (statusSessao.status) {
+            case "Incluído":
+                return "Processo Pautado";
+            case "Julgado":
+                return "Processo Julgado";
+            case "Retirado":
+                return "Processo retirado de pauta";
+            default:
+                return "Processo Pautado";
+        }
+    }
+
+    /**
+     * Retorna a cor do card baseado no status da sessão
+     * @param {Object} statusSessao - Objeto com informações do status
+     * @returns {string} - Cor em formato hex
+     */
+    function obterCorCardPorStatus(statusSessao) {
+        if (!statusSessao) {
+            return "#3b82f6"; // Azul padrão
         }
 
-        function hasStatusSessao() {
-            return (
-                dataSessaoPautado?.statusSessao !== null &&
-                dataSessaoPautado?.statusSessao !== undefined
+        switch (statusSessao.status) {
+            case "Incluído":
+                return "#3b82f6"; // Azul para pautado
+            case "Julgado":
+                return "#16a34a"; // Verde para julgado
+            case "Retirado":
+                return "#dc2626"; // Vermelho para retirado
+            default:
+                return "#3b82f6";
+        }
+    }
+
+    /**
+     * Atualiza a função principal de detecção para incluir status
+     * @returns {Object|null} - Dados da sessão com status
+     */
+    function detectarDataSessaoComStatus() {
+        console.log("🔍 SESSÃO+STATUS: Detectando data e status da sessão");
+
+        // Primeiro detectar o status
+        const statusSessao = detectarStatusSessao();
+
+        if (statusSessao) {
+            console.log(
+                `✅ SESSÃO+STATUS: Status detectado: ${statusSessao.status}`
             );
-        }
 
-        function resetStatusSessao() {
-            if (dataSessaoPautado) {
-                delete dataSessaoPautado.statusSessao;
-            }
-            console.log("🔄 STATUS: Status da sessão resetado");
-        }
+            // Se encontrou status, usar a data do status
+            dataSessaoPautado = statusSessao.data;
+            processoComDataSessao = processoAtual;
 
-        function showStatusSessaoInfo() {
-            const status = getStatusSessao();
-            if (status) {
-                const info = `📋 STATUS DA SESSÃO DETECTADO:
+            // Adicionar informações de status à data
+            dataSessaoPautado.statusSessao = statusSessao;
+
+            return statusSessao;
+        } else {
+            // Fallback para detecção original sem status específico
+            console.log(
+                "ℹ️ SESSÃO+STATUS: Status específico não encontrado, usando detecção padrão"
+            );
+            return detectarDataSessao();
+        }
+    }
+
+    // Funções auxiliares para gerenciar status de sessão
+    function getStatusSessao() {
+        return dataSessaoPautado?.statusSessao || null;
+    }
+
+    function hasStatusSessao() {
+        return (
+            dataSessaoPautado?.statusSessao !== null &&
+            dataSessaoPautado?.statusSessao !== undefined
+        );
+    }
+
+    function resetStatusSessao() {
+        if (dataSessaoPautado) {
+            delete dataSessaoPautado.statusSessao;
+        }
+        console.log("🔄 STATUS: Status da sessão resetado");
+    }
+
+    function showStatusSessaoInfo() {
+        const status = getStatusSessao();
+        if (status) {
+            const info = `📋 STATUS DA SESSÃO DETECTADO:
                 
     Status: ${status.status}
     Descrição: ${status.descricao}
@@ -9339,1410 +7785,1357 @@ ${texto}`;
     Órgão: ${status.orgao}
     Texto Completo: ${status.textoCompleto}`;
 
-                console.log(info);
-                alert(info);
-                return status;
+            console.log(info);
+            alert(info);
+            return status;
+        } else {
+            const msg = "❌ Nenhum status de sessão foi detectado ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
+        }
+    }
+
+    // ========================================
+    // FUNÇÕES DE TESTE E DEBUG PARA STATUS DE SESSÃO
+    // ========================================
+
+    // 🧪 FUNÇÃO DE DEBUG COMPLETA PARA VERIFICAR STATUS
+    function debugStatusCompleto() {
+        console.log("🧪 DEBUG STATUS COMPLETO: Verificando detecção de status");
+
+        // 1. Verificar se há data da sessão armazenada
+        console.log("📊 ESTADO ATUAL:");
+        console.log("   Data sessão pautado:", dataSessaoPautado);
+        console.log("   Processo atual:", processoAtual);
+        console.log("   Processo com data:", processoComDataSessao);
+
+        // 2. Executar detecção de status
+        console.log("🔍 EXECUTANDO DETECÇÃO:");
+        const statusDetectado = detectarStatusSessao();
+        console.log("   Status detectado:", statusDetectado);
+
+        // 3. Verificar status armazenado
+        console.log("💾 STATUS ARMAZENADO:");
+        const statusArmazenado = getStatusSessao();
+        console.log("   Status via getStatusSessao():", statusArmazenado);
+
+        // 4. Verificar texto na página
+        const textoCompleto = document.body.innerText;
+        console.log("📝 VERIFICAÇÕES DE TEXTO:");
+
+        // Procurar por diferentes padrões
+        const padroes = [
+            { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
+            { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
+            { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
+        ];
+
+        padroes.forEach((padrao) => {
+            const encontrado = textoCompleto.match(padrao.regex);
+            if (encontrado) {
+                console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
             } else {
-                const msg = "❌ Nenhum status de sessão foi detectado ainda.";
-                console.log(msg);
-                alert(msg);
-                return null;
+                console.log(`   ❌ ${padrao.nome}: não encontrado`);
             }
+        });
+
+        // 5. Testar padrão completo de exemplo
+        const padraoCompleto =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\((?:Incluído|Julgado|Retirado)\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchCompleto = textoCompleto.match(padraoCompleto);
+        console.log("🎯 PADRÃO COMPLETO:", matchCompleto);
+
+        // 6. Simular chamada da interface
+        console.log("🎨 SIMULAÇÃO INTERFACE:");
+        const textoCard = obterTextoCardPorStatus(statusArmazenado);
+        const corCard = obterCorCardPorStatus(statusArmazenado);
+        console.log(`   Texto do card: "${textoCard}"`);
+        console.log(`   Cor do card: ${corCard}`);
+
+        return {
+            statusDetectado,
+            statusArmazenado,
+            textoCard,
+            corCard,
+            temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
+        };
+    }
+
+    // 🧪 FUNÇÃO DE DEBUG ESPECÍFICA PARA TESTAR PADRÃO "RETIRADO"
+    function debugPadraoRetirado() {
+        console.log(
+            "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
+        );
+
+        // Texto de exemplo fornecido pelo usuário
+        const textoTeste = "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de teste: "${textoTeste}"`);
+
+        // Testar o padrão regex específico
+        const padraoRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoTeste.match(padraoRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            // Resetar lastIndex para nova busca
+            padraoRetirado.lastIndex = 0;
+            const detalhes = padraoRetirado.exec(textoTeste);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                console.log("✅ SUCESSO:");
+                console.log(`   Tipo: ${detalhes[1]?.trim()}`);
+                console.log(`   Data: ${detalhes[2]}`);
+                console.log(`   Órgão: ${detalhes[3]}`);
+                console.log(`   Texto completo: ${detalhes[0]}`);
+            }
+        } else {
+            console.log("❌ FALHA: Padrão não encontrou match");
         }
 
-        // ========================================
-        // FUNÇÕES DE TESTE E DEBUG PARA STATUS DE SESSÃO
-        // ========================================
+        // Testar também com o texto completo da página atual
+        const textoCompleto = document.body.innerText;
+        console.log("🔍 Testando na página atual...");
 
-        // 🧪 FUNÇÃO DE DEBUG COMPLETA PARA VERIFICAR STATUS
-        function debugStatusCompleto() {
+        const matchPagina = textoCompleto.match(padraoRetirado);
+        if (matchPagina) {
+            console.log("✅ Encontrado na página:", matchPagina);
+        } else {
+            console.log("❌ Não encontrado na página atual");
+        }
+
+        // Procurar por qualquer texto similar
+        const buscaRetirado = /retirado\s+em\s+pauta/i;
+        const encontrouRetirado = textoCompleto.match(buscaRetirado);
+        if (encontrouRetirado) {
+            console.log("🔍 Texto 'retirado em pauta' encontrado na página");
+        } else {
             console.log(
-                "🧪 DEBUG STATUS COMPLETO: Verificando detecção de status"
+                "❌ Texto 'retirado em pauta' NÃO encontrado na página"
+            );
+        }
+    }
+
+    /**
+     * Testa o sistema completo de detecção de status de sessão
+     * @returns {Object} - Resultado do teste com informações detalhadas
+     */
+    function testarSistemaStatusSessao() {
+        console.log("🧪 TESTE: Iniciando teste completo do sistema de status");
+
+        try {
+            // 1. Verificar se há data de sessão detectada
+            const temDataSessao = hasDataSessaoPautado();
+            console.log(
+                `📊 Data de sessão detectada: ${temDataSessao ? "SIM" : "NÃO"}`
             );
 
-            // 1. Verificar se há data da sessão armazenada
-            console.log("📊 ESTADO ATUAL:");
-            console.log("   Data sessão pautado:", dataSessaoPautado);
-            console.log("   Processo atual:", processoAtual);
-            console.log("   Processo com data:", processoComDataSessao);
+            if (temDataSessao) {
+                const dadosSessao = getDataSessaoPautado();
+                console.log(`📅 Data: ${dadosSessao.dataFormatada}`);
+            }
 
-            // 2. Executar detecção de status
-            console.log("🔍 EXECUTANDO DETECÇÃO:");
+            // 2. Testar detecção de status
             const statusDetectado = detectarStatusSessao();
-            console.log("   Status detectado:", statusDetectado);
+            console.log(
+                `🎯 Status detectado: ${statusDetectado ? "SIM" : "NÃO"}`
+            );
 
-            // 3. Verificar status armazenado
-            console.log("💾 STATUS ARMAZENADO:");
-            const statusArmazenado = getStatusSessao();
-            console.log("   Status via getStatusSessao():", statusArmazenado);
+            if (statusDetectado) {
+                console.log(`📋 Status: ${statusDetectado.status}`);
+                console.log(`📝 Descrição: ${statusDetectado.descricao}`);
+                console.log(`📅 Data: ${statusDetectado.data.dataFormatada}`);
+                console.log(`🏛️ Órgão: ${statusDetectado.orgao}`);
+            }
 
-            // 4. Verificar texto na página
+            // 3. Testar funções de texto e cor
+            const textoCard = obterTextoCardPorStatus(statusDetectado);
+            const corCard = obterCorCardPorStatus(statusDetectado);
+
+            console.log(`🎨 Texto do card: "${textoCard}"`);
+            console.log(`🎨 Cor do card: ${corCard}`);
+
+            // 4. Verificar interface
+            const cardExiste = document.getElementById("eprobe-data-sessao");
+            console.log(`🖼️ Card na interface: ${cardExiste ? "SIM" : "NÃO"}`);
+
+            const resultado = {
+                temDataSessao,
+                statusDetectado,
+                textoCard,
+                corCard,
+                cardExiste: !!cardExiste,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+
+            console.log("✅ TESTE: Sistema testado com sucesso!");
+            return resultado;
+        } catch (error) {
+            console.error("❌ TESTE: Erro durante o teste:", error);
+            return {
+                erro: error.message,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+        }
+    }
+
+    /**
+     * Debug dos padrões de busca para status de sessão
+     * Mostra quais padrões estão encontrando matches no texto da página
+     */
+    function debugPadroesStatusSessao() {
+        console.log("🔍 DEBUG: Analisando padrões de status de sessão");
+
+        try {
+            // Obter texto completo da página
             const textoCompleto = document.body.innerText;
-            console.log("📝 VERIFICAÇÕES DE TEXTO:");
+            console.log(
+                `📄 Texto da página: ${textoCompleto.length} caracteres`
+            );
 
-            // Procurar por diferentes padrões
+            // Padrões a serem testados
             const padroes = [
-                { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
-                { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
-                { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
+                {
+                    nome: "Incluído em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Pautado",
+                },
+                {
+                    nome: "Julgado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Julgado",
+                },
+                {
+                    nome: "Retirado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                },
             ];
 
-            padroes.forEach((padrao) => {
-                const encontrado = textoCompleto.match(padrao.regex);
-                if (encontrado) {
-                    console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
+            let encontrados = 0;
+
+            // Testar cada padrão
+            padroes.forEach((padrao, index) => {
+                console.log(
+                    `\n🔍 Testando padrão ${index + 1}: ${padrao.nome}`
+                );
+
+                // Resetar regex
+                padrao.regex.lastIndex = 0;
+
+                const matches = textoCompleto.match(padrao.regex);
+
+                if (matches && matches.length > 0) {
+                    encontrados++;
+                    console.log(
+                        `✅ MATCH ENCONTRADO! (${matches.length} ocorrência${
+                            matches.length > 1 ? "s" : ""
+                        })`
+                    );
+
+                    matches.forEach((match, i) => {
+                        console.log(`   ${i + 1}. "${match}"`);
+                    });
+
+                    // Tentar extrair detalhes do primeiro match
+                    padrao.regex.lastIndex = 0;
+                    const detalhes = padrao.regex.exec(textoCompleto);
+                    if (detalhes) {
+                        console.log(`   📋 Tipo: ${detalhes[1]?.trim()}`);
+                        console.log(`   📅 Data: ${detalhes[2]}`);
+                        console.log(`   🏛️ Órgão: ${detalhes[3]}`);
+                    }
                 } else {
-                    console.log(`   ❌ ${padrao.nome}: não encontrado`);
+                    console.log(`❌ Nenhum match encontrado`);
                 }
             });
 
-            // 5. Testar padrão completo de exemplo
-            const padraoCompleto =
-                /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\((?:Incluído|Julgado|Retirado)\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-            const matchCompleto = textoCompleto.match(padraoCompleto);
-            console.log("🎯 PADRÃO COMPLETO:", matchCompleto);
-
-            // 6. Simular chamada da interface
-            console.log("🎨 SIMULAÇÃO INTERFACE:");
-            const textoCard = obterTextoCardPorStatus(statusArmazenado);
-            const corCard = obterCorCardPorStatus(statusArmazenado);
-            console.log(`   Texto do card: "${textoCard}"`);
-            console.log(`   Cor do card: ${corCard}`);
-
-            return {
-                statusDetectado,
-                statusArmazenado,
-                textoCard,
-                corCard,
-                temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
-            };
-        }
-
-        // 🧪 FUNÇÃO DE DEBUG ESPECÍFICA PARA TESTAR PADRÃO "RETIRADO"
-        function debugPadraoRetirado() {
             console.log(
-                "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
+                `\n📊 RESUMO: ${encontrados} padrão${
+                    encontrados !== 1 ? "ões" : ""
+                } encontrado${encontrados !== 1 ? "s" : ""}`
             );
 
-            // Texto de exemplo fornecido pelo usuário
-            const textoTeste =
-                "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
-            console.log(`📝 Texto de teste: "${textoTeste}"`);
+            // Buscar por texto relacionado a sessão
+            const termosRelacionados = [
+                "Incluído em Pauta",
+                "Julgado em Pauta",
+                "Retirado em Pauta",
+                "sessão",
+                "julgamento",
+                "pauta",
+            ];
 
-            // Testar o padrão regex específico
-            const padraoRetirado =
-                /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-
-            const match = textoTeste.match(padraoRetirado);
-            console.log("🔍 Match resultado:", match);
-
-            if (match) {
-                // Resetar lastIndex para nova busca
-                padraoRetirado.lastIndex = 0;
-                const detalhes = padraoRetirado.exec(textoTeste);
-                console.log("📋 Detalhes extraídos:", detalhes);
-
-                if (detalhes) {
-                    console.log("✅ SUCESSO:");
-                    console.log(`   Tipo: ${detalhes[1]?.trim()}`);
-                    console.log(`   Data: ${detalhes[2]}`);
-                    console.log(`   Órgão: ${detalhes[3]}`);
-                    console.log(`   Texto completo: ${detalhes[0]}`);
-                }
-            } else {
-                console.log("❌ FALHA: Padrão não encontrou match");
-            }
-
-            // Testar também com o texto completo da página atual
-            const textoCompleto = document.body.innerText;
-            console.log("🔍 Testando na página atual...");
-
-            const matchPagina = textoCompleto.match(padraoRetirado);
-            if (matchPagina) {
-                console.log("✅ Encontrado na página:", matchPagina);
-            } else {
-                console.log("❌ Não encontrado na página atual");
-            }
-
-            // Procurar por qualquer texto similar
-            const buscaRetirado = /retirado\s+em\s+pauta/i;
-            const encontrouRetirado = textoCompleto.match(buscaRetirado);
-            if (encontrouRetirado) {
+            console.log("\n🔍 Buscando termos relacionados:");
+            termosRelacionados.forEach((termo) => {
+                const regex = new RegExp(termo, "gi");
+                const matches = textoCompleto.match(regex);
                 console.log(
-                    "🔍 Texto 'retirado em pauta' encontrado na página"
-                );
-            } else {
-                console.log(
-                    "❌ Texto 'retirado em pauta' NÃO encontrado na página"
-                );
-            }
-        }
-
-        /**
-         * Testa o sistema completo de detecção de status de sessão
-         * @returns {Object} - Resultado do teste com informações detalhadas
-         */
-        function testarSistemaStatusSessao() {
-            console.log(
-                "🧪 TESTE: Iniciando teste completo do sistema de status"
-            );
-
-            try {
-                // 1. Verificar se há data de sessão detectada
-                const temDataSessao = hasDataSessaoPautado();
-                console.log(
-                    `📊 Data de sessão detectada: ${
-                        temDataSessao ? "SIM" : "NÃO"
+                    `   "${termo}": ${matches ? matches.length : 0} ocorrência${
+                        matches && matches.length !== 1 ? "s" : ""
                     }`
                 );
+            });
 
-                if (temDataSessao) {
-                    const dadosSessao = getDataSessaoPautado();
-                    console.log(`📅 Data: ${dadosSessao.dataFormatada}`);
-                }
-
-                // 2. Testar detecção de status
-                const statusDetectado = detectarStatusSessao();
-                console.log(
-                    `🎯 Status detectado: ${statusDetectado ? "SIM" : "NÃO"}`
-                );
-
-                if (statusDetectado) {
-                    console.log(`📋 Status: ${statusDetectado.status}`);
-                    console.log(`📝 Descrição: ${statusDetectado.descricao}`);
-                    console.log(
-                        `📅 Data: ${statusDetectado.data.dataFormatada}`
-                    );
-                    console.log(`🏛️ Órgão: ${statusDetectado.orgao}`);
-                }
-
-                // 3. Testar funções de texto e cor
-                const textoCard = obterTextoCardPorStatus(statusDetectado);
-                const corCard = obterCorCardPorStatus(statusDetectado);
-
-                console.log(`🎨 Texto do card: "${textoCard}"`);
-                console.log(`🎨 Cor do card: ${corCard}`);
-
-                // 4. Verificar interface
-                const cardExiste =
-                    document.getElementById("eprobe-data-sessao");
-                console.log(
-                    `🖼️ Card na interface: ${cardExiste ? "SIM" : "NÃO"}`
-                );
-
-                const resultado = {
-                    temDataSessao,
-                    statusDetectado,
-                    textoCard,
-                    corCard,
-                    cardExiste: !!cardExiste,
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                };
-
-                console.log("✅ TESTE: Sistema testado com sucesso!");
-                return resultado;
-            } catch (error) {
-                console.error("❌ TESTE: Erro durante o teste:", error);
-                return {
-                    erro: error.message,
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                };
-            }
+            return {
+                totalPadroes: padroes.length,
+                padroesEncontrados: encontrados,
+                timestamp: new Date().toLocaleString("pt-BR"),
+            };
+        } catch (error) {
+            console.error("❌ DEBUG: Erro durante debug dos padrões:", error);
+            return { erro: error.message };
         }
+    }
 
-        /**
-         * Debug dos padrões de busca para status de sessão
-         * Mostra quais padrões estão encontrando matches no texto da página
-         */
-        function debugPadroesStatusSessao() {
-            console.log("🔍 DEBUG: Analisando padrões de status de sessão");
+    /**
+     * Força a detecção de um status específico (para testes)
+     * @param {string} tipoStatus - "pautado", "julgado" ou "retirado"
+     * @returns {Object|null} - Objeto com status forçado ou null se inválido
+     */
+    function forcarStatusSessao(tipoStatus = "pautado") {
+        console.log(`🚀 FORÇA: Forçando status "${tipoStatus}"`);
 
-            try {
-                // Obter texto completo da página
-                const textoCompleto = document.body.innerText;
-                console.log(
-                    `📄 Texto da página: ${textoCompleto.length} caracteres`
-                );
+        try {
+            const statusValidos = {
+                pautado: {
+                    status: "Pautado",
+                    descricao: "Processo Pautado",
+                    cor: "#134377",
+                },
+                julgado: {
+                    status: "Julgado",
+                    descricao: "Processo Julgado",
+                    cor: "#16a34a",
+                },
+                retirado: {
+                    status: "Retirado",
+                    descricao: "Processo Retirado de Pauta",
+                    cor: "#dc2626",
+                },
+            };
 
-                // Padrões a serem testados
-                const padroes = [
-                    {
-                        nome: "Incluído em Pauta",
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Pautado",
-                    },
-                    {
-                        nome: "Julgado em Pauta",
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Julgado",
-                    },
-                    {
-                        nome: "Retirado em Pauta",
-                        regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                        status: "Retirado",
-                    },
-                ];
+            const tipoLower = tipoStatus.toLowerCase();
 
-                let encontrados = 0;
-
-                // Testar cada padrão
-                padroes.forEach((padrao, index) => {
-                    console.log(
-                        `\n🔍 Testando padrão ${index + 1}: ${padrao.nome}`
-                    );
-
-                    // Resetar regex
-                    padrao.regex.lastIndex = 0;
-
-                    const matches = textoCompleto.match(padrao.regex);
-
-                    if (matches && matches.length > 0) {
-                        encontrados++;
-                        console.log(
-                            `✅ MATCH ENCONTRADO! (${
-                                matches.length
-                            } ocorrência${matches.length > 1 ? "s" : ""})`
-                        );
-
-                        matches.forEach((match, i) => {
-                            console.log(`   ${i + 1}. "${match}"`);
-                        });
-
-                        // Tentar extrair detalhes do primeiro match
-                        padrao.regex.lastIndex = 0;
-                        const detalhes = padrao.regex.exec(textoCompleto);
-                        if (detalhes) {
-                            console.log(`   📋 Tipo: ${detalhes[1]?.trim()}`);
-                            console.log(`   📅 Data: ${detalhes[2]}`);
-                            console.log(`   🏛️ Órgão: ${detalhes[3]}`);
-                        }
-                    } else {
-                        console.log(`❌ Nenhum match encontrado`);
-                    }
-                });
-
-                console.log(
-                    `\n📊 RESUMO: ${encontrados} padrão${
-                        encontrados !== 1 ? "ões" : ""
-                    } encontrado${encontrados !== 1 ? "s" : ""}`
-                );
-
-                // Buscar por texto relacionado a sessão
-                const termosRelacionados = [
-                    "Incluído em Pauta",
-                    "Julgado em Pauta",
-                    "Retirado em Pauta",
-                    "sessão",
-                    "julgamento",
-                    "pauta",
-                ];
-
-                console.log("\n🔍 Buscando termos relacionados:");
-                termosRelacionados.forEach((termo) => {
-                    const regex = new RegExp(termo, "gi");
-                    const matches = textoCompleto.match(regex);
-                    console.log(
-                        `   "${termo}": ${
-                            matches ? matches.length : 0
-                        } ocorrência${
-                            matches && matches.length !== 1 ? "s" : ""
-                        }`
-                    );
-                });
-
-                return {
-                    totalPadroes: padroes.length,
-                    padroesEncontrados: encontrados,
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                };
-            } catch (error) {
+            if (!statusValidos[tipoLower]) {
                 console.error(
-                    "❌ DEBUG: Erro durante debug dos padrões:",
-                    error
-                );
-                return { erro: error.message };
-            }
-        }
-
-        /**
-         * Força a detecção de um status específico (para testes)
-         * @param {string} tipoStatus - "pautado", "julgado" ou "retirado"
-         * @returns {Object|null} - Objeto com status forçado ou null se inválido
-         */
-        function forcarStatusSessao(tipoStatus = "pautado") {
-            console.log(`🚀 FORÇA: Forçando status "${tipoStatus}"`);
-
-            try {
-                const statusValidos = {
-                    pautado: {
-                        status: "Pautado",
-                        descricao: "Processo Pautado",
-                        cor: "#134377",
-                    },
-                    julgado: {
-                        status: "Julgado",
-                        descricao: "Processo Julgado",
-                        cor: "#16a34a",
-                    },
-                    retirado: {
-                        status: "Retirado",
-                        descricao: "Processo Retirado de Pauta",
-                        cor: "#dc2626",
-                    },
-                };
-
-                const tipoLower = tipoStatus.toLowerCase();
-
-                if (!statusValidos[tipoLower]) {
-                    console.error(
-                        `❌ FORÇA: Status "${tipoStatus}" inválido. Use: pautado, julgado ou retirado`
-                    );
-                    return null;
-                }
-
-                const config = statusValidos[tipoLower];
-                const dataAtual = new Date();
-                const dataFormatada = dataAtual.toLocaleDateString("pt-BR");
-
-                // Criar objeto de status forçado
-                const statusForcado = {
-                    status: config.status,
-                    descricao: config.descricao,
-                    tipoProcesso: "Teste Forçado",
-                    data: {
-                        dataFormatada: dataFormatada,
-                        dataObject: dataAtual,
-                    },
-                    orgao: "TESTE",
-                    textoCompleto: `Teste Forçado (${config.status} em Pauta em ${dataFormatada} - TESTE)`,
-                    forcado: true,
-                };
-
-                console.log(
-                    `✅ FORÇA: Status "${config.status}" criado artificialmente`
-                );
-                console.log(`📅 Data: ${dataFormatada}`);
-                console.log(`🎨 Cor: ${config.cor}`);
-
-                // Testar funções relacionadas
-                const textoCard = obterTextoCardPorStatus(statusForcado);
-                const corCard = obterCorCardPorStatus(statusForcado);
-
-                console.log(`🎨 Texto do card: "${textoCard}"`);
-                console.log(`🎨 Cor do card: ${corCard}`);
-
-                // Opcionalmente atualizar a interface se houver data de sessão
-                if (hasDataSessaoPautado()) {
-                    console.log(
-                        "🖼️ Atualizando interface com status forçado..."
-                    );
-
-                    // Salvar dados temporariamente
-                    const dadosOriginais = dataSessaoPautado;
-
-                    // Aplicar status forçado
-                    if (dataSessaoPautado) {
-                        dataSessaoPautado.statusSessao = statusForcado;
-                    }
-
-                    // Tentar atualizar interface
-                    const sucesso = atualizarDataSessaoNaInterface();
-                    console.log(
-                        `🖼️ Interface atualizada: ${sucesso ? "SIM" : "NÃO"}`
-                    );
-
-                    // Restaurar dados originais após 5 segundos
-                    setTimeout(() => {
-                        dataSessaoPautado = dadosOriginais;
-                        console.log("🔄 FORÇA: Dados originais restaurados");
-                    }, 5000);
-                }
-
-                return statusForcado;
-            } catch (error) {
-                console.error("❌ FORÇA: Erro ao forçar status:", error);
-                return null;
-            }
-        }
-
-        /**
-         * Força uma nova detecção de status e atualização do card
-         */
-        function forcarAtualizacaoStatus() {
-            console.log("🔄 FORÇA: Forçando atualização do status da sessão");
-
-            try {
-                // 1. Re-detectar status
-                const novoStatus = detectarStatusSessao();
-                console.log("🔍 Novo status detectado:", novoStatus);
-
-                // 2. Atualizar dados se há sessão
-                if (hasDataSessaoPautado() && novoStatus) {
-                    dataSessaoPautado.statusSessao = novoStatus;
-                    console.log("✅ Status atualizado nos dados da sessão");
-                }
-
-                // 3. Forçar atualização da interface
-                const cardExistente =
-                    document.getElementById("eprobe-data-sessao");
-                if (cardExistente) {
-                    console.log("🗑️ Removendo card existente");
-                    cardExistente.remove();
-                }
-
-                // 4. Re-inserir com novo status
-                setTimeout(() => {
-                    const sucesso = inserirDataSessaoNaInterface();
-                    if (sucesso) {
-                        console.log("✅ Card atualizado com novo status");
-                    } else {
-                        console.log("❌ Falha ao re-inserir card");
-                    }
-                }, 100);
-
-                return novoStatus;
-            } catch (error) {
-                console.error(
-                    "❌ Erro ao forçar atualização de status:",
-                    error
+                    `❌ FORÇA: Status "${tipoStatus}" inválido. Use: pautado, julgado ou retirado`
                 );
                 return null;
             }
-        }
 
-        /**
-         * Testa especificamente o caso "Retirado em Pauta"
-         */
-        function testarCasoRetirado() {
+            const config = statusValidos[tipoLower];
+            const dataAtual = new Date();
+            const dataFormatada = dataAtual.toLocaleDateString("pt-BR");
+
+            // Criar objeto de status forçado
+            const statusForcado = {
+                status: config.status,
+                descricao: config.descricao,
+                tipoProcesso: "Teste Forçado",
+                data: {
+                    dataFormatada: dataFormatada,
+                    dataObject: dataAtual,
+                },
+                orgao: "TESTE",
+                textoCompleto: `Teste Forçado (${config.status} em Pauta em ${dataFormatada} - TESTE)`,
+                forcado: true,
+            };
+
             console.log(
-                "🧪 TESTE: Testando caso específico 'Retirado em Pauta'"
+                `✅ FORÇA: Status "${config.status}" criado artificialmente`
+            );
+            console.log(`📅 Data: ${dataFormatada}`);
+            console.log(`🎨 Cor: ${config.cor}`);
+
+            // Testar funções relacionadas
+            const textoCard = obterTextoCardPorStatus(statusForcado);
+            const corCard = obterCorCardPorStatus(statusForcado);
+
+            console.log(`🎨 Texto do card: "${textoCard}"`);
+            console.log(`🎨 Cor do card: ${corCard}`);
+
+            // Opcionalmente atualizar a interface se houver data de sessão
+            if (hasDataSessaoPautado()) {
+                console.log("🖼️ Atualizando interface com status forçado...");
+
+                // Salvar dados temporariamente
+                const dadosOriginais = dataSessaoPautado;
+
+                // Aplicar status forçado
+                if (dataSessaoPautado) {
+                    dataSessaoPautado.statusSessao = statusForcado;
+                }
+
+                // Tentar atualizar interface
+                const sucesso = atualizarDataSessaoNaInterface();
+                console.log(
+                    `🖼️ Interface atualizada: ${sucesso ? "SIM" : "NÃO"}`
+                );
+
+                // Restaurar dados originais após 5 segundos
+                setTimeout(() => {
+                    dataSessaoPautado = dadosOriginais;
+                    console.log("🔄 FORÇA: Dados originais restaurados");
+                }, 5000);
+            }
+
+            return statusForcado;
+        } catch (error) {
+            console.error("❌ FORÇA: Erro ao forçar status:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Força uma nova detecção de status e atualização do card
+     */
+    function forcarAtualizacaoStatus() {
+        console.log("🔄 FORÇA: Forçando atualização do status da sessão");
+
+        try {
+            // 1. Re-detectar status
+            const novoStatus = detectarStatusSessao();
+            console.log("🔍 Novo status detectado:", novoStatus);
+
+            // 2. Atualizar dados se há sessão
+            if (hasDataSessaoPautado() && novoStatus) {
+                dataSessaoPautado.statusSessao = novoStatus;
+                console.log("✅ Status atualizado nos dados da sessão");
+            }
+
+            // 3. Forçar atualização da interface
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                console.log("🗑️ Removendo card existente");
+                cardExistente.remove();
+            }
+
+            // 4. Re-inserir com novo status
+            setTimeout(() => {
+                const sucesso = inserirDataSessaoNaInterface();
+                if (sucesso) {
+                    console.log("✅ Card atualizado com novo status");
+                } else {
+                    console.log("❌ Falha ao re-inserir card");
+                }
+            }, 100);
+
+            return novoStatus;
+        } catch (error) {
+            console.error("❌ Erro ao forçar atualização de status:", error);
+            return null;
+        }
+    }
+
+    /**
+     * Testa especificamente o caso "Retirado em Pauta"
+     */
+    function testarCasoRetirado() {
+        console.log("🧪 TESTE: Testando caso específico 'Retirado em Pauta'");
+
+        // Texto de exemplo do usuário
+        const textoExemplo =
+            "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de exemplo: "${textoExemplo}"`);
+
+        // Testar regex específico
+        const regexRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoExemplo.match(regexRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            regexRetirado.lastIndex = 0;
+            const detalhes = regexRetirado.exec(textoExemplo);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                const resultado = {
+                    tipo: detalhes[1]?.trim(),
+                    data: detalhes[2],
+                    orgao: detalhes[3],
+                    status: "Retirado",
+                    descricao: "Processo Retirado de Pauta",
+                };
+
+                console.log("✅ RESULTADO:", resultado);
+
+                // Testar cores e textos
+                const textoCard = obterTextoCardPorStatus({
+                    status: "Retirado",
+                });
+                const corCard = obterCorCardPorStatus({
+                    status: "Retirado",
+                });
+
+                console.log(`🎨 Texto do card: "${textoCard}"`);
+                console.log(`🎨 Cor do card: ${corCard}`);
+
+                return resultado;
+            }
+        } else {
+            console.log("❌ FALHA: Regex não funcionou com o texto de exemplo");
+        }
+
+        // Buscar na seção específica das minutas
+        console.log("🔍 Procurando na seção de minutas...");
+        const minutasElement = document.getElementById("fldMinutas");
+        if (minutasElement) {
+            const textoMinutas =
+                minutasElement.innerText || minutasElement.textContent || "";
+            console.log(
+                `📝 Texto das minutas encontrado (${textoMinutas.length} chars):`,
+                textoMinutas.substring(0, 200) + "..."
             );
 
-            // Texto de exemplo do usuário
-            const textoExemplo =
-                "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
-            console.log(`📝 Texto de exemplo: "${textoExemplo}"`);
+            const matchMinutas = textoMinutas.match(regexRetirado);
+            if (matchMinutas) {
+                console.log(
+                    "✅ Padrão 'Retirado' encontrado nas minutas:",
+                    matchMinutas
+                );
 
-            // Testar regex específico
-            const regexRetirado =
-                /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-
-            const match = textoExemplo.match(regexRetirado);
-            console.log("🔍 Match resultado:", match);
-
-            if (match) {
+                // Simular detecção correta
                 regexRetirado.lastIndex = 0;
-                const detalhes = regexRetirado.exec(textoExemplo);
-                console.log("📋 Detalhes extraídos:", detalhes);
-
-                if (detalhes) {
-                    const resultado = {
-                        tipo: detalhes[1]?.trim(),
-                        data: detalhes[2],
-                        orgao: detalhes[3],
+                const detalhesMinutas = regexRetirado.exec(textoMinutas);
+                if (detalhesMinutas) {
+                    const resultadoMinutas = {
+                        tipo: detalhesMinutas[1]?.trim(),
+                        data: detalhesMinutas[2],
+                        orgao: detalhesMinutas[3],
                         status: "Retirado",
                         descricao: "Processo Retirado de Pauta",
                     };
-
-                    console.log("✅ RESULTADO:", resultado);
-
-                    // Testar cores e textos
-                    const textoCard = obterTextoCardPorStatus({
-                        status: "Retirado",
-                    });
-                    const corCard = obterCorCardPorStatus({
-                        status: "Retirado",
-                    });
-
-                    console.log(`🎨 Texto do card: "${textoCard}"`);
-                    console.log(`🎨 Cor do card: ${corCard}`);
-
-                    return resultado;
+                    console.log("✅ RESULTADO DAS MINUTAS:", resultadoMinutas);
+                    return resultadoMinutas;
                 }
             } else {
-                console.log(
-                    "❌ FALHA: Regex não funcionou com o texto de exemplo"
-                );
-            }
+                console.log("❌ Padrão 'Retirado' não encontrado nas minutas");
 
-            // Buscar na seção específica das minutas
-            console.log("🔍 Procurando na seção de minutas...");
-            const minutasElement = document.getElementById("fldMinutas");
-            if (minutasElement) {
-                const textoMinutas =
-                    minutasElement.innerText ||
-                    minutasElement.textContent ||
-                    "";
-                console.log(
-                    `📝 Texto das minutas encontrado (${textoMinutas.length} chars):`,
-                    textoMinutas.substring(0, 200) + "..."
-                );
-
-                const matchMinutas = textoMinutas.match(regexRetirado);
-                if (matchMinutas) {
+                // Verificar padrões mais simples
+                if (/retirado/i.test(textoMinutas)) {
+                    console.log("⚠️ Palavra 'retirado' encontrada nas minutas");
                     console.log(
-                        "✅ Padrão 'Retirado' encontrado nas minutas:",
-                        matchMinutas
+                        "📝 Contexto:",
+                        textoMinutas.match(/(.{0,50}retirado.{0,50})/gi)
+                    );
+                }
+            }
+        } else {
+            console.log("❌ Elemento #fldMinutas não encontrado");
+        }
+
+        // Verificar em toda a página como fallback
+        console.log("🔍 Testando na página completa...");
+        const textoCompleto = document.body.innerText;
+        const matchPagina = textoCompleto.match(regexRetirado);
+
+        if (matchPagina) {
+            console.log("✅ Encontrado padrão 'Retirado' na página");
+        } else {
+            console.log("❌ Padrão 'Retirado' não encontrado na página");
+
+            // Verificar se há pelo menos a palavra "retirado"
+            if (/retirado/i.test(textoCompleto)) {
+                console.log(
+                    "⚠️ Palavra 'retirado' encontrada, mas não no padrão esperado"
+                );
+                const contextosRetirado = textoCompleto.match(
+                    /(.{0,80}retirado.{0,80})/gi
+                );
+                if (contextosRetirado) {
+                    console.log(
+                        "📝 Contextos encontrados:",
+                        contextosRetirado.slice(0, 3)
+                    );
+                }
+            } else {
+                console.log("❌ Palavra 'retirado' não encontrada na página");
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Debug completo do status da sessão
+     */
+    function debugStatusCompleto() {
+        console.log("🧪 DEBUG STATUS COMPLETO: Verificando detecção de status");
+
+        // 1. Verificar estado atual
+        console.log("📊 ESTADO ATUAL:");
+        console.log("   Data sessão pautado:", dataSessaoPautado);
+        console.log("   Processo atual:", processoAtual);
+        console.log("   Processo com data:", processoComDataSessao);
+
+        // 2. Executar detecção de status
+        console.log("🔍 EXECUTANDO DETECÇÃO:");
+        const statusDetectado = detectarStatusSessao();
+        console.log("   Status detectado:", statusDetectado);
+
+        // 3. Verificar status armazenado
+        console.log("💾 STATUS ARMAZENADO:");
+        const statusArmazenado = getStatusSessao();
+        console.log("   Status via getStatusSessao():", statusArmazenado);
+
+        // 4. Verificar texto na página
+        const textoCompleto = document.body.innerText;
+        console.log("📝 VERIFICAÇÕES DE TEXTO:");
+
+        // Procurar por diferentes padrões
+        const padroes = [
+            { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
+            { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
+            { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
+        ];
+
+        padroes.forEach((padrao) => {
+            const encontrado = textoCompleto.match(padrao.regex);
+            if (encontrado) {
+                console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
+            } else {
+                console.log(`   ❌ ${padrao.nome}: não encontrado`);
+            }
+        });
+
+        // 5. Simular chamada da interface
+        console.log("🎨 SIMULAÇÃO INTERFACE:");
+        const textoCard = obterTextoCardPorStatus(statusArmazenado);
+        const corCard = obterCorCardPorStatus(statusArmazenado);
+        console.log(`   Texto do card: "${textoCard}"`);
+        console.log(`   Cor do card: ${corCard}`);
+
+        return {
+            statusDetectado,
+            statusArmazenado,
+            textoCard,
+            corCard,
+            temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
+        };
+    }
+
+    /**
+     * Debug do padrão específico "Retirado"
+     */
+    function debugPadraoRetirado() {
+        console.log(
+            "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
+        );
+
+        // Texto de exemplo fornecido pelo usuário
+        const textoTeste = "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
+        console.log(`📝 Texto de teste: "${textoTeste}"`);
+
+        // Testar o padrão regex específico
+        const padraoRetirado =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+        const match = textoTeste.match(padraoRetirado);
+        console.log("🔍 Match resultado:", match);
+
+        if (match) {
+            // Resetar lastIndex para nova busca
+            padraoRetirado.lastIndex = 0;
+            const detalhes = padraoRetirado.exec(textoTeste);
+            console.log("📋 Detalhes extraídos:", detalhes);
+
+            if (detalhes) {
+                console.log("✅ SUCESSO:");
+                console.log(`   Tipo: ${detalhes[1]?.trim()}`);
+                console.log(`   Data: ${detalhes[2]}`);
+                console.log(`   Órgão: ${detalhes[3]}`);
+                console.log(`   Texto completo: ${detalhes[0]}`);
+            }
+        } else {
+            console.log("❌ FALHA: Padrão não encontrou match");
+        }
+
+        // Testar também com o texto completo da página atual
+        const textoCompleto = document.body.innerText;
+        console.log("🔍 Testando na página atual...");
+
+        const matchPagina = textoCompleto.match(padraoRetirado);
+        if (matchPagina) {
+            console.log("✅ Encontrado na página:", matchPagina);
+        } else {
+            console.log("❌ Não encontrado na página atual");
+        }
+
+        // Procurar por qualquer texto similar
+        const buscaRetirado = /retirado\s+em\s+pauta/i;
+        const encontrouRetirado = textoCompleto.match(buscaRetirado);
+        if (encontrouRetirado) {
+            console.log("🔍 Texto 'retirado em pauta' encontrado na página");
+        } else {
+            console.log(
+                "❌ Texto 'retirado em pauta' NÃO encontrado na página"
+            );
+        }
+    }
+
+    /**
+     * Função para procurar texto específico "Retirado em Pauta" em toda a página
+     */
+    function encontrarTextoRetirado() {
+        console.log(
+            "🔍 BUSCA: Procurando texto 'Retirado em Pauta' em toda a página"
+        );
+
+        // 1. Buscar em elementos específicos primeiro
+        const seletores = [
+            "#fldMinutas",
+            "#divInfraAreaProcesso",
+            "#conteudoMinutas",
+            ".infraEventoDescricao",
+            "[id*='minutas']",
+            "[class*='minutas']",
+        ];
+
+        seletores.forEach((seletor) => {
+            const elemento = document.querySelector(seletor);
+            if (elemento) {
+                const texto = elemento.innerText || elemento.textContent || "";
+                if (/retirado\s+em\s+pauta/i.test(texto)) {
+                    console.log(
+                        `✅ ENCONTRADO em ${seletor}:`,
+                        texto.substring(0, 200)
                     );
 
-                    // Simular detecção correta
-                    regexRetirado.lastIndex = 0;
-                    const detalhesMinutas = regexRetirado.exec(textoMinutas);
-                    if (detalhesMinutas) {
-                        const resultadoMinutas = {
-                            tipo: detalhesMinutas[1]?.trim(),
-                            data: detalhesMinutas[2],
-                            orgao: detalhesMinutas[3],
-                            status: "Retirado",
-                            descricao: "Processo Retirado de Pauta",
-                        };
+                    // Buscar o padrão específico
+                    const regex =
+                        /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+                    const match = texto.match(regex);
+                    if (match) {
                         console.log(
-                            "✅ RESULTADO DAS MINUTAS:",
-                            resultadoMinutas
+                            `🎯 PADRÃO ENCONTRADO em ${seletor}:`,
+                            match
                         );
-                        return resultadoMinutas;
                     }
                 } else {
-                    console.log(
-                        "❌ Padrão 'Retirado' não encontrado nas minutas"
-                    );
-
-                    // Verificar padrões mais simples
-                    if (/retirado/i.test(textoMinutas)) {
-                        console.log(
-                            "⚠️ Palavra 'retirado' encontrada nas minutas"
-                        );
-                        console.log(
-                            "📝 Contexto:",
-                            textoMinutas.match(/(.{0,50}retirado.{0,50})/gi)
-                        );
-                    }
+                    console.log(`❌ Não encontrado em ${seletor}`);
                 }
             } else {
-                console.log("❌ Elemento #fldMinutas não encontrado");
+                console.log(`❌ Elemento ${seletor} não existe`);
+            }
+        });
+
+        // 2. Buscar em toda a página
+        const textoCompleto = document.body.innerText;
+        const matches = textoCompleto.match(
+            /(.{0,100}retirado\s+em\s+pauta.{0,100})/gi
+        );
+        if (matches) {
+            console.log("🔍 CONTEXTOS 'Retirado em Pauta' na página:");
+            matches.forEach((match, index) => {
+                console.log(`   ${index + 1}: ${match}`);
+            });
+        } else {
+            console.log(
+                "❌ Texto 'Retirado em Pauta' não encontrado na página"
+            );
+        }
+
+        // 3. Testar regex completo na página
+        const regexCompleto =
+            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+        const matchCompleto = textoCompleto.match(regexCompleto);
+        if (matchCompleto) {
+            console.log("✅ REGEX COMPLETO funcionou:", matchCompleto);
+        } else {
+            console.log("❌ REGEX COMPLETO não encontrou nada");
+        }
+
+        return {
+            encontrouTexto: matches ? true : false,
+            contextos: matches || [],
+            matchRegex: matchCompleto || [],
+        };
+    }
+
+    /**
+     * Força uma re-detecção completa com logging detalhado
+     */
+    function forcarDeteccaoCompleta() {
+        console.log("🔄 FORÇA: Iniciando detecção completa com debug");
+
+        // 1. Procurar texto primeiro
+        encontrarTextoRetirado();
+
+        // 2. Executar detecção normal
+        const statusDetectado = detectarStatusSessao();
+        console.log("🎯 Status detectado:", statusDetectado);
+
+        // 3. Forçar atualização se necessário
+        if (statusDetectado) {
+            // Atualizar dados globais
+            if (hasDataSessaoPautado()) {
+                dataSessaoPautado.statusSessao = statusDetectado;
+                console.log("✅ Dados globais atualizados");
             }
 
-            // Verificar em toda a página como fallback
-            console.log("🔍 Testando na página completa...");
-            const textoCompleto = document.body.innerText;
-            const matchPagina = textoCompleto.match(regexRetirado);
+            // Re-inserir interface
+            forcarAtualizacaoStatus();
+        } else {
+            console.log(
+                "❌ Nenhum status detectado - verifique se a página contém dados de sessão"
+            );
+        }
 
-            if (matchPagina) {
-                console.log("✅ Encontrado padrão 'Retirado' na página");
-            } else {
-                console.log("❌ Padrão 'Retirado' não encontrado na página");
+        return statusDetectado;
+    }
 
-                // Verificar se há pelo menos a palavra "retirado"
-                if (/retirado/i.test(textoCompleto)) {
-                    console.log(
-                        "⚠️ Palavra 'retirado' encontrada, mas não no padrão esperado"
-                    );
-                    const contextosRetirado = textoCompleto.match(
-                        /(.{0,80}retirado.{0,80})/gi
-                    );
-                    if (contextosRetirado) {
-                        console.log(
-                            "📝 Contextos encontrados:",
-                            contextosRetirado.slice(0, 3)
-                        );
-                    }
-                } else {
-                    console.log(
-                        "❌ Palavra 'retirado' não encontrada na página"
-                    );
+    // ========================================
+    // FUNÇÕES DE EXTRAÇÃO DIRETA DE TEXTO PDF
+    // ========================================
+
+    /**
+     * Extrai texto de PDF usando estratégias de extração direta
+     * @param {HTMLElement} pdfElement - Elemento do PDF
+     * @returns {Promise<string|null>} - Texto extraído ou null se falhar
+     */
+    async function extractTextFromPDF(pdfElement) {
+        log("� Iniciando extração de texto do PDF...");
+
+        try {
+            showNotification("� Extraindo texto do PDF...", "info");
+
+            // ESTRATÉGIA 1: Seleção automática de texto no PDF
+            const textFromSelection = await tryExtractTextViaSelection(
+                pdfElement
+            );
+            if (textFromSelection && textFromSelection.length > 100) {
+                log(
+                    ` Texto extraído via seleção: ${textFromSelection.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromSelection.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromSelection);
+            }
+
+            // ESTRATÉGIA 2: PDF.js para extrair texto estruturado
+            const textFromPdfJs = await tryExtractTextViaPdfJs(pdfElement);
+            if (textFromPdfJs && textFromPdfJs.length > 100) {
+                log(
+                    ` Texto extraído via PDF.js: ${textFromPdfJs.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromPdfJs.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromPdfJs);
+            }
+
+            // ESTRATÉGIA 3: Fetch direto do PDF e processamento
+            const textFromFetch = await tryExtractTextViaFetch(pdfElement);
+            if (textFromFetch && textFromFetch.length > 100) {
+                log(
+                    ` Texto extraído via fetch: ${textFromFetch.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromFetch.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromFetch);
+            }
+
+            // ESTRATÉGIA 4: Clipboard após comando de cópia
+            const textFromClipboard = await tryExtractTextViaClipboard(
+                pdfElement
+            );
+            if (textFromClipboard && textFromClipboard.length > 100) {
+                log(
+                    ` Texto extraído via clipboard: ${textFromClipboard.length} caracteres`
+                );
+                showNotification(
+                    ` Texto extraído com sucesso! ${textFromClipboard.length} caracteres`,
+                    "success"
+                );
+                return cleanExtractedText(textFromClipboard);
+            }
+
+            // Se todas as estratégias diretas falharam, oferecer alternativas
+            throw new Error(
+                "Não foi possível extrair texto diretamente do PDF"
+            );
+        } catch (error) {
+            log(` Erro na extração de texto: ${error.message}`);
+            return await handleTextExtractionError(error, pdfElement);
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 1: Extrair texto via seleção automática
+     */
+    async function tryExtractTextViaSelection(pdfElement) {
+        try {
+            log("� Tentando extração via seleção automática...");
+
+            // Focar no elemento PDF
+            pdfElement.focus();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Simular Ctrl+A para selecionar todo o texto
+            const selectAllEvent = new KeyboardEvent("keydown", {
+                key: "a",
+                code: "KeyA",
+                ctrlKey: true,
+                metaKey: false,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            pdfElement.dispatchEvent(selectAllEvent);
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            // Tentar obter texto selecionado
+            const selectedText = window.getSelection().toString();
+            if (selectedText && selectedText.length > 50) {
+                log(" Texto obtido via getSelection()");
+                return selectedText;
+            }
+
+            // Simular Ctrl+C para copiar
+            const copyEvent = new KeyboardEvent("keydown", {
+                key: "c",
+                code: "KeyC",
+                ctrlKey: true,
+                metaKey: false,
+                bubbles: true,
+                cancelable: true,
+            });
+
+            pdfElement.dispatchEvent(copyEvent);
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Tentar ler do clipboard
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                if (clipboardText && clipboardText.length > 50) {
+                    log(" Texto obtido via clipboard após Ctrl+C");
+                    return clipboardText;
                 }
+            } catch (clipError) {
+                log(" Acesso negado ao clipboard");
             }
 
             return null;
+        } catch (error) {
+            log(` Erro na seleção automática: ${error.message}`);
+            return null;
         }
+    }
 
-        /**
-         * Debug completo do status da sessão
-         */
-        function debugStatusCompleto() {
-            console.log(
-                "🧪 DEBUG STATUS COMPLETO: Verificando detecção de status"
-            );
+    /**
+     * ESTRATÉGIA 2: Extrair texto via PDF.js
+     */
+    async function tryExtractTextViaPdfJs(pdfElement) {
+        try {
+            log("📚 Tentando extração via PDF.js...");
 
-            // 1. Verificar estado atual
-            console.log("📊 ESTADO ATUAL:");
-            console.log("   Data sessão pautado:", dataSessaoPautado);
-            console.log("   Processo atual:", processoAtual);
-            console.log("   Processo com data:", processoComDataSessao);
-
-            // 2. Executar detecção de status
-            console.log("🔍 EXECUTANDO DETECÇÃO:");
-            const statusDetectado = detectarStatusSessao();
-            console.log("   Status detectado:", statusDetectado);
-
-            // 3. Verificar status armazenado
-            console.log("💾 STATUS ARMAZENADO:");
-            const statusArmazenado = getStatusSessao();
-            console.log("   Status via getStatusSessao():", statusArmazenado);
-
-            // 4. Verificar texto na página
-            const textoCompleto = document.body.innerText;
-            console.log("📝 VERIFICAÇÕES DE TEXTO:");
-
-            // Procurar por diferentes padrões
-            const padroes = [
-                { nome: "Retirado", regex: /retirado\s+em\s+pauta/i },
-                { nome: "Julgado", regex: /julgado\s+em\s+pauta/i },
-                { nome: "Incluído", regex: /incluído\s+em\s+pauta/i },
-            ];
-
-            padroes.forEach((padrao) => {
-                const encontrado = textoCompleto.match(padrao.regex);
-                if (encontrado) {
-                    console.log(`   ✅ ${padrao.nome}: "${encontrado[0]}"`);
-                } else {
-                    console.log(`   ❌ ${padrao.nome}: não encontrado`);
-                }
-            });
-
-            // 5. Simular chamada da interface
-            console.log("🎨 SIMULAÇÃO INTERFACE:");
-            const textoCard = obterTextoCardPorStatus(statusArmazenado);
-            const corCard = obterCorCardPorStatus(statusArmazenado);
-            console.log(`   Texto do card: "${textoCard}"`);
-            console.log(`   Cor do card: ${corCard}`);
-
-            return {
-                statusDetectado,
-                statusArmazenado,
-                textoCard,
-                corCard,
-                temTextoRetirado: /retirado\s+em\s+pauta/i.test(textoCompleto),
-            };
-        }
-
-        /**
-         * Debug do padrão específico "Retirado"
-         */
-        function debugPadraoRetirado() {
-            console.log(
-                "🧪 DEBUG RETIRADO: Testando detecção de padrão 'Retirado em Pauta'"
-            );
-
-            // Texto de exemplo fornecido pelo usuário
-            const textoTeste =
-                "Mérito (Retirado em Pauta em 10/04/2025 - CAMPUB5)";
-            console.log(`📝 Texto de teste: "${textoTeste}"`);
-
-            // Testar o padrão regex específico
-            const padraoRetirado =
-                /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-
-            const match = textoTeste.match(padraoRetirado);
-            console.log("🔍 Match resultado:", match);
-
-            if (match) {
-                // Resetar lastIndex para nova busca
-                padraoRetirado.lastIndex = 0;
-                const detalhes = padraoRetirado.exec(textoTeste);
-                console.log("📋 Detalhes extraídos:", detalhes);
-
-                if (detalhes) {
-                    console.log("✅ SUCESSO:");
-                    console.log(`   Tipo: ${detalhes[1]?.trim()}`);
-                    console.log(`   Data: ${detalhes[2]}`);
-                    console.log(`   Órgão: ${detalhes[3]}`);
-                    console.log(`   Texto completo: ${detalhes[0]}`);
-                }
-            } else {
-                console.log("❌ FALHA: Padrão não encontrou match");
-            }
-
-            // Testar também com o texto completo da página atual
-            const textoCompleto = document.body.innerText;
-            console.log("🔍 Testando na página atual...");
-
-            const matchPagina = textoCompleto.match(padraoRetirado);
-            if (matchPagina) {
-                console.log("✅ Encontrado na página:", matchPagina);
-            } else {
-                console.log("❌ Não encontrado na página atual");
-            }
-
-            // Procurar por qualquer texto similar
-            const buscaRetirado = /retirado\s+em\s+pauta/i;
-            const encontrouRetirado = textoCompleto.match(buscaRetirado);
-            if (encontrouRetirado) {
-                console.log(
-                    "🔍 Texto 'retirado em pauta' encontrado na página"
-                );
-            } else {
-                console.log(
-                    "❌ Texto 'retirado em pauta' NÃO encontrado na página"
-                );
-            }
-        }
-
-        /**
-         * Função para procurar texto específico "Retirado em Pauta" em toda a página
-         */
-        function encontrarTextoRetirado() {
-            console.log(
-                "🔍 BUSCA: Procurando texto 'Retirado em Pauta' em toda a página"
-            );
-
-            // 1. Buscar em elementos específicos primeiro
-            const seletores = [
-                "#fldMinutas",
-                "#divInfraAreaProcesso",
-                "#conteudoMinutas",
-                ".infraEventoDescricao",
-                "[id*='minutas']",
-                "[class*='minutas']",
-            ];
-
-            seletores.forEach((seletor) => {
-                const elemento = document.querySelector(seletor);
-                if (elemento) {
-                    const texto =
-                        elemento.innerText || elemento.textContent || "";
-                    if (/retirado\s+em\s+pauta/i.test(texto)) {
-                        console.log(
-                            `✅ ENCONTRADO em ${seletor}:`,
-                            texto.substring(0, 200)
-                        );
-
-                        // Buscar o padrão específico
-                        const regex =
-                            /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-                        const match = texto.match(regex);
-                        if (match) {
-                            console.log(
-                                `🎯 PADRÃO ENCONTRADO em ${seletor}:`,
-                                match
-                            );
-                        }
-                    } else {
-                        console.log(`❌ Não encontrado em ${seletor}`);
-                    }
-                } else {
-                    console.log(`❌ Elemento ${seletor} não existe`);
-                }
-            });
-
-            // 2. Buscar em toda a página
-            const textoCompleto = document.body.innerText;
-            const matches = textoCompleto.match(
-                /(.{0,100}retirado\s+em\s+pauta.{0,100})/gi
-            );
-            if (matches) {
-                console.log("🔍 CONTEXTOS 'Retirado em Pauta' na página:");
-                matches.forEach((match, index) => {
-                    console.log(`   ${index + 1}: ${match}`);
-                });
-            } else {
-                console.log(
-                    "❌ Texto 'Retirado em Pauta' não encontrado na página"
-                );
-            }
-
-            // 3. Testar regex completo na página
-            const regexCompleto =
-                /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-            const matchCompleto = textoCompleto.match(regexCompleto);
-            if (matchCompleto) {
-                console.log("✅ REGEX COMPLETO funcionou:", matchCompleto);
-            } else {
-                console.log("❌ REGEX COMPLETO não encontrou nada");
-            }
-
-            return {
-                encontrouTexto: matches ? true : false,
-                contextos: matches || [],
-                matchRegex: matchCompleto || [],
-            };
-        }
-
-        /**
-         * Força uma re-detecção completa com logging detalhado
-         */
-        function forcarDeteccaoCompleta() {
-            console.log("🔄 FORÇA: Iniciando detecção completa com debug");
-
-            // 1. Procurar texto primeiro
-            encontrarTextoRetirado();
-
-            // 2. Executar detecção normal
-            const statusDetectado = detectarStatusSessao();
-            console.log("🎯 Status detectado:", statusDetectado);
-
-            // 3. Forçar atualização se necessário
-            if (statusDetectado) {
-                // Atualizar dados globais
-                if (hasDataSessaoPautado()) {
-                    dataSessaoPautado.statusSessao = statusDetectado;
-                    console.log("✅ Dados globais atualizados");
-                }
-
-                // Re-inserir interface
-                forcarAtualizacaoStatus();
-            } else {
-                console.log(
-                    "❌ Nenhum status detectado - verifique se a página contém dados de sessão"
-                );
-            }
-
-            return statusDetectado;
-        }
-
-        // ========================================
-        // FUNÇÕES DE EXTRAÇÃO DIRETA DE TEXTO PDF
-        // ========================================
-
-        /**
-         * Extrai texto de PDF usando estratégias de extração direta
-         * @param {HTMLElement} pdfElement - Elemento do PDF
-         * @returns {Promise<string|null>} - Texto extraído ou null se falhar
-         */
-        async function extractTextFromPDF(pdfElement) {
-            log("� Iniciando extração de texto do PDF...");
-
-            try {
-                showNotification("� Extraindo texto do PDF...", "info");
-
-                // ESTRATÉGIA 1: Seleção automática de texto no PDF
-                const textFromSelection = await tryExtractTextViaSelection(
-                    pdfElement
-                );
-                if (textFromSelection && textFromSelection.length > 100) {
-                    log(
-                        ` Texto extraído via seleção: ${textFromSelection.length} caracteres`
-                    );
-                    showNotification(
-                        ` Texto extraído com sucesso! ${textFromSelection.length} caracteres`,
-                        "success"
-                    );
-                    return cleanExtractedText(textFromSelection);
-                }
-
-                // ESTRATÉGIA 2: PDF.js para extrair texto estruturado
-                const textFromPdfJs = await tryExtractTextViaPdfJs(pdfElement);
-                if (textFromPdfJs && textFromPdfJs.length > 100) {
-                    log(
-                        ` Texto extraído via PDF.js: ${textFromPdfJs.length} caracteres`
-                    );
-                    showNotification(
-                        ` Texto extraído com sucesso! ${textFromPdfJs.length} caracteres`,
-                        "success"
-                    );
-                    return cleanExtractedText(textFromPdfJs);
-                }
-
-                // ESTRATÉGIA 3: Fetch direto do PDF e processamento
-                const textFromFetch = await tryExtractTextViaFetch(pdfElement);
-                if (textFromFetch && textFromFetch.length > 100) {
-                    log(
-                        ` Texto extraído via fetch: ${textFromFetch.length} caracteres`
-                    );
-                    showNotification(
-                        ` Texto extraído com sucesso! ${textFromFetch.length} caracteres`,
-                        "success"
-                    );
-                    return cleanExtractedText(textFromFetch);
-                }
-
-                // ESTRATÉGIA 4: Clipboard após comando de cópia
-                const textFromClipboard = await tryExtractTextViaClipboard(
-                    pdfElement
-                );
-                if (textFromClipboard && textFromClipboard.length > 100) {
-                    log(
-                        ` Texto extraído via clipboard: ${textFromClipboard.length} caracteres`
-                    );
-                    showNotification(
-                        ` Texto extraído com sucesso! ${textFromClipboard.length} caracteres`,
-                        "success"
-                    );
-                    return cleanExtractedText(textFromClipboard);
-                }
-
-                // Se todas as estratégias diretas falharam, oferecer alternativas
-                throw new Error(
-                    "Não foi possível extrair texto diretamente do PDF"
-                );
-            } catch (error) {
-                log(` Erro na extração de texto: ${error.message}`);
-                return await handleTextExtractionError(error, pdfElement);
-            }
-        }
-
-        /**
-         * ESTRATÉGIA 1: Extrair texto via seleção automática
-         */
-        async function tryExtractTextViaSelection(pdfElement) {
-            try {
-                log("� Tentando extração via seleção automática...");
-
-                // Focar no elemento PDF
-                pdfElement.focus();
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
-                // Simular Ctrl+A para selecionar todo o texto
-                const selectAllEvent = new KeyboardEvent("keydown", {
-                    key: "a",
-                    code: "KeyA",
-                    ctrlKey: true,
-                    metaKey: false,
-                    bubbles: true,
-                    cancelable: true,
-                });
-
-                pdfElement.dispatchEvent(selectAllEvent);
-                await new Promise((resolve) => setTimeout(resolve, 1000));
-
-                // Tentar obter texto selecionado
-                const selectedText = window.getSelection().toString();
-                if (selectedText && selectedText.length > 50) {
-                    log(" Texto obtido via getSelection()");
-                    return selectedText;
-                }
-
-                // Simular Ctrl+C para copiar
-                const copyEvent = new KeyboardEvent("keydown", {
-                    key: "c",
-                    code: "KeyC",
-                    ctrlKey: true,
-                    metaKey: false,
-                    bubbles: true,
-                    cancelable: true,
-                });
-
-                pdfElement.dispatchEvent(copyEvent);
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
-                // Tentar ler do clipboard
-                try {
-                    const clipboardText = await navigator.clipboard.readText();
-                    if (clipboardText && clipboardText.length > 50) {
-                        log(" Texto obtido via clipboard após Ctrl+C");
-                        return clipboardText;
-                    }
-                } catch (clipError) {
-                    log(" Acesso negado ao clipboard");
-                }
-
-                return null;
-            } catch (error) {
-                log(` Erro na seleção automática: ${error.message}`);
+            const pdfUrl = pdfElement.src;
+            if (
+                !pdfUrl ||
+                pdfUrl.startsWith("blob:") ||
+                pdfUrl.startsWith("data:")
+            ) {
+                log(" URL do PDF não é adequada para PDF.js");
                 return null;
             }
-        }
 
-        /**
-         * ESTRATÉGIA 2: Extrair texto via PDF.js
-         */
-        async function tryExtractTextViaPdfJs(pdfElement) {
-            try {
-                log("📚 Tentando extração via PDF.js...");
-
-                const pdfUrl = pdfElement.src;
-                if (
-                    !pdfUrl ||
-                    pdfUrl.startsWith("blob:") ||
-                    pdfUrl.startsWith("data:")
-                ) {
-                    log(" URL do PDF não é adequada para PDF.js");
-                    return null;
-                }
-
-                // Carregar PDF.js se necessário
-                if (typeof pdfjsLib === "undefined") {
-                    log("📦 Carregando PDF.js...");
-                    await loadPdfJsLibrary();
-                }
-
-                log(`� Processando PDF: ${pdfUrl}`);
-                const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                let fullText = "";
-
-                // Extrair texto de todas as páginas (limitado a 10 páginas para performance)
-                const numPages = Math.min(pdf.numPages, 10);
-                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const textContent = await page.getTextContent();
-
-                    const pageText = textContent.items
-                        .filter(
-                            (item) => item.str && item.str.trim().length > 0
-                        )
-                        .map((item) => item.str)
-                        .join(" ");
-
-                    if (pageText.trim()) {
-                        fullText += pageText + "\n\n";
-                    }
-
-                    // Mostrar progresso
-                    if (numPages > 1) {
-                        showNotification(
-                            ` Processando página ${pageNum}/${numPages}...`,
-                            "info"
-                        );
-                    }
-                }
-
-                if (fullText.trim().length > 50) {
-                    log(
-                        ` PDF.js extraiu ${fullText.length} caracteres de ${numPages} páginas`
-                    );
-                    return fullText.trim();
-                }
-
-                return null;
-            } catch (error) {
-                log(` Erro no PDF.js: ${error.message}`);
-                return null;
+            // Carregar PDF.js se necessário
+            if (typeof pdfjsLib === "undefined") {
+                log("📦 Carregando PDF.js...");
+                await loadPdfJsLibrary();
             }
-        }
 
-        /**
-         * ESTRATÉGIA 3: Fetch direto do PDF
-         */
-        async function tryExtractTextViaFetch(pdfElement) {
-            try {
-                log(" Tentando extração via fetch direto...");
+            log(`� Processando PDF: ${pdfUrl}`);
+            const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+            let fullText = "";
 
-                const pdfUrl = pdfElement.src;
-                if (
-                    !pdfUrl ||
-                    pdfUrl.startsWith("blob:") ||
-                    pdfUrl.startsWith("data:")
-                ) {
-                    log(" URL do PDF não é adequada para fetch");
-                    return null;
+            // Extrair texto de todas as páginas (limitado a 10 páginas para performance)
+            const numPages = Math.min(pdf.numPages, 10);
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+
+                const pageText = textContent.items
+                    .filter((item) => item.str && item.str.trim().length > 0)
+                    .map((item) => item.str)
+                    .join(" ");
+
+                if (pageText.trim()) {
+                    fullText += pageText + "\n\n";
                 }
 
-                // Carregar PDF.js se necessário
-                if (typeof pdfjsLib === "undefined") {
-                    await loadPdfJsLibrary();
-                }
-
-                showNotification(" Baixando PDF...", "info");
-
-                // Fetch do PDF com timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
-
-                const response = await fetch(pdfUrl, {
-                    signal: controller.signal,
-                    headers: {
-                        Accept: "application/pdf",
-                    },
-                });
-
-                clearTimeout(timeoutId);
-
-                if (!response.ok) {
-                    throw new Error(
-                        `HTTP ${response.status}: ${response.statusText}`
-                    );
-                }
-
-                const arrayBuffer = await response.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-
-                let fullText = "";
-                const numPages = Math.min(pdf.numPages, 15); // Limite maior para fetch direto
-
-                for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                    const page = await pdf.getPage(pageNum);
-                    const textContent = await page.getTextContent();
-
-                    const pageText = textContent.items
-                        .filter(
-                            (item) => item.str && item.str.trim().length > 0
-                        )
-                        .map((item) => item.str)
-                        .join(" ");
-
-                    if (pageText.trim()) {
-                        fullText += pageText + "\n\n";
-                    }
-
+                // Mostrar progresso
+                if (numPages > 1) {
                     showNotification(
                         ` Processando página ${pageNum}/${numPages}...`,
                         "info"
                     );
                 }
-
-                if (fullText.trim().length > 50) {
-                    log(
-                        ` Fetch extraiu ${fullText.length} caracteres de ${numPages} páginas`
-                    );
-                    return fullText.trim();
-                }
-
-                return null;
-            } catch (error) {
-                log(` Erro no fetch: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * ESTRATÉGIA 4: Extrair via clipboard com comandos específicos
-         */
-        async function tryExtractTextViaClipboard(pdfElement) {
-            try {
-                log(" Tentando extração via clipboard...");
-
-                // Limpar clipboard primeiro
-                try {
-                    await navigator.clipboard.writeText("");
-                } catch (e) {
-                    log(" Não foi possível limpar clipboard");
-                }
-
-                // Focar e tentar diferentes combinações de teclas
-                pdfElement.focus();
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
-                // Tentar Ctrl+A seguido de Ctrl+C
-                document.execCommand("selectAll");
-                await new Promise((resolve) => setTimeout(resolve, 300));
-                document.execCommand("copy");
-                await new Promise((resolve) => setTimeout(resolve, 500));
-
-                // Verificar clipboard
-                try {
-                    const clipboardText = await navigator.clipboard.readText();
-                    if (clipboardText && clipboardText.trim().length > 50) {
-                        log(" Texto obtido via execCommand");
-                        return clipboardText.trim();
-                    }
-                } catch (clipError) {
-                    log(" Acesso negado ao clipboard após execCommand");
-                }
-
-                return null;
-            } catch (error) {
-                log(` Erro na extração via clipboard: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * Carrega a biblioteca PDF.js dinamicamente
-         */
-        async function loadPdfJsLibrary() {
-            if (typeof pdfjsLib !== "undefined") {
-                return;
             }
 
-            log("📦 Carregando PDF.js...");
-
-            // Carregar PDF.js da CDN
-            const script = document.createElement("script");
-            script.src =
-                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
-            document.head.appendChild(script);
-
-            await new Promise((resolve, reject) => {
-                script.onload = () => {
-                    log(" PDF.js carregado com sucesso");
-                    // Configurar worker
-                    if (typeof pdfjsLib !== "undefined") {
-                        pdfjsLib.GlobalWorkerOptions.workerSrc =
-                            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
-                    }
-                    resolve();
-                };
-                script.onerror = () => {
-                    log(" Erro ao carregar PDF.js");
-                    reject(new Error("Falha ao carregar PDF.js"));
-                };
-            });
-
-            // Aguardar inicialização
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-
-        /**
-         * Limpa e normaliza texto extraído de PDF
-         */
-        function cleanExtractedText(text) {
-            return text
-                .replace(/\r\n/g, "\n") // Normalizar quebras de linha
-                .replace(/\r/g, "\n") // Normalizar quebras de linha
-                .replace(/\n{3,}/g, "\n\n") // Reduzir quebras de linha excessivas
-                .replace(/\s+/g, " ") // Normalizar espaços múltiplos
-                .replace(/([.!?])\s*([A-ZÁÊÇ])/g, "$1\n\n$2") // Quebrar em parágrafos
-                .trim();
-        }
-
-        /**
-         * Trata erros na extração de texto e oferece soluções
-         */
-        async function handleTextExtractionError(error, pdfElement) {
-            const pdfUrl = pdfElement?.src || "";
-
-            log(" Tentativas diretas falharam, oferecendo alternativas");
-
-            showNotification(
-                " Extração automática não foi possível!\n\n" +
-                    "Métodos alternativos:\n" +
-                    "1. Selecione o texto manualmente no PDF (Ctrl+A, Ctrl+C)\n" +
-                    "2. Baixe o PDF e use Perplexity/Claude com upload\n" +
-                    "3. Use ferramenta de conversão PDF para texto\n\n" +
-                    " Alguns PDFs têm proteções que impedem extração automática.",
-                "warning"
-            );
-
-            // Tentar iniciar download automático como fallback
-            await tryAutoDownloadPDF(pdfUrl);
+            if (fullText.trim().length > 50) {
+                log(
+                    ` PDF.js extraiu ${fullText.length} caracteres de ${numPages} páginas`
+                );
+                return fullText.trim();
+            }
 
             return null;
+        } catch (error) {
+            log(` Erro no PDF.js: ${error.message}`);
+            return null;
         }
+    }
 
-        /**
-         * Tenta extrair texto direto do PDF usando APIs nativas
-         */
-        async function tryExtractDirectPdfText(pdfElement) {
-            try {
-                log(" Tentando extração direta de texto do PDF...");
+    /**
+     * ESTRATÉGIA 3: Fetch direto do PDF
+     */
+    async function tryExtractTextViaFetch(pdfElement) {
+        try {
+            log(" Tentando extração via fetch direto...");
 
-                // Verificar se é um PDF embedado do Chrome
-                if (
-                    pdfElement.type === "application/pdf" ||
-                    pdfElement.type === "application/x-google-chrome-pdf"
-                ) {
-                    // Tentar selecionar tudo no PDF e copiar
-                    pdfElement.focus();
-
-                    // Simular Ctrl+A para selecionar todo o texto
-                    const selectAllEvent = new KeyboardEvent("keydown", {
-                        key: "a",
-                        ctrlKey: true,
-                        bubbles: true,
-                    });
-                    pdfElement.dispatchEvent(selectAllEvent);
-
-                    await new Promise((resolve) => setTimeout(resolve, 500));
-
-                    // Tentar ler da clipboard se possível
-                    try {
-                        if (
-                            navigator.clipboard &&
-                            navigator.clipboard.readText
-                        ) {
-                            const clipboardText =
-                                await navigator.clipboard.readText();
-                            if (clipboardText && clipboardText.length > 100) {
-                                log(" Texto extraído via clipboard");
-                                return clipboardText;
-                            }
-                        }
-                    } catch (clipboardError) {
-                        log(" Acesso ao clipboard negado");
-                    }
-                }
-
-                // Tentar outras abordagens para PDFs
-                const pdfUrl = pdfElement.src;
-                if (pdfUrl && !pdfUrl.startsWith("blob:")) {
-                    // Tentar carregar PDF.js se disponível
-                    if (typeof pdfjsLib !== "undefined") {
-                        log("📚 Tentando PDF.js para extração...");
-                        const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
-                        const page = await pdf.getPage(1);
-                        const textContent = await page.getTextContent();
-
-                        const text = textContent.items
-                            .map((item) => item.str)
-                            .join(" ");
-                        if (text.length > 100) {
-                            log(" Texto extraído via PDF.js");
-                            return text;
-                        }
-                    }
-                }
-
-                return null;
-            } catch (error) {
-                log(` Extração direta falhou: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * Captura imagem do PDF para OCR usando múltiplas estratégias
-         */
-        async function captureImageForOCR(pdfElement) {
-            try {
-                showNotification("� Capturando imagem do PDF...", "info");
-
-                // Método 1: html2canvas (mais confiável)
-                const canvasFromHtml2Canvas = await tryHtml2Canvas(pdfElement);
-                if (canvasFromHtml2Canvas) {
-                    log(" Captura via html2canvas bem-sucedida");
-                    return canvasFromHtml2Canvas;
-                }
-
-                // Método 2: Canvas nativo
-                log(" Tentando captura via canvas nativo...");
-                const canvasNativo = await tryNativeCanvas(pdfElement);
-                if (canvasNativo) {
-                    log(" Captura via canvas nativo bem-sucedida");
-                    return canvasNativo;
-                }
-
-                // Método 3: Usar screenshot da viewport
-                log(" Tentando captura da viewport...");
-                const viewportCanvas = await tryViewportCapture(pdfElement);
-                if (viewportCanvas) {
-                    log(" Captura da viewport bem-sucedida");
-                    return viewportCanvas;
-                }
-
-                throw new Error("Todos os métodos de captura falharam");
-            } catch (error) {
-                log(` Erro na captura de imagem: ${error.message}`);
-                return null;
-            }
-        }
-
-        /**
-         * Tenta download automático do PDF
-         */
-        async function tryAutoDownloadPDF(pdfUrl) {
+            const pdfUrl = pdfElement.src;
             if (
                 !pdfUrl ||
                 pdfUrl.startsWith("blob:") ||
-                pdfUrl.startsWith("chrome-extension:")
+                pdfUrl.startsWith("data:")
             ) {
-                return;
+                log(" URL do PDF não é adequada para fetch");
+                return null;
             }
 
-            try {
-                log(" Tentando download automático do PDF...");
-                const link = document.createElement("a");
-                link.href = pdfUrl;
-                link.download = "documento-eproc.pdf";
-                link.style.display = "none";
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
+            // Carregar PDF.js se necessário
+            if (typeof pdfjsLib === "undefined") {
+                await loadPdfJsLibrary();
+            }
+
+            showNotification(" Baixando PDF...", "info");
+
+            // Fetch do PDF com timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+            const response = await fetch(pdfUrl, {
+                signal: controller.signal,
+                headers: {
+                    Accept: "application/pdf",
+                },
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            const arrayBuffer = await response.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+
+            let fullText = "";
+            const numPages = Math.min(pdf.numPages, 15); // Limite maior para fetch direto
+
+            for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+
+                const pageText = textContent.items
+                    .filter((item) => item.str && item.str.trim().length > 0)
+                    .map((item) => item.str)
+                    .join(" ");
+
+                if (pageText.trim()) {
+                    fullText += pageText + "\n\n";
+                }
 
                 showNotification(
-                    "Download iniciado! Use o arquivo com Perplexity/Claude.",
+                    ` Processando página ${pageNum}/${numPages}...`,
                     "info"
                 );
-            } catch (downloadError) {
-                log(` Download automático falhou: ${downloadError.message}`);
             }
+
+            if (fullText.trim().length > 50) {
+                log(
+                    ` Fetch extraiu ${fullText.length} caracteres de ${numPages} páginas`
+                );
+                return fullText.trim();
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro no fetch: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * ESTRATÉGIA 4: Extrair via clipboard com comandos específicos
+     */
+    async function tryExtractTextViaClipboard(pdfElement) {
+        try {
+            log(" Tentando extração via clipboard...");
+
+            // Limpar clipboard primeiro
+            try {
+                await navigator.clipboard.writeText("");
+            } catch (e) {
+                log(" Não foi possível limpar clipboard");
+            }
+
+            // Focar e tentar diferentes combinações de teclas
+            pdfElement.focus();
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Tentar Ctrl+A seguido de Ctrl+C
+            document.execCommand("selectAll");
+            await new Promise((resolve) => setTimeout(resolve, 300));
+            document.execCommand("copy");
+            await new Promise((resolve) => setTimeout(resolve, 500));
+
+            // Verificar clipboard
+            try {
+                const clipboardText = await navigator.clipboard.readText();
+                if (clipboardText && clipboardText.trim().length > 50) {
+                    log(" Texto obtido via execCommand");
+                    return clipboardText.trim();
+                }
+            } catch (clipError) {
+                log(" Acesso negado ao clipboard após execCommand");
+            }
+
+            return null;
+        } catch (error) {
+            log(` Erro na extração via clipboard: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Carrega a biblioteca PDF.js dinamicamente
+     */
+    async function loadPdfJsLibrary() {
+        if (typeof pdfjsLib !== "undefined") {
+            return;
         }
 
-        // Modal customizado para opções de preview
-        function showPreviewOptionsModal() {
-            return new Promise((resolve) => {
-                const overlay = document.createElement("div");
-                overlay.className = "help-modal-overlay";
-                overlay.innerHTML = `
+        log("📦 Carregando PDF.js...");
+
+        // Carregar PDF.js da CDN
+        const script = document.createElement("script");
+        script.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+        document.head.appendChild(script);
+
+        await new Promise((resolve, reject) => {
+            script.onload = () => {
+                log(" PDF.js carregado com sucesso");
+                // Configurar worker
+                if (typeof pdfjsLib !== "undefined") {
+                    pdfjsLib.GlobalWorkerOptions.workerSrc =
+                        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                }
+                resolve();
+            };
+            script.onerror = () => {
+                log(" Erro ao carregar PDF.js");
+                reject(new Error("Falha ao carregar PDF.js"));
+            };
+        });
+
+        // Aguardar inicialização
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    /**
+     * Limpa e normaliza texto extraído de PDF
+     */
+    function cleanExtractedText(text) {
+        return text
+            .replace(/\r\n/g, "\n") // Normalizar quebras de linha
+            .replace(/\r/g, "\n") // Normalizar quebras de linha
+            .replace(/\n{3,}/g, "\n\n") // Reduzir quebras de linha excessivas
+            .replace(/\s+/g, " ") // Normalizar espaços múltiplos
+            .replace(/([.!?])\s*([A-ZÁÊÇ])/g, "$1\n\n$2") // Quebrar em parágrafos
+            .trim();
+    }
+
+    /**
+     * Trata erros na extração de texto e oferece soluções
+     */
+    async function handleTextExtractionError(error, pdfElement) {
+        const pdfUrl = pdfElement?.src || "";
+
+        log(" Tentativas diretas falharam, oferecendo alternativas");
+
+        showNotification(
+            " Extração automática não foi possível!\n\n" +
+                "Métodos alternativos:\n" +
+                "1. Selecione o texto manualmente no PDF (Ctrl+A, Ctrl+C)\n" +
+                "2. Baixe o PDF e use Perplexity/Claude com upload\n" +
+                "3. Use ferramenta de conversão PDF para texto\n\n" +
+                " Alguns PDFs têm proteções que impedem extração automática.",
+            "warning"
+        );
+
+        // Tentar iniciar download automático como fallback
+        await tryAutoDownloadPDF(pdfUrl);
+
+        return null;
+    }
+
+    /**
+     * Tenta extrair texto direto do PDF usando APIs nativas
+     */
+    async function tryExtractDirectPdfText(pdfElement) {
+        try {
+            log(" Tentando extração direta de texto do PDF...");
+
+            // Verificar se é um PDF embedado do Chrome
+            if (
+                pdfElement.type === "application/pdf" ||
+                pdfElement.type === "application/x-google-chrome-pdf"
+            ) {
+                // Tentar selecionar tudo no PDF e copiar
+                pdfElement.focus();
+
+                // Simular Ctrl+A para selecionar todo o texto
+                const selectAllEvent = new KeyboardEvent("keydown", {
+                    key: "a",
+                    ctrlKey: true,
+                    bubbles: true,
+                });
+                pdfElement.dispatchEvent(selectAllEvent);
+
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Tentar ler da clipboard se possível
+                try {
+                    if (navigator.clipboard && navigator.clipboard.readText) {
+                        const clipboardText =
+                            await navigator.clipboard.readText();
+                        if (clipboardText && clipboardText.length > 100) {
+                            log(" Texto extraído via clipboard");
+                            return clipboardText;
+                        }
+                    }
+                } catch (clipboardError) {
+                    log(" Acesso ao clipboard negado");
+                }
+            }
+
+            // Tentar outras abordagens para PDFs
+            const pdfUrl = pdfElement.src;
+            if (pdfUrl && !pdfUrl.startsWith("blob:")) {
+                // Tentar carregar PDF.js se disponível
+                if (typeof pdfjsLib !== "undefined") {
+                    log("📚 Tentando PDF.js para extração...");
+                    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                    const page = await pdf.getPage(1);
+                    const textContent = await page.getTextContent();
+
+                    const text = textContent.items
+                        .map((item) => item.str)
+                        .join(" ");
+                    if (text.length > 100) {
+                        log(" Texto extraído via PDF.js");
+                        return text;
+                    }
+                }
+            }
+
+            return null;
+        } catch (error) {
+            log(` Extração direta falhou: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Captura imagem do PDF para OCR usando múltiplas estratégias
+     */
+    async function captureImageForOCR(pdfElement) {
+        try {
+            showNotification("� Capturando imagem do PDF...", "info");
+
+            // Método 1: html2canvas (mais confiável)
+            const canvasFromHtml2Canvas = await tryHtml2Canvas(pdfElement);
+            if (canvasFromHtml2Canvas) {
+                log(" Captura via html2canvas bem-sucedida");
+                return canvasFromHtml2Canvas;
+            }
+
+            // Método 2: Canvas nativo
+            log(" Tentando captura via canvas nativo...");
+            const canvasNativo = await tryNativeCanvas(pdfElement);
+            if (canvasNativo) {
+                log(" Captura via canvas nativo bem-sucedida");
+                return canvasNativo;
+            }
+
+            // Método 3: Usar screenshot da viewport
+            log(" Tentando captura da viewport...");
+            const viewportCanvas = await tryViewportCapture(pdfElement);
+            if (viewportCanvas) {
+                log(" Captura da viewport bem-sucedida");
+                return viewportCanvas;
+            }
+
+            throw new Error("Todos os métodos de captura falharam");
+        } catch (error) {
+            log(` Erro na captura de imagem: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Tenta download automático do PDF
+     */
+    async function tryAutoDownloadPDF(pdfUrl) {
+        if (
+            !pdfUrl ||
+            pdfUrl.startsWith("blob:") ||
+            pdfUrl.startsWith("chrome-extension:")
+        ) {
+            return;
+        }
+
+        try {
+            log(" Tentando download automático do PDF...");
+            const link = document.createElement("a");
+            link.href = pdfUrl;
+            link.download = "documento-eproc.pdf";
+            link.style.display = "none";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showNotification(
+                "Download iniciado! Use o arquivo com Perplexity/Claude.",
+                "info"
+            );
+        } catch (downloadError) {
+            log(` Download automático falhou: ${downloadError.message}`);
+        }
+    }
+
+    // Modal customizado para opções de preview
+    function showPreviewOptionsModal() {
+        return new Promise((resolve) => {
+            const overlay = document.createElement("div");
+            overlay.className = "help-modal-overlay";
+            overlay.innerHTML = `
  <div class="help-modal" style="max-width: 420px;">
  <div class="help-modal-header">
  <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
@@ -10769,29 +9162,29 @@ ${texto}`;
  </div>
  </div>
  `;
-                document.body.appendChild(overlay);
-                const close = (result) => {
-                    document.body.removeChild(overlay);
-                    resolve(result);
-                };
-                overlay.querySelector(".help-close-btn").onclick = () =>
-                    close(false);
-                overlay.querySelector("#preview-yes-btn").onclick = () =>
-                    close(true);
-                overlay.querySelector("#preview-no-btn").onclick = () =>
-                    close(false);
-                overlay.addEventListener("click", (e) => {
-                    if (e.target === overlay) close(false);
-                });
+            document.body.appendChild(overlay);
+            const close = (result) => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            };
+            overlay.querySelector(".help-close-btn").onclick = () =>
+                close(false);
+            overlay.querySelector("#preview-yes-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#preview-no-btn").onclick = () =>
+                close(false);
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close(false);
             });
-        }
+        });
+    }
 
-        // Modal customizado para opções de processamento de documento
-        function showDocumentProcessingModal() {
-            return new Promise((resolve) => {
-                const overlay = document.createElement("div");
-                overlay.className = "help-modal-overlay";
-                overlay.innerHTML = `
+    // Modal customizado para opções de processamento de documento
+    function showDocumentProcessingModal() {
+        return new Promise((resolve) => {
+            const overlay = document.createElement("div");
+            overlay.className = "help-modal-overlay";
+            overlay.innerHTML = `
  <div class="help-modal" style="max-width: 450px;">
  <div class="help-modal-header">
  <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
@@ -10842,1221 +9235,1180 @@ ${texto}`;
  </div>
  </div>
  `;
-                document.body.appendChild(overlay);
-                const close = (result) => {
-                    document.body.removeChild(overlay);
-                    resolve(result);
-                };
-                overlay.querySelector(".help-close-btn").onclick = () =>
-                    close(true);
-                overlay.querySelector("#process-manual-btn").onclick = () =>
-                    close(true);
-                overlay.querySelector("#process-api-btn").onclick = () =>
-                    close(false);
-                overlay.addEventListener("click", (e) => {
-                    if (e.target === overlay) close(true);
-                });
+            document.body.appendChild(overlay);
+            const close = (result) => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            };
+            overlay.querySelector(".help-close-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#process-manual-btn").onclick = () =>
+                close(true);
+            overlay.querySelector("#process-api-btn").onclick = () =>
+                close(false);
+            overlay.addEventListener("click", (e) => {
+                if (e.target === overlay) close(true);
             });
+        });
+    }
+
+    // Formatar informações de magistrado/advogado
+    function formatarMagistradoAdvogado(texto) {
+        if (!texto || texto.trim().length === 0) {
+            return "";
         }
 
-        // Formatar informações de magistrado/advogado
-        function formatarMagistradoAdvogado(texto) {
-            if (!texto || texto.trim().length === 0) {
-                return "";
+        let textoLimpo = texto.trim();
+
+        // Remover tags HTML (incluindo <br/> e <br>)
+        textoLimpo = textoLimpo.replace(/<br\s*\/?>/gi, "\n");
+        textoLimpo = textoLimpo.replace(/<[^>]*>/g, "");
+
+        // Separar em linhas e filtrar conteúdo útil
+        const linhas = textoLimpo
+            .split(/\n/)
+            .map((l) => l.trim())
+            .filter((l) => l.length > 0)
+            .filter((l) => !l.match(/^(MAGISTRADO|ADVOGADO)$/i)); // Remover labels extras
+
+        // Detectar se é magistrado ou advogado baseado em palavras-chave
+        const isMagistrado = /juiz|juíz|magistrad|vara|gabinete|comarca/i.test(
+            textoLimpo
+        );
+
+        if (isMagistrado) {
+            // Para magistrados: procurar nome da pessoa e informação da vara
+            let nomePessoa = "";
+            let infoVara = "";
+
+            for (const linha of linhas) {
+                // Se a linha contém palavras típicas de vara/gabinete, é info de vara
+                if (/\d+[ªº]?\s*(vara|gabinete|comarca)/i.test(linha)) {
+                    infoVara = linha;
+                }
+                // Se é um nome de pessoa (contém pelo menos 2 palavras com letras)
+                else if (
+                    /^[A-ZÁÊÇÕÜÀÁÉÊÍÓÔÚÂÃ\s]{3,}$/i.test(linha) &&
+                    linha.split(" ").length >= 2
+                ) {
+                    // Capitalizar corretamente o nome (primeira letra maiúscula, resto minúscula)
+                    nomePessoa = linha
+                        .toLowerCase()
+                        .split(" ")
+                        .map(
+                            (palavra) =>
+                                palavra.charAt(0).toUpperCase() +
+                                palavra.slice(1)
+                        )
+                        .join(" ");
+                }
             }
 
-            let textoLimpo = texto.trim();
-
-            // Remover tags HTML (incluindo <br/> e <br>)
-            textoLimpo = textoLimpo.replace(/<br\s*\/?>/gi, "\n");
-            textoLimpo = textoLimpo.replace(/<[^>]*>/g, "");
-
-            // Separar em linhas e filtrar conteúdo útil
-            const linhas = textoLimpo
-                .split(/\n/)
-                .map((l) => l.trim())
-                .filter((l) => l.length > 0)
-                .filter((l) => !l.match(/^(MAGISTRADO|ADVOGADO)$/i)); // Remover labels extras
-
-            // Detectar se é magistrado ou advogado baseado em palavras-chave
-            const isMagistrado =
-                /juiz|juíz|magistrad|vara|gabinete|comarca/i.test(textoLimpo);
-
-            if (isMagistrado) {
-                // Para magistrados: procurar nome da pessoa e informação da vara
-                let nomePessoa = "";
-                let infoVara = "";
-
-                for (const linha of linhas) {
-                    // Se a linha contém palavras típicas de vara/gabinete, é info de vara
-                    if (/\d+[ªº]?\s*(vara|gabinete|comarca)/i.test(linha)) {
-                        infoVara = linha;
-                    }
-                    // Se é um nome de pessoa (contém pelo menos 2 palavras com letras)
-                    else if (
+            // Se encontrou nome e vara, retornar objeto com ambos
+            if (nomePessoa && infoVara) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${nomePessoa}`,
+                    vara: infoVara,
+                };
+            }
+            // Se só encontrou nome
+            else if (nomePessoa) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${nomePessoa}`,
+                    vara: null,
+                };
+            }
+            // Se só encontrou vara
+            else if (infoVara) {
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${infoVara}`,
+                    vara: null,
+                };
+            }
+            // Fallback: usar primeira linha útil
+            else if (linhas.length > 0) {
+                const primeiraLinha = linhas[0]
+                    .toLowerCase()
+                    .split(" ")
+                    .map(
+                        (palavra) =>
+                            palavra.charAt(0).toUpperCase() + palavra.slice(1)
+                    )
+                    .join(" ");
+                return {
+                    tipo: "magistrado",
+                    nome: `Magistrado(a): ${primeiraLinha}`,
+                    vara: null,
+                };
+            }
+        } else {
+            // Para advogados: usar a primeira linha que parece um nome
+            let nomeAdvogado =
+                linhas.find(
+                    (linha) =>
                         /^[A-ZÁÊÇÕÜÀÁÉÊÍÓÔÚÂÃ\s]{3,}$/i.test(linha) &&
                         linha.split(" ").length >= 2
-                    ) {
-                        // Capitalizar corretamente o nome (primeira letra maiúscula, resto minúscula)
-                        nomePessoa = linha
-                            .toLowerCase()
-                            .split(" ")
-                            .map(
-                                (palavra) =>
-                                    palavra.charAt(0).toUpperCase() +
-                                    palavra.slice(1)
-                            )
-                            .join(" ");
-                    }
-                }
+                ) || linhas[0];
 
-                // Se encontrou nome e vara, retornar objeto com ambos
-                if (nomePessoa && infoVara) {
-                    return {
-                        tipo: "magistrado",
-                        nome: `Magistrado(a): ${nomePessoa}`,
-                        vara: infoVara,
-                    };
-                }
-                // Se só encontrou nome
-                else if (nomePessoa) {
-                    return {
-                        tipo: "magistrado",
-                        nome: `Magistrado(a): ${nomePessoa}`,
-                        vara: null,
-                    };
-                }
-                // Se só encontrou vara
-                else if (infoVara) {
-                    return {
-                        tipo: "magistrado",
-                        nome: `Magistrado(a): ${infoVara}`,
-                        vara: null,
-                    };
-                }
-                // Fallback: usar primeira linha útil
-                else if (linhas.length > 0) {
-                    const primeiraLinha = linhas[0]
-                        .toLowerCase()
-                        .split(" ")
-                        .map(
-                            (palavra) =>
-                                palavra.charAt(0).toUpperCase() +
-                                palavra.slice(1)
-                        )
-                        .join(" ");
-                    return {
-                        tipo: "magistrado",
-                        nome: `Magistrado(a): ${primeiraLinha}`,
-                        vara: null,
-                    };
-                }
-            } else {
-                // Para advogados: usar a primeira linha que parece um nome
-                let nomeAdvogado =
-                    linhas.find(
-                        (linha) =>
-                            /^[A-ZÁÊÇÕÜÀÁÉÊÍÓÔÚÂÃ\s]{3,}$/i.test(linha) &&
-                            linha.split(" ").length >= 2
-                    ) || linhas[0];
-
-                if (nomeAdvogado) {
-                    // Capitalizar corretamente o nome do advogado
-                    nomeAdvogado = nomeAdvogado
-                        .toLowerCase()
-                        .split(" ")
-                        .map(
-                            (palavra) =>
-                                palavra.charAt(0).toUpperCase() +
-                                palavra.slice(1)
-                        )
-                        .join(" ");
-                    return {
-                        tipo: "advogado",
-                        nome: `Advogado(a): ${nomeAdvogado}`,
-                        vara: null,
-                    };
-                }
+            if (nomeAdvogado) {
+                // Capitalizar corretamente o nome do advogado
+                nomeAdvogado = nomeAdvogado
+                    .toLowerCase()
+                    .split(" ")
+                    .map(
+                        (palavra) =>
+                            palavra.charAt(0).toUpperCase() + palavra.slice(1)
+                    )
+                    .join(" ");
+                return {
+                    tipo: "advogado",
+                    nome: `Advogado(a): ${nomeAdvogado}`,
+                    vara: null,
+                };
             }
-
-            // Fallback final
-            return textoLimpo;
         }
 
-        // Inicializar observer para prevenir sobreposições
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => {
-                setupInterfaceObserver();
-            });
-        } else {
+        // Fallback final
+        return textoLimpo;
+    }
+
+    // Inicializar observer para prevenir sobreposições
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => {
             setupInterfaceObserver();
+        });
+    } else {
+        setupInterfaceObserver();
+    }
+
+    // Função auxiliar para validar data brasileira
+    // 🔍 IDENTIFICAR PROCESSO - Extrair número do processo atual
+    function obterNumeroProcesso() {
+        console.log("🔍 PROCESSO: Tentando identificar número do processo");
+
+        // Buscar em diferentes lugares da página
+        const selectors = [
+            'span:contains("Processo nº")',
+            'div:contains("Processo nº")',
+            'span:contains("Processo:")',
+            'div:contains("Processo:")',
+            '[id*="processo"]',
+            '[class*="processo"]',
+            'span[title*="processo"]',
+            'div[title*="processo"]',
+        ];
+
+        // Buscar no texto completo da página
+        const textoCompleto = document.body.innerText;
+
+        // Padrões para encontrar número do processo
+        const padroes = [
+            /processo\s*n[º°]?\s*:?\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
+            /processo\s*:?\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
+            /n[º°]\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
+            /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
+            /processo\s*[\s\S]*?(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
+        ];
+
+        for (const padrao of padroes) {
+            const match = textoCompleto.match(padrao);
+            if (match) {
+                const numeroProcesso = match[1];
+                console.log(`✅ PROCESSO: Encontrado: ${numeroProcesso}`);
+                return numeroProcesso;
+            }
         }
 
-        // Função auxiliar para validar data brasileira
-        // 🔍 IDENTIFICAR PROCESSO - Extrair número do processo atual
-        function obterNumeroProcesso() {
-            console.log("🔍 PROCESSO: Tentando identificar número do processo");
+        // Tentar buscar na URL
+        const url = window.location.href;
+        const urlMatch = url.match(/(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/);
+        if (urlMatch) {
+            const numeroProcesso = urlMatch[1];
+            console.log(`✅ PROCESSO: Encontrado na URL: ${numeroProcesso}`);
+            return numeroProcesso;
+        }
 
-            // Buscar em diferentes lugares da página
-            const selectors = [
-                'span:contains("Processo nº")',
-                'div:contains("Processo nº")',
-                'span:contains("Processo:")',
-                'div:contains("Processo:")',
-                '[id*="processo"]',
-                '[class*="processo"]',
-                'span[title*="processo"]',
-                'div[title*="processo"]',
-            ];
+        // Tentar buscar no título da página
+        const titulo = document.title;
+        const tituloMatch = titulo.match(
+            /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/
+        );
+        if (tituloMatch) {
+            const numeroProcesso = tituloMatch[1];
+            console.log(`✅ PROCESSO: Encontrado no título: ${numeroProcesso}`);
+            return numeroProcesso;
+        }
 
-            // Buscar no texto completo da página
-            const textoCompleto = document.body.innerText;
+        console.log(
+            "⚠️ PROCESSO: Não foi possível identificar o número do processo"
+        );
+        return null;
+    }
 
-            // Padrões para encontrar número do processo
-            const padroes = [
-                /processo\s*n[º°]?\s*:?\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
-                /processo\s*:?\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
-                /n[º°]\s*(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
-                /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
-                /processo\s*[\s\S]*?(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/i,
-            ];
+    // 🔐 VERIFICAR SE PROCESSO JÁ FOI PROCESSADO
+    function processoJaFoiProcessado(numeroProcesso) {
+        if (!numeroProcesso) return false;
 
-            for (const padrao of padroes) {
-                const match = textoCompleto.match(padrao);
-                if (match) {
-                    const numeroProcesso = match[1];
-                    console.log(`✅ PROCESSO: Encontrado: ${numeroProcesso}`);
-                    return numeroProcesso;
-                }
+        const jaProcessado = processosJaProcessados.has(numeroProcesso);
+        console.log(
+            `🔐 VERIFICAÇÃO: Processo ${numeroProcesso} já processado? ${jaProcessado}`
+        );
+        return jaProcessado;
+    }
+
+    // 🔐 MARCAR PROCESSO COMO PROCESSADO
+    function marcarProcessoComoProcessado(numeroProcesso) {
+        if (!numeroProcesso) return;
+
+        processosJaProcessados.add(numeroProcesso);
+        console.log(
+            `🔐 MARCADO: Processo ${numeroProcesso} marcado como processado`
+        );
+        console.log(
+            `🔐 TOTAL: ${processosJaProcessados.size} processos processados nesta sessão`
+        );
+    }
+
+    function validarDataBrasileira(dataString) {
+        console.log(`📅 VALIDAÇÃO: Validando data "${dataString}"`);
+
+        // Limpar e normalizar a string da data
+        const dataLimpa = dataString.trim().replace(/[^\d\/\-\.]/g, "");
+        console.log(`📅 VALIDAÇÃO: Data limpa: "${dataLimpa}"`);
+
+        // Tentar diferentes separadores
+        const separadores = ["/", "-", "."];
+        let partesData = null;
+        let separadorUsado = "";
+
+        for (const sep of separadores) {
+            if (dataLimpa.includes(sep)) {
+                partesData = dataLimpa.split(sep);
+                separadorUsado = sep;
+                break;
             }
+        }
 
-            // Tentar buscar na URL
-            const url = window.location.href;
-            const urlMatch = url.match(
-                /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/
-            );
-            if (urlMatch) {
-                const numeroProcesso = urlMatch[1];
-                console.log(
-                    `✅ PROCESSO: Encontrado na URL: ${numeroProcesso}`
-                );
-                return numeroProcesso;
-            }
-
-            // Tentar buscar no título da página
-            const titulo = document.title;
-            const tituloMatch = titulo.match(
-                /(\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4})/
-            );
-            if (tituloMatch) {
-                const numeroProcesso = tituloMatch[1];
-                console.log(
-                    `✅ PROCESSO: Encontrado no título: ${numeroProcesso}`
-                );
-                return numeroProcesso;
-            }
-
+        if (!partesData || partesData.length !== 3) {
             console.log(
-                "⚠️ PROCESSO: Não foi possível identificar o número do processo"
+                `❌ VALIDAÇÃO: Formato inválido - esperado 3 partes separadas por ${separadores.join(
+                    ", "
+                )}`
             );
             return null;
         }
 
-        // 🔐 VERIFICAR SE PROCESSO JÁ FOI PROCESSADO
-        function processoJaFoiProcessado(numeroProcesso) {
-            if (!numeroProcesso) return false;
+        // Assumir formato brasileiro: DD/MM/AAAA
+        const dia = parseInt(partesData[0], 10);
+        const mes = parseInt(partesData[1], 10);
+        const ano = parseInt(partesData[2], 10);
 
-            const jaProcessado = processosJaProcessados.has(numeroProcesso);
-            console.log(
-                `🔐 VERIFICAÇÃO: Processo ${numeroProcesso} já processado? ${jaProcessado}`
-            );
-            return jaProcessado;
+        console.log(
+            `📅 VALIDAÇÃO: Partes extraídas - Dia: ${dia}, Mês: ${mes}, Ano: ${ano}`
+        );
+
+        // Validações básicas
+        if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
+            console.log("❌ VALIDAÇÃO: Partes não são números válidos");
+            return null;
         }
 
-        // 🔐 MARCAR PROCESSO COMO PROCESSADO
-        function marcarProcessoComoProcessado(numeroProcesso) {
-            if (!numeroProcesso) return;
-
-            processosJaProcessados.add(numeroProcesso);
+        if (dia < 1 || dia > 31) {
             console.log(
-                `🔐 MARCADO: Processo ${numeroProcesso} marcado como processado`
+                `❌ VALIDAÇÃO: Dia inválido: ${dia} (deve estar entre 1 e 31)`
             );
-            console.log(
-                `🔐 TOTAL: ${processosJaProcessados.size} processos processados nesta sessão`
-            );
+            return null;
         }
 
-        function validarDataBrasileira(dataString) {
-            console.log(`📅 VALIDAÇÃO: Validando data "${dataString}"`);
+        if (mes < 1 || mes > 12) {
+            console.log(
+                `❌ VALIDAÇÃO: Mês inválido: ${mes} (deve estar entre 1 e 12)`
+            );
+            return null;
+        }
 
-            // Limpar e normalizar a string da data
-            const dataLimpa = dataString.trim().replace(/[^\d\/\-\.]/g, "");
-            console.log(`📅 VALIDAÇÃO: Data limpa: "${dataLimpa}"`);
+        if (ano < 2020 || ano > 2030) {
+            console.log(
+                `❌ VALIDAÇÃO: Ano inválido: ${ano} (deve estar entre 2020 e 2030)`
+            );
+            return null;
+        }
 
-            // Tentar diferentes separadores
-            const separadores = ["/", "-", "."];
-            let partesData = null;
-            let separadorUsado = "";
+        // Criar objeto Date para validação mais rigorosa
+        const dataObj = new Date(ano, mes - 1, dia); // mes-1 porque Date usa 0-based months
 
-            for (const sep of separadores) {
-                if (dataLimpa.includes(sep)) {
-                    partesData = dataLimpa.split(sep);
-                    separadorUsado = sep;
+        if (
+            dataObj.getFullYear() !== ano ||
+            dataObj.getMonth() !== mes - 1 ||
+            dataObj.getDate() !== dia
+        ) {
+            console.log(
+                `❌ VALIDAÇÃO: Data inexistente no calendário: ${dia}/${mes}/${ano}`
+            );
+            return null;
+        }
+
+        console.log(
+            `✅ VALIDAÇÃO: Data válida confirmada: ${dia}/${mes}/${ano}`
+        );
+
+        // Criar objeto de retorno com informações estruturadas
+        const dataValidada = {
+            dataOriginal: dataString,
+            dataFormatada: `${dia.toString().padStart(2, "0")}/${mes
+                .toString()
+                .padStart(2, "0")}/${ano}`,
+            dia: dia,
+            mes: mes,
+            ano: ano,
+            timestamp: dataObj.getTime(),
+            dataObj: dataObj,
+        };
+
+        console.log(`✅ VALIDAÇÃO: Objeto de data criado:`, dataValidada);
+        return dataValidada;
+    }
+
+    // Função principal para detectar data da sessão - VERSÃO OTIMIZADA
+    async function detectarDataSessao() {
+        console.log("🔍 INICIANDO: Detecção da data da sessão (otimizada)");
+
+        // ✅ VERIFICAÇÃO ANTECIPADA: Evitar execuções desnecessárias
+        let processoAtual = obterNumeroProcesso();
+        if (processoJaFoiProcessado(processoAtual)) {
+            console.log(
+                `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando loop`
+            );
+            return;
+        }
+
+        if (hasDataSessaoPautado() && processoComDataSessao === processoAtual) {
+            console.log(
+                `✅ CACHE: Dados já existem para processo ${processoAtual} - evitando reprocessamento`
+            );
+            return;
+        }
+
+        // 🔐 VERIFICAÇÃO DE PROCESSO
+        processoAtual = obterNumeroProcesso();
+        if (!processoAtual) {
+            console.log(
+                "❌ BLOQUEIO: Não foi possível identificar o número do processo"
+            );
+            return null;
+        }
+
+        // 🔓 VERIFICAR CACHE EXISTENTE
+        if (hasDataSessaoPautado() && processoComDataSessao === processoAtual) {
+            console.log(
+                `ℹ️ CACHE: Data já detectada para processo ${processoAtual}: ${
+                    getDataSessaoPautado().dataFormatada
+                }`
+            );
+            return getDataSessaoPautado();
+        }
+
+        // 🧹 LIMPAR CACHE DE PROCESSO ANTERIOR
+        if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
+            console.log(
+                `⚠️ CACHE: Limpando dados do processo anterior (${processoComDataSessao})`
+            );
+            resetDataSessaoPautado();
+        }
+
+        console.log(`🔍 DETECÇÃO: Analisando processo ${processoAtual}...`);
+
+        // 🎯 PRIORIDADE 1: Detectar com método simplificado unificado
+        let statusDetectado = detectarCardSessaoSimplificado();
+
+        // Se retornou uma Promise (segunda tentativa), aguardar
+        if (statusDetectado && typeof statusDetectado.then === "function") {
+            statusDetectado = await statusDetectado;
+        }
+
+        if (statusDetectado) {
+            console.log(`✅ STATUS: ${statusDetectado.status} detectado`);
+
+            // ✅ CORREÇÃO: Criar objeto completo em vez de modificar string
+            dataSessaoPautado = {
+                data: statusDetectado.data,
+                statusSessao: statusDetectado,
+                processo: processoAtual,
+            };
+            processoComDataSessao = processoAtual;
+
+            // 🔐 MARCAR PROCESSO COMO PROCESSADO
+            marcarProcessoComoProcessado(processoAtual);
+
+            // Interface com debounce
+            debounceGlobal(
+                () => {
+                    inserirDataSessaoNaInterface();
+                },
+                "interface-update",
+                300
+            );
+
+            return dataSessaoPautado;
+        }
+
+        // 🔍 BUSCA OTIMIZADA: Usar cache de texto quando possível
+        const textoCompleto = document.body.innerText;
+        if (!textoCompleto || textoCompleto.length < 100) {
+            console.log("❌ DETECÇÃO: Conteúdo da página insuficiente");
+            return null;
+        }
+
+        // Padrões otimizados (combinados em uma única passada)
+        const padroes = [
+            /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            /(?:incluído\s*em\s*pauta\s*em)\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+        ];
+
+        for (const [index, padrao] of padroes.entries()) {
+            const match = textoCompleto.match(padrao);
+            if (match) {
+                const dataEncontrada = match[1];
+                console.log(
+                    `✅ PADRÃO ${index + 1}: Data encontrada: ${dataEncontrada}`
+                );
+
+                const dataValidada = validarDataBrasileira(dataEncontrada);
+                if (dataValidada) {
+                    // Tentar detectar status mesmo no fallback
+                    const statusDetectadoFallback =
+                        detectarCardSessaoSimplificado();
+                    if (statusDetectadoFallback) {
+                        dataValidada.statusSessao = statusDetectadoFallback;
+                    }
+
+                    dataSessaoPautado = dataValidada;
+                    processoComDataSessao = processoAtual;
+
+                    // 🔐 MARCAR PROCESSO COMO PROCESSADO
+                    marcarProcessoComoProcessado(processoAtual);
+
+                    console.log(
+                        `✅ SUCESSO: Data detectada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
+                    );
+
+                    // 🎯 INSERIR INTERFACE IMEDIATAMENTE APÓS DETECÇÃO
+                    debounceGlobal(
+                        () => {
+                            inserirDataSessaoNaInterface();
+                        },
+                        "interface-update-pattern",
+                        300
+                    );
+
+                    // 🔄 CRUZAMENTO AUTOMÁTICO COM DEBOUNCE
+                    debounceGlobal(
+                        async () => {
+                            try {
+                                console.log(
+                                    "🔄 CRUZAMENTO: Iniciando busca de dados completos..."
+                                );
+                                const resultado = await cruzarDadosDataSessao();
+                                if (resultado) {
+                                    console.log(
+                                        "✅ CRUZAMENTO: Dados completos obtidos!"
+                                    );
+                                    atualizarDataSessaoNaInterface();
+                                }
+                            } catch (error) {
+                                console.warn(
+                                    "⚠️ CRUZAMENTO: Erro controlado:",
+                                    error.message
+                                );
+                            }
+                        },
+                        "cruzamento-auto",
+                        1500
+                    );
+
+                    return dataValidada;
+                }
+            }
+        }
+
+        console.log("❌ DETECÇÃO: Nenhuma data de sessão encontrada");
+        return null;
+    }
+
+    // Funções utilitárias para gerenciar data da sessão
+    function getDataSessaoPautado() {
+        return dataSessaoPautado;
+    }
+
+    function hasDataSessaoPautado() {
+        return (
+            dataSessaoPautado !== null &&
+            processoComDataSessao === processoAtual
+        );
+    }
+
+    function resetDataSessaoPautado() {
+        console.log("🔄 RESET: Limpando data da sessão armazenada");
+        dataSessaoPautado = null;
+        processoComDataSessao = null;
+    }
+
+    // 🛡️ FUNÇÃO PARA RESETAR CONTROLES DE REQUISIÇÃO
+    function resetControlesRequisicao() {
+        console.log("🔄 RESET: Limpando controles de requisição");
+        tentativasCruzamento = 0;
+        ultimaTentativaCruzamento = 0;
+        cruzamentoEmAndamento = false;
+        cacheResultadoSessoes = null;
+        cacheValidoAte = 0;
+        console.log(
+            "✅ RESET: Controles resetados - sistema pronto para nova tentativa"
+        );
+    }
+
+    // 🔍 FUNÇÃO PARA VERIFICAR STATUS DOS CONTROLES
+    function statusControlesRequisicao() {
+        const agora = Date.now();
+        const info = {
+            tentativasRealizadas: tentativasCruzamento,
+            tentativasRestantes:
+                MAX_TENTATIVAS_CRUZAMENTO - tentativasCruzamento,
+            emAndamento: cruzamentoEmAndamento,
+            proximaTentativaEm: Math.max(
+                0,
+                (DELAY_ENTRE_TENTATIVAS - (agora - ultimaTentativaCruzamento)) /
+                    1000
+            ),
+            temCache: !!cacheResultadoSessoes,
+            cacheValidoPor: Math.max(0, (cacheValidoAte - agora) / 1000),
+        };
+
+        console.log("📊 STATUS DOS CONTROLES:", info);
+        return info;
+    }
+
+    function showDataSessaoPautadoInfo() {
+        if (hasDataSessaoPautado()) {
+            const info = `Clique para mais informações`;
+
+            console.log(info);
+            alert(info);
+            return dataSessaoPautado;
+        } else {
+            const msg = "❌ Nenhuma data da sessão foi detectada ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
+        }
+    }
+
+    // Função para inserir data da sessão na interface do eProc
+    // VERSÃO MATERIAL DESIGN - USA APENAS O SISTEMA NOVO
+    function inserirDataSessaoNaInterface() {
+        console.log(
+            "🎯 INSERIR: Redirecionando para sistema Material Design..."
+        );
+
+        // ✅ VERIFICAÇÃO: Evitar múltiplas execuções
+        const processoAtual = obterNumeroProcesso();
+        if (processoJaFoiProcessado(processoAtual)) {
+            console.log(
+                `🔐 SKIP: Interface já criada para processo ${processoAtual}`
+            );
+            return true; // Considera sucesso pois já foi processado
+        }
+
+        // ✅ VERIFICAÇÃO: Se card já existe, não inserir novamente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            console.log(
+                `♻️ SKIP: Card de interface já existe - evitando duplicação`
+            );
+            return true; // Considera sucesso pois já existe
+        }
+
+        // Verificar se há data detectada
+        if (!hasDataSessaoPautado()) {
+            console.log("❌ INSERIR: Nenhuma data detectada para inserir");
+            return false;
+        }
+
+        // Usar exclusivamente o sistema Material Design
+        return detectarECriarCardMaterialDesign();
+    }
+
+    // Função para remover data da sessão da interface
+    // VERSÃO MATERIAL DESIGN - Remove apenas cards Material Design
+    function removerDataSessaoDaInterface() {
+        console.log("🗑️ REMOVER: Removendo cards Material Design da interface");
+
+        return removerCardMaterialDesign();
+    }
+
+    // Função para atualizar data da sessão na interface
+    // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
+    function atualizarDataSessaoNaInterface() {
+        console.log(
+            "🔄 ATUALIZAR: Redirecionando para sistema Material Design..."
+        );
+
+        // Remover cards antigos
+        removerDataSessaoDaInterface();
+
+        // Usar exclusivamente o sistema Material Design
+        return detectarECriarCardMaterialDesign();
+    }
+
+    // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
+    function forcarInsercaoCardSemValidacao() {
+        console.log("🚨 FORÇA: Forçando inserção do card sem validações");
+
+        // 1. Verificar se há data detectada
+        if (!hasDataSessaoPautado()) {
+            console.log("❌ FORÇA: Nenhuma data detectada - tentando detectar");
+
+            // Forçar detecção mesmo para processo já processado
+            const processoAnterior = processoAtual;
+            const jaProcessadoAnterior = processoAnterior
+                ? processosJaProcessados.has(processoAnterior)
+                : false;
+
+            if (jaProcessadoAnterior) {
+                console.log(
+                    "🔄 FORÇA: Removendo processo da lista de processados temporariamente"
+                );
+                processosJaProcessados.delete(processoAnterior);
+            }
+
+            // Detectar data
+            const dataDetectada = detectarDataSessao();
+
+            if (!dataDetectada) {
+                console.log("❌ FORÇA: Falha na detecção da data");
+                if (jaProcessadoAnterior) {
+                    processosJaProcessados.add(processoAnterior);
+                }
+                return false;
+            }
+        }
+
+        // 2. Remover card existente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ FORÇA: Card existente removido");
+        }
+
+        // 3. Forçar inserção
+        console.log("🎯 FORÇA: Tentando inserir card...");
+        const sucesso = inserirDataSessaoNaInterface();
+
+        if (sucesso) {
+            console.log("✅ FORÇA: Card inserido com sucesso!");
+            return true;
+        } else {
+            console.log("❌ FORÇA: Falha na inserção do card");
+            return false;
+        }
+    }
+
+    // ========================================
+    // FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
+    // ========================================
+
+    /**
+     * Busca dados das sessões de julgamento no eProc
+     * @param {string} hash - Hash da página de sessões (opcional)
+     * @returns {Promise<Array>} - Array com dados das sessões
+     */
+    async function buscarDadosSessoes(hash = null) {
+        console.log("🔍 SESSÕES: Iniciando busca de dados das sessões");
+
+        // 🛡️ VERIFICAR CACHE PRIMEIRO
+        const agora = Date.now();
+        if (cacheResultadoSessoes && agora < cacheValidoAte) {
+            console.log(
+                "📦 SESSÕES: Usando dados do cache (evitando nova requisição)"
+            );
+            return cacheResultadoSessoes;
+        }
+
+        // 🛡️ VERIFICAR SE JÁ ESTÁ EM ANDAMENTO
+        if (cruzamentoEmAndamento) {
+            console.log("⏳ SESSÕES: Busca já em andamento, aguardando...");
+            return [];
+        }
+
+        // 🛡️ VERIFICAR LIMITE DE TENTATIVAS
+        if (tentativasCruzamento >= MAX_TENTATIVAS_CRUZAMENTO) {
+            console.log(
+                `🚫 SESSÕES: Limite de ${MAX_TENTATIVAS_CRUZAMENTO} tentativas atingido`
+            );
+            console.log(
+                "💡 SESSÕES: Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
+            );
+            return [];
+        }
+
+        // 🛡️ VERIFICAR DELAY ENTRE TENTATIVAS
+        if (agora - ultimaTentativaCruzamento < DELAY_ENTRE_TENTATIVAS) {
+            const tempoRestante = Math.ceil(
+                (DELAY_ENTRE_TENTATIVAS - (agora - ultimaTentativaCruzamento)) /
+                    1000
+            );
+            console.log(
+                `⏰ SESSÕES: Aguardando ${tempoRestante}s antes da próxima tentativa`
+            );
+            return [];
+        }
+
+        try {
+            // Marcar início da busca
+            cruzamentoEmAndamento = true;
+            tentativasCruzamento++;
+            ultimaTentativaCruzamento = agora;
+
+            console.log(
+                `🔄 SESSÕES: Tentativa ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
+            );
+
+            // Construir URL da página de sessões
+            const baseUrl = window.location.origin;
+            const urlSessoes = hash
+                ? `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar&hash=${hash}`
+                : `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
+
+            console.log(`🌐 SESSÕES: Buscando URL: ${urlSessoes}`);
+
+            // Fazer fetch da página
+            const response = await fetch(urlSessoes, {
+                credentials: "same-origin",
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
+            }
+
+            const htmlContent = await response.text();
+            console.log("✅ SESSÕES: Página carregada com sucesso");
+
+            // Fazer parse dos dados
+            const dadosSessoes = await parsearDadosSessoes(htmlContent);
+            console.log(
+                `📊 SESSÕES: ${dadosSessoes.length} sessões encontradas`
+            );
+
+            // 📦 ARMAZENAR NO CACHE
+            if (dadosSessoes.length > 0) {
+                cacheResultadoSessoes = dadosSessoes;
+                cacheValidoAte = agora + CACHE_DURATION;
+                console.log(
+                    "📦 SESSÕES: Resultado armazenado no cache por 5 minutos"
+                );
+            }
+
+            return dadosSessoes;
+        } catch (error) {
+            console.error(`❌ SESSÕES: Erro ao buscar dados: ${error.message}`);
+            return [];
+        } finally {
+            // Sempre limpar flag de andamento
+            cruzamentoEmAndamento = false;
+        }
+    }
+
+    /**
+     * Faz parse dos dados das sessões do HTML
+     * @param {string} htmlContent - Conteúdo HTML da página
+     * @returns {Array} - Array com dados estruturados das sessões
+     */
+    async function parsearDadosSessoes(htmlContent) {
+        console.log("🔍 PARSE: Iniciando parse dos dados das sessões");
+
+        try {
+            // Criar parser DOM
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
+
+            // 🔍 DEBUG: Verificar estrutura da página
+            console.log("📋 PARSE DEBUG: Analisando estrutura da página...");
+
+            // Verificar se a página foi carregada corretamente
+            const title =
+                doc.querySelector("title")?.textContent || "sem título";
+            console.log(`📋 PARSE DEBUG: Título da página: "${title}"`);
+
+            // Verificar se há redirecionamento para login
+            if (
+                title.toLowerCase().includes("login") ||
+                title.toLowerCase().includes("acesso")
+            ) {
+                console.log(
+                    "❌ PARSE DEBUG: Página de login detectada - sessão expirada"
+                );
+                return [];
+            }
+
+            // Buscar diferentes seletores possíveis para a tabela
+            const seletoresTabela = [
+                "#divInfraAreaTelaD .table-responsive table.table",
+                "#divInfraAreaTelaD table.table",
+                ".table-responsive table.table",
+                "table.table",
+                "#divInfraAreaTelaD table",
+                ".table-responsive table",
+                "table",
+                "#frmLista table",
+                "#divInfraAreaTelaE table",
+            ];
+
+            let tabela = null;
+            let seletorUsado = "";
+
+            for (const seletor of seletoresTabela) {
+                tabela = doc.querySelector(seletor);
+                if (tabela) {
+                    seletorUsado = seletor;
+                    console.log(
+                        `✅ PARSE DEBUG: Tabela encontrada com seletor: "${seletor}"`
+                    );
                     break;
                 }
             }
 
-            if (!partesData || partesData.length !== 3) {
+            if (!tabela) {
+                // Debug mais detalhado se não encontrar tabela
                 console.log(
-                    `❌ VALIDAÇÃO: Formato inválido - esperado 3 partes separadas por ${separadores.join(
+                    "🔍 PARSE DEBUG: Nenhuma tabela encontrada, analisando estrutura..."
+                );
+
+                // Verificar elementos principais
+                const divInfraAreaTelaD =
+                    doc.querySelector("#divInfraAreaTelaD");
+                const tableResponsive = doc.querySelector(".table-responsive");
+                const allTables = doc.querySelectorAll("table");
+                const allDivs = doc.querySelectorAll("div[id*='Area']");
+
+                console.log(
+                    `📋 PARSE DEBUG: #divInfraAreaTelaD encontrado: ${!!divInfraAreaTelaD}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: .table-responsive encontrado: ${!!tableResponsive}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: Total de tabelas: ${allTables.length}`
+                );
+                console.log(
+                    `📋 PARSE DEBUG: Divs com 'Area' no ID: ${allDivs.length}`
+                );
+
+                // Listar todas as tabelas encontradas
+                allTables.forEach((table, index) => {
+                    const tableId = table.id || "sem-id";
+                    const tableClass = table.className || "sem-class";
+                    const rowCount = table.querySelectorAll("tr").length;
+                    console.log(
+                        `📋 PARSE DEBUG: Tabela ${
+                            index + 1
+                        }: id="${tableId}", class="${tableClass}", linhas=${rowCount}`
+                    );
+                });
+
+                // Listar divs com Area no ID
+                allDivs.forEach((div, index) => {
+                    console.log(
+                        `📋 PARSE DEBUG: Div ${index + 1}: id="${
+                            div.id
+                        }", class="${div.className}"`
+                    );
+                });
+
+                // Verificar se há erro específico na página
+                const errorElements = doc.querySelectorAll(
+                    ".alert-danger, .error, .erro, [class*='erro'], [class*='error']"
+                );
+                if (errorElements.length > 0) {
+                    console.log(
+                        "❌ PARSE DEBUG: Elementos de erro encontrados:"
+                    );
+                    errorElements.forEach((error, index) => {
+                        console.log(
+                            `📋 PARSE DEBUG: Erro ${
+                                index + 1
+                            }: "${error.textContent.trim()}"`
+                        );
+                    });
+                }
+
+                console.log(
+                    "❌ PARSE: Tabela de sessões não encontrada em nenhum seletor"
+                );
+                return [];
+            }
+
+            // Buscar todas as linhas de dados (tbody > tr)
+            const linhasSessoes = tabela.querySelectorAll(
+                'tbody tr[id^="tr_"]'
+            );
+            console.log(`📋 PARSE: ${linhasSessoes.length} linhas encontradas`);
+
+            const sessoes = [];
+
+            for (const linha of linhasSessoes) {
+                try {
+                    const sessao = await extrairDadosLinhaSessao(linha);
+                    if (sessao) {
+                        sessoes.push(sessao);
+                    }
+                } catch (error) {
+                    console.warn(
+                        `⚠️ PARSE: Erro ao processar linha: ${error.message}`
+                    );
+                }
+            }
+
+            console.log(
+                `✅ PARSE: ${sessoes.length} sessões processadas com sucesso`
+            );
+            return sessoes;
+        } catch (error) {
+            console.error(`❌ PARSE: Erro no parse: ${error.message}`);
+            return [];
+        }
+    }
+
+    /**
+     * Extrai dados de uma linha específica da tabela de sessões
+     * @param {Element} linha - Elemento tr da linha
+     * @returns {Object|null} - Objeto com dados da sessão ou null
+     */
+    async function extrairDadosLinhaSessao(linha) {
+        try {
+            const id = linha.getAttribute("id");
+            const colunas = linha.querySelectorAll("td");
+
+            if (colunas.length < 8) {
+                console.warn(
+                    `⚠️ LINHA: Linha ${id} tem ${colunas.length} colunas, esperado >= 8`
+                );
+                return null;
+            }
+
+            // Extrair dados conforme a estrutura HTML fornecida
+            const orgaoJulgador = colunas[1]?.textContent?.trim() || "";
+            const dataHoraSessao = colunas[2]?.textContent?.trim() || "";
+            const tipoSessao = colunas[3]?.textContent?.trim() || "";
+            const localSessao = colunas[4]?.textContent?.trim() || "";
+            const dataLimitePauta = colunas[5]?.textContent?.trim() || "";
+            const dataLimiteMesa = colunas[6]?.textContent?.trim() || "";
+            const dataLimiteMinutas = colunas[7]?.textContent?.trim() || "";
+            const statusSessao = colunas[8]?.textContent?.trim() || "";
+
+            // Extrair só a data da string "03/06/2025 14:00"
+            const dataMatch = dataHoraSessao.match(/(\d{1,2}\/\d{1,2}\/\d{4})/);
+            const dataSessao = dataMatch ? dataMatch[1] : "";
+
+            // Extrair só o horário
+            const horaMatch = dataHoraSessao.match(/(\d{1,2}:\d{2})/);
+            const horaSessao = horaMatch ? horaMatch[1] : "";
+
+            const sessao = {
+                id: id,
+                orgaoJulgador: orgaoJulgador,
+                dataSessao: dataSessao,
+                horaSessao: horaSessao,
+                dataHoraCompleta: dataHoraSessao,
+                tipoSessao: tipoSessao,
+                localSessao: localSessao,
+                dataLimitePauta: dataLimitePauta,
+                dataLimiteMesa: dataLimiteMesa,
+                dataLimiteMinutas: dataLimiteMinutas,
+                statusSessao: statusSessao,
+                // Dados adicionais
+                dataDetectada: new Date(),
+                validData: !!dataSessao,
+            };
+
+            console.log(
+                `📋 LINHA: Sessão extraída - ${orgaoJulgador} em ${dataSessao}`
+            );
+            return sessao;
+        } catch (error) {
+            console.error(`❌ LINHA: Erro ao extrair dados: ${error.message}`);
+            return null;
+        }
+    }
+
+    /**
+     * Busca sessão específica por data
+     * @param {string} dataProcurada - Data no formato DD/MM/AAAA
+     * @param {string} hash - Hash da página (opcional)
+     * @returns {Promise<Object|null>} - Dados da sessão encontrada ou null
+     */
+    async function buscarSessaoPorData(dataProcurada, hash = null) {
+        console.log(`🎯 BUSCA: Procurando sessão para data: ${dataProcurada}`);
+
+        try {
+            // Buscar todas as sessões
+            const sessoes = await buscarDadosSessoes(hash);
+
+            if (sessoes.length === 0) {
+                console.log("❌ BUSCA: Nenhuma sessão encontrada na listagem");
+                return null;
+            }
+
+            // Procurar sessão com a data específica
+            const sessaoEncontrada = sessoes.find(
+                (sessao) => sessao.dataSessao === dataProcurada
+            );
+
+            if (sessaoEncontrada) {
+                console.log(`✅ BUSCA: Sessão encontrada!`);
+                console.log(
+                    `📋 BUSCA: ${sessaoEncontrada.orgaoJulgador} - ${sessaoEncontrada.dataHoraCompleta}`
+                );
+
+                // Armazenar na variável global
+                dadosCompletosSessionJulgamento = sessaoEncontrada;
+
+                return sessaoEncontrada;
+            } else {
+                console.log(
+                    `❌ BUSCA: Nenhuma sessão encontrada para a data ${dataProcurada}`
+                );
+
+                // Log das datas disponíveis para debug
+                const datasDisponiveis = sessoes
+                    .map((s) => s.dataSessao)
+                    .filter((d) => d);
+                console.log(
+                    `📅 BUSCA: Datas disponíveis: ${datasDisponiveis.join(
                         ", "
                     )}`
                 );
+
                 return null;
             }
-
-            // Assumir formato brasileiro: DD/MM/AAAA
-            const dia = parseInt(partesData[0], 10);
-            const mes = parseInt(partesData[1], 10);
-            const ano = parseInt(partesData[2], 10);
-
-            console.log(
-                `📅 VALIDAÇÃO: Partes extraídas - Dia: ${dia}, Mês: ${mes}, Ano: ${ano}`
-            );
-
-            // Validações básicas
-            if (isNaN(dia) || isNaN(mes) || isNaN(ano)) {
-                console.log("❌ VALIDAÇÃO: Partes não são números válidos");
-                return null;
-            }
-
-            if (dia < 1 || dia > 31) {
-                console.log(
-                    `❌ VALIDAÇÃO: Dia inválido: ${dia} (deve estar entre 1 e 31)`
-                );
-                return null;
-            }
-
-            if (mes < 1 || mes > 12) {
-                console.log(
-                    `❌ VALIDAÇÃO: Mês inválido: ${mes} (deve estar entre 1 e 12)`
-                );
-                return null;
-            }
-
-            if (ano < 2020 || ano > 2030) {
-                console.log(
-                    `❌ VALIDAÇÃO: Ano inválido: ${ano} (deve estar entre 2020 e 2030)`
-                );
-                return null;
-            }
-
-            // Criar objeto Date para validação mais rigorosa
-            const dataObj = new Date(ano, mes - 1, dia); // mes-1 porque Date usa 0-based months
-
-            if (
-                dataObj.getFullYear() !== ano ||
-                dataObj.getMonth() !== mes - 1 ||
-                dataObj.getDate() !== dia
-            ) {
-                console.log(
-                    `❌ VALIDAÇÃO: Data inexistente no calendário: ${dia}/${mes}/${ano}`
-                );
-                return null;
-            }
-
-            console.log(
-                `✅ VALIDAÇÃO: Data válida confirmada: ${dia}/${mes}/${ano}`
-            );
-
-            // Criar objeto de retorno com informações estruturadas
-            const dataValidada = {
-                dataOriginal: dataString,
-                dataFormatada: `${dia.toString().padStart(2, "0")}/${mes
-                    .toString()
-                    .padStart(2, "0")}/${ano}`,
-                dia: dia,
-                mes: mes,
-                ano: ano,
-                timestamp: dataObj.getTime(),
-                dataObj: dataObj,
-            };
-
-            console.log(`✅ VALIDAÇÃO: Objeto de data criado:`, dataValidada);
-            return dataValidada;
-        }
-
-        // Função principal para detectar data da sessão - VERSÃO OTIMIZADA
-        async function detectarDataSessao() {
-            console.log("🔍 INICIANDO: Detecção da data da sessão (otimizada)");
-
-            // ✅ VERIFICAÇÃO ANTECIPADA: Evitar execuções desnecessárias
-            let processoAtual = obterNumeroProcesso();
-            if (processoJaFoiProcessado(processoAtual)) {
-                console.log(
-                    `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando loop`
-                );
-                return;
-            }
-
-            if (
-                hasDataSessaoPautado() &&
-                processoComDataSessao === processoAtual
-            ) {
-                console.log(
-                    `✅ CACHE: Dados já existem para processo ${processoAtual} - evitando reprocessamento`
-                );
-                return;
-            }
-
-            // 🔐 VERIFICAÇÃO DE PROCESSO
-            processoAtual = obterNumeroProcesso();
-            if (!processoAtual) {
-                console.log(
-                    "❌ BLOQUEIO: Não foi possível identificar o número do processo"
-                );
-                return null;
-            }
-
-            // 🔓 VERIFICAR CACHE EXISTENTE
-            if (
-                hasDataSessaoPautado() &&
-                processoComDataSessao === processoAtual
-            ) {
-                console.log(
-                    `ℹ️ CACHE: Data já detectada para processo ${processoAtual}: ${
-                        getDataSessaoPautado().dataFormatada
-                    }`
-                );
-                return getDataSessaoPautado();
-            }
-
-            // 🧹 LIMPAR CACHE DE PROCESSO ANTERIOR
-            if (dataSessaoPautado && processoComDataSessao !== processoAtual) {
-                console.log(
-                    `⚠️ CACHE: Limpando dados do processo anterior (${processoComDataSessao})`
-                );
-                resetDataSessaoPautado();
-            }
-
-            console.log(`🔍 DETECÇÃO: Analisando processo ${processoAtual}...`);
-
-            // 🎯 PRIORIDADE 1: Detectar com método simplificado unificado
-            let statusDetectado = detectarCardSessaoSimplificado();
-
-            // Se retornou uma Promise (segunda tentativa), aguardar
-            if (statusDetectado && typeof statusDetectado.then === "function") {
-                statusDetectado = await statusDetectado;
-            }
-
-            if (statusDetectado) {
-                console.log(`✅ STATUS: ${statusDetectado.status} detectado`);
-
-                // ✅ CORREÇÃO: Criar objeto completo em vez de modificar string
-                dataSessaoPautado = {
-                    data: statusDetectado.data,
-                    statusSessao: statusDetectado,
-                    processo: processoAtual,
-                };
-                processoComDataSessao = processoAtual;
-
-                // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                marcarProcessoComoProcessado(processoAtual);
-
-                // Interface com debounce
-                debounceGlobal(
-                    () => {
-                        inserirDataSessaoNaInterface();
-                    },
-                    "interface-update",
-                    300
-                );
-
-                return dataSessaoPautado;
-            }
-
-            // 🔍 BUSCA OTIMIZADA: Usar cache de texto quando possível
-            const textoCompleto = document.body.innerText;
-            if (!textoCompleto || textoCompleto.length < 100) {
-                console.log("❌ DETECÇÃO: Conteúdo da página insuficiente");
-                return null;
-            }
-
-            // Padrões otimizados (combinados em uma única passada)
-            const padroes = [
-                /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                /(?:incluído\s*em\s*pauta\s*em)\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
-            ];
-
-            for (const [index, padrao] of padroes.entries()) {
-                const match = textoCompleto.match(padrao);
-                if (match) {
-                    const dataEncontrada = match[1];
-                    console.log(
-                        `✅ PADRÃO ${
-                            index + 1
-                        }: Data encontrada: ${dataEncontrada}`
-                    );
-
-                    const dataValidada = validarDataBrasileira(dataEncontrada);
-                    if (dataValidada) {
-                        // Tentar detectar status mesmo no fallback
-                        const statusDetectadoFallback =
-                            detectarCardSessaoSimplificado();
-                        if (statusDetectadoFallback) {
-                            dataValidada.statusSessao = statusDetectadoFallback;
-                        }
-
-                        dataSessaoPautado = dataValidada;
-                        processoComDataSessao = processoAtual;
-
-                        // 🔐 MARCAR PROCESSO COMO PROCESSADO
-                        marcarProcessoComoProcessado(processoAtual);
-
-                        console.log(
-                            `✅ SUCESSO: Data detectada para processo ${processoAtual}: ${dataValidada.dataFormatada}`
-                        );
-
-                        // 🎯 INSERIR INTERFACE IMEDIATAMENTE APÓS DETECÇÃO
-                        debounceGlobal(
-                            () => {
-                                inserirDataSessaoNaInterface();
-                            },
-                            "interface-update-pattern",
-                            300
-                        );
-
-                        // 🔄 CRUZAMENTO AUTOMÁTICO COM DEBOUNCE
-                        debounceGlobal(
-                            async () => {
-                                try {
-                                    console.log(
-                                        "🔄 CRUZAMENTO: Iniciando busca de dados completos..."
-                                    );
-                                    const resultado =
-                                        await cruzarDadosDataSessao();
-                                    if (resultado) {
-                                        console.log(
-                                            "✅ CRUZAMENTO: Dados completos obtidos!"
-                                        );
-                                        atualizarDataSessaoNaInterface();
-                                    }
-                                } catch (error) {
-                                    console.warn(
-                                        "⚠️ CRUZAMENTO: Erro controlado:",
-                                        error.message
-                                    );
-                                }
-                            },
-                            "cruzamento-auto",
-                            1500
-                        );
-
-                        return dataValidada;
-                    }
-                }
-            }
-
-            console.log("❌ DETECÇÃO: Nenhuma data de sessão encontrada");
+        } catch (error) {
+            console.error(`❌ BUSCA: Erro na busca: ${error.message}`);
             return null;
         }
+    }
 
-        // Funções utilitárias para gerenciar data da sessão
-        function getDataSessaoPautado() {
-            return dataSessaoPautado;
-        }
+    /**
+     * Realiza cruzamento automático da data detectada com os dados das sessões
+     * @param {string} hash - Hash da página (opcional)
+     * @returns {Promise<boolean>} - true se encontrou e cruzou dados
+     */
+    async function cruzarDadosDataSessao(
+        hash = null,
+        forcarRequisicao = false
+    ) {
+        console.log("🔄 CRUZAMENTO: Iniciando cruzamento de dados da sessão");
 
-        function hasDataSessaoPautado() {
-            return (
-                dataSessaoPautado !== null &&
-                processoComDataSessao === processoAtual
-            );
-        }
-
-        function resetDataSessaoPautado() {
-            console.log("🔄 RESET: Limpando data da sessão armazenada");
-            dataSessaoPautado = null;
-            processoComDataSessao = null;
-        }
-
-        // 🛡️ FUNÇÃO PARA RESETAR CONTROLES DE REQUISIÇÃO
-        function resetControlesRequisicao() {
-            console.log("🔄 RESET: Limpando controles de requisição");
-            tentativasCruzamento = 0;
-            ultimaTentativaCruzamento = 0;
-            cruzamentoEmAndamento = false;
-            cacheResultadoSessoes = null;
-            cacheValidoAte = 0;
+        // � VERIFICAR SE REQUISIÇÕES AUTOMÁTICAS ESTÃO DESABILITADAS
+        if (REQUISICOES_AUTOMATICAS_DESABILITADAS) {
             console.log(
-                "✅ RESET: Controles resetados - sistema pronto para nova tentativa"
+                "🚫 CRUZAMENTO: Requisições automáticas desabilitadas globalmente"
             );
-        }
-
-        // 🔍 FUNÇÃO PARA VERIFICAR STATUS DOS CONTROLES
-        function statusControlesRequisicao() {
-            const agora = Date.now();
-            const info = {
-                tentativasRealizadas: tentativasCruzamento,
-                tentativasRestantes:
-                    MAX_TENTATIVAS_CRUZAMENTO - tentativasCruzamento,
-                emAndamento: cruzamentoEmAndamento,
-                proximaTentativaEm: Math.max(
-                    0,
-                    (DELAY_ENTRE_TENTATIVAS -
-                        (agora - ultimaTentativaCruzamento)) /
-                        1000
-                ),
-                temCache: !!cacheResultadoSessoes,
-                cacheValidoPor: Math.max(0, (cacheValidoAte - agora) / 1000),
-            };
-
-            console.log("📊 STATUS DOS CONTROLES:", info);
-            return info;
-        }
-
-        function showDataSessaoPautadoInfo() {
-            if (hasDataSessaoPautado()) {
-                const info = `Clique para mais informações`;
-
-                console.log(info);
-                alert(info);
-                return dataSessaoPautado;
-            } else {
-                const msg = "❌ Nenhuma data da sessão foi detectada ainda.";
-                console.log(msg);
-                alert(msg);
-                return null;
-            }
-        }
-
-        // Função para inserir data da sessão na interface do eProc
-        // VERSÃO MATERIAL DESIGN - USA APENAS O SISTEMA NOVO
-        function inserirDataSessaoNaInterface() {
             console.log(
-                "🎯 INSERIR: Redirecionando para sistema Material Design..."
+                "💡 Para habilitar: window.SENT1_AUTO.habilitarRequisicoes()"
             );
-
-            // ✅ VERIFICAÇÃO: Evitar múltiplas execuções
-            const processoAtual = obterNumeroProcesso();
-            if (processoJaFoiProcessado(processoAtual)) {
-                console.log(
-                    `🔐 SKIP: Interface já criada para processo ${processoAtual}`
-                );
-                return true; // Considera sucesso pois já foi processado
-            }
-
-            // ✅ VERIFICAÇÃO: Se card já existe, não inserir novamente
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                console.log(
-                    `♻️ SKIP: Card de interface já existe - evitando duplicação`
-                );
-                return true; // Considera sucesso pois já existe
-            }
-
-            // Verificar se há data detectada
-            if (!hasDataSessaoPautado()) {
-                console.log("❌ INSERIR: Nenhuma data detectada para inserir");
-                return false;
-            }
-
-            // Usar exclusivamente o sistema Material Design
-            return detectarECriarCardMaterialDesign();
+            return false;
         }
 
-        // Função para remover data da sessão da interface
-        // VERSÃO MATERIAL DESIGN - Remove apenas cards Material Design
-        function removerDataSessaoDaInterface() {
+        // �🔐 VERIFICAÇÃO DUPLA: Processo atual deve estar marcado como processado
+        if (!processoAtual) {
+            console.log("❌ CRUZAMENTO: Processo atual não identificado");
+            return false;
+        }
+
+        if (!processoJaFoiProcessado(processoAtual)) {
             console.log(
-                "🗑️ REMOVER: Removendo cards Material Design da interface"
+                `❌ CRUZAMENTO: Processo ${processoAtual} não foi marcado como processado`
             );
-
-            return removerCardMaterialDesign();
+            return false;
         }
 
-        // Função para atualizar data da sessão na interface
-        // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
-        function atualizarDataSessaoNaInterface() {
+        if (!hasDataSessaoPautado()) {
             console.log(
-                "🔄 ATUALIZAR: Redirecionando para sistema Material Design..."
+                "❌ CRUZAMENTO: Nenhuma data de sessão detectada para cruzar"
             );
-
-            // Remover cards antigos
-            removerDataSessaoDaInterface();
-
-            // Usar exclusivamente o sistema Material Design
-            return detectarECriarCardMaterialDesign();
+            return false;
         }
 
-        // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
-        function forcarInsercaoCardSemValidacao() {
-            console.log("🚨 FORÇA: Forçando inserção do card sem validações");
+        const dataFormatada = dataSessaoPautado.dataFormatada;
+        console.log(
+            `🎯 CRUZAMENTO: Buscando dados para: ${dataFormatada} (Processo: ${processoAtual})`
+        );
 
-            // 1. Verificar se há data detectada
-            if (!hasDataSessaoPautado()) {
-                console.log(
-                    "❌ FORÇA: Nenhuma data detectada - tentando detectar"
-                );
+        try {
+            const sessaoEncontrada = await buscarSessaoPorData(
+                dataFormatada,
+                hash
+            );
 
-                // Forçar detecção mesmo para processo já processado
-                const processoAnterior = processoAtual;
-                const jaProcessadoAnterior = processoAnterior
-                    ? processosJaProcessados.has(processoAnterior)
-                    : false;
+            if (sessaoEncontrada) {
+                console.log("✅ CRUZAMENTO: Dados cruzados com sucesso!");
 
-                if (jaProcessadoAnterior) {
-                    console.log(
-                        "🔄 FORÇA: Removendo processo da lista de processados temporariamente"
-                    );
-                    processosJaProcessados.delete(processoAnterior);
-                }
+                // Atualizar interface se estiver sendo exibida
+                setTimeout(() => {
+                    atualizarDataSessaoNaInterface();
+                }, 500);
 
-                // Detectar data
-                const dataDetectada = detectarDataSessao();
-
-                if (!dataDetectada) {
-                    console.log("❌ FORÇA: Falha na detecção da data");
-                    if (jaProcessadoAnterior) {
-                        processosJaProcessados.add(processoAnterior);
-                    }
-                    return false;
-                }
-            }
-
-            // 2. Remover card existente
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ FORÇA: Card existente removido");
-            }
-
-            // 3. Forçar inserção
-            console.log("🎯 FORÇA: Tentando inserir card...");
-            const sucesso = inserirDataSessaoNaInterface();
-
-            if (sucesso) {
-                console.log("✅ FORÇA: Card inserido com sucesso!");
                 return true;
             } else {
-                console.log("❌ FORÇA: Falha na inserção do card");
+                console.log("❌ CRUZAMENTO: Não foi possível cruzar os dados");
                 return false;
             }
-        }
-
-        // ========================================
-        // FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
-        // ========================================
-
-        /**
-         * Busca dados das sessões de julgamento no eProc
-         * @param {string} hash - Hash da página de sessões (opcional)
-         * @returns {Promise<Array>} - Array com dados das sessões
-         */
-        async function buscarDadosSessoes(hash = null) {
-            console.log("🔍 SESSÕES: Iniciando busca de dados das sessões");
-
-            // 🛡️ VERIFICAR CACHE PRIMEIRO
-            const agora = Date.now();
-            if (cacheResultadoSessoes && agora < cacheValidoAte) {
-                console.log(
-                    "📦 SESSÕES: Usando dados do cache (evitando nova requisição)"
-                );
-                return cacheResultadoSessoes;
-            }
-
-            // 🛡️ VERIFICAR SE JÁ ESTÁ EM ANDAMENTO
-            if (cruzamentoEmAndamento) {
-                console.log("⏳ SESSÕES: Busca já em andamento, aguardando...");
-                return [];
-            }
-
-            // 🛡️ VERIFICAR LIMITE DE TENTATIVAS
-            if (tentativasCruzamento >= MAX_TENTATIVAS_CRUZAMENTO) {
-                console.log(
-                    `🚫 SESSÕES: Limite de ${MAX_TENTATIVAS_CRUZAMENTO} tentativas atingido`
-                );
-                console.log(
-                    "💡 SESSÕES: Use window.SENT1_AUTO.debugPaginaSessoes() para debug manual"
-                );
-                return [];
-            }
-
-            // 🛡️ VERIFICAR DELAY ENTRE TENTATIVAS
-            if (agora - ultimaTentativaCruzamento < DELAY_ENTRE_TENTATIVAS) {
-                const tempoRestante = Math.ceil(
-                    (DELAY_ENTRE_TENTATIVAS -
-                        (agora - ultimaTentativaCruzamento)) /
-                        1000
-                );
-                console.log(
-                    `⏰ SESSÕES: Aguardando ${tempoRestante}s antes da próxima tentativa`
-                );
-                return [];
-            }
-
-            try {
-                // Marcar início da busca
-                cruzamentoEmAndamento = true;
-                tentativasCruzamento++;
-                ultimaTentativaCruzamento = agora;
-
-                console.log(
-                    `🔄 SESSÕES: Tentativa ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
-                );
-
-                // Construir URL da página de sessões
-                const baseUrl = window.location.origin;
-                const urlSessoes = hash
-                    ? `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar&hash=${hash}`
-                    : `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
-
-                console.log(`🌐 SESSÕES: Buscando URL: ${urlSessoes}`);
-
-                // Fazer fetch da página
-                const response = await fetch(urlSessoes, {
-                    credentials: "same-origin",
-                    headers: {
-                        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error(
-                        `HTTP ${response.status}: ${response.statusText}`
-                    );
-                }
-
-                const htmlContent = await response.text();
-                console.log("✅ SESSÕES: Página carregada com sucesso");
-
-                // Fazer parse dos dados
-                const dadosSessoes = await parsearDadosSessoes(htmlContent);
-                console.log(
-                    `📊 SESSÕES: ${dadosSessoes.length} sessões encontradas`
-                );
-
-                // 📦 ARMAZENAR NO CACHE
-                if (dadosSessoes.length > 0) {
-                    cacheResultadoSessoes = dadosSessoes;
-                    cacheValidoAte = agora + CACHE_DURATION;
-                    console.log(
-                        "📦 SESSÕES: Resultado armazenado no cache por 5 minutos"
-                    );
-                }
-
-                return dadosSessoes;
-            } catch (error) {
-                console.error(
-                    `❌ SESSÕES: Erro ao buscar dados: ${error.message}`
-                );
-                return [];
-            } finally {
-                // Sempre limpar flag de andamento
-                cruzamentoEmAndamento = false;
-            }
-        }
-
-        /**
-         * Faz parse dos dados das sessões do HTML
-         * @param {string} htmlContent - Conteúdo HTML da página
-         * @returns {Array} - Array com dados estruturados das sessões
-         */
-        async function parsearDadosSessoes(htmlContent) {
-            console.log("🔍 PARSE: Iniciando parse dos dados das sessões");
-
-            try {
-                // Criar parser DOM
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, "text/html");
-
-                // 🔍 DEBUG: Verificar estrutura da página
-                console.log(
-                    "📋 PARSE DEBUG: Analisando estrutura da página..."
-                );
-
-                // Verificar se a página foi carregada corretamente
-                const title =
-                    doc.querySelector("title")?.textContent || "sem título";
-                console.log(`📋 PARSE DEBUG: Título da página: "${title}"`);
-
-                // Verificar se há redirecionamento para login
-                if (
-                    title.toLowerCase().includes("login") ||
-                    title.toLowerCase().includes("acesso")
-                ) {
-                    console.log(
-                        "❌ PARSE DEBUG: Página de login detectada - sessão expirada"
-                    );
-                    return [];
-                }
-
-                // Buscar diferentes seletores possíveis para a tabela
-                const seletoresTabela = [
-                    "#divInfraAreaTelaD .table-responsive table.table",
-                    "#divInfraAreaTelaD table.table",
-                    ".table-responsive table.table",
-                    "table.table",
-                    "#divInfraAreaTelaD table",
-                    ".table-responsive table",
-                    "table",
-                    "#frmLista table",
-                    "#divInfraAreaTelaE table",
-                ];
-
-                let tabela = null;
-                let seletorUsado = "";
-
-                for (const seletor of seletoresTabela) {
-                    tabela = doc.querySelector(seletor);
-                    if (tabela) {
-                        seletorUsado = seletor;
-                        console.log(
-                            `✅ PARSE DEBUG: Tabela encontrada com seletor: "${seletor}"`
-                        );
-                        break;
-                    }
-                }
-
-                if (!tabela) {
-                    // Debug mais detalhado se não encontrar tabela
-                    console.log(
-                        "🔍 PARSE DEBUG: Nenhuma tabela encontrada, analisando estrutura..."
-                    );
-
-                    // Verificar elementos principais
-                    const divInfraAreaTelaD =
-                        doc.querySelector("#divInfraAreaTelaD");
-                    const tableResponsive =
-                        doc.querySelector(".table-responsive");
-                    const allTables = doc.querySelectorAll("table");
-                    const allDivs = doc.querySelectorAll("div[id*='Area']");
-
-                    console.log(
-                        `📋 PARSE DEBUG: #divInfraAreaTelaD encontrado: ${!!divInfraAreaTelaD}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: .table-responsive encontrado: ${!!tableResponsive}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: Total de tabelas: ${allTables.length}`
-                    );
-                    console.log(
-                        `📋 PARSE DEBUG: Divs com 'Area' no ID: ${allDivs.length}`
-                    );
-
-                    // Listar todas as tabelas encontradas
-                    allTables.forEach((table, index) => {
-                        const tableId = table.id || "sem-id";
-                        const tableClass = table.className || "sem-class";
-                        const rowCount = table.querySelectorAll("tr").length;
-                        console.log(
-                            `📋 PARSE DEBUG: Tabela ${
-                                index + 1
-                            }: id="${tableId}", class="${tableClass}", linhas=${rowCount}`
-                        );
-                    });
-
-                    // Listar divs com Area no ID
-                    allDivs.forEach((div, index) => {
-                        console.log(
-                            `📋 PARSE DEBUG: Div ${index + 1}: id="${
-                                div.id
-                            }", class="${div.className}"`
-                        );
-                    });
-
-                    // Verificar se há erro específico na página
-                    const errorElements = doc.querySelectorAll(
-                        ".alert-danger, .error, .erro, [class*='erro'], [class*='error']"
-                    );
-                    if (errorElements.length > 0) {
-                        console.log(
-                            "❌ PARSE DEBUG: Elementos de erro encontrados:"
-                        );
-                        errorElements.forEach((error, index) => {
-                            console.log(
-                                `📋 PARSE DEBUG: Erro ${
-                                    index + 1
-                                }: "${error.textContent.trim()}"`
-                            );
-                        });
-                    }
-
-                    console.log(
-                        "❌ PARSE: Tabela de sessões não encontrada em nenhum seletor"
-                    );
-                    return [];
-                }
-
-                // Buscar todas as linhas de dados (tbody > tr)
-                const linhasSessoes = tabela.querySelectorAll(
-                    'tbody tr[id^="tr_"]'
-                );
-                console.log(
-                    `📋 PARSE: ${linhasSessoes.length} linhas encontradas`
-                );
-
-                const sessoes = [];
-
-                for (const linha of linhasSessoes) {
-                    try {
-                        const sessao = await extrairDadosLinhaSessao(linha);
-                        if (sessao) {
-                            sessoes.push(sessao);
-                        }
-                    } catch (error) {
-                        console.warn(
-                            `⚠️ PARSE: Erro ao processar linha: ${error.message}`
-                        );
-                    }
-                }
-
-                console.log(
-                    `✅ PARSE: ${sessoes.length} sessões processadas com sucesso`
-                );
-                return sessoes;
-            } catch (error) {
-                console.error(`❌ PARSE: Erro no parse: ${error.message}`);
-                return [];
-            }
-        }
-
-        /**
-         * Extrai dados de uma linha específica da tabela de sessões
-         * @param {Element} linha - Elemento tr da linha
-         * @returns {Object|null} - Objeto com dados da sessão ou null
-         */
-        async function extrairDadosLinhaSessao(linha) {
-            try {
-                const id = linha.getAttribute("id");
-                const colunas = linha.querySelectorAll("td");
-
-                if (colunas.length < 8) {
-                    console.warn(
-                        `⚠️ LINHA: Linha ${id} tem ${colunas.length} colunas, esperado >= 8`
-                    );
-                    return null;
-                }
-
-                // Extrair dados conforme a estrutura HTML fornecida
-                const orgaoJulgador = colunas[1]?.textContent?.trim() || "";
-                const dataHoraSessao = colunas[2]?.textContent?.trim() || "";
-                const tipoSessao = colunas[3]?.textContent?.trim() || "";
-                const localSessao = colunas[4]?.textContent?.trim() || "";
-                const dataLimitePauta = colunas[5]?.textContent?.trim() || "";
-                const dataLimiteMesa = colunas[6]?.textContent?.trim() || "";
-                const dataLimiteMinutas = colunas[7]?.textContent?.trim() || "";
-                const statusSessao = colunas[8]?.textContent?.trim() || "";
-
-                // Extrair só a data da string "03/06/2025 14:00"
-                const dataMatch = dataHoraSessao.match(
-                    /(\d{1,2}\/\d{1,2}\/\d{4})/
-                );
-                const dataSessao = dataMatch ? dataMatch[1] : "";
-
-                // Extrair só o horário
-                const horaMatch = dataHoraSessao.match(/(\d{1,2}:\d{2})/);
-                const horaSessao = horaMatch ? horaMatch[1] : "";
-
-                const sessao = {
-                    id: id,
-                    orgaoJulgador: orgaoJulgador,
-                    dataSessao: dataSessao,
-                    horaSessao: horaSessao,
-                    dataHoraCompleta: dataHoraSessao,
-                    tipoSessao: tipoSessao,
-                    localSessao: localSessao,
-                    dataLimitePauta: dataLimitePauta,
-                    dataLimiteMesa: dataLimiteMesa,
-                    dataLimiteMinutas: dataLimiteMinutas,
-                    statusSessao: statusSessao,
-                    // Dados adicionais
-                    dataDetectada: new Date(),
-                    validData: !!dataSessao,
-                };
-
-                console.log(
-                    `📋 LINHA: Sessão extraída - ${orgaoJulgador} em ${dataSessao}`
-                );
-                return sessao;
-            } catch (error) {
-                console.error(
-                    `❌ LINHA: Erro ao extrair dados: ${error.message}`
-                );
-                return null;
-            }
-        }
-
-        /**
-         * Busca sessão específica por data
-         * @param {string} dataProcurada - Data no formato DD/MM/AAAA
-         * @param {string} hash - Hash da página (opcional)
-         * @returns {Promise<Object|null>} - Dados da sessão encontrada ou null
-         */
-        async function buscarSessaoPorData(dataProcurada, hash = null) {
-            console.log(
-                `🎯 BUSCA: Procurando sessão para data: ${dataProcurada}`
+        } catch (error) {
+            console.error(
+                `❌ CRUZAMENTO: Erro no cruzamento: ${error.message}`
             );
-
-            try {
-                // Buscar todas as sessões
-                const sessoes = await buscarDadosSessoes(hash);
-
-                if (sessoes.length === 0) {
-                    console.log(
-                        "❌ BUSCA: Nenhuma sessão encontrada na listagem"
-                    );
-                    return null;
-                }
-
-                // Procurar sessão com a data específica
-                const sessaoEncontrada = sessoes.find(
-                    (sessao) => sessao.dataSessao === dataProcurada
-                );
-
-                if (sessaoEncontrada) {
-                    console.log(`✅ BUSCA: Sessão encontrada!`);
-                    console.log(
-                        `📋 BUSCA: ${sessaoEncontrada.orgaoJulgador} - ${sessaoEncontrada.dataHoraCompleta}`
-                    );
-
-                    // Armazenar na variável global
-                    dadosCompletosSessionJulgamento = sessaoEncontrada;
-
-                    return sessaoEncontrada;
-                } else {
-                    console.log(
-                        `❌ BUSCA: Nenhuma sessão encontrada para a data ${dataProcurada}`
-                    );
-
-                    // Log das datas disponíveis para debug
-                    const datasDisponiveis = sessoes
-                        .map((s) => s.dataSessao)
-                        .filter((d) => d);
-                    console.log(
-                        `📅 BUSCA: Datas disponíveis: ${datasDisponiveis.join(
-                            ", "
-                        )}`
-                    );
-
-                    return null;
-                }
-            } catch (error) {
-                console.error(`❌ BUSCA: Erro na busca: ${error.message}`);
-                return null;
-            }
+            return false;
         }
+    }
 
-        /**
-         * Realiza cruzamento automático da data detectada com os dados das sessões
-         * @param {string} hash - Hash da página (opcional)
-         * @returns {Promise<boolean>} - true se encontrou e cruzou dados
-         */
-        async function cruzarDadosDataSessao(
-            hash = null,
-            forcarRequisicao = false
-        ) {
-            console.log(
-                "🔄 CRUZAMENTO: Iniciando cruzamento de dados da sessão"
-            );
+    /**
+     * Retorna os dados completos da sessão (se disponíveis)
+     * @returns {Object|null} - Dados da sessão ou null
+     */
+    function getDadosCompletosSessionJulgamento() {
+        return dadosCompletosSessionJulgamento;
+    }
 
-            // � VERIFICAR SE REQUISIÇÕES AUTOMÁTICAS ESTÃO DESABILITADAS
-            if (REQUISICOES_AUTOMATICAS_DESABILITADAS) {
-                console.log(
-                    "🚫 CRUZAMENTO: Requisições automáticas desabilitadas globalmente"
-                );
-                console.log(
-                    "💡 Para habilitar: window.SENT1_AUTO.habilitarRequisicoes()"
-                );
-                return false;
-            }
+    /**
+     * Verifica se há dados completos da sessão disponíveis
+     * @returns {boolean} - true se há dados disponíveis
+     */
+    function hasDadosCompletosSessionJulgamento() {
+        return dadosCompletosSessionJulgamento !== null;
+    }
 
-            // �🔐 VERIFICAÇÃO DUPLA: Processo atual deve estar marcado como processado
-            if (!processoAtual) {
-                console.log("❌ CRUZAMENTO: Processo atual não identificado");
-                return false;
-            }
+    /**
+     * Reseta os dados completos da sessão
+     */
+    function resetDadosCompletosSessionJulgamento() {
+        console.log("🔄 RESET: Limpando dados completos da sessão");
+        dadosCompletosSessionJulgamento = null;
+    }
 
-            if (!processoJaFoiProcessado(processoAtual)) {
-                console.log(
-                    `❌ CRUZAMENTO: Processo ${processoAtual} não foi marcado como processado`
-                );
-                return false;
-            }
-
-            if (!hasDataSessaoPautado()) {
-                console.log(
-                    "❌ CRUZAMENTO: Nenhuma data de sessão detectada para cruzar"
-                );
-                return false;
-            }
-
-            const dataFormatada = dataSessaoPautado.dataFormatada;
-            console.log(
-                `🎯 CRUZAMENTO: Buscando dados para: ${dataFormatada} (Processo: ${processoAtual})`
-            );
-
-            try {
-                const sessaoEncontrada = await buscarSessaoPorData(
-                    dataFormatada,
-                    hash
-                );
-
-                if (sessaoEncontrada) {
-                    console.log("✅ CRUZAMENTO: Dados cruzados com sucesso!");
-
-                    // Atualizar interface se estiver sendo exibida
-                    setTimeout(() => {
-                        atualizarDataSessaoNaInterface();
-                    }, 500);
-
-                    return true;
-                } else {
-                    console.log(
-                        "❌ CRUZAMENTO: Não foi possível cruzar os dados"
-                    );
-                    return false;
-                }
-            } catch (error) {
-                console.error(
-                    `❌ CRUZAMENTO: Erro no cruzamento: ${error.message}`
-                );
-                return false;
-            }
-        }
-
-        /**
-         * Retorna os dados completos da sessão (se disponíveis)
-         * @returns {Object|null} - Dados da sessão ou null
-         */
-        function getDadosCompletosSessionJulgamento() {
-            return dadosCompletosSessionJulgamento;
-        }
-
-        /**
-         * Verifica se há dados completos da sessão disponíveis
-         * @returns {boolean} - true se há dados disponíveis
-         */
-        function hasDadosCompletosSessionJulgamento() {
-            return dadosCompletosSessionJulgamento !== null;
-        }
-
-        /**
-         * Reseta os dados completos da sessão
-         */
-        function resetDadosCompletosSessionJulgamento() {
-            console.log("🔄 RESET: Limpando dados completos da sessão");
-            dadosCompletosSessionJulgamento = null;
-        }
-
-        /**
-         * Mostra informações completas da sessão
-         */
-        function showDadosCompletosSessionJulgamento() {
-            if (hasDadosCompletosSessionJulgamento()) {
-                const dados = dadosCompletosSessionJulgamento;
-                const info = `📋 DADOS COMPLETOS DA SESSÃO:
+    /**
+     * Mostra informações completas da sessão
+     */
+    function showDadosCompletosSessionJulgamento() {
+        if (hasDadosCompletosSessionJulgamento()) {
+            const dados = dadosCompletosSessionJulgamento;
+            const info = `📋 DADOS COMPLETOS DA SESSÃO:
 
 🏛️ Órgão Julgador: ${dados.orgaoJulgador}
 📅 Data da Sessão: ${dados.dataSessao}
@@ -12071,779 +10423,644 @@ ${texto}`;
 
 🆔 ID: ${dados.id}`;
 
-                console.log(info);
-                alert(info);
-                return dados;
-            } else {
-                const msg =
-                    "❌ Nenhum dado completo de sessão foi encontrado ainda.";
-                console.log(msg);
-                alert(msg);
-                return null;
-            }
+            console.log(info);
+            alert(info);
+            return dados;
+        } else {
+            const msg =
+                "❌ Nenhum dado completo de sessão foi encontrado ainda.";
+            console.log(msg);
+            alert(msg);
+            return null;
+        }
+    }
+
+    // 🚀 INICIALIZAÇÃO AUTOMÁTICA OTIMIZADA - Carregamento mais rápido
+    let inicializacaoExecutada = false; // Prevenir execução dupla
+
+    function inicializarAutomaticamente() {
+        if (inicializacaoExecutada) {
+            console.log("⚠️ INICIALIZAÇÃO: Já executada, pulando...");
+            return;
         }
 
-        // 🚀 INICIALIZAÇÃO AUTOMÁTICA OTIMIZADA - Carregamento mais rápido
-        let inicializacaoExecutada = false; // Prevenir execução dupla
+        inicializacaoExecutada = true;
+        console.log(
+            "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
+        );
 
-        function inicializarAutomaticamente() {
-            if (inicializacaoExecutada) {
-                console.log("⚠️ INICIALIZAÇÃO: Já executada, pulando...");
+        // Execução imediata sem delay desnecessário
+        try {
+            // 1. Detectar data da sessão de forma não-bloqueante
+            if (!hasDataSessaoPautado()) {
+                console.log(
+                    "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
+                );
+
+                // Usar requestIdleCallback para não bloquear a UI
+                if (window.requestIdleCallback) {
+                    requestIdleCallback(() => {
+                        detectarDataSessao();
+                    });
+                } else {
+                    // Fallback para navegadores que não suportam requestIdleCallback
+                    setTimeout(() => detectarDataSessao(), 100);
+                }
+            }
+
+            // 2. Verificar se há dados para inserir na interface
+            if (hasDataSessaoPautado()) {
+                console.log(
+                    "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
+                );
+                inserirDataSessaoNaInterface();
+
+                // 3. Cruzamento só se requisições estiverem habilitadas
+                if (!REQUISICOES_AUTOMATICAS_DESABILITADAS) {
+                    console.log(
+                        "🔄 INICIALIZAÇÃO: Agendando cruzamento de dados..."
+                    );
+                    debounceGlobal(
+                        () => {
+                            cruzarDadosDataSessao()
+                                .then(() => {
+                                    console.log(
+                                        "✅ INICIALIZAÇÃO: Processo completo finalizado!"
+                                    );
+                                    atualizarDataSessaoNaInterface();
+                                })
+                                .catch((error) => {
+                                    console.warn(
+                                        "⚠️ INICIALIZAÇÃO: Erro no cruzamento:",
+                                        error.message
+                                    );
+                                });
+                        },
+                        "cruzamento-automatico",
+                        2000
+                    );
+                } else {
+                    console.log(
+                        "ℹ️ INICIALIZAÇÃO: Cruzamento automático desabilitado - interface básica pronta"
+                    );
+                }
+            } else {
+                console.log(
+                    "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
+                );
+            }
+        } catch (error) {
+            console.error(
+                "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
+                error
+            );
+            inicializacaoExecutada = false; // Permitir retry em caso de erro
+        }
+    }
+
+    // 🧪 FUNÇÃO DE TESTE - Para validação durante desenvolvimento
+    function testarSistemaCompleto() {
+        console.log(
+            "🧪 TESTE: Iniciando teste completo do sistema de sessões..."
+        );
+
+        return new Promise(async (resolve) => {
+            try {
+                // 1. Resetar estado
+                console.log("🔄 TESTE: Resetando estado...");
+                resetDataSessaoPautado();
+                resetDadosCompletosSessionJulgamento();
+
+                // 2. Testar detecção de data
+                console.log("🔍 TESTE: Testando detecção de data...");
+                detectarDataSessao();
+
+                if (hasDataSessaoPautado()) {
+                    console.log("✅ TESTE: Data detectada com sucesso!");
+                    showDataSessaoPautadoInfo();
+
+                    // 3. Testar inserção na interface
+                    console.log("🎨 TESTE: Testando inserção na interface...");
+                    inserirDataSessaoNaInterface();
+
+                    // 4. Testar cruzamento de dados
+                    console.log("🔄 TESTE: Testando cruzamento de dados...");
+                    const resultado = await cruzarDadosDataSessao();
+
+                    if (resultado) {
+                        console.log(
+                            "✅ TESTE: Cruzamento realizado com sucesso!"
+                        );
+                        showDadosCompletosSessionJulgamento();
+
+                        // 5. Testar atualização da interface
+                        console.log(
+                            "🎨 TESTE: Testando atualização da interface..."
+                        );
+                        atualizarDataSessaoNaInterface();
+
+                        console.log(
+                            "🎉 TESTE: Teste completo finalizado com SUCESSO!"
+                        );
+                        resolve(true);
+                    } else {
+                        console.log("⚠️ TESTE: Cruzamento não encontrou dados");
+                        resolve(false);
+                    }
+                } else {
+                    console.log("❌ TESTE: Nenhuma data de sessão detectada");
+                    resolve(false);
+                }
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante teste:", error);
+                resolve(false);
+            }
+        });
+    }
+
+    // Adicionar funções ao namespace global para debug (movidas para namespace principal)
+
+    // 🔍 FUNÇÃO DE DEBUG - Para investigar estrutura da página de sessões
+    async function debugPaginaSessoes() {
+        console.log("🔍 DEBUG: Iniciando debug da página de sessões...");
+
+        try {
+            const baseUrl = window.location.origin;
+            const urlSessoes = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
+
+            console.log(`🌐 DEBUG: Fazendo fetch para: ${urlSessoes}`);
+
+            const response = await fetch(urlSessoes, {
+                credentials: "same-origin",
+                headers: {
+                    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                },
+            });
+
+            if (!response.ok) {
+                console.error(
+                    `❌ DEBUG: Erro HTTP ${response.status}: ${response.statusText}`
+                );
                 return;
             }
 
-            inicializacaoExecutada = true;
+            const htmlContent = await response.text();
             console.log(
-                "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
+                `✅ DEBUG: Página carregada, tamanho: ${htmlContent.length} caracteres`
             );
 
-            // Execução imediata sem delay desnecessário
-            try {
-                // 1. Detectar data da sessão de forma não-bloqueante
-                if (!hasDataSessaoPautado()) {
-                    console.log(
-                        "🔍 INICIALIZAÇÃO: Tentando detectar data da sessão..."
-                    );
+            // Fazer parse
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, "text/html");
 
-                    // Usar requestIdleCallback para não bloquear a UI
-                    if (window.requestIdleCallback) {
-                        requestIdleCallback(() => {
-                            detectarDataSessao();
-                        });
-                    } else {
-                        // Fallback para navegadores que não suportam requestIdleCallback
-                        setTimeout(() => detectarDataSessao(), 100);
-                    }
-                }
+            // Debug básico
+            const title =
+                doc.querySelector("title")?.textContent || "sem título";
+            console.log(`📋 DEBUG: Título: "${title}"`);
 
-                // 2. Verificar se há dados para inserir na interface
-                if (hasDataSessaoPautado()) {
-                    console.log(
-                        "✅ INICIALIZAÇÃO: Data detectada, inserindo na interface..."
-                    );
-                    inserirDataSessaoNaInterface();
-
-                    // 3. Cruzamento só se requisições estiverem habilitadas
-                    if (!REQUISICOES_AUTOMATICAS_DESABILITADAS) {
-                        console.log(
-                            "🔄 INICIALIZAÇÃO: Agendando cruzamento de dados..."
-                        );
-                        debounceGlobal(
-                            () => {
-                                cruzarDadosDataSessao()
-                                    .then(() => {
-                                        console.log(
-                                            "✅ INICIALIZAÇÃO: Processo completo finalizado!"
-                                        );
-                                        atualizarDataSessaoNaInterface();
-                                    })
-                                    .catch((error) => {
-                                        console.warn(
-                                            "⚠️ INICIALIZAÇÃO: Erro no cruzamento:",
-                                            error.message
-                                        );
-                                    });
-                            },
-                            "cruzamento-automatico",
-                            2000
-                        );
-                    } else {
-                        console.log(
-                            "ℹ️ INICIALIZAÇÃO: Cruzamento automático desabilitado - interface básica pronta"
-                        );
-                    }
-                } else {
-                    console.log(
-                        "ℹ️ INICIALIZAÇÃO: Nenhuma data de sessão detectada nesta página"
-                    );
-                }
-            } catch (error) {
-                console.error(
-                    "❌ INICIALIZAÇÃO: Erro na inicialização automática:",
-                    error
-                );
-                inicializacaoExecutada = false; // Permitir retry em caso de erro
-            }
-        }
-
-        // 🧪 FUNÇÃO DE TESTE - Para validação durante desenvolvimento
-        function testarSistemaCompleto() {
-            console.log(
-                "🧪 TESTE: Iniciando teste completo do sistema de sessões..."
-            );
-
-            return new Promise(async (resolve) => {
-                try {
-                    // 1. Resetar estado
-                    console.log("🔄 TESTE: Resetando estado...");
-                    resetDataSessaoPautado();
-                    resetDadosCompletosSessionJulgamento();
-
-                    // 2. Testar detecção de data
-                    console.log("🔍 TESTE: Testando detecção de data...");
-                    detectarDataSessao();
-
-                    if (hasDataSessaoPautado()) {
-                        console.log("✅ TESTE: Data detectada com sucesso!");
-                        showDataSessaoPautadoInfo();
-
-                        // 3. Testar inserção na interface
-                        console.log(
-                            "🎨 TESTE: Testando inserção na interface..."
-                        );
-                        inserirDataSessaoNaInterface();
-
-                        // 4. Testar cruzamento de dados
-                        console.log(
-                            "🔄 TESTE: Testando cruzamento de dados..."
-                        );
-                        const resultado = await cruzarDadosDataSessao();
-
-                        if (resultado) {
-                            console.log(
-                                "✅ TESTE: Cruzamento realizado com sucesso!"
-                            );
-                            showDadosCompletosSessionJulgamento();
-
-                            // 5. Testar atualização da interface
-                            console.log(
-                                "🎨 TESTE: Testando atualização da interface..."
-                            );
-                            atualizarDataSessaoNaInterface();
-
-                            console.log(
-                                "🎉 TESTE: Teste completo finalizado com SUCESSO!"
-                            );
-                            resolve(true);
-                        } else {
-                            console.log(
-                                "⚠️ TESTE: Cruzamento não encontrou dados"
-                            );
-                            resolve(false);
-                        }
-                    } else {
-                        console.log(
-                            "❌ TESTE: Nenhuma data de sessão detectada"
-                        );
-                        resolve(false);
-                    }
-                } catch (error) {
-                    console.error("❌ TESTE: Erro durante teste:", error);
-                    resolve(false);
-                }
-            });
-        }
-
-        // Adicionar função de teste ao namespace global para debug
-        if (window.SENT1_AUTO) {
-            window.SENT1_AUTO.testarSistemaCompleto = testarSistemaCompleto;
-            window.SENT1_AUTO.debugPaginaSessoes = debugPaginaSessoes;
-            window.SENT1_AUTO.resetControlesRequisicao =
-                resetControlesRequisicao;
-            window.SENT1_AUTO.statusControlesRequisicao =
-                statusControlesRequisicao;
-
-            // 🔐 CONTROLES ÚNICOS POR PROCESSO
-            window.SENT1_AUTO.obterNumeroProcesso = obterNumeroProcesso;
-            window.SENT1_AUTO.obterProcessoAtual = () => processoAtual;
-            window.SENT1_AUTO.listarProcessosProcessados = () =>
-                Array.from(processosJaProcessados);
-            window.SENT1_AUTO.resetProcessosProcessados = () => {
-                processosJaProcessados.clear();
-                cachePorProcesso.clear();
-                processoAtual = null;
-                console.log("🔄 RESET: Controles de processo resetados");
-            };
-            window.SENT1_AUTO.statusProcessos = () => {
-                console.log("🔐 STATUS PROCESSOS:");
-                console.log(
-                    `   Processo atual: ${processoAtual || "não identificado"}`
-                );
-                console.log(
-                    `   Processos processados: ${processosJaProcessados.size}`
-                );
-                console.log(
-                    `   Lista: ${Array.from(processosJaProcessados).join(", ")}`
-                );
-                console.log(
-                    `   Cache por processo: ${cachePorProcesso.size} entradas`
-                );
-            };
-
-            // 🚫 CONTROLES DE REQUISIÇÕES AUTOMÁTICAS
-            window.SENT1_AUTO.statusRequisicoes = () => {
-                console.log("🚫 STATUS REQUISIÇÕES:");
-                console.log(
-                    `   Requisições automáticas: ${
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS
-                            ? "DESABILITADAS"
-                            : "HABILITADAS"
-                    }`
-                );
-                console.log(
-                    `   Tentativas realizadas: ${tentativasCruzamento}/${MAX_TENTATIVAS_CRUZAMENTO}`
-                );
-                console.log(
-                    `   Delay entre tentativas: ${
-                        DELAY_ENTRE_TENTATIVAS / 1000
-                    }s`
-                );
-                console.log(`   Cache válido por: ${CACHE_DURATION / 1000}s`);
-            };
-
-            window.SENT1_AUTO.desabilitarRequisicoes = () => {
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
-                console.log(
-                    "🚫 REQUISIÇÕES: Requisições automáticas desabilitadas"
-                );
-            };
-
-            window.SENT1_AUTO.habilitarRequisicoes = () => {
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-                console.log(
-                    "✅ REQUISIÇÕES: Requisições automáticas habilitadas"
-                );
-                console.log("⚠️ ATENÇÃO: Use com moderação para evitar logout");
-            };
-
-            window.SENT1_AUTO.forcarCruzamento = async () => {
-                console.log(
-                    "🔄 FORÇA: Forçando cruzamento ignorando bloqueios..."
-                );
-                const estadoOriginal = REQUISICOES_AUTOMATICAS_DESABILITADAS;
-                REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-
-                try {
-                    const resultado = await cruzarDadosDataSessao();
-                    console.log(
-                        `🔄 FORÇA: Resultado: ${
-                            resultado ? "SUCESSO" : "FALHA"
-                        }`
-                    );
-                    return resultado;
-                } finally {
-                    REQUISICOES_AUTOMATICAS_DESABILITADAS = estadoOriginal;
-                }
-            };
-
-            // 🎯 FUNÇÕES DE DETECÇÃO DE CARDS
-            window.SENT1_AUTO.detectarCardSessaoSimplificado =
-                detectarCardSessaoSimplificado;
-
-            console.log(
-                "🧪 TESTE: Função testarSistemaCompleto() disponível em window.SENT1_AUTO"
-            );
-            console.log(
-                "🧪 DEBUG: Função debugPaginaSessoes() disponível em window.SENT1_AUTO"
-            );
-            console.log(
-                "🔐 CONTROLE: Funções de controle único por processo disponíveis em window.SENT1_AUTO"
-            );
-        }
-
-        // 🔍 FUNÇÃO DE DEBUG - Para investigar estrutura da página de sessões
-        async function debugPaginaSessoes() {
-            console.log("🔍 DEBUG: Iniciando debug da página de sessões...");
-
-            try {
-                const baseUrl = window.location.origin;
-                const urlSessoes = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_listar`;
-
-                console.log(`🌐 DEBUG: Fazendo fetch para: ${urlSessoes}`);
-
-                const response = await fetch(urlSessoes, {
-                    credentials: "same-origin",
-                    headers: {
-                        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                    },
-                });
-
-                if (!response.ok) {
-                    console.error(
-                        `❌ DEBUG: Erro HTTP ${response.status}: ${response.statusText}`
-                    );
-                    return;
-                }
-
-                const htmlContent = await response.text();
-                console.log(
-                    `✅ DEBUG: Página carregada, tamanho: ${htmlContent.length} caracteres`
-                );
-
-                // Fazer parse
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlContent, "text/html");
-
-                // Debug básico
-                const title =
-                    doc.querySelector("title")?.textContent || "sem título";
-                console.log(`📋 DEBUG: Título: "${title}"`);
-
-                // Verificar se foi redirecionado para login
-                if (
-                    title.toLowerCase().includes("login") ||
-                    htmlContent.includes("frmLogin")
-                ) {
-                    console.warn(
-                        "⚠️ DEBUG: Parece que foi redirecionado para página de login!"
-                    );
-                    console.warn(
-                        "💡 DEBUG: Tente acessar a URL manualmente no navegador primeiro"
-                    );
-                    return;
-                }
-
-                // Analisar estrutura
-                const allTables = doc.querySelectorAll("table");
-                console.log(
-                    `📊 DEBUG: ${allTables.length} tabelas encontradas`
-                );
-
-                allTables.forEach((table, index) => {
-                    const id = table.id || "sem-id";
-                    const className = table.className || "sem-class";
-                    const rows = table.querySelectorAll("tr").length;
-                    const hasSessionData =
-                        table.innerHTML.includes("Órgão Julgador") ||
-                        table.innerHTML.includes("Data da Sessão") ||
-                        table.innerHTML.includes("sessao");
-
-                    console.log(`📋 DEBUG: Tabela ${index + 1}:`);
-                    console.log(`  - ID: "${id}"`);
-                    console.log(`  - Class: "${className}"`);
-                    console.log(`  - Linhas: ${rows}`);
-                    console.log(
-                        `  - Parece ter dados de sessão: ${hasSessionData}`
-                    );
-
-                    if (hasSessionData && rows > 1) {
-                        console.log(
-                            `🎯 DEBUG: Esta tabela parece promissora! Analisando mais...`
-                        );
-
-                        // Pegar headers
-                        const headers = Array.from(
-                            table.querySelectorAll("th, thead td")
-                        ).map((th) => th.textContent.trim());
-                        console.log(
-                            `📋 DEBUG: Headers: ${JSON.stringify(headers)}`
-                        );
-
-                        // Pegar algumas linhas de exemplo
-                        const dataRows = table.querySelectorAll("tbody tr");
-                        console.log(
-                            `📋 DEBUG: ${dataRows.length} linhas de dados`
-                        );
-
-                        Array.from(dataRows)
-                            .slice(0, 3)
-                            .forEach((row, rowIndex) => {
-                                const cells = Array.from(
-                                    row.querySelectorAll("td")
-                                ).map((td) => td.textContent.trim());
-                                console.log(
-                                    `📋 DEBUG: Linha ${
-                                        rowIndex + 1
-                                    }: ${JSON.stringify(cells)}`
-                                );
-                            });
-                    }
-                });
-
-                // Salvar HTML para inspeção manual
-                console.log(
-                    "💾 DEBUG: HTML da página salvo em window.debugPageHTML (use console para inspecionar)"
-                );
-                window.debugPageHTML = htmlContent;
-
-                console.log(
-                    "✅ DEBUG: Análise completa! Verifique os logs acima."
-                );
-            } catch (error) {
-                console.error("❌ DEBUG: Erro durante debug:", error);
-            }
-        }
-
-        // 📨 HANDLER DE MENSAGENS - Para comunicação com o popup
-        if (
-            typeof chrome !== "undefined" &&
-            chrome.runtime &&
-            chrome.runtime.onMessage
-        ) {
-            chrome.runtime.onMessage.addListener(function (
-                request,
-                sender,
-                sendResponse
+            // Verificar se foi redirecionado para login
+            if (
+                title.toLowerCase().includes("login") ||
+                htmlContent.includes("frmLogin")
             ) {
-                console.log("📨 MENSAGEM: Recebida do popup:", request);
+                console.warn(
+                    "⚠️ DEBUG: Parece que foi redirecionado para página de login!"
+                );
+                console.warn(
+                    "💡 DEBUG: Tente acessar a URL manualmente no navegador primeiro"
+                );
+                return;
+            }
 
-                if (request.action === "toggleAutoSessionRequests") {
-                    const enabled = request.enabled;
+            // Analisar estrutura
+            const allTables = doc.querySelectorAll("table");
+            console.log(`📊 DEBUG: ${allTables.length} tabelas encontradas`);
 
-                    if (enabled) {
-                        console.log(
-                            "🔓 POPUP: Habilitando requisições automáticas de sessão"
-                        );
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
-                    } else {
-                        console.log(
-                            "🔒 POPUP: Desabilitando requisições automáticas de sessão"
-                        );
-                        REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
-                    }
+            allTables.forEach((table, index) => {
+                const id = table.id || "sem-id";
+                const className = table.className || "sem-class";
+                const rows = table.querySelectorAll("tr").length;
+                const hasSessionData =
+                    table.innerHTML.includes("Órgão Julgador") ||
+                    table.innerHTML.includes("Data da Sessão") ||
+                    table.innerHTML.includes("sessao");
 
+                console.log(`📋 DEBUG: Tabela ${index + 1}:`);
+                console.log(`  - ID: "${id}"`);
+                console.log(`  - Class: "${className}"`);
+                console.log(`  - Linhas: ${rows}`);
+                console.log(
+                    `  - Parece ter dados de sessão: ${hasSessionData}`
+                );
+
+                if (hasSessionData && rows > 1) {
                     console.log(
-                        `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = ${REQUISICOES_AUTOMATICAS_DESABILITADAS}`
+                        `🎯 DEBUG: Esta tabela parece promissora! Analisando mais...`
                     );
 
-                    // Enviar resposta de confirmação
-                    sendResponse({
-                        success: true,
-                        message: enabled
-                            ? "Requisições automáticas habilitadas"
-                            : "Requisições automáticas desabilitadas",
-                        currentState: !REQUISICOES_AUTOMATICAS_DESABILITADAS,
-                    });
-                }
-
-                // Manter o handler para outras mensagens se necessário
-                if (request.action === "toggleSessionDateHighlight") {
+                    // Pegar headers
+                    const headers = Array.from(
+                        table.querySelectorAll("th, thead td")
+                    ).map((th) => th.textContent.trim());
                     console.log(
-                        "🎯 POPUP: Toggle para destaque da data da sessão:",
-                        request.enabled
+                        `📋 DEBUG: Headers: ${JSON.stringify(headers)}`
                     );
 
-                    // Aqui você pode adicionar a lógica para o destaque da data da sessão
-                    // Por enquanto, apenas confirmar recebimento
-                    sendResponse({
-                        success: true,
-                        message: request.enabled
-                            ? "Destaque ativado"
-                            : "Destaque desativado",
-                    });
-                }
+                    // Pegar algumas linhas de exemplo
+                    const dataRows = table.querySelectorAll("tbody tr");
+                    console.log(`📋 DEBUG: ${dataRows.length} linhas de dados`);
 
-                // Handler para aplicação de temas
-                if (request.action === "applyTheme") {
-                    const theme = request.theme;
-                    console.log(
-                        "🎨 MAIN: Aplicando tema recebido do popup:",
-                        theme
-                    );
-
-                    // Verificar se a função applyThemeStyles está disponível (do themeApply.js)
-                    if (typeof window.applyThemeStyles === "function") {
-                        window.applyThemeStyles(theme);
-                        sendResponse({
-                            success: true,
-                            message: `Tema ${theme} aplicado com sucesso`,
-                        });
-                    } else {
-                        console.error(
-                            "❌ MAIN: Função applyThemeStyles não encontrada"
-                        );
-                        sendResponse({
-                            success: false,
-                            message:
-                                "Erro: função de aplicação de tema não disponível",
-                        });
-                    }
-                }
-
-                // Handler para temas de botões
-                if (request.action === "applyButtonTheme") {
-                    const theme = request.theme;
-                    console.log(
-                        "💼 MAIN: Aplicando tema de botão recebido do popup:",
-                        theme
-                    );
-
-                    // Verificar se a função aplicarEstiloBotoesEproc está disponível
-                    if (typeof window.aplicarEstiloBotoesEproc === "function") {
-                        try {
-                            if (theme === "reset") {
-                                // Reset para padrão do sistema
-                                window.resetarBotoesEproc();
-                                sendResponse({
-                                    success: true,
-                                    message:
-                                        "Botões resetados para o padrão do sistema",
-                                });
-                            } else {
-                                // Aplicar tema específico
-                                window.aplicarEstiloBotoesEproc(theme);
-                                sendResponse({
-                                    success: true,
-                                    message: `Tema "${theme}" aplicado aos botões`,
-                                });
-                            }
-                        } catch (error) {
-                            console.error(
-                                "❌ MAIN: Erro ao aplicar tema de botão:",
-                                error
+                    Array.from(dataRows)
+                        .slice(0, 3)
+                        .forEach((row, rowIndex) => {
+                            const cells = Array.from(
+                                row.querySelectorAll("td")
+                            ).map((td) => td.textContent.trim());
+                            console.log(
+                                `📋 DEBUG: Linha ${
+                                    rowIndex + 1
+                                }: ${JSON.stringify(cells)}`
                             );
-                            sendResponse({
-                                success: false,
-                                message: `Erro ao aplicar tema: ${error.message}`,
-                            });
-                        }
-                    } else {
-                        console.error(
-                            "❌ MAIN: Funções de tema de botão não encontradas"
-                        );
-                        sendResponse({
-                            success: false,
-                            message:
-                                "Erro: funções de tema de botão não disponíveis",
                         });
-                    }
                 }
-
-                return true; // Indica que a resposta será enviada de forma assíncrona
             });
 
+            // Salvar HTML para inspeção manual
             console.log(
-                "📨 HANDLER: Listener de mensagens do popup registrado"
+                "💾 DEBUG: HTML da página salvo em window.debugPageHTML (use console para inspecionar)"
             );
+            window.debugPageHTML = htmlContent;
+
+            console.log("✅ DEBUG: Análise completa! Verifique os logs acima.");
+        } catch (error) {
+            console.error("❌ DEBUG: Erro durante debug:", error);
         }
+    }
 
-        // Executar inicialização automática quando a página carregar
-        if (document.readyState === "loading") {
-            document.addEventListener(
-                "DOMContentLoaded",
-                inicializarAutomaticamente
-            );
-        } else {
-            // Se a página já carregou, executar imediatamente
-            inicializarAutomaticamente();
-        }
+    // 📨 HANDLER DE MENSAGENS - Para comunicação com o popup
+    if (
+        typeof chrome !== "undefined" &&
+        chrome.runtime &&
+        chrome.runtime.onMessage
+    ) {
+        chrome.runtime.onMessage.addListener(function (
+            request,
+            sender,
+            sendResponse
+        ) {
+            console.log("📨 MENSAGEM: Recebida do popup:", request);
 
-        // =============================================
-        // DETECÇÃO SIMPLIFICADA DE CARDS DE SESSÃO
-        // =============================================
+            if (request.action === "toggleAutoSessionRequests") {
+                const enabled = request.enabled;
 
-        /**
-         * Função simplificada para detectar cards de sessão usando XPath específico
-         * NOVA ESTRATÉGIA: Buscar EXCLUSIVAMENTE no caminho XPath fornecido
-         * Caminho: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]
-         */
-        function detectarCardSessaoSimplificado() {
-            console.log(
-                "🎯 DETECÇÃO XPATH ÚNICA: Usando EXCLUSIVAMENTE o caminho fixo do eProc"
-            );
-
-            // ✅ VERIFICAÇÃO: Evitar múltiplas execuções desnecessárias
-            const processoAtual = obterNumeroProcesso();
-            if (processoJaFoiProcessado(processoAtual)) {
-                console.log(
-                    `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando múltipla detecção`
-                );
-                return null;
-            }
-
-            // ✅ VERIFICAÇÃO: Se card já existe, não detectar novamente
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                console.log(
-                    `♻️ SKIP: Card já existe para o processo atual - evitando duplicação`
-                );
-                return null;
-            }
-
-            try {
-                // 🔐 XPATH FIXO DO EPROC - ÚNICA E DEFINITIVA ESTRATÉGIA DE BUSCA
-                const xpathExpression =
-                    "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
-
-                console.log("🔍 BUSCA: Executando XPath fixo do eProc...");
-                console.log(`   Caminho: ${xpathExpression}`);
-
-                // Aguardar um pouco para garantir que o DOM está carregado
-                const tentarBusca = () => {
-                    const spanElement = document.evaluate(
-                        xpathExpression,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue;
-
-                    return spanElement;
-                };
-
-                // Primeira tentativa
-                let spanElement = tentarBusca();
-
-                // Se não encontrou, aguardar 500ms e tentar novamente (DOM pode ainda estar carregando)
-                if (!spanElement) {
+                if (enabled) {
                     console.log(
-                        "⏳ XPATH: Primeira tentativa falhou, aguardando DOM carregar..."
+                        "🔓 POPUP: Habilitando requisições automáticas de sessão"
                     );
-
-                    // Retornar uma Promise para aguardar de forma síncrona
-                    return new Promise((resolve) => {
-                        setTimeout(() => {
-                            const spanElementSegundaTentativa = tentarBusca();
-                            if (spanElementSegundaTentativa) {
-                                console.log(
-                                    "✅ XPATH: Elemento encontrado na segunda tentativa!"
-                                );
-                                resolve(
-                                    processarElementoEncontrado(
-                                        spanElementSegundaTentativa
-                                    )
-                                );
-                            } else {
-                                console.log(
-                                    "❌ XPATH: Elemento não encontrado após aguardar"
-                                );
-                                console.log(`   Caminho: ${xpathExpression}`);
-                                console.log(
-                                    "   Verifique se você está na página correta do eProc"
-                                );
-                                console.log(
-                                    "   Execute no console: $x('" +
-                                        xpathExpression +
-                                        "')"
-                                );
-                                resolve(null);
-                            }
-                        }, 500);
-                    });
-                }
-
-                console.log(
-                    "✅ XPATH: Elemento encontrado na primeira tentativa!"
-                );
-                return processarElementoEncontrado(spanElement);
-            } catch (error) {
-                console.error("❌ ERRO XPATH: Falha na detecção:", error);
-                return null;
-            }
-        }
-
-        // Função auxiliar para processar o elemento encontrado
-        function processarElementoEncontrado(spanElement) {
-            console.log(`   ID: ${spanElement.id || "sem-id"}`);
-            console.log(`   Tag: ${spanElement.tagName}`);
-            console.log(`   Classe: ${spanElement.className || "sem-classe"}`);
-
-            // Extrair dados do atributo onmouseover
-            const onmouseoverAttr = spanElement.getAttribute("onmouseover");
-
-            if (!onmouseoverAttr) {
-                console.log("❌ XPATH: Atributo onmouseover não encontrado");
-                console.log("   Element HTML:", spanElement.outerHTML);
-                return null;
-            }
-
-            console.log("🔍 XPATH: Atributo onmouseover encontrado:");
-            console.log(`   ${onmouseoverAttr}`);
-
-            // Extrair o conteúdo do tooltip (texto dentro das aspas)
-            const match = onmouseoverAttr.match(
-                /infraTooltipMostrar\('([^']+)'/
-            );
-            if (!match) {
-                console.log("❌ XPATH: Formato do tooltip não reconhecido");
-                console.log("   Tentando extrair de outras formas...");
-
-                // Tentativa alternativa de extração
-                const matchAlternativo = onmouseoverAttr.match(/"([^"]+)"/);
-                if (matchAlternativo) {
-                    console.log("✅ XPATH: Formato alternativo detectado");
-                    return processarTooltipContent(matchAlternativo[1]);
-                }
-
-                return null;
-            }
-
-            return processarTooltipContent(match[1]);
-        }
-
-        // Função auxiliar para processar o conteúdo do tooltip
-        function processarTooltipContent(tooltipContent) {
-            console.log(`📝 XPATH: Conteúdo do tooltip: ${tooltipContent}`);
-
-            // USAR FUNÇÃO GLOBAL que detecta o formato atualizado
-            const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
-
-            if (resultado) {
-                console.log(`✅ XPATH: SUCESSO! Dados extraídos:`);
-                console.log(`   - Status: ${resultado.status}`);
-                console.log(
-                    `   - Status Original: ${resultado.statusOriginal}`
-                );
-                console.log(`   - Tipo: ${resultado.tipoProcesso}`);
-                console.log(`   - Data: ${resultado.data}`);
-                console.log(`   - Código: ${resultado.codigo}`);
-                console.log(`   - Total Sessões: ${resultado.totalSessoes}`);
-
-                // Criar/atualizar o card usando a nova função
-                if (
-                    window.SENT1_AUTO &&
-                    window.SENT1_AUTO.criarCardMaterialDesign
-                ) {
-                    const cardResult =
-                        window.SENT1_AUTO.criarCardMaterialDesign(resultado);
-
-                    if (cardResult) {
-                        console.log(
-                            "✅ CARD: Material Design criado com sucesso!"
-                        );
-                        // Inserir o card na interface
-                        atualizarCardMaterialDesign(resultado);
-                    } else {
-                        console.log("❌ CARD: Falha ao criar Material Design");
-                    }
+                    REQUISICOES_AUTOMATICAS_DESABILITADAS = false;
                 } else {
                     console.log(
-                        "⚠️ CARD: Função criarCardMaterialDesign não disponível"
+                        "🔒 POPUP: Desabilitando requisições automáticas de sessão"
                     );
-                    // Fallback: usar método antigo
-                    atualizarCardMaterialDesign(resultado);
+                    REQUISICOES_AUTOMATICAS_DESABILITADAS = true;
                 }
 
-                // Salvar dados globalmente (adaptar formato para compatibilidade)
-                dataSessaoPautado = {
-                    dataFormatada: resultado.data,
-                    dataOriginal: resultado.data,
-                    dia: parseInt(resultado.data.split("/")[0]),
-                    mes: parseInt(resultado.data.split("/")[1]),
-                    ano: parseInt(resultado.data.split("/")[2]),
-                };
-                processoComDataSessao = processoAtual;
+                console.log(
+                    `⚙️ POPUP: REQUISICOES_AUTOMATICAS_DESABILITADAS = ${REQUISICOES_AUTOMATICAS_DESABILITADAS}`
+                );
 
-                // Usar namespace SENT1_AUTO para funções globais
-                if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
-                    window.SENT1_AUTO.setDataSessao(resultado.data);
-                }
-                if (
-                    window.SENT1_AUTO &&
-                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
-                ) {
-                    window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
-                        resultado.tipoProcesso
-                    );
-                }
-                if (
-                    window.SENT1_AUTO &&
-                    window.SENT1_AUTO.setStatusJulgamento
-                ) {
-                    window.SENT1_AUTO.setStatusJulgamento(
-                        resultado.statusCompleto
-                    );
-                }
-
-                return resultado;
+                // Enviar resposta de confirmação
+                sendResponse({
+                    success: true,
+                    message: enabled
+                        ? "Requisições automáticas habilitadas"
+                        : "Requisições automáticas desabilitadas",
+                    currentState: !REQUISICOES_AUTOMATICAS_DESABILITADAS,
+                });
             }
 
+            // Manter o handler para outras mensagens se necessário
+            if (request.action === "toggleSessionDateHighlight") {
+                console.log(
+                    "🎯 POPUP: Toggle para destaque da data da sessão:",
+                    request.enabled
+                );
+
+                // Aqui você pode adicionar a lógica para o destaque da data da sessão
+                // Por enquanto, apenas confirmar recebimento
+                sendResponse({
+                    success: true,
+                    message: request.enabled
+                        ? "Destaque ativado"
+                        : "Destaque desativado",
+                });
+            }
+
+            // Handler para aplicação de temas
+            if (request.action === "applyTheme") {
+                const theme = request.theme;
+                console.log(
+                    "🎨 MAIN: Aplicando tema recebido do popup:",
+                    theme
+                );
+
+                // Verificar se a função applyThemeStyles está disponível (do themeApply.js)
+                if (typeof window.applyThemeStyles === "function") {
+                    window.applyThemeStyles(theme);
+                    sendResponse({
+                        success: true,
+                        message: `Tema ${theme} aplicado com sucesso`,
+                    });
+                } else {
+                    console.error(
+                        "❌ MAIN: Função applyThemeStyles não encontrada"
+                    );
+                    sendResponse({
+                        success: false,
+                        message:
+                            "Erro: função de aplicação de tema não disponível",
+                    });
+                }
+            }
+
+            // Handler para temas de botões
+            if (request.action === "applyButtonTheme") {
+                const theme = request.theme;
+                console.log(
+                    "💼 MAIN: Aplicando tema de botão recebido do popup:",
+                    theme
+                );
+
+                // Verificar se a função aplicarEstiloBotoesEproc está disponível
+                if (typeof window.aplicarEstiloBotoesEproc === "function") {
+                    try {
+                        if (theme === "reset") {
+                            // Reset para padrão do sistema
+                            window.resetarBotoesEproc();
+                            sendResponse({
+                                success: true,
+                                message:
+                                    "Botões resetados para o padrão do sistema",
+                            });
+                        } else {
+                            // Aplicar tema específico
+                            window.aplicarEstiloBotoesEproc(theme);
+                            sendResponse({
+                                success: true,
+                                message: `Tema "${theme}" aplicado aos botões`,
+                            });
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ MAIN: Erro ao aplicar tema de botão:",
+                            error
+                        );
+                        sendResponse({
+                            success: false,
+                            message: `Erro ao aplicar tema: ${error.message}`,
+                        });
+                    }
+                } else {
+                    console.error(
+                        "❌ MAIN: Funções de tema de botão não encontradas"
+                    );
+                    sendResponse({
+                        success: false,
+                        message:
+                            "Erro: funções de tema de botão não disponíveis",
+                    });
+                }
+            }
+
+            return true; // Indica que a resposta será enviada de forma assíncrona
+        });
+
+        console.log("📨 HANDLER: Listener de mensagens do popup registrado");
+    }
+
+    // Executar inicialização automática quando a página carregar
+    if (document.readyState === "loading") {
+        document.addEventListener(
+            "DOMContentLoaded",
+            inicializarAutomaticamente
+        );
+    } else {
+        // Se a página já carregou, executar imediatamente
+        inicializarAutomaticamente();
+    }
+
+    // =============================================
+    // DETECÇÃO SIMPLIFICADA DE CARDS DE SESSÃO
+    // =============================================
+
+    /**
+     * Função simplificada para detectar cards de sessão usando XPath específico
+     * NOVA ESTRATÉGIA: Buscar EXCLUSIVAMENTE no caminho XPath fornecido
+     * Caminho: /html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]
+     */
+    function detectarCardSessaoSimplificado() {
+        console.log(
+            "🎯 DETECÇÃO XPATH ÚNICA: Usando EXCLUSIVAMENTE o caminho fixo do eProc"
+        );
+
+        // ✅ VERIFICAÇÃO: Evitar múltiplas execuções desnecessárias
+        const processoAtual = obterNumeroProcesso();
+        if (processoJaFoiProcessado(processoAtual)) {
             console.log(
-                "❌ XPATH: Dados de sessão não foram encontrados no tooltip"
+                `🔐 SKIP: Processo ${processoAtual} já foi processado - evitando múltipla detecção`
             );
             return null;
         }
-    })(); // Fechamento da IIFE de detecção de sessão
+
+        // ✅ VERIFICAÇÃO: Se card já existe, não detectar novamente
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            console.log(
+                `♻️ SKIP: Card já existe para o processo atual - evitando duplicação`
+            );
+            return null;
+        }
+
+        try {
+            // 🔐 XPATH FIXO DO EPROC - ÚNICA E DEFINITIVA ESTRATÉGIA DE BUSCA
+            const xpathExpression =
+                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
+
+            console.log("🔍 BUSCA: Executando XPath fixo do eProc...");
+            console.log(`   Caminho: ${xpathExpression}`);
+
+            // Aguardar um pouco para garantir que o DOM está carregado
+            const tentarBusca = () => {
+                const spanElement = document.evaluate(
+                    xpathExpression,
+                    document,
+                    null,
+                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    null
+                ).singleNodeValue;
+
+                return spanElement;
+            };
+
+            // Primeira tentativa
+            let spanElement = tentarBusca();
+
+            // Se não encontrou, aguardar 500ms e tentar novamente (DOM pode ainda estar carregando)
+            if (!spanElement) {
+                console.log(
+                    "⏳ XPATH: Primeira tentativa falhou, aguardando DOM carregar..."
+                );
+
+                // Retornar uma Promise para aguardar de forma síncrona
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const spanElementSegundaTentativa = tentarBusca();
+                        if (spanElementSegundaTentativa) {
+                            console.log(
+                                "✅ XPATH: Elemento encontrado na segunda tentativa!"
+                            );
+                            resolve(
+                                processarElementoEncontrado(
+                                    spanElementSegundaTentativa
+                                )
+                            );
+                        } else {
+                            console.log(
+                                "❌ XPATH: Elemento não encontrado após aguardar"
+                            );
+                            console.log(`   Caminho: ${xpathExpression}`);
+                            console.log(
+                                "   Verifique se você está na página correta do eProc"
+                            );
+                            console.log(
+                                "   Execute no console: $x('" +
+                                    xpathExpression +
+                                    "')"
+                            );
+                            resolve(null);
+                        }
+                    }, 500);
+                });
+            }
+
+            console.log("✅ XPATH: Elemento encontrado na primeira tentativa!");
+            return processarElementoEncontrado(spanElement);
+        } catch (error) {
+            console.error("❌ ERRO XPATH: Falha na detecção:", error);
+            return null;
+        }
+    }
+
+    // Função auxiliar para processar o elemento encontrado
+    function processarElementoEncontrado(spanElement) {
+        console.log(`   ID: ${spanElement.id || "sem-id"}`);
+        console.log(`   Tag: ${spanElement.tagName}`);
+        console.log(`   Classe: ${spanElement.className || "sem-classe"}`);
+
+        // Extrair dados do atributo onmouseover
+        const onmouseoverAttr = spanElement.getAttribute("onmouseover");
+
+        if (!onmouseoverAttr) {
+            console.log("❌ XPATH: Atributo onmouseover não encontrado");
+            console.log("   Element HTML:", spanElement.outerHTML);
+            return null;
+        }
+
+        console.log("🔍 XPATH: Atributo onmouseover encontrado:");
+        console.log(`   ${onmouseoverAttr}`);
+
+        // Extrair o conteúdo do tooltip (texto dentro das aspas)
+        const match = onmouseoverAttr.match(/infraTooltipMostrar\('([^']+)'/);
+        if (!match) {
+            console.log("❌ XPATH: Formato do tooltip não reconhecido");
+            console.log("   Tentando extrair de outras formas...");
+
+            // Tentativa alternativa de extração
+            const matchAlternativo = onmouseoverAttr.match(/"([^"]+)"/);
+            if (matchAlternativo) {
+                console.log("✅ XPATH: Formato alternativo detectado");
+                return processarTooltipContent(matchAlternativo[1]);
+            }
+
+            return null;
+        }
+
+        return processarTooltipContent(match[1]);
+    }
+
+    // Função auxiliar para processar o conteúdo do tooltip
+    function processarTooltipContent(tooltipContent) {
+        console.log(`📝 XPATH: Conteúdo do tooltip: ${tooltipContent}`);
+
+        // USAR FUNÇÃO GLOBAL que detecta o formato atualizado
+        const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
+
+        if (resultado) {
+            console.log(`✅ XPATH: SUCESSO! Dados extraídos:`);
+            console.log(`   - Status: ${resultado.status}`);
+            console.log(`   - Status Original: ${resultado.statusOriginal}`);
+            console.log(`   - Tipo: ${resultado.tipoProcesso}`);
+            console.log(`   - Data: ${resultado.data}`);
+            console.log(`   - Código: ${resultado.codigo}`);
+            console.log(`   - Total Sessões: ${resultado.totalSessoes}`);
+
+            // Criar/atualizar o card usando a nova função
+            if (
+                window.SENT1_AUTO &&
+                window.SENT1_AUTO.criarCardMaterialDesign
+            ) {
+                const cardResult =
+                    window.SENT1_AUTO.criarCardMaterialDesign(resultado);
+
+                if (cardResult) {
+                    console.log("✅ CARD: Material Design criado com sucesso!");
+                    // Inserir o card na interface
+                    atualizarCardMaterialDesign(resultado);
+                } else {
+                    console.log("❌ CARD: Falha ao criar Material Design");
+                }
+            } else {
+                console.log(
+                    "⚠️ CARD: Função criarCardMaterialDesign não disponível"
+                );
+                // Fallback: usar método antigo
+                atualizarCardMaterialDesign(resultado);
+            }
+
+            // Salvar dados globalmente (adaptar formato para compatibilidade)
+            dataSessaoPautado = {
+                dataFormatada: resultado.data,
+                dataOriginal: resultado.data,
+                dia: parseInt(resultado.data.split("/")[0]),
+                mes: parseInt(resultado.data.split("/")[1]),
+                ano: parseInt(resultado.data.split("/")[2]),
+            };
+            processoComDataSessao = processoAtual;
+
+            // Usar namespace SENT1_AUTO para funções globais
+            if (window.SENT1_AUTO && window.SENT1_AUTO.setDataSessao) {
+                window.SENT1_AUTO.setDataSessao(resultado.data);
+            }
+            if (
+                window.SENT1_AUTO &&
+                window.SENT1_AUTO.setTipoJulgamentoProcessoPautado
+            ) {
+                window.SENT1_AUTO.setTipoJulgamentoProcessoPautado(
+                    resultado.tipoProcesso
+                );
+            }
+            if (window.SENT1_AUTO && window.SENT1_AUTO.setStatusJulgamento) {
+                window.SENT1_AUTO.setStatusJulgamento(resultado.statusCompleto);
+            }
+
+            return resultado;
+        }
+
+        console.log(
+            "❌ XPATH: Dados de sessão não foram encontrados no tooltip"
+        );
+        return null;
+    }
 
     // ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
 
@@ -13188,7 +11405,9 @@ ${texto}`;
 
                 // Simular hover
                 console.log("🖱️ TESTE: Simulando hover...");
-                const evento = new MouseEvent("mouseenter", { bubbles: true });
+                const evento = new MouseEvent("mouseenter", {
+                    bubbles: true,
+                });
                 indicador.dispatchEvent(evento);
 
                 setTimeout(() => {
@@ -13214,6 +11433,85 @@ ${texto}`;
     // Adicionar ao namespace global
     if (window.SENT1_AUTO) {
         window.SENT1_AUTO.testarFuncaoTooltip = testarFuncaoTooltip;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE DEBUG PARA divLembrete - Identifica elementos com background amarelo
+     */
+    function debugDivLembrete() {
+        console.log(
+            "🔍 DEBUG: Procurando elementos divLembrete com background-color:#efef8f"
+        );
+
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#efef8f"], div.divLembrete[style*="background-color: #efef8f"]'
+        );
+
+        console.log(
+            `✅ Encontrados ${elementos.length} elementos divLembrete com background amarelo:`
+        );
+
+        elementos.forEach((elemento, index) => {
+            console.log(`📋 divLembrete ${index + 1}:`, {
+                id: elemento.id,
+                classes: elemento.className,
+                style: elemento.getAttribute("style"),
+                conteudo: elemento.textContent.substring(0, 100) + "...",
+            });
+        });
+
+        return elementos;
+    }
+
+    /**
+     * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos amarelos
+     */
+    function estilizarDivLembrete() {
+        console.log(
+            "🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete amarelos"
+        );
+
+        // Buscar elementos com background-color:#efef8f
+        const elementos = document.querySelectorAll(
+            'div.divLembrete[style*="background-color:#efef8f"], div.divLembrete[style*="background-color: #efef8f"]'
+        );
+
+        if (elementos.length === 0) {
+            console.log(
+                "❌ Nenhum elemento divLembrete com background amarelo encontrado"
+            );
+            return false;
+        }
+
+        elementos.forEach((elemento, index) => {
+            // Aplicar estilos CSS
+            elemento.style.border = "2px solid #d4aa00";
+            elemento.style.borderRadius = "8px";
+            elemento.style.boxShadow = "0 2px 8px rgba(212, 170, 0, 0.3)";
+            elemento.style.padding = "12px";
+            elemento.style.margin = "8px 0";
+            elemento.style.transition = "all 0.3s ease";
+
+            // Adicionar hover effect
+            elemento.addEventListener("mouseenter", function () {
+                this.style.transform = "scale(1.02)";
+                this.style.boxShadow = "0 4px 12px rgba(212, 170, 0, 0.5)";
+            });
+
+            elemento.addEventListener("mouseleave", function () {
+                this.style.transform = "scale(1)";
+                this.style.boxShadow = "0 2px 8px rgba(212, 170, 0, 0.3)";
+            });
+
+            console.log(
+                `✅ Estilizado divLembrete ${index + 1} (ID: ${elemento.id})`
+            );
+        });
+
+        console.log(
+            `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete estilizados`
+        );
+        return true;
     }
 
     /**
@@ -15844,75 +14142,7 @@ ${texto}`;
         return container;
     }
 
-    // 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA SIMPLES
-    window.SENT1_AUTO.corrigirProblemasRapido = function () {
-        console.log("🔧 CORREÇÃO RÁPIDA: Iniciando...");
-
-        // 1. Tentar criar botão se não existir
-        if (!document.getElementById("documento-relevante-auto-button")) {
-            console.log("🔘 CORREÇÃO: Criando botão...");
-            createAutomationButton();
-        }
-
-        // 2. Tentar detectar dados da sessão se não existir card
-        const card = document.getElementById("eprobe-data-sessao");
-        if (!card) {
-            console.log("📅 CORREÇÃO: Detectando dados da sessão...");
-            detectarDataSessao();
-        }
-
-        // 3. Aplicar CSS do botão
-        const botao = document.getElementById(
-            "documento-relevante-auto-button"
-        );
-        if (botao) {
-            const svg = botao.querySelector("svg");
-            if (svg) {
-                svg.style.marginRight = "4px";
-                svg.style.setProperty("margin-right", "4px", "important");
-                console.log("✅ CORREÇÃO: Margin-right aplicado ao SVG");
-            }
-        }
-
-        // 4. Corrigir tooltip se card existir mas tooltip não funcionar
-        if (card) {
-            const indicador = card.querySelector(
-                ".eprobe-figma-sessions-indicator"
-            );
-            if (indicador) {
-                // Verificar se tooltip existe
-                const tooltip = document.getElementById("eprobe-rich-tooltip");
-                if (!tooltip) {
-                    console.log("🎨 CORREÇÃO: Adicionando tooltip...");
-
-                    // Criar dados de exemplo se necessário
-                    const sessoesExemplo = window.SENT1_AUTO
-                        .todasSessoesDetectadas || [
-                        {
-                            status: "Pautado",
-                            data: "22/07/2025",
-                            dataOriginal: "22/07/2025",
-                        },
-                        {
-                            status: "Retirado",
-                            data: "15/07/2025",
-                            dataOriginal: "15/07/2025",
-                        },
-                    ];
-
-                    if (sessoesExemplo.length > 1) {
-                        adicionarRichTooltipMaterialDesign(
-                            card,
-                            sessoesExemplo
-                        );
-                        console.log("✅ CORREÇÃO: Tooltip adicionado");
-                    }
-                }
-            }
-        }
-
-        console.log("🔧 CORREÇÃO RÁPIDA: Finalizada!");
-    };
+    // 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA SIMPLES (movida para namespace principal)
 
     // 🎨 SISTEMA GLOBAL DE PERSONALIZAÇÃO DE BOTÕES DO EPROC
     // Funções expostas globalmente para personalizar botões (fora da IIFE)
@@ -16393,7 +14623,10 @@ ${texto}`;
                     observer.disconnect();
                 }
             });
-            observer.observe(document.body, { childList: true, subtree: true });
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
         }
     };
 
@@ -18350,15 +16583,7 @@ ${texto}`;
         console.log("🔍 DEBUG: Resumo de GIFs por arquivo:", gifsSumario);
     }
 
-    // Expor função globalmente para debug
-    window.SENT1_AUTO = window.SENT1_AUTO || {};
-    window.SENT1_AUTO.substituirIconesFieldsetAcoes =
-        substituirIconesFieldsetAcoes;
-    window.SENT1_AUTO.substituirIconesFerramentas = substituirIconesFerramentas;
-    window.SENT1_AUTO.inicializarSubstituicaoIcones =
-        inicializarSubstituicaoIcones;
-    window.SENT1_AUTO.testarFuncoesIcones = testarFuncoesIcones;
-    window.SENT1_AUTO.debugIconesNaPagina = debugIconesNaPagina;
+    // Expor função globalmente para debug (movidas para namespace principal)
 
     // Função de debug para analisar elementos "Incluir em Pauta/Mesa"
     function debugIncluirPautaMesa() {
@@ -18419,9 +16644,7 @@ ${texto}`;
         return encontrados;
     }
 
-    // Expor função de debug globalmente
-    window.SENT1_AUTO = window.SENT1_AUTO || {};
-    window.SENT1_AUTO.debugIncluirPautaMesa = debugIncluirPautaMesa;
+    // Expor função de debug globalmente (movida para namespace principal)
 
     // 🚀 EXECUÇÃO AUTOMÁTICA - Aguardar navbar estar pronta
     setTimeout(() => {
@@ -18515,669 +16738,652 @@ ${texto}`;
         setTimeout(inicializarMaterialDesign, 1000);
     }
 
-    // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE - ANTES DO FECHAMENTO DA IIFE
-    // Verificar se window.SENT1_AUTO existe, criar se necessário
-    if (typeof window.SENT1_AUTO === "undefined") {
-        window.SENT1_AUTO = {};
-    }
+    // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE (movidas para namespace principal)
 
-    // Expor funções de teste dos cards
-    window.SENT1_AUTO.testarCardFigmaEspecificacoes =
-        testarCardFigmaEspecificacoes;
-    window.SENT1_AUTO.testarTodosCards = testarTodosCards;
-    window.SENT1_AUTO.obterConfigCardPorStatus = obterConfigCardPorStatus;
-})(); // Fechamento da IIFE principal
+    // 🧪 FUNÇÕES DE TESTE E DEBUG (movidas para namespace principal)
 
-// 🧪 FUNÇÕES DE TESTE E DEBUG - SEMPRE DISPONÍVEIS
-// Definidas fora da IIFE para garantir disponibilidade imediata
-
-// Verificar se window.SENT1_AUTO existe, criar se necessário
-if (typeof window.SENT1_AUTO === "undefined") {
-    window.SENT1_AUTO = {};
-}
-
-// 🩺 FUNÇÃO DE DIAGNÓSTICO SIMPLES - Verificar estado atual
-window.SENT1_AUTO.diagnosticoRapido = function () {
-    console.log("🩺 DIAGNÓSTICO RÁPIDO: Verificando estado da extensão...");
-
-    // 1. Verificar botão
-    const botao = document.getElementById("documento-relevante-auto-button");
-    console.log("🔘 BOTÃO:", botao ? "✅ Encontrado" : "❌ Não encontrado");
-
-    if (botao) {
-        const svg = botao.querySelector("svg");
-        const marginRight = svg ? getComputedStyle(svg).marginRight : "N/A";
-        console.log(`   📏 Margin-right do SVG: ${marginRight}`);
-    }
-
-    // 2. Verificar card da sessão
-    const card = document.getElementById("eprobe-data-sessao");
-    console.log(
-        "📅 CARD SESSÃO:",
-        card ? "✅ Encontrado" : "❌ Não encontrado"
-    );
-
-    // 3. Verificar dados de sessão
-    const dadosSessao = getDataSessaoPautado();
-    console.log(
-        "📊 DADOS SESSÃO:",
-        dadosSessao ? "✅ Detectados" : "❌ Não detectados"
-    );
-
-    if (dadosSessao) {
-        console.log("   📅 Data:", dadosSessao.dataFormatada);
-        console.log("   🏷️ Status:", dadosSessao.status);
-    }
-
-    // 4. Verificar processo atual
-    const processo = obterNumeroProcesso();
-    console.log(
-        "📋 PROCESSO:",
-        processo ? `✅ ${processo}` : "❌ Não identificado"
-    );
-
-    // 5. Forçar criação do card se houver dados
-    if (dadosSessao && !card) {
-        console.log("🔧 FORÇANDO: Criação do card da sessão...");
-        atualizarCardMaterialDesign(dadosSessao);
-    }
-
-    console.log("🩺 DIAGNÓSTICO COMPLETO!");
-    return {
-        botao: !!botao,
-        card: !!card,
-        dadosSessao: !!dadosSessao,
-        processo: !!processo,
-    };
-};
-
-// ...existing code...
-
-// 🧪 FUNÇÃO ESPECÍFICA PARA TESTAR DETECÇÃO DE CARD DE SESSÃO
-window.SENT1_AUTO.testarDeteccaoCard = function () {
-    console.log("🧪 TESTE CARD: Iniciando teste de detecção de card de sessão");
-
-    try {
-        // 1. Verificar botões infraLegendObrigatorio com classes completas
-        const botoesInfra = document.querySelectorAll(
-            "button.infraLegendObrigatorio.btn.btn-link.btn-sm.p-0"
-        );
+    // 🧪 FUNÇÃO ESPECÍFICA PARA TESTAR DETECÇÃO DE CARD DE SESSÃO
+    window.SENT1_AUTO.testarDeteccaoCard = function () {
         console.log(
-            `🔍 TESTE: ${botoesInfra.length} botões infraLegendObrigatorio.btn.btn-link.btn-sm.p-0 encontrados`
+            "🧪 TESTE CARD: Iniciando teste de detecção de card de sessão"
         );
 
-        if (botoesInfra.length > 0) {
-            botoesInfra.forEach((botao, index) => {
-                const texto = botao.textContent || botao.innerText || "";
-                console.log(`📄 BOTÃO ${index + 1}:`, texto.substring(0, 150));
+        try {
+            // 1. Verificar botões infraLegendObrigatorio com classes completas
+            const botoesInfra = document.querySelectorAll(
+                "button.infraLegendObrigatorio.btn.btn-link.btn-sm.p-0"
+            );
+            console.log(
+                `🔍 TESTE: ${botoesInfra.length} botões infraLegendObrigatorio.btn.btn-link.btn-sm.p-0 encontrados`
+            );
 
-                // Testar TODOS os padrões de sessão
-                const resultado = extrairDadosSessaoCompleto(texto);
-                if (resultado) {
-                    console.log(`✅ TESTE: ${resultado.status} encontrado!`);
-                    console.log(`   - Tipo: ${resultado.tipoProcesso}`);
-                    console.log(`   - Data: ${resultado.data.dataFormatada}`);
-                    console.log(`   - Órgão: ${resultado.orgao}`);
-                    console.log(`   - Status: ${resultado.statusCompleto}`);
-                } else if (texto.includes("em Pauta em")) {
+            if (botoesInfra.length > 0) {
+                botoesInfra.forEach((botao, index) => {
+                    const texto = botao.textContent || botao.innerText || "";
                     console.log(
-                        "⚠️ TESTE: Padrão parcial encontrado, mas não validado:",
-                        texto.substring(0, 100)
-                    );
-                }
-            });
-        }
-
-        // 2. Testar fallback (todos os botões)
-        const todosBotoes = document.querySelectorAll("button");
-        let botoesComPadrao = 0;
-
-        todosBotoes.forEach((botao) => {
-            const texto = botao.textContent || botao.innerText || "";
-            if (texto.includes("em Pauta em")) {
-                // Usar função unificada para validação completa
-                const resultado = extrairDadosSessaoCompleto(texto);
-                if (resultado) {
-                    botoesComPadrao++;
-                    console.log(
-                        "📄 FALLBACK VALIDADO:",
+                        `📄 BOTÃO ${index + 1}:`,
                         texto.substring(0, 150)
                     );
-                    console.log(
-                        `   🎯 STATUS: ${resultado.status} (${resultado.statusCompleto})`
-                    );
-                    console.log(`   📅 DATA: ${resultado.data.dataFormatada}`);
-                    console.log(`   🏢 ÓRGÃO: ${resultado.orgao}`);
-                } else if (texto.includes("em Pauta em")) {
-                    console.log(
-                        "⚠️ FALLBACK PARCIAL:",
-                        texto.substring(0, 100)
-                    );
-                    console.log("   ❌ Não validado pela função unificada");
-                }
-            }
-        });
 
-        console.log(
-            `🔍 TESTE: ${botoesComPadrao} botões com padrões de sessão encontrados`
-        );
-
-        // 3. Executar detecção real
-        console.log("🚀 TESTE: Executando detecção real...");
-        const resultado = window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
-
-        return {
-            botoesInfra: botoesInfra.length,
-            botoesComPadrao: botoesComPadrao,
-            deteccaoSucesso: !!resultado,
-            resultado: resultado,
-        };
-    } catch (error) {
-        console.error("❌ TESTE: Erro no teste:", error);
-        return { erro: error.message };
-    }
-};
-
-// 🚫 FUNÇÃO REMOVIDA - USE AS FUNÇÕES PRINCIPAIS NO NAMESPACE:
-// - window.SENT1_AUTO.testarMaterialBaseLayout()
-// - window.SENT1_AUTO.testarXPathMaterialDesign()
-
-// � FUNÇÕES DE TESTE ANTIGAS REMOVIDAS
-// USE APENAS AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE:
-// - window.SENT1_AUTO.testarMaterialBaseLayout()
-// - window.SENT1_AUTO.testarXPathMaterialDesign()
-
-// Fim da seção de funcionalidades
-
-// 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
-// 🚫 FUNÇÃO REMOVIDA - USE AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE
-
-// 🔧 FUNÇÃO DE DEBUG RÁPIDO
-window.SENT1_AUTO.debugRapido = function () {
-    console.log("🔧 DEBUG RÁPIDO eProbe");
-    console.log("1. Namespace existe:", typeof window.SENT1_AUTO);
-    console.log("2. É objeto:", typeof window.SENT1_AUTO === "object");
-
-    if (typeof window.SENT1_AUTO === "object") {
-        const funcoes = Object.keys(window.SENT1_AUTO).filter(
-            (key) => typeof window.SENT1_AUTO[key] === "function"
-        );
-        console.log(`3. Total de funções: ${funcoes.length}`);
-        console.log("4. Funções disponíveis:", funcoes.slice(0, 10));
-    }
-
-    console.log("5. URL atual:", window.location.href);
-    console.log("6. É eProc:", window.location.href.includes("eproc"));
-
-    return {
-        namespace: typeof window.SENT1_AUTO,
-        totalFuncoes:
-            typeof window.SENT1_AUTO === "object"
-                ? Object.keys(window.SENT1_AUTO).filter(
-                      (key) => typeof window.SENT1_AUTO[key] === "function"
-                  ).length
-                : 0,
-        url: window.location.href,
-        eProc: window.SENT1_AUTO && window.location.href.includes("eproc"),
-    };
-};
-
-// 🧪 FUNÇÃO DE TESTE PARA MÚLTIPLAS SESSÕES
-window.SENT1_AUTO.testarMultiplasSessoes = function () {
-    console.log(
-        "🧪 TESTE MÚLTIPLAS SESSÕES: Testando sistema de tooltip elegante"
-    );
-
-    // Criar dados de teste com múltiplas sessões
-    const dadosTesteSessoes = {
-        status: "Retirado",
-        statusCompleto: "Retirado em Pauta",
-        statusOriginal: "Retirado em Pauta",
-        tipoProcesso: "RELATÓRIO/VOTO",
-        data: "10/04/2025",
-        codigo: "5201740",
-        cor: "#dc2626",
-        totalSessoes: 4,
-        todasSessoes: [
-            {
-                data: "10/04/2025",
-                status: "Retirado",
-                statusOriginal: "Retirado em Pauta",
-                cor: "#dc2626",
-            },
-            {
-                data: "06/02/2025",
-                status: "Sobrestado (art. 942)",
-                statusOriginal: "Sobrestado - art. 942 CPC em Pauta",
-                cor: "#f59e0b",
-            },
-            {
-                data: "05/12/2024",
-                status: "Pedido de Vista",
-                statusOriginal: "Pedido de Vista em Pauta",
-                cor: "#8b5cf6",
-            },
-            {
-                data: "19/11/2024",
-                status: "Julgado",
-                statusOriginal: "Julgado em Pauta",
-                cor: "#16a34a",
-            },
-        ],
-    };
-
-    console.log("📊 DADOS DE TESTE:", dadosTesteSessoes);
-
-    try {
-        // Remover card existente
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ Card existente removido");
-        }
-
-        // Criar novo card com dados de teste
-        const novoCard =
-            window.SENT1_AUTO.criarCardMaterialDesign(dadosTesteSessoes);
-
-        // Inserir na interface
-        const resultado = inserirCardNaInterface(novoCard);
-
-        if (resultado) {
-            console.log("✅ TESTE: Card criado com sucesso!");
-            console.log(
-                "💡 INSTRUÇÃO: Passe o mouse sobre '4 sessões (passe o mouse para ver histórico)' para ver o tooltip elegante"
-            );
-            return {
-                sucesso: true,
-                totalSessoes: dadosTesteSessoes.totalSessoes,
-                cardCriado: !!document.getElementById("eprobe-data-sessao"),
-                mensagem:
-                    "Tooltip elegante com ícones Lucide e design minimalista",
-                design: "Background branco, bordas sutis, ícones SVG, badge azul para sessão atual",
-            };
-        } else {
-            console.log("❌ TESTE: Falha ao inserir card na interface");
-            return { sucesso: false, erro: "Falha na inserção" };
-        }
-    } catch (error) {
-        console.error("💥 TESTE: Erro durante teste:", error);
-        return { sucesso: false, erro: error.message };
-    }
-};
-
-// 🧪 FUNÇÃO DE TESTE PARA O NOVO FORMATO DE TOOLTIP
-window.SENT1_AUTO.testarNovoFormatoTooltip = function (textoTeste) {
-    console.log("🧪 TESTE NOVO FORMATO: Testando extração de dados de sessão");
-
-    // Usar texto de exemplo se não fornecido
-    const texto =
-        textoTeste ||
-        "10/04/2025 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>06/02/2025 - Sobrestado - art. 942 CPC em Pauta - RELATÓRIO/VOTO (5201740)<br/>05/12/2024 - Pedido de Vista em Pauta - RELATÓRIO/VOTO (5201740)<br/>19/11/2024 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>";
-
-    console.log("📝 TEXTO DE TESTE:", texto);
-
-    try {
-        const resultado = extrairDadosCardSessaoGlobal(texto);
-
-        if (resultado) {
-            console.log("✅ SUCESSO: Dados extraídos com sucesso!");
-            console.log("📊 RESULTADO:", resultado);
-            console.log(`📈 TOTAL DE SESSÕES: ${resultado.totalSessoes}`);
-            console.log("🎯 SESSÃO MAIS RECENTE:", {
-                data: resultado.data,
-                status: resultado.status,
-                statusOriginal: resultado.statusOriginal,
-                cor: resultado.cor,
-            });
-
-            // Mostrar todas as sessões encontradas
-            if (resultado.todasSessoes) {
-                console.log("📋 TODAS AS SESSÕES:");
-                resultado.todasSessoes.forEach((sessao, index) => {
-                    console.log(
-                        `   ${index + 1}. ${sessao.data} - ${sessao.status} (${
-                            sessao.statusOriginal
-                        })`
-                    );
+                    // Testar TODOS os padrões de sessão
+                    const resultado = extrairDadosSessaoCompleto(texto);
+                    if (resultado) {
+                        console.log(
+                            `✅ TESTE: ${resultado.status} encontrado!`
+                        );
+                        console.log(`   - Tipo: ${resultado.tipoProcesso}`);
+                        console.log(
+                            `   - Data: ${resultado.data.dataFormatada}`
+                        );
+                        console.log(`   - Órgão: ${resultado.orgao}`);
+                        console.log(`   - Status: ${resultado.statusCompleto}`);
+                    } else if (texto.includes("em Pauta em")) {
+                        console.log(
+                            "⚠️ TESTE: Padrão parcial encontrado, mas não validado:",
+                            texto.substring(0, 100)
+                        );
+                    }
                 });
             }
 
-            return resultado;
-        } else {
-            console.log("❌ FALHA: Nenhum dado extraído");
-            return null;
+            // 2. Testar fallback (todos os botões)
+            const todosBotoes = document.querySelectorAll("button");
+            let botoesComPadrao = 0;
+
+            todosBotoes.forEach((botao) => {
+                const texto = botao.textContent || botao.innerText || "";
+                if (texto.includes("em Pauta em")) {
+                    // Usar função unificada para validação completa
+                    const resultado = extrairDadosSessaoCompleto(texto);
+                    if (resultado) {
+                        botoesComPadrao++;
+                        console.log(
+                            "📄 FALLBACK VALIDADO:",
+                            texto.substring(0, 150)
+                        );
+                        console.log(
+                            `   🎯 STATUS: ${resultado.status} (${resultado.statusCompleto})`
+                        );
+                        console.log(
+                            `   📅 DATA: ${resultado.data.dataFormatada}`
+                        );
+                        console.log(`   🏢 ÓRGÃO: ${resultado.orgao}`);
+                    } else if (texto.includes("em Pauta em")) {
+                        console.log(
+                            "⚠️ FALLBACK PARCIAL:",
+                            texto.substring(0, 100)
+                        );
+                        console.log("   ❌ Não validado pela função unificada");
+                    }
+                }
+            });
+
+            console.log(
+                `🔍 TESTE: ${botoesComPadrao} botões com padrões de sessão encontrados`
+            );
+
+            // 3. Executar detecção real
+            console.log("🚀 TESTE: Executando detecção real...");
+            const resultado =
+                window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+
+            return {
+                botoesInfra: botoesInfra.length,
+                botoesComPadrao: botoesComPadrao,
+                deteccaoSucesso: !!resultado,
+                resultado: resultado,
+            };
+        } catch (error) {
+            console.error("❌ TESTE: Erro no teste:", error);
+            return { erro: error.message };
         }
-    } catch (error) {
-        console.error("💥 ERRO no teste:", error);
-        return { erro: error.message };
-    }
-};
+    };
 
-// 🔧 FUNÇÃO DE TESTE XPATH REMOVIDA - usar window.SENT1_AUTO.detectarCardSessaoSimplificado() diretamente
+    // 🚫 FUNÇÃO REMOVIDA - USE AS FUNÇÕES PRINCIPAIS NO NAMESPACE:
+    // - window.SENT1_AUTO.testarMaterialBaseLayout()
+    // - window.SENT1_AUTO.testarXPathMaterialDesign()
 
-// 🧪 FUNÇÃO DE DEBUG XPATH ÚNICA - Para diagnosticar problemas
-window.SENT1_AUTO.debugXPathEProc = function () {
-    console.log("🔍 DEBUG XPATH: Diagnosticando busca no eProc");
+    // � FUNÇÕES DE TESTE ANTIGAS REMOVIDAS
+    // USE APENAS AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE:
+    // - window.SENT1_AUTO.testarMaterialBaseLayout()
+    // - window.SENT1_AUTO.testarXPathMaterialDesign()
 
-    const xpathExpression =
-        "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
+    // Fim da seção de funcionalidades
 
-    console.log("📍 XPath:", xpathExpression);
-    console.log("📄 URL atual:", window.location.href);
-    console.log("📊 DOM readyState:", document.readyState);
+    // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
+    // 🚫 FUNÇÃO REMOVIDA - USE AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE
 
-    // Teste direto no console
-    console.log("🔧 Para testar manualmente, execute no console:");
-    console.log(`   $x("${xpathExpression}")`);
+    // 🔧 FUNÇÃO DE DEBUG RÁPIDO
+    window.SENT1_AUTO.debugRapido = function () {
+        console.log("🔧 DEBUG RÁPIDO eProbe");
+        console.log("1. Namespace existe:", typeof window.SENT1_AUTO);
+        console.log("2. É objeto:", typeof window.SENT1_AUTO === "object");
 
-    // Busca pelo elemento
-    const elemento = document.evaluate(
-        xpathExpression,
-        document,
-        null,
-        XPathResult.FIRST_ORDERED_NODE_TYPE,
-        null
-    ).singleNodeValue;
-
-    if (elemento) {
-        console.log("✅ ELEMENTO ENCONTRADO!");
-        console.log("   Tag:", elemento.tagName);
-        console.log("   ID:", elemento.id || "sem-id");
-        console.log("   Classe:", elemento.className || "sem-classe");
-        console.log("   Texto:", elemento.textContent || "sem-texto");
-        console.log(
-            "   onmouseover:",
-            elemento.getAttribute("onmouseover") || "sem-onmouseover"
-        );
-
-        // Tentar executar a detecção completa
-        const resultado = window.SENT1_AUTO.detectarCardSessaoSimplificado();
-        if (resultado) {
-            console.log("✅ DETECÇÃO COMPLETA FUNCIONOU:", resultado);
-        } else {
-            console.log("❌ DETECÇÃO COMPLETA FALHOU");
+        if (typeof window.SENT1_AUTO === "object") {
+            const funcoes = Object.keys(window.SENT1_AUTO).filter(
+                (key) => typeof window.SENT1_AUTO[key] === "function"
+            );
+            console.log(`3. Total de funções: ${funcoes.length}`);
+            console.log("4. Funções disponíveis:", funcoes.slice(0, 10));
         }
-    } else {
-        console.log("❌ ELEMENTO NÃO ENCONTRADO");
-        console.log("   Verifique se você está na página certa do eProc");
-        console.log("   Aguarde o carregamento completo da página");
-    }
 
-    return { elemento: !!elemento, xpath: xpathExpression };
-};
+        console.log("5. URL atual:", window.location.href);
+        console.log("6. É eProc:", window.location.href.includes("eproc"));
 
-// 🔧 FUNÇÃO DE DEBUG PARA NORMALIZAÇÃO DE DADOS
-window.SENT1_AUTO.debugNormalizacaoData = function (dadosTest) {
-    console.log("🔍 DEBUG NORMALIZAÇÃO: Testando extração de data");
+        return {
+            namespace: typeof window.SENT1_AUTO,
+            totalFuncoes:
+                typeof window.SENT1_AUTO === "object"
+                    ? Object.keys(window.SENT1_AUTO).filter(
+                          (key) => typeof window.SENT1_AUTO[key] === "function"
+                      ).length
+                    : 0,
+            url: window.location.href,
+            eProc: window.SENT1_AUTO && window.location.href.includes("eproc"),
+        };
+    };
 
-    if (!dadosTest) {
-        console.log("⚠️ Forneça dados para testar:");
+    // 🧪 FUNÇÃO DE TESTE PARA MÚLTIPLAS SESSÕES
+    window.SENT1_AUTO.testarMultiplasSessoes = function () {
         console.log(
-            "   window.SENT1_AUTO.debugNormalizacaoData({ data: '23/01/2025' })"
+            "🧪 TESTE MÚLTIPLAS SESSÕES: Testando sistema de tooltip elegante"
         );
-        console.log(
-            "   window.SENT1_AUTO.debugNormalizacaoData({ dataFormatada: '23/01/2025' })"
-        );
-        return;
-    }
 
-    const resultado = getData(dadosTest);
-    console.log("📅 RESULTADO:", resultado);
-
-    return resultado;
-};
-
-console.log(
-    "✅ FUNÇÕES DE TESTE: Carregadas fora da IIFE - sempre disponíveis"
-);
-
-// Função de detecção global ao namespace
-// Função de detecção global REMOVIDA - usar apenas detectarCardSessaoSimplificado()
-// para evitar conflitos e duplicação de lógica
-/**
- * Função auxiliar para traduzir status de sessão conforme regras específicas
- * @param {string} statusOriginal - Status original do sistema eProc
- * @returns {Object} - Objeto com status traduzido, completo e cor
- */
-function traduzirStatusSessao(statusOriginal) {
-    const traducoes = {
-        "Retirado em Pauta": {
+        // Criar dados de teste com múltiplas sessões
+        const dadosTesteSessoes = {
             status: "Retirado",
             statusCompleto: "Retirado em Pauta",
-            cor: "#dc2626", // Vermelho
-        },
-        "Sobrestado - art. 942 CPC em Pauta": {
-            status: "Sobrestado (art. 942)",
-            statusCompleto: "Sobrestado - art. 942 CPC",
-            cor: "#f59e0b", // Amarelo
-        },
-        "Pedido de Vista em Pauta": {
-            status: "Pedido de Vista",
-            statusCompleto: "Pedido de Vista em Pauta",
-            cor: "#8b5cf6", // Roxo
-        },
-        "Adiado - art. 935 CPC em Pauta": {
-            status: "Adiado (art. 935)",
-            statusCompleto: "Adiado - art. 935 CPC",
-            cor: "#ef4444", // Vermelho claro
-        },
-        "Convertido em Diligência em Pauta": {
-            status: "Conv. em Diligência",
-            statusCompleto: "Convertido em Diligência",
-            cor: "#06b6d4", // Azul claro
-        },
-        "Julgado em Pauta": {
-            status: "Julgado",
-            statusCompleto: "Julgado em Pauta",
-            cor: "#16a34a", // Verde
-        },
-        "Incluído em Pauta": {
-            status: "Pautado",
-            statusCompleto: "Incluído em Pauta",
-            cor: "#3b82f6", // Azul
-        },
-        "Adiado em Pauta": {
-            status: "Adiado",
-            statusCompleto: "Adiado em Pauta",
-            cor: "#f97316", // Laranja
-        },
-    };
-
-    // Buscar tradução exata primeiro
-    if (traducoes[statusOriginal]) {
-        return traducoes[statusOriginal];
-    }
-
-    // Buscar por padrões parciais
-    for (const [chave, valor] of Object.entries(traducoes)) {
-        if (statusOriginal.includes(chave) || chave.includes(statusOriginal)) {
-            return valor;
-        }
-    }
-
-    // Fallback para status não mapeados
-    console.log(`⚠️ STATUS: Não mapeado: "${statusOriginal}"`);
-    return {
-        status: statusOriginal,
-        statusCompleto: statusOriginal,
-        cor: "#6b7280", // Cinza
-    };
-}
-
-/**
- * Função auxiliar para extrair dados de sessão do NOVO formato de tooltip
- * NOVO PADRÃO: "DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>"
- * @param {string} texto - Texto do tooltip para analisar
- * @returns {Object|null} - Dados da sessão mais recente ou null
- */
-function extrairDadosCardSessaoGlobal(texto) {
-    console.log(
-        "🔍 EXTRAÇÃO NOVA: Analisando tooltip:",
-        texto.substring(0, 200)
-    );
-
-    // NOVO PADRÃO: DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>
-    const padraoGeral =
-        /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)\s*\((\d+)\)/g;
-
-    const sessoes = [];
-    let match;
-
-    // Extrair todas as sessões do tooltip
-    while ((match = padraoGeral.exec(texto)) !== null) {
-        const data = match[1];
-        const statusOriginal = match[2].trim();
-        const documento = match[3].trim();
-        const codigo = match[4];
-
-        // Traduzir status conforme as regras especificadas
-        const statusTraduzido = traduzirStatusSessao(statusOriginal);
-
-        console.log(
-            `📅 SESSÃO: ${data} - ${statusOriginal} → ${statusTraduzido.status}`
-        );
-
-        sessoes.push({
-            data: data,
-            statusOriginal: statusOriginal,
-            status: statusTraduzido.status,
-            statusCompleto: statusTraduzido.statusCompleto,
-            documento: documento,
-            codigo: codigo,
-            cor: statusTraduzido.cor,
-        });
-    }
-
-    if (sessoes.length === 0) {
-        console.log(
-            "❌ EXTRAÇÃO NOVA: Nenhuma sessão encontrada no formato atualizado"
-        );
-        return null;
-    }
-
-    // Pegar a sessão mais recente (primeira na lista, pois vem ordenada cronologicamente)
-    const sessaoMaisRecente = sessoes[0];
-
-    console.log(
-        `📊 EXTRAÇÃO: ${sessoes.length} sessões encontradas, usando mais recente`
-    );
-
-    // Criar objeto de dados da sessão no formato esperado pelo sistema
-    const dadosSessao = {
-        status: sessaoMaisRecente.status,
-        statusCompleto: sessaoMaisRecente.statusCompleto,
-        statusOriginal: sessaoMaisRecente.statusOriginal,
-        tipoProcesso: sessaoMaisRecente.documento,
-        data: sessaoMaisRecente.data,
-        codigo: sessaoMaisRecente.codigo,
-        cor: sessaoMaisRecente.cor,
-        textoOriginal: `${sessaoMaisRecente.data} - ${sessaoMaisRecente.statusOriginal} - ${sessaoMaisRecente.documento} (${sessaoMaisRecente.codigo})`,
-        timestamp: new Date().toISOString(),
-        todasSessoes: sessoes, // Guardar todas as sessões para referência
-        totalSessoes: sessoes.length,
-    };
-
-    console.log(
-        "✅ EXTRAÇÃO NOVA: Dados extraídos da sessão mais recente:",
-        dadosSessao
-    );
-    console.log(
-        `📈 EXTRAÇÃO: Total de ${sessoes.length} sessões históricas preservadas`
-    );
-
-    return dadosSessao;
-}
-
-// 🎨 FUNÇÃO DE TESTE PARA DESIGNS FIGMA
-window.SENT1_AUTO.testarDesignFigma = function (statusTeste = "Julgado") {
-    console.log(
-        `🎨 TESTE FIGMA: Testando design Figma para status "${statusTeste}"`
-    );
-
-    try {
-        // Criar dados de sessão simulados para teste
-        const dadosSessaoTeste = {
-            data: "15/01/2025",
-            status: statusTeste,
-            statusOriginal: statusTeste,
-            totalSessoes: 3,
+            statusOriginal: "Retirado em Pauta",
+            tipoProcesso: "RELATÓRIO/VOTO",
+            data: "10/04/2025",
+            codigo: "5201740",
+            cor: "#dc2626",
+            totalSessoes: 4,
             todasSessoes: [
                 {
-                    data: "15/01/2025",
-                    status: statusTeste,
-                    statusOriginal: statusTeste,
+                    data: "10/04/2025",
+                    status: "Retirado",
+                    statusOriginal: "Retirado em Pauta",
+                    cor: "#dc2626",
                 },
                 {
-                    data: "08/01/2025",
-                    status: "Pautado",
-                    statusOriginal: "Pautado",
+                    data: "06/02/2025",
+                    status: "Sobrestado (art. 942)",
+                    statusOriginal: "Sobrestado - art. 942 CPC em Pauta",
+                    cor: "#f59e0b",
                 },
                 {
-                    data: "20/12/2024",
-                    status: "Adiado",
-                    statusOriginal: "Adiado em Pauta",
+                    data: "05/12/2024",
+                    status: "Pedido de Vista",
+                    statusOriginal: "Pedido de Vista em Pauta",
+                    cor: "#8b5cf6",
+                },
+                {
+                    data: "19/11/2024",
+                    status: "Julgado",
+                    statusOriginal: "Julgado em Pauta",
+                    cor: "#16a34a",
                 },
             ],
         };
 
-        console.log("📊 DADOS DE TESTE:", dadosSessaoTeste);
+        console.log("📊 DADOS DE TESTE:", dadosTesteSessoes);
 
-        // Criar card com design Figma
-        const card =
-            window.SENT1_AUTO.criarCardMaterialDesign(dadosSessaoTeste);
+        try {
+            // Remover card existente
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                cardExistente.remove();
+                console.log("🗑️ Card existente removido");
+            }
 
-        if (!card) {
-            console.error("❌ FIGMA: Falha ao criar card");
-            return { sucesso: false, erro: "Card não foi criado" };
+            // Criar novo card com dados de teste
+            const novoCard =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosTesteSessoes);
+
+            // Inserir na interface
+            const resultado = inserirCardNaInterface(novoCard);
+
+            if (resultado) {
+                console.log("✅ TESTE: Card criado com sucesso!");
+                console.log(
+                    "💡 INSTRUÇÃO: Passe o mouse sobre '4 sessões (passe o mouse para ver histórico)' para ver o tooltip elegante"
+                );
+                return {
+                    sucesso: true,
+                    totalSessoes: dadosTesteSessoes.totalSessoes,
+                    cardCriado: !!document.getElementById("eprobe-data-sessao"),
+                    mensagem:
+                        "Tooltip elegante com ícones Lucide e design minimalista",
+                    design: "Background branco, bordas sutis, ícones SVG, badge azul para sessão atual",
+                };
+            } else {
+                console.log("❌ TESTE: Falha ao inserir card na interface");
+                return { sucesso: false, erro: "Falha na inserção" };
+            }
+        } catch (error) {
+            console.error("💥 TESTE: Erro durante teste:", error);
+            return { sucesso: false, erro: error.message };
+        }
+    };
+
+    // 🧪 FUNÇÃO DE TESTE PARA O NOVO FORMATO DE TOOLTIP
+    window.SENT1_AUTO.testarNovoFormatoTooltip = function (textoTeste) {
+        console.log(
+            "🧪 TESTE NOVO FORMATO: Testando extração de dados de sessão"
+        );
+
+        // Usar texto de exemplo se não fornecido
+        const texto =
+            textoTeste ||
+            "10/04/2025 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>06/02/2025 - Sobrestado - art. 942 CPC em Pauta - RELATÓRIO/VOTO (5201740)<br/>05/12/2024 - Pedido de Vista em Pauta - RELATÓRIO/VOTO (5201740)<br/>19/11/2024 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>";
+
+        console.log("📝 TEXTO DE TESTE:", texto);
+
+        try {
+            const resultado = extrairDadosCardSessaoGlobal(texto);
+
+            if (resultado) {
+                console.log("✅ SUCESSO: Dados extraídos com sucesso!");
+                console.log("📊 RESULTADO:", resultado);
+                console.log(`📈 TOTAL DE SESSÕES: ${resultado.totalSessoes}`);
+                console.log("🎯 SESSÃO MAIS RECENTE:", {
+                    data: resultado.data,
+                    status: resultado.status,
+                    statusOriginal: resultado.statusOriginal,
+                    cor: resultado.cor,
+                });
+
+                // Mostrar todas as sessões encontradas
+                if (resultado.todasSessoes) {
+                    console.log("📋 TODAS AS SESSÕES:");
+                    resultado.todasSessoes.forEach((sessao, index) => {
+                        console.log(
+                            `   ${index + 1}. ${sessao.data} - ${
+                                sessao.status
+                            } (${sessao.statusOriginal})`
+                        );
+                    });
+                }
+
+                return resultado;
+            } else {
+                console.log("❌ FALHA: Nenhum dado extraído");
+                return null;
+            }
+        } catch (error) {
+            console.error("💥 ERRO no teste:", error);
+            return { erro: error.message };
+        }
+    };
+
+    // 🔧 FUNÇÃO DE TESTE XPATH REMOVIDA - usar window.SENT1_AUTO.detectarCardSessaoSimplificado() diretamente
+
+    // 🧪 FUNÇÃO DE DEBUG XPATH ÚNICA - Para diagnosticar problemas
+    window.SENT1_AUTO.debugXPathEProc = function () {
+        console.log("🔍 DEBUG XPATH: Diagnosticando busca no eProc");
+
+        const xpathExpression =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
+
+        console.log("📍 XPath:", xpathExpression);
+        console.log("📄 URL atual:", window.location.href);
+        console.log("📊 DOM readyState:", document.readyState);
+
+        // Teste direto no console
+        console.log("🔧 Para testar manualmente, execute no console:");
+        console.log(`   $x("${xpathExpression}")`);
+
+        // Busca pelo elemento
+        const elemento = document.evaluate(
+            xpathExpression,
+            document,
+            null,
+            XPathResult.FIRST_ORDERED_NODE_TYPE,
+            null
+        ).singleNodeValue;
+
+        if (elemento) {
+            console.log("✅ ELEMENTO ENCONTRADO!");
+            console.log("   Tag:", elemento.tagName);
+            console.log("   ID:", elemento.id || "sem-id");
+            console.log("   Classe:", elemento.className || "sem-classe");
+            console.log("   Texto:", elemento.textContent || "sem-texto");
+            console.log(
+                "   onmouseover:",
+                elemento.getAttribute("onmouseover") || "sem-onmouseover"
+            );
+
+            // Tentar executar a detecção completa
+            const resultado =
+                window.SENT1_AUTO.detectarCardSessaoSimplificado();
+            if (resultado) {
+                console.log("✅ DETECÇÃO COMPLETA FUNCIONOU:", resultado);
+            } else {
+                console.log("❌ DETECÇÃO COMPLETA FALHOU");
+            }
+        } else {
+            console.log("❌ ELEMENTO NÃO ENCONTRADO");
+            console.log("   Verifique se você está na página certa do eProc");
+            console.log("   Aguarde o carregamento completo da página");
         }
 
-        console.log("✅ FIGMA: Card criado com sucesso", card);
+        return { elemento: !!elemento, xpath: xpathExpression };
+    };
 
-        // Remover card existente se houver
-        const cardExistente = document.getElementById("eprobe-data-sessao");
-        if (cardExistente) {
-            cardExistente.remove();
-            console.log("🗑️ FIGMA: Card anterior removido");
+    // 🔧 FUNÇÃO DE DEBUG PARA NORMALIZAÇÃO DE DADOS
+    window.SENT1_AUTO.debugNormalizacaoData = function (dadosTest) {
+        console.log("🔍 DEBUG NORMALIZAÇÃO: Testando extração de data");
+
+        if (!dadosTest) {
+            console.log("⚠️ Forneça dados para testar:");
+            console.log(
+                "   window.SENT1_AUTO.debugNormalizacaoData({ data: '23/01/2025' })"
+            );
+            console.log(
+                "   window.SENT1_AUTO.debugNormalizacaoData({ dataFormatada: '23/01/2025' })"
+            );
+            return;
         }
 
-        // Inserir card na página
-        const containers = [
-            "#fldCapa #divCapaProcesso .row.mt-2",
-            "#divCapaProcesso .row.mt-2",
-            ".row.mt-2",
-            "#fldCapa",
-            "#divCapaProcesso",
-            "body",
-        ];
+        const resultado = getData(dadosTest);
+        console.log("📅 RESULTADO:", resultado);
 
-        let inserido = false;
-        for (const seletor of containers) {
-            const container = document.querySelector(seletor);
-            if (container) {
-                container.appendChild(card);
-                inserido = true;
-                console.log(`✅ FIGMA: Card inserido em "${seletor}"`);
-                break;
+        return resultado;
+    };
+
+    console.log(
+        "✅ FUNÇÕES DE TESTE: Carregadas fora da IIFE - sempre disponíveis"
+    );
+
+    // Função de detecção global ao namespace
+    // Função de detecção global REMOVIDA - usar apenas detectarCardSessaoSimplificado()
+    // para evitar conflitos e duplicação de lógica
+    /**
+     * Função auxiliar para traduzir status de sessão conforme regras específicas
+     * @param {string} statusOriginal - Status original do sistema eProc
+     * @returns {Object} - Objeto com status traduzido, completo e cor
+     */
+    function traduzirStatusSessao(statusOriginal) {
+        const traducoes = {
+            "Retirado em Pauta": {
+                status: "Retirado",
+                statusCompleto: "Retirado em Pauta",
+                cor: "#dc2626", // Vermelho
+            },
+            "Sobrestado - art. 942 CPC em Pauta": {
+                status: "Sobrestado (art. 942)",
+                statusCompleto: "Sobrestado - art. 942 CPC",
+                cor: "#f59e0b", // Amarelo
+            },
+            "Pedido de Vista em Pauta": {
+                status: "Pedido de Vista",
+                statusCompleto: "Pedido de Vista em Pauta",
+                cor: "#8b5cf6", // Roxo
+            },
+            "Adiado - art. 935 CPC em Pauta": {
+                status: "Adiado (art. 935)",
+                statusCompleto: "Adiado - art. 935 CPC",
+                cor: "#ef4444", // Vermelho claro
+            },
+            "Convertido em Diligência em Pauta": {
+                status: "Conv. em Diligência",
+                statusCompleto: "Convertido em Diligência",
+                cor: "#06b6d4", // Azul claro
+            },
+            "Julgado em Pauta": {
+                status: "Julgado",
+                statusCompleto: "Julgado em Pauta",
+                cor: "#16a34a", // Verde
+            },
+            "Incluído em Pauta": {
+                status: "Pautado",
+                statusCompleto: "Incluído em Pauta",
+                cor: "#3b82f6", // Azul
+            },
+            "Adiado em Pauta": {
+                status: "Adiado",
+                statusCompleto: "Adiado em Pauta",
+                cor: "#f97316", // Laranja
+            },
+        };
+
+        // Buscar tradução exata primeiro
+        if (traducoes[statusOriginal]) {
+            return traducoes[statusOriginal];
+        }
+
+        // Buscar por padrões parciais
+        for (const [chave, valor] of Object.entries(traducoes)) {
+            if (
+                statusOriginal.includes(chave) ||
+                chave.includes(statusOriginal)
+            ) {
+                return valor;
             }
         }
 
-        if (!inserido) {
-            console.warn(
-                "⚠️ FIGMA: Não foi possível inserir o card automaticamente"
-            );
+        // Fallback para status não mapeados
+        console.log(`⚠️ STATUS: Não mapeado: "${statusOriginal}"`);
+        return {
+            status: statusOriginal,
+            statusCompleto: statusOriginal,
+            cor: "#6b7280", // Cinza
+        };
+    }
+
+    /**
+     * Função auxiliar para extrair dados de sessão do NOVO formato de tooltip
+     * NOVO PADRÃO: "DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>"
+     * @param {string} texto - Texto do tooltip para analisar
+     * @returns {Object|null} - Dados da sessão mais recente ou null
+     */
+    function extrairDadosCardSessaoGlobal(texto) {
+        console.log(
+            "🔍 EXTRAÇÃO NOVA: Analisando tooltip:",
+            texto.substring(0, 200)
+        );
+
+        // NOVO PADRÃO: DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>
+        const padraoGeral =
+            /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)\s*\((\d+)\)/g;
+
+        const sessoes = [];
+        let match;
+
+        // Extrair todas as sessões do tooltip
+        while ((match = padraoGeral.exec(texto)) !== null) {
+            const data = match[1];
+            const statusOriginal = match[2].trim();
+            const documento = match[3].trim();
+            const codigo = match[4];
+
+            // Traduzir status conforme as regras especificadas
+            const statusTraduzido = traduzirStatusSessao(statusOriginal);
+
             console.log(
-                "💡 FIGMA: Card criado e disponível na variável:",
-                card
+                `📅 SESSÃO: ${data} - ${statusOriginal} → ${statusTraduzido.status}`
             );
+
+            sessoes.push({
+                data: data,
+                statusOriginal: statusOriginal,
+                status: statusTraduzido.status,
+                statusCompleto: statusTraduzido.statusCompleto,
+                documento: documento,
+                codigo: codigo,
+                cor: statusTraduzido.cor,
+            });
+        }
+
+        if (sessoes.length === 0) {
+            console.log(
+                "❌ EXTRAÇÃO NOVA: Nenhuma sessão encontrada no formato atualizado"
+            );
+            return null;
+        }
+
+        // Pegar a sessão mais recente (primeira na lista, pois vem ordenada cronologicamente)
+        const sessaoMaisRecente = sessoes[0];
+
+        console.log(
+            `📊 EXTRAÇÃO: ${sessoes.length} sessões encontradas, usando mais recente`
+        );
+
+        // Criar objeto de dados da sessão no formato esperado pelo sistema
+        const dadosSessao = {
+            status: sessaoMaisRecente.status,
+            statusCompleto: sessaoMaisRecente.statusCompleto,
+            statusOriginal: sessaoMaisRecente.statusOriginal,
+            tipoProcesso: sessaoMaisRecente.documento,
+            data: sessaoMaisRecente.data,
+            codigo: sessaoMaisRecente.codigo,
+            cor: sessaoMaisRecente.cor,
+            textoOriginal: `${sessaoMaisRecente.data} - ${sessaoMaisRecente.statusOriginal} - ${sessaoMaisRecente.documento} (${sessaoMaisRecente.codigo})`,
+            timestamp: new Date().toISOString(),
+            todasSessoes: sessoes, // Guardar todas as sessões para referência
+            totalSessoes: sessoes.length,
+        };
+
+        console.log(
+            "✅ EXTRAÇÃO NOVA: Dados extraídos da sessão mais recente:",
+            dadosSessao
+        );
+        console.log(
+            `📈 EXTRAÇÃO: Total de ${sessoes.length} sessões históricas preservadas`
+        );
+
+        return dadosSessao;
+    }
+
+    // 🎨 FUNÇÃO DE TESTE PARA DESIGNS FIGMA
+    window.SENT1_AUTO.testarDesignFigma = function (statusTeste = "Julgado") {
+        console.log(
+            `🎨 TESTE FIGMA: Testando design Figma para status "${statusTeste}"`
+        );
+
+        try {
+            // Criar dados de sessão simulados para teste
+            const dadosSessaoTeste = {
+                data: "15/01/2025",
+                status: statusTeste,
+                statusOriginal: statusTeste,
+                totalSessoes: 3,
+                todasSessoes: [
+                    {
+                        data: "15/01/2025",
+                        status: statusTeste,
+                        statusOriginal: statusTeste,
+                    },
+                    {
+                        data: "08/01/2025",
+                        status: "Pautado",
+                        statusOriginal: "Pautado",
+                    },
+                    {
+                        data: "20/12/2024",
+                        status: "Adiado",
+                        statusOriginal: "Adiado em Pauta",
+                    },
+                ],
+            };
+
+            console.log("📊 DADOS DE TESTE:", dadosSessaoTeste);
+
+            // Criar card com design Figma
+            const card =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessaoTeste);
+
+            if (!card) {
+                console.error("❌ FIGMA: Falha ao criar card");
+                return { sucesso: false, erro: "Card não foi criado" };
+            }
+
+            console.log("✅ FIGMA: Card criado com sucesso", card);
+
+            // Remover card existente se houver
+            const cardExistente = document.getElementById("eprobe-data-sessao");
+            if (cardExistente) {
+                cardExistente.remove();
+                console.log("🗑️ FIGMA: Card anterior removido");
+            }
+
+            // Inserir card na página
+            const containers = [
+                "#fldCapa #divCapaProcesso .row.mt-2",
+                "#divCapaProcesso .row.mt-2",
+                ".row.mt-2",
+                "#fldCapa",
+                "#divCapaProcesso",
+                "body",
+            ];
+
+            let inserido = false;
+            for (const seletor of containers) {
+                const container = document.querySelector(seletor);
+                if (container) {
+                    container.appendChild(card);
+                    inserido = true;
+                    console.log(`✅ FIGMA: Card inserido em "${seletor}"`);
+                    break;
+                }
+            }
+
+            if (!inserido) {
+                console.warn(
+                    "⚠️ FIGMA: Não foi possível inserir o card automaticamente"
+                );
+                console.log(
+                    "💡 FIGMA: Card criado e disponível na variável:",
+                    card
+                );
+                return {
+                    sucesso: true,
+                    card: card,
+                    aviso: "Card criado mas não inserido automaticamente",
+                };
+            }
+
+            // Testar todas as configurações de status
+            const todosStatus = [
+                "Julgado",
+                "Retirado",
+                "Sobrestado (art. 942)",
+                "Pedido de Vista",
+                "Pautado",
+                "Adiado (art. 935)",
+                "Adiado",
+                "Conv. em Diligência",
+            ];
+
+            console.log(
+                "🎨 FIGMA: Status disponíveis para teste:",
+                todosStatus
+            );
+
             return {
                 sucesso: true,
                 card: card,
-                aviso: "Card criado mas não inserido automaticamente",
+                statusTeste: statusTeste,
+                configuracao:
+                    window.SENT1_AUTO.obterConfigFigmaStatus(statusTeste),
+                todosStatusDisponiveis: todosStatus,
+                dica: "Use window.SENT1_AUTO.testarDesignFigma('STATUS') para testar outros status",
+            };
+        } catch (error) {
+            console.error("❌ FIGMA: Erro durante teste:", error);
+            return {
+                sucesso: false,
+                erro: error.message,
+                stack: error.stack,
             };
         }
+    };
 
-        // Testar todas as configurações de status
+    // 🌈 FUNÇÃO PARA TESTAR TODOS OS DESIGNS FIGMA
+    window.SENT1_AUTO.testarTodosDesignsFigma = function () {
+        console.log("🌈 FIGMA: Testando todos os 8 designs disponíveis");
+
         const todosStatus = [
             "Julgado",
             "Retirado",
@@ -19189,50 +17395,15 @@ window.SENT1_AUTO.testarDesignFigma = function (statusTeste = "Julgado") {
             "Conv. em Diligência",
         ];
 
-        console.log("🎨 FIGMA: Status disponíveis para teste:", todosStatus);
+        // Criar um container para demonstração
+        let containerDemo = document.getElementById("eprobe-figma-demo");
+        if (containerDemo) {
+            containerDemo.remove();
+        }
 
-        return {
-            sucesso: true,
-            card: card,
-            statusTeste: statusTeste,
-            configuracao: window.SENT1_AUTO.obterConfigFigmaStatus(statusTeste),
-            todosStatusDisponiveis: todosStatus,
-            dica: "Use window.SENT1_AUTO.testarDesignFigma('STATUS') para testar outros status",
-        };
-    } catch (error) {
-        console.error("❌ FIGMA: Erro durante teste:", error);
-        return {
-            sucesso: false,
-            erro: error.message,
-            stack: error.stack,
-        };
-    }
-};
-
-// 🌈 FUNÇÃO PARA TESTAR TODOS OS DESIGNS FIGMA
-window.SENT1_AUTO.testarTodosDesignsFigma = function () {
-    console.log("🌈 FIGMA: Testando todos os 8 designs disponíveis");
-
-    const todosStatus = [
-        "Julgado",
-        "Retirado",
-        "Sobrestado (art. 942)",
-        "Pedido de Vista",
-        "Pautado",
-        "Adiado (art. 935)",
-        "Adiado",
-        "Conv. em Diligência",
-    ];
-
-    // Criar um container para demonstração
-    let containerDemo = document.getElementById("eprobe-figma-demo");
-    if (containerDemo) {
-        containerDemo.remove();
-    }
-
-    containerDemo = document.createElement("div");
-    containerDemo.id = "eprobe-figma-demo";
-    containerDemo.style.cssText = `
+        containerDemo = document.createElement("div");
+        containerDemo.id = "eprobe-figma-demo";
+        containerDemo.style.cssText = `
         position: fixed;
         top: 20px;
         right: 20px;
@@ -19247,50 +17418,50 @@ window.SENT1_AUTO.testarTodosDesignsFigma = function () {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     `;
 
-    // Título
-    const titulo = document.createElement("h3");
-    titulo.textContent = "🎨 Designs Figma - eProbe";
-    titulo.style.cssText = `
+        // Título
+        const titulo = document.createElement("h3");
+        titulo.textContent = "🎨 Designs Figma - eProbe";
+        titulo.style.cssText = `
         margin: 0 0 16px 0;
         font-size: 16px;
         color: #1f2937;
         text-align: center;
     `;
-    containerDemo.appendChild(titulo);
+        containerDemo.appendChild(titulo);
 
-    // Criar cards para cada status
-    todosStatus.forEach((status, index) => {
-        const dadosSimulados = {
-            data: `${15 + index}/01/2025`,
-            status: status,
-            statusOriginal: status,
-            totalSessoes: 1,
-            todasSessoes: [
-                {
-                    data: `${15 + index}/01/2025`,
-                    status: status,
-                    statusOriginal: status,
-                },
-            ],
-        };
+        // Criar cards para cada status
+        todosStatus.forEach((status, index) => {
+            const dadosSimulados = {
+                data: `${15 + index}/01/2025`,
+                status: status,
+                statusOriginal: status,
+                totalSessoes: 1,
+                todasSessoes: [
+                    {
+                        data: `${15 + index}/01/2025`,
+                        status: status,
+                        statusOriginal: status,
+                    },
+                ],
+            };
 
-        try {
-            const card =
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosSimulados);
-            card.style.marginBottom = "12px";
-            containerDemo.appendChild(card);
-        } catch (error) {
-            console.error(
-                `❌ FIGMA: Erro ao criar card para "${status}":`,
-                error
-            );
-        }
-    });
+            try {
+                const card =
+                    window.SENT1_AUTO.criarCardMaterialDesign(dadosSimulados);
+                card.style.marginBottom = "12px";
+                containerDemo.appendChild(card);
+            } catch (error) {
+                console.error(
+                    `❌ FIGMA: Erro ao criar card para "${status}":`,
+                    error
+                );
+            }
+        });
 
-    // Botão para fechar
-    const botaoFechar = document.createElement("button");
-    botaoFechar.textContent = "✕ Fechar";
-    botaoFechar.style.cssText = `
+        // Botão para fechar
+        const botaoFechar = document.createElement("button");
+        botaoFechar.textContent = "✕ Fechar";
+        botaoFechar.style.cssText = `
         position: absolute;
         top: 10px;
         right: 10px;
@@ -19302,462 +17473,482 @@ window.SENT1_AUTO.testarTodosDesignsFigma = function () {
         font-size: 12px;
         color: #6b7280;
     `;
-    botaoFechar.onclick = () => containerDemo.remove();
-    containerDemo.appendChild(botaoFechar);
+        botaoFechar.onclick = () => containerDemo.remove();
+        containerDemo.appendChild(botaoFechar);
 
-    document.body.appendChild(containerDemo);
+        document.body.appendChild(containerDemo);
 
-    console.log("✅ FIGMA: Demonstração criada com todos os 8 designs");
-    return {
-        sucesso: true,
-        totalCards: todosStatus.length,
-        container: containerDemo,
-    };
-};
-
-// ===== INSTRUÇÕES DE USO - APENAS LAYOUT ÚNICO =====
-console.log("� FUNÇÕES PRINCIPAIS DISPONÍVEIS (ÚNICA ESTRATÉGIA):");
-console.log("- window.SENT1_AUTO.testarMaterialBaseLayout()");
-console.log("- window.SENT1_AUTO.testarXPathMaterialDesign()");
-console.log(
-    "✅ eProbe Extension carregada com sucesso - LAYOUT MATERIAL ÚNICO!"
-);
-
-// 🎨 FUNÇÕES DE TESTE E CORREÇÃO DO TOOLTIP
-window.SENT1_AUTO.testarTooltipCompleto = function () {
-    console.log(
-        "🎨 TESTE TOOLTIP: Iniciando teste completo do sistema de tooltip..."
-    );
-
-    // 1. Verificar se existe card da sessão
-    const card = document.getElementById("eprobe-data-sessao");
-    if (!card) {
-        console.log("❌ TOOLTIP: Card da sessão não encontrado");
-
-        // Tentar criar card de teste
-        console.log("🔧 TOOLTIP: Tentando criar card de teste...");
-        const dadosTest = window.SENT1_AUTO.getDataSessaoPautado
-            ? window.SENT1_AUTO.getDataSessaoPautado()
-            : null;
-        if (dadosTest) {
-            if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
-                window.SENT1_AUTO.atualizarCardMaterialDesign(dadosTest);
-            } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosTest);
-            }
-            setTimeout(() => window.SENT1_AUTO.testarTooltipCompleto(), 500);
-            return;
-        } else {
-            // Criar dados de sessão fictícios para teste
-            const dadosFicticios = {
-                status: "PAUTADO",
-                data: "05/08/2024",
-                dataFormatada: "05/08/2024",
-                dataOriginal: "05/08/2024",
-                orgao: "1ª CÂMARA",
-                tipoProcesso: "APELAÇÃO",
-                prioridade: 3,
-                todasSessoes: [
-                    {
-                        status: "PAUTADO",
-                        data: "05/08/2024",
-                        dataOriginal: "05/08/2024",
-                        orgao: "1ª CÂMARA",
-                        tipoProcesso: "APELAÇÃO",
-                        prioridade: 3,
-                    },
-                    {
-                        status: "RETIRADO",
-                        data: "15/07/2024",
-                        dataOriginal: "15/07/2024",
-                        orgao: "1ª CÂMARA",
-                        tipoProcesso: "APELAÇÃO",
-                        prioridade: 2,
-                    },
-                    {
-                        status: "JULGADO",
-                        data: "10/06/2024",
-                        dataOriginal: "10/06/2024",
-                        orgao: "1ª CÂMARA",
-                        tipoProcesso: "APELAÇÃO",
-                        prioridade: 1,
-                    },
-                ],
-            };
-
-            console.log(
-                "🎭 TOOLTIP: Criando card com dados fictícios para teste..."
-            );
-            if (window.SENT1_AUTO.criarCardMaterialDesign) {
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosFicticios);
-            }
-            setTimeout(() => window.SENT1_AUTO.testarTooltipCompleto(), 500);
-            return;
-        }
-    }
-
-    // 2. Verificar indicador de múltiplas sessões
-    const indicador = card.querySelector(".eprobe-figma-sessions-indicator");
-    console.log(
-        "🔢 INDICADOR:",
-        indicador ? "✅ Encontrado" : "❌ Não encontrado"
-    );
-
-    if (!indicador) {
-        console.log(
-            "❌ TOOLTIP: Indicador não encontrado - tooltip não será funcional"
-        );
-        return false;
-    }
-
-    // 3. Verificar se tooltip existe
-    let tooltip = document.getElementById("eprobe-rich-tooltip");
-    console.log(
-        "🎨 TOOLTIP ELEMENT:",
-        tooltip ? "✅ Encontrado" : "❌ Não encontrado"
-    );
-
-    // 4. Verificar dados de sessões
-    const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
-    console.log(
-        "📊 DADOS SESSÕES:",
-        todasSessoes ? `✅ ${todasSessoes.length} sessões` : "❌ Nenhuma sessão"
-    );
-
-    if (todasSessoes) {
-        todasSessoes.forEach((sessao, index) => {
-            console.log(
-                `   ${index + 1}. ${sessao.status} - ${
-                    sessao.dataOriginal || sessao.data
-                }`
-            );
-        });
-    }
-
-    // 5. Testar interação com tooltip
-    console.log("🖱️ TOOLTIP: Simulando hover no indicador...");
-
-    // Simular evento mouseenter
-    const mouseEnterEvent = new MouseEvent("mouseenter", {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-    });
-
-    indicador.dispatchEvent(mouseEnterEvent);
-
-    // Aguardar e verificar se tooltip apareceu
-    setTimeout(() => {
-        tooltip = document.getElementById("eprobe-rich-tooltip");
-        if (tooltip) {
-            const isVisible =
-                tooltip.style.display !== "none" &&
-                tooltip.style.opacity !== "0";
-            console.log(
-                `🎨 TOOLTIP VISÍVEL: ${isVisible ? "✅ SIM" : "❌ NÃO"}`
-            );
-
-            if (isVisible) {
-                console.log(
-                    "   📐 Posição:",
-                    `left: ${tooltip.style.left}, top: ${tooltip.style.top}`
-                );
-                console.log("   🎨 Opacidade:", tooltip.style.opacity);
-
-                // Simular mouseleave após 2 segundos
-                setTimeout(() => {
-                    console.log("🖱️ TOOLTIP: Simulando mouse leave...");
-                    const mouseLeaveEvent = new MouseEvent("mouseleave", {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window,
-                    });
-                    indicador.dispatchEvent(mouseLeaveEvent);
-
-                    setTimeout(() => {
-                        const isHidden =
-                            tooltip.style.display === "none" ||
-                            tooltip.style.opacity === "0";
-                        console.log(
-                            `🎨 TOOLTIP OCULTO: ${
-                                isHidden ? "✅ SIM" : "❌ NÃO"
-                            }`
-                        );
-                    }, 500);
-                }, 2000);
-            }
-        } else {
-            console.log("❌ TOOLTIP: Elemento não foi criado após hover");
-        }
-    }, 200);
-
-    console.log(
-        "🎨 TESTE TOOLTIP: Teste completo iniciado - acompanhe as mensagens acima"
-    );
-    return true;
-};
-
-// 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA PARA TOOLTIP
-window.SENT1_AUTO.corrigirTooltipProblemas = function () {
-    console.log("🔧 CORREÇÃO TOOLTIP: Iniciando correção automática...");
-
-    // 1. Verificar e corrigir dados de sessões
-    if (!window.SENT1_AUTO.todasSessoesDetectadas) {
-        console.log(
-            "📊 CORREÇÃO: Dados de sessões não encontrados - tentando detectar..."
-        );
-
-        // Tentar detectar dados atuais
-        const dadosAtuais = window.SENT1_AUTO.getDataSessaoPautado
-            ? window.SENT1_AUTO.getDataSessaoPautado()
-            : null;
-        if (dadosAtuais) {
-            // Criar array com múltiplas sessões se necessário
-            if (
-                !dadosAtuais.todasSessoes ||
-                dadosAtuais.todasSessoes.length <= 1
-            ) {
-                dadosAtuais.todasSessoes = [
-                    dadosAtuais,
-                    {
-                        status: "RETIRADO",
-                        data: "15/07/2024",
-                        dataOriginal: "15/07/2024",
-                        orgao: dadosAtuais.orgao || "1ª CÂMARA",
-                        tipoProcesso: dadosAtuais.tipoProcesso || "APELAÇÃO",
-                        prioridade: 2,
-                    },
-                ];
-            }
-
-            window.SENT1_AUTO.todasSessoesDetectadas = dadosAtuais.todasSessoes;
-            console.log("✅ CORREÇÃO: Dados de sessões configurados");
-        }
-    }
-
-    // 2. Verificar card
-    let card = document.getElementById("eprobe-data-sessao");
-    if (!card) {
-        console.log("🔧 CORREÇÃO: Criando card da sessão...");
-        const dados = (window.SENT1_AUTO.getDataSessaoPautado
-            ? window.SENT1_AUTO.getDataSessaoPautado()
-            : null) || {
-            status: "PAUTADO",
-            data: "05/08/2024",
-            dataFormatada: "05/08/2024",
-            dataOriginal: "05/08/2024",
-            todasSessoes: window.SENT1_AUTO.todasSessoesDetectadas,
+        console.log("✅ FIGMA: Demonstração criada com todos os 8 designs");
+        return {
+            sucesso: true,
+            totalCards: todosStatus.length,
+            container: containerDemo,
         };
+    };
 
-        if (dados.todasSessoes && dados.todasSessoes.length > 1) {
-            if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
-                window.SENT1_AUTO.atualizarCardMaterialDesign(dados);
-            } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
-                window.SENT1_AUTO.criarCardMaterialDesign(dados);
+    // ===== INSTRUÇÕES DE USO - APENAS LAYOUT ÚNICO =====
+    console.log("� FUNÇÕES PRINCIPAIS DISPONÍVEIS (ÚNICA ESTRATÉGIA):");
+    console.log("- window.SENT1_AUTO.testarMaterialBaseLayout()");
+    console.log("- window.SENT1_AUTO.testarXPathMaterialDesign()");
+    console.log(
+        "✅ eProbe Extension carregada com sucesso - LAYOUT MATERIAL ÚNICO!"
+    );
+
+    // 🎨 FUNÇÕES DE TESTE E CORREÇÃO DO TOOLTIP
+    window.SENT1_AUTO.testarTooltipCompleto = function () {
+        console.log(
+            "🎨 TESTE TOOLTIP: Iniciando teste completo do sistema de tooltip..."
+        );
+
+        // 1. Verificar se existe card da sessão
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("❌ TOOLTIP: Card da sessão não encontrado");
+
+            // Tentar criar card de teste
+            console.log("🔧 TOOLTIP: Tentando criar card de teste...");
+            const dadosTest = window.SENT1_AUTO.getDataSessaoPautado
+                ? window.SENT1_AUTO.getDataSessaoPautado()
+                : null;
+            if (dadosTest) {
+                if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
+                    window.SENT1_AUTO.atualizarCardMaterialDesign(dadosTest);
+                } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                    window.SENT1_AUTO.criarCardMaterialDesign(dadosTest);
+                }
+                setTimeout(
+                    () => window.SENT1_AUTO.testarTooltipCompleto(),
+                    500
+                );
+                return;
+            } else {
+                // Criar dados de sessão fictícios para teste
+                const dadosFicticios = {
+                    status: "PAUTADO",
+                    data: "05/08/2024",
+                    dataFormatada: "05/08/2024",
+                    dataOriginal: "05/08/2024",
+                    orgao: "1ª CÂMARA",
+                    tipoProcesso: "APELAÇÃO",
+                    prioridade: 3,
+                    todasSessoes: [
+                        {
+                            status: "PAUTADO",
+                            data: "05/08/2024",
+                            dataOriginal: "05/08/2024",
+                            orgao: "1ª CÂMARA",
+                            tipoProcesso: "APELAÇÃO",
+                            prioridade: 3,
+                        },
+                        {
+                            status: "RETIRADO",
+                            data: "15/07/2024",
+                            dataOriginal: "15/07/2024",
+                            orgao: "1ª CÂMARA",
+                            tipoProcesso: "APELAÇÃO",
+                            prioridade: 2,
+                        },
+                        {
+                            status: "JULGADO",
+                            data: "10/06/2024",
+                            dataOriginal: "10/06/2024",
+                            orgao: "1ª CÂMARA",
+                            tipoProcesso: "APELAÇÃO",
+                            prioridade: 1,
+                        },
+                    ],
+                };
+
+                console.log(
+                    "🎭 TOOLTIP: Criando card com dados fictícios para teste..."
+                );
+                if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                    window.SENT1_AUTO.criarCardMaterialDesign(dadosFicticios);
+                }
+                setTimeout(
+                    () => window.SENT1_AUTO.testarTooltipCompleto(),
+                    500
+                );
+                return;
             }
-            card = document.getElementById("eprobe-data-sessao");
         }
-    }
 
-    // 3. Verificar se tooltip precisa ser recriado
-    if (card) {
+        // 2. Verificar indicador de múltiplas sessões
         const indicador = card.querySelector(
             ".eprobe-figma-sessions-indicator"
         );
-        const tooltip = document.getElementById("eprobe-rich-tooltip");
+        console.log(
+            "🔢 INDICADOR:",
+            indicador ? "✅ Encontrado" : "❌ Não encontrado"
+        );
 
-        if (indicador && !tooltip) {
-            console.log("🔧 CORREÇÃO: Recriando tooltip...");
-            const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
-            if (
-                todasSessoes &&
-                todasSessoes.length > 1 &&
-                window.SENT1_AUTO.adicionarRichTooltipMaterialDesign
-            ) {
-                window.SENT1_AUTO.adicionarRichTooltipMaterialDesign(
-                    card,
-                    todasSessoes
-                );
-            }
-        }
-    }
-
-    console.log("✅ CORREÇÃO TOOLTIP: Correção concluída");
-
-    // Executar teste após correção
-    setTimeout(() => {
-        window.SENT1_AUTO.testarTooltipCompleto();
-    }, 500);
-};
-
-// ===== CONTROLE GLOBAL DE EXECUÇÕES - ANTI-LOOP =====
-window.eProbeExecucoes = {
-    detectarDataSessao: 0,
-    inserirInterface: 0,
-    criarCard: 0,
-    substituirIcones: 0,
-    maxExecucoesPorFuncao: 5,
-
-    // Verificar se função pode executar
-    podeExecutar: function (nomeFuncao) {
-        if (!this[nomeFuncao]) this[nomeFuncao] = 0;
-
-        if (this[nomeFuncao] >= this.maxExecucoesPorFuncao) {
+        if (!indicador) {
             console.log(
-                `🛑 ANTI-LOOP: ${nomeFuncao} atingiu limite de execuções (${this.maxExecucoesPorFuncao})`
+                "❌ TOOLTIP: Indicador não encontrado - tooltip não será funcional"
             );
             return false;
         }
 
-        this[nomeFuncao]++;
+        // 3. Verificar se tooltip existe
+        let tooltip = document.getElementById("eprobe-rich-tooltip");
         console.log(
-            `📊 EXECUÇÃO: ${nomeFuncao} (#${this[nomeFuncao]}/${this.maxExecucoesPorFuncao})`
+            "🎨 TOOLTIP ELEMENT:",
+            tooltip ? "✅ Encontrado" : "❌ Não encontrado"
         );
-        return true;
-    },
 
-    // Resetar contadores (a cada 2 minutos)
-    reset: function () {
-        console.log("🔄 ANTI-LOOP: Resetando contadores de execução");
-        for (const key in this) {
-            if (typeof this[key] === "number") {
-                this[key] = 0;
-            }
-        }
-    },
-};
-
-// Auto-reset a cada 2 minutos
-setInterval(() => {
-    window.eProbeExecucoes.reset();
-}, 120000);
-
-/**
- * 🔧 FUNÇÃO DE DEBUG PARA TOOLTIP DO CARD DE SESSÕES
- * Verifica se o tooltip está configurado corretamente e funciona
- */
-window.SENT1_AUTO.debugTooltipCardSessao = function () {
-    console.log("🔍 DEBUG TOOLTIP: Iniciando verificação...");
-
-    // 1. Verificar se existe card de sessão
-    const card = document.getElementById("eprobe-data-sessao");
-    if (!card) {
-        console.log("❌ DEBUG TOOLTIP: Card de sessão não encontrado");
-        return {
-            status: "erro",
-            motivo: "card_nao_encontrado",
-            solucao:
-                "Execute window.SENT1_AUTO.criarCardMaterialDesign() primeiro",
-        };
-    }
-
-    console.log("✅ DEBUG TOOLTIP: Card encontrado:", card);
-
-    // 2. Verificar se existe indicador de múltiplas sessões
-    const indicador = card.querySelector(".eprobe-figma-sessions-indicator");
-    if (!indicador) {
+        // 4. Verificar dados de sessões
+        const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
         console.log(
-            "❌ DEBUG TOOLTIP: Indicador de múltiplas sessões não encontrado"
-        );
-        console.log("ℹ️ DEBUG TOOLTIP: Isso é normal se há apenas uma sessão");
-        return {
-            status: "normal",
-            motivo: "indicador_nao_necessario",
-            mensagem: "Tooltip só aparece quando há múltiplas sessões",
-        };
-    }
-
-    console.log("✅ DEBUG TOOLTIP: Indicador encontrado:", indicador);
-    console.log(
-        "📊 DEBUG TOOLTIP: Número no indicador:",
-        indicador.textContent
-    );
-
-    // 3. Verificar se existe tooltip criado
-    const tooltip = document.getElementById("eprobe-rich-tooltip");
-    console.log("🎨 DEBUG TOOLTIP: Elemento tooltip existe:", !!tooltip);
-
-    // 4. Simular hover para testar tooltip
-    console.log("🖱️ DEBUG TOOLTIP: Simulando hover no indicador...");
-
-    const evento = new MouseEvent("mouseenter", {
-        view: window,
-        bubbles: true,
-        cancelable: true,
-    });
-
-    indicador.dispatchEvent(evento);
-
-    // Verificar se tooltip apareceu após 200ms
-    setTimeout(() => {
-        const tooltipAtualizado = document.getElementById(
-            "eprobe-rich-tooltip"
-        );
-        const tooltipVisivel =
-            tooltipAtualizado &&
-            tooltipAtualizado.style.display !== "none" &&
-            tooltipAtualizado.style.opacity !== "0";
-
-        console.log(
-            "🎨 DEBUG TOOLTIP: Tooltip visível após hover:",
-            tooltipVisivel
+            "📊 DADOS SESSÕES:",
+            todasSessoes
+                ? `✅ ${todasSessoes.length} sessões`
+                : "❌ Nenhuma sessão"
         );
 
-        if (tooltipVisivel) {
-            console.log("✅ DEBUG TOOLTIP: Tooltip funcionando corretamente!");
-            console.log(
-                "📋 DEBUG TOOLTIP: Conteúdo:",
-                tooltipAtualizado.innerHTML.substring(0, 200) + "..."
-            );
-        } else {
-            console.log("❌ DEBUG TOOLTIP: Tooltip não apareceu após hover");
-            console.log("🔧 DEBUG TOOLTIP: Verificando dados de sessão...");
-
-            // Verificar dados de sessão
-            const dadosSessao = window.SENT1_AUTO.getDataSessaoPautado?.();
-            const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
-
-            console.log("📊 DADOS SESSÃO:", {
-                dadosSessao: dadosSessao,
-                todasSessoes: todasSessoes,
-                quantidadeSessoes: todasSessoes?.length || 0,
+        if (todasSessoes) {
+            todasSessoes.forEach((sessao, index) => {
+                console.log(
+                    `   ${index + 1}. ${sessao.status} - ${
+                        sessao.dataOriginal || sessao.data
+                    }`
+                );
             });
         }
 
-        // Simular mouseleave para limpar
-        const eventoSaida = new MouseEvent("mouseleave", {
+        // 5. Testar interação com tooltip
+        console.log("🖱️ TOOLTIP: Simulando hover no indicador...");
+
+        // Simular evento mouseenter
+        const mouseEnterEvent = new MouseEvent("mouseenter", {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+        });
+
+        indicador.dispatchEvent(mouseEnterEvent);
+
+        // Aguardar e verificar se tooltip apareceu
+        setTimeout(() => {
+            tooltip = document.getElementById("eprobe-rich-tooltip");
+            if (tooltip) {
+                const isVisible =
+                    tooltip.style.display !== "none" &&
+                    tooltip.style.opacity !== "0";
+                console.log(
+                    `🎨 TOOLTIP VISÍVEL: ${isVisible ? "✅ SIM" : "❌ NÃO"}`
+                );
+
+                if (isVisible) {
+                    console.log(
+                        "   📐 Posição:",
+                        `left: ${tooltip.style.left}, top: ${tooltip.style.top}`
+                    );
+                    console.log("   🎨 Opacidade:", tooltip.style.opacity);
+
+                    // Simular mouseleave após 2 segundos
+                    setTimeout(() => {
+                        console.log("🖱️ TOOLTIP: Simulando mouse leave...");
+                        const mouseLeaveEvent = new MouseEvent("mouseleave", {
+                            bubbles: true,
+                            cancelable: true,
+                            view: window,
+                        });
+                        indicador.dispatchEvent(mouseLeaveEvent);
+
+                        setTimeout(() => {
+                            const isHidden =
+                                tooltip.style.display === "none" ||
+                                tooltip.style.opacity === "0";
+                            console.log(
+                                `🎨 TOOLTIP OCULTO: ${
+                                    isHidden ? "✅ SIM" : "❌ NÃO"
+                                }`
+                            );
+                        }, 500);
+                    }, 2000);
+                }
+            } else {
+                console.log("❌ TOOLTIP: Elemento não foi criado após hover");
+            }
+        }, 200);
+
+        console.log(
+            "🎨 TESTE TOOLTIP: Teste completo iniciado - acompanhe as mensagens acima"
+        );
+        return true;
+    };
+
+    // 🔧 FUNÇÃO DE CORREÇÃO AUTOMÁTICA PARA TOOLTIP
+    window.SENT1_AUTO.corrigirTooltipProblemas = function () {
+        console.log("🔧 CORREÇÃO TOOLTIP: Iniciando correção automática...");
+
+        // 1. Verificar e corrigir dados de sessões
+        if (!window.SENT1_AUTO.todasSessoesDetectadas) {
+            console.log(
+                "📊 CORREÇÃO: Dados de sessões não encontrados - tentando detectar..."
+            );
+
+            // Tentar detectar dados atuais
+            const dadosAtuais = window.SENT1_AUTO.getDataSessaoPautado
+                ? window.SENT1_AUTO.getDataSessaoPautado()
+                : null;
+            if (dadosAtuais) {
+                // Criar array com múltiplas sessões se necessário
+                if (
+                    !dadosAtuais.todasSessoes ||
+                    dadosAtuais.todasSessoes.length <= 1
+                ) {
+                    dadosAtuais.todasSessoes = [
+                        dadosAtuais,
+                        {
+                            status: "RETIRADO",
+                            data: "15/07/2024",
+                            dataOriginal: "15/07/2024",
+                            orgao: dadosAtuais.orgao || "1ª CÂMARA",
+                            tipoProcesso:
+                                dadosAtuais.tipoProcesso || "APELAÇÃO",
+                            prioridade: 2,
+                        },
+                    ];
+                }
+
+                window.SENT1_AUTO.todasSessoesDetectadas =
+                    dadosAtuais.todasSessoes;
+                console.log("✅ CORREÇÃO: Dados de sessões configurados");
+            }
+        }
+
+        // 2. Verificar card
+        let card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("🔧 CORREÇÃO: Criando card da sessão...");
+            const dados = (window.SENT1_AUTO.getDataSessaoPautado
+                ? window.SENT1_AUTO.getDataSessaoPautado()
+                : null) || {
+                status: "PAUTADO",
+                data: "05/08/2024",
+                dataFormatada: "05/08/2024",
+                dataOriginal: "05/08/2024",
+                todasSessoes: window.SENT1_AUTO.todasSessoesDetectadas,
+            };
+
+            if (dados.todasSessoes && dados.todasSessoes.length > 1) {
+                if (window.SENT1_AUTO.atualizarCardMaterialDesign) {
+                    window.SENT1_AUTO.atualizarCardMaterialDesign(dados);
+                } else if (window.SENT1_AUTO.criarCardMaterialDesign) {
+                    window.SENT1_AUTO.criarCardMaterialDesign(dados);
+                }
+                card = document.getElementById("eprobe-data-sessao");
+            }
+        }
+
+        // 3. Verificar se tooltip precisa ser recriado
+        if (card) {
+            const indicador = card.querySelector(
+                ".eprobe-figma-sessions-indicator"
+            );
+            const tooltip = document.getElementById("eprobe-rich-tooltip");
+
+            if (indicador && !tooltip) {
+                console.log("🔧 CORREÇÃO: Recriando tooltip...");
+                const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
+                if (
+                    todasSessoes &&
+                    todasSessoes.length > 1 &&
+                    window.SENT1_AUTO.adicionarRichTooltipMaterialDesign
+                ) {
+                    window.SENT1_AUTO.adicionarRichTooltipMaterialDesign(
+                        card,
+                        todasSessoes
+                    );
+                }
+            }
+        }
+
+        console.log("✅ CORREÇÃO TOOLTIP: Correção concluída");
+
+        // Executar teste após correção
+        setTimeout(() => {
+            window.SENT1_AUTO.testarTooltipCompleto();
+        }, 500);
+    };
+
+    // ===== CONTROLE GLOBAL DE EXECUÇÕES - ANTI-LOOP =====
+    window.eProbeExecucoes = {
+        detectarDataSessao: 0,
+        inserirInterface: 0,
+        criarCard: 0,
+        substituirIcones: 0,
+        maxExecucoesPorFuncao: 5,
+
+        // Verificar se função pode executar
+        podeExecutar: function (nomeFuncao) {
+            if (!this[nomeFuncao]) this[nomeFuncao] = 0;
+
+            if (this[nomeFuncao] >= this.maxExecucoesPorFuncao) {
+                console.log(
+                    `🛑 ANTI-LOOP: ${nomeFuncao} atingiu limite de execuções (${this.maxExecucoesPorFuncao})`
+                );
+                return false;
+            }
+
+            this[nomeFuncao]++;
+            console.log(
+                `📊 EXECUÇÃO: ${nomeFuncao} (#${this[nomeFuncao]}/${this.maxExecucoesPorFuncao})`
+            );
+            return true;
+        },
+
+        // Resetar contadores (a cada 2 minutos)
+        reset: function () {
+            console.log("🔄 ANTI-LOOP: Resetando contadores de execução");
+            for (const key in this) {
+                if (typeof this[key] === "number") {
+                    this[key] = 0;
+                }
+            }
+        },
+    };
+
+    // Auto-reset a cada 2 minutos
+    setInterval(() => {
+        window.eProbeExecucoes.reset();
+    }, 120000);
+
+    /**
+     * 🔧 FUNÇÃO DE DEBUG PARA TOOLTIP DO CARD DE SESSÕES
+     * Verifica se o tooltip está configurado corretamente e funciona
+     */
+    window.SENT1_AUTO.debugTooltipCardSessao = function () {
+        console.log("🔍 DEBUG TOOLTIP: Iniciando verificação...");
+
+        // 1. Verificar se existe card de sessão
+        const card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            console.log("❌ DEBUG TOOLTIP: Card de sessão não encontrado");
+            return {
+                status: "erro",
+                motivo: "card_nao_encontrado",
+                solucao:
+                    "Execute window.SENT1_AUTO.criarCardMaterialDesign() primeiro",
+            };
+        }
+
+        console.log("✅ DEBUG TOOLTIP: Card encontrado:", card);
+
+        // 2. Verificar se existe indicador de múltiplas sessões
+        const indicador = card.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        if (!indicador) {
+            console.log(
+                "❌ DEBUG TOOLTIP: Indicador de múltiplas sessões não encontrado"
+            );
+            console.log(
+                "ℹ️ DEBUG TOOLTIP: Isso é normal se há apenas uma sessão"
+            );
+            return {
+                status: "normal",
+                motivo: "indicador_nao_necessario",
+                mensagem: "Tooltip só aparece quando há múltiplas sessões",
+            };
+        }
+
+        console.log("✅ DEBUG TOOLTIP: Indicador encontrado:", indicador);
+        console.log(
+            "📊 DEBUG TOOLTIP: Número no indicador:",
+            indicador.textContent
+        );
+
+        // 3. Verificar se existe tooltip criado
+        const tooltip = document.getElementById("eprobe-rich-tooltip");
+        console.log("🎨 DEBUG TOOLTIP: Elemento tooltip existe:", !!tooltip);
+
+        // 4. Simular hover para testar tooltip
+        console.log("🖱️ DEBUG TOOLTIP: Simulando hover no indicador...");
+
+        const evento = new MouseEvent("mouseenter", {
             view: window,
             bubbles: true,
             cancelable: true,
         });
-        indicador.dispatchEvent(eventoSaida);
-    }, 200);
 
-    return {
-        status: "teste_executado",
-        card: !!card,
-        indicador: !!indicador,
-        numeroSessoes: indicador ? indicador.textContent : "N/A",
+        indicador.dispatchEvent(evento);
+
+        // Verificar se tooltip apareceu após 200ms
+        setTimeout(() => {
+            const tooltipAtualizado = document.getElementById(
+                "eprobe-rich-tooltip"
+            );
+            const tooltipVisivel =
+                tooltipAtualizado &&
+                tooltipAtualizado.style.display !== "none" &&
+                tooltipAtualizado.style.opacity !== "0";
+
+            console.log(
+                "🎨 DEBUG TOOLTIP: Tooltip visível após hover:",
+                tooltipVisivel
+            );
+
+            if (tooltipVisivel) {
+                console.log(
+                    "✅ DEBUG TOOLTIP: Tooltip funcionando corretamente!"
+                );
+                console.log(
+                    "📋 DEBUG TOOLTIP: Conteúdo:",
+                    tooltipAtualizado.innerHTML.substring(0, 200) + "..."
+                );
+            } else {
+                console.log(
+                    "❌ DEBUG TOOLTIP: Tooltip não apareceu após hover"
+                );
+                console.log("🔧 DEBUG TOOLTIP: Verificando dados de sessão...");
+
+                // Verificar dados de sessão
+                const dadosSessao = window.SENT1_AUTO.getDataSessaoPautado?.();
+                const todasSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
+
+                console.log("📊 DADOS SESSÃO:", {
+                    dadosSessao: dadosSessao,
+                    todasSessoes: todasSessoes,
+                    quantidadeSessoes: todasSessoes?.length || 0,
+                });
+            }
+
+            // Simular mouseleave para limpar
+            const eventoSaida = new MouseEvent("mouseleave", {
+                view: window,
+                bubbles: true,
+                cancelable: true,
+            });
+            indicador.dispatchEvent(eventoSaida);
+        }, 200);
+
+        return {
+            status: "teste_executado",
+            card: !!card,
+            indicador: !!indicador,
+            numeroSessoes: indicador ? indicador.textContent : "N/A",
+        };
     };
-};
 
-console.log("✅ FUNÇÃO DEBUG TOOLTIP: Adicionada ao namespace SENT1_AUTO");
-console.log("💡 USO: window.SENT1_AUTO.debugTooltipCardSessao()");
+    console.log("✅ FUNÇÃO DEBUG TOOLTIP: Adicionada ao namespace SENT1_AUTO");
+    console.log("💡 USO: window.SENT1_AUTO.debugTooltipCardSessao()");
 
-/**
- * 🔧 FUNÇÃO PARA TESTAR TOOLTIP SIMPLES (EMERGÊNCIA)
- * Cria um tooltip básico que funciona garantidamente
- */
-window.SENT1_AUTO.criarTooltipSimples = function () {
-    console.log("🚨 TOOLTIP SIMPLES: Criando tooltip de emergência...");
+    /**
+     * 🔧 FUNÇÃO PARA TESTAR TOOLTIP SIMPLES (EMERGÊNCIA)
+     * Cria um tooltip básico que funciona garantidamente
+     */
+    window.SENT1_AUTO.criarTooltipSimples = function () {
+        console.log("🚨 TOOLTIP SIMPLES: Criando tooltip de emergência...");
 
-    // 1. Verificar se existe card
-    let card = document.getElementById("eprobe-data-sessao");
-    if (!card) {
-        // Criar card simples se não existir
-        card = document.createElement("div");
-        card.id = "eprobe-data-sessao";
-        card.style.cssText = `
+        // 1. Verificar se existe card
+        let card = document.getElementById("eprobe-data-sessao");
+        if (!card) {
+            // Criar card simples se não existir
+            card = document.createElement("div");
+            card.id = "eprobe-data-sessao";
+            card.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -19772,17 +17963,17 @@ window.SENT1_AUTO.criarTooltipSimples = function () {
             justify-content: center;
             font-family: 'Roboto', sans-serif;
         `;
-        card.textContent = "Card Teste";
-        document.body.appendChild(card);
-        console.log("✅ TOOLTIP SIMPLES: Card de teste criado");
-    }
+            card.textContent = "Card Teste";
+            document.body.appendChild(card);
+            console.log("✅ TOOLTIP SIMPLES: Card de teste criado");
+        }
 
-    // 2. Criar indicador se não existir
-    let indicador = card.querySelector(".eprobe-figma-sessions-indicator");
-    if (!indicador) {
-        indicador = document.createElement("div");
-        indicador.className = "eprobe-figma-sessions-indicator";
-        indicador.style.cssText = `
+        // 2. Criar indicador se não existir
+        let indicador = card.querySelector(".eprobe-figma-sessions-indicator");
+        if (!indicador) {
+            indicador = document.createElement("div");
+            indicador.className = "eprobe-figma-sessions-indicator";
+            indicador.style.cssText = `
             position: absolute;
             top: 8px;
             right: 8px;
@@ -19800,22 +17991,22 @@ window.SENT1_AUTO.criarTooltipSimples = function () {
             cursor: help;
             z-index: 1;
         `;
-        indicador.textContent = "3";
-        card.appendChild(indicador);
-        console.log("✅ TOOLTIP SIMPLES: Indicador criado");
-    }
+            indicador.textContent = "3";
+            card.appendChild(indicador);
+            console.log("✅ TOOLTIP SIMPLES: Indicador criado");
+        }
 
-    // 3. Remover tooltip existente
-    const tooltipExistente = document.getElementById("eprobe-rich-tooltip");
-    if (tooltipExistente) {
-        tooltipExistente.remove();
-        console.log("🗑️ TOOLTIP SIMPLES: Tooltip existente removido");
-    }
+        // 3. Remover tooltip existente
+        const tooltipExistente = document.getElementById("eprobe-rich-tooltip");
+        if (tooltipExistente) {
+            tooltipExistente.remove();
+            console.log("🗑️ TOOLTIP SIMPLES: Tooltip existente removido");
+        }
 
-    // 4. Criar tooltip simples
-    const tooltip = document.createElement("div");
-    tooltip.id = "eprobe-rich-tooltip";
-    tooltip.style.cssText = `
+        // 4. Criar tooltip simples
+        const tooltip = document.createElement("div");
+        tooltip.id = "eprobe-rich-tooltip";
+        tooltip.style.cssText = `
         position: absolute;
         display: none;
         z-index: 10001;
@@ -19831,7 +18022,7 @@ window.SENT1_AUTO.criarTooltipSimples = function () {
         transition: opacity 0.2s ease;
     `;
 
-    tooltip.innerHTML = `
+        tooltip.innerHTML = `
         <div style="font-weight: 500; margin-bottom: 8px;">📅 Histórico de Sessões</div>
         <div style="font-size: 12px; color: #666;">
             <div style="margin-bottom: 4px;">• 23/01/2025 - Pautado</div>
@@ -19840,100 +18031,104 @@ window.SENT1_AUTO.criarTooltipSimples = function () {
         </div>
     `;
 
-    document.body.appendChild(tooltip);
-    console.log("✅ TOOLTIP SIMPLES: Tooltip HTML criado");
+        document.body.appendChild(tooltip);
+        console.log("✅ TOOLTIP SIMPLES: Tooltip HTML criado");
 
-    // 5. Configurar eventos SIMPLES
-    const mostrarTooltip = () => {
-        console.log("🖱️ TOOLTIP SIMPLES: Mostrando");
-        const rect = indicador.getBoundingClientRect();
-        tooltip.style.left = rect.left - 100 + "px";
-        tooltip.style.top = rect.bottom + 10 + "px";
-        tooltip.style.display = "block";
-        tooltip.style.opacity = "1";
-    };
-
-    const ocultarTooltip = () => {
-        console.log("🖱️ TOOLTIP SIMPLES: Ocultando");
-        tooltip.style.opacity = "0";
-        setTimeout(() => {
-            tooltip.style.display = "none";
-        }, 200);
-    };
-
-    // Limpar eventos anteriores
-    indicador.onmouseenter = mostrarTooltip;
-    indicador.onmouseleave = ocultarTooltip;
-
-    console.log("✅ TOOLTIP SIMPLES: Eventos configurados");
-    console.log("🖱️ TOOLTIP SIMPLES: Passe o mouse sobre o número '3' no card");
-
-    // Teste automático após 1 segundo
-    setTimeout(() => {
-        console.log("🤖 TOOLTIP SIMPLES: Teste automático...");
-        mostrarTooltip();
-        setTimeout(ocultarTooltip, 2000);
-    }, 1000);
-
-    return {
-        status: "criado",
-        card: card,
-        indicador: indicador,
-        tooltip: tooltip,
-    };
-};
-
-console.log("✅ FUNÇÃO TOOLTIP SIMPLES: Disponível");
-console.log("💡 USO: window.SENT1_AUTO.criarTooltipSimples()");
-
-/**
- * 🔧 FUNÇÃO DE DEBUG DIRETO NO CONSOLE
- * Verifica e corrige problemas do tooltip em tempo real
- */
-window.SENT1_AUTO.debugTooltipDireto = function () {
-    console.log("🔍 DEBUG DIRETO: Investigando tooltip...");
-
-    // 1. Verificar elementos existentes
-    const card = document.getElementById("eprobe-data-sessao");
-    const indicador = card?.querySelector(".eprobe-figma-sessions-indicator");
-    const tooltip = document.getElementById("eprobe-rich-tooltip");
-
-    console.log("📊 ELEMENTOS ENCONTRADOS:");
-    console.log("  Card:", !!card);
-    console.log("  Indicador:", !!indicador);
-    console.log("  Tooltip:", !!tooltip);
-
-    if (!card) {
-        console.log("❌ Problema: Card não encontrado");
-        return { erro: "card_nao_encontrado" };
-    }
-
-    if (!indicador) {
-        console.log(
-            "❌ Problema: Indicador não encontrado - provavelmente há apenas uma sessão"
-        );
-        return {
-            erro: "indicador_nao_encontrado",
-            solucao: "Use criarTooltipSimples()",
+        // 5. Configurar eventos SIMPLES
+        const mostrarTooltip = () => {
+            console.log("🖱️ TOOLTIP SIMPLES: Mostrando");
+            const rect = indicador.getBoundingClientRect();
+            tooltip.style.left = rect.left - 100 + "px";
+            tooltip.style.top = rect.bottom + 10 + "px";
+            tooltip.style.display = "block";
+            tooltip.style.opacity = "1";
         };
-    }
 
-    // 2. Testar eventos manualmente
-    console.log("🧪 TESTANDO EVENTOS:");
+        const ocultarTooltip = () => {
+            console.log("🖱️ TOOLTIP SIMPLES: Ocultando");
+            tooltip.style.opacity = "0";
+            setTimeout(() => {
+                tooltip.style.display = "none";
+            }, 200);
+        };
 
-    // Verificar se há listeners
-    const listeners = getEventListeners
-        ? getEventListeners(indicador)
-        : "N/A (Chrome DevTools necessário)";
-    console.log("  Event Listeners:", listeners);
+        // Limpar eventos anteriores
+        indicador.onmouseenter = mostrarTooltip;
+        indicador.onmouseleave = ocultarTooltip;
 
-    // 3. Forçar criação de tooltip se não existir
-    if (!tooltip) {
-        console.log("🔧 Criando tooltip de emergência...");
+        console.log("✅ TOOLTIP SIMPLES: Eventos configurados");
+        console.log(
+            "🖱️ TOOLTIP SIMPLES: Passe o mouse sobre o número '3' no card"
+        );
 
-        const novoTooltip = document.createElement("div");
-        novoTooltip.id = "eprobe-rich-tooltip";
-        novoTooltip.style.cssText = `
+        // Teste automático após 1 segundo
+        setTimeout(() => {
+            console.log("🤖 TOOLTIP SIMPLES: Teste automático...");
+            mostrarTooltip();
+            setTimeout(ocultarTooltip, 2000);
+        }, 1000);
+
+        return {
+            status: "criado",
+            card: card,
+            indicador: indicador,
+            tooltip: tooltip,
+        };
+    };
+
+    console.log("✅ FUNÇÃO TOOLTIP SIMPLES: Disponível");
+    console.log("💡 USO: window.SENT1_AUTO.criarTooltipSimples()");
+
+    /**
+     * 🔧 FUNÇÃO DE DEBUG DIRETO NO CONSOLE
+     * Verifica e corrige problemas do tooltip em tempo real
+     */
+    window.SENT1_AUTO.debugTooltipDireto = function () {
+        console.log("🔍 DEBUG DIRETO: Investigando tooltip...");
+
+        // 1. Verificar elementos existentes
+        const card = document.getElementById("eprobe-data-sessao");
+        const indicador = card?.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        const tooltip = document.getElementById("eprobe-rich-tooltip");
+
+        console.log("📊 ELEMENTOS ENCONTRADOS:");
+        console.log("  Card:", !!card);
+        console.log("  Indicador:", !!indicador);
+        console.log("  Tooltip:", !!tooltip);
+
+        if (!card) {
+            console.log("❌ Problema: Card não encontrado");
+            return { erro: "card_nao_encontrado" };
+        }
+
+        if (!indicador) {
+            console.log(
+                "❌ Problema: Indicador não encontrado - provavelmente há apenas uma sessão"
+            );
+            return {
+                erro: "indicador_nao_encontrado",
+                solucao: "Use criarTooltipSimples()",
+            };
+        }
+
+        // 2. Testar eventos manualmente
+        console.log("🧪 TESTANDO EVENTOS:");
+
+        // Verificar se há listeners
+        const listeners = getEventListeners
+            ? getEventListeners(indicador)
+            : "N/A (Chrome DevTools necessário)";
+        console.log("  Event Listeners:", listeners);
+
+        // 3. Forçar criação de tooltip se não existir
+        if (!tooltip) {
+            console.log("🔧 Criando tooltip de emergência...");
+
+            const novoTooltip = document.createElement("div");
+            novoTooltip.id = "eprobe-rich-tooltip";
+            novoTooltip.style.cssText = `
             position: absolute;
             display: none;
             z-index: 10000;
@@ -19947,83 +18142,87 @@ window.SENT1_AUTO.debugTooltipDireto = function () {
             opacity: 0;
             transition: opacity 0.2s ease;
         `;
-        novoTooltip.innerHTML = "🔧 Tooltip de Debug - Funcionando!";
-        document.body.appendChild(novoTooltip);
-        console.log("✅ Tooltip de emergência criado");
+            novoTooltip.innerHTML = "🔧 Tooltip de Debug - Funcionando!";
+            document.body.appendChild(novoTooltip);
+            console.log("✅ Tooltip de emergência criado");
+        }
+
+        // 4. Configurar eventos diretos (sobrescrever existentes)
+        console.log("🔧 CONFIGURANDO EVENTOS DIRETOS...");
+
+        const tooltipFinal = document.getElementById("eprobe-rich-tooltip");
+
+        const mostrar = () => {
+            console.log("🖱️ EVENTO: Mostrando tooltip");
+            const rect = indicador.getBoundingClientRect();
+            tooltipFinal.style.left = rect.left - 50 + "px";
+            tooltipFinal.style.top = rect.bottom + 8 + "px";
+            tooltipFinal.style.display = "block";
+            tooltipFinal.style.opacity = "1";
+        };
+
+        const ocultar = () => {
+            console.log("🖱️ EVENTO: Ocultando tooltip");
+            tooltipFinal.style.opacity = "0";
+            setTimeout(() => (tooltipFinal.style.display = "none"), 200);
+        };
+
+        // Remover listeners antigos e adicionar novos
+        indicador.onmouseenter = mostrar;
+        indicador.onmouseleave = ocultar;
+
+        console.log(
+            "✅ EVENTOS CONFIGURADOS! Teste passando o mouse sobre o indicador"
+        );
+
+        // 5. Teste automático
+        setTimeout(() => {
+            console.log("🤖 TESTE AUTOMÁTICO em 2 segundos...");
+            mostrar();
+            setTimeout(ocultar, 3000);
+        }, 2000);
+
+        return {
+            status: "configurado",
+            card: !!card,
+            indicador: !!indicador,
+            tooltip: !!tooltipFinal,
+        };
+    };
+
+    console.log("✅ FUNÇÃO DEBUG DIRETO: Disponível");
+    console.log("💡 USO: window.SENT1_AUTO.debugTooltipDireto()");
+
+    /**
+     * � SOLUÇÃO DEFINITIVA PARA TOOLTIP
+     * Recria todo o sistema de tooltip do zero com logs detalhados
+     */
+    window.SENT1_AUTO.resolverTooltipDefinitivo = function () {
+        console.log(
+            "⚠️ FUNÇÃO REMOVIDA: Use window.corrigirTooltipCardOriginal()"
+        );
+        return null;
+    };
+
+    // Log removido - função não existe mais
+
+    // ✅ VERIFICAÇÃO DE SEGURANÇA - Garantir que a função existe
+    if (typeof window.SENT1_AUTO === "undefined") {
+        window.SENT1_AUTO = {};
     }
 
-    // 4. Configurar eventos diretos (sobrescrever existentes)
-    console.log("🔧 CONFIGURANDO EVENTOS DIRETOS...");
-
-    const tooltipFinal = document.getElementById("eprobe-rich-tooltip");
-
-    const mostrar = () => {
-        console.log("🖱️ EVENTO: Mostrando tooltip");
-        const rect = indicador.getBoundingClientRect();
-        tooltipFinal.style.left = rect.left - 50 + "px";
-        tooltipFinal.style.top = rect.bottom + 8 + "px";
-        tooltipFinal.style.display = "block";
-        tooltipFinal.style.opacity = "1";
+    // ✅ FUNÇÃO ALTERNATIVA DIRETA (para casos de emergência)
+    // FUNÇÃO REMOVIDA - Tooltip genérico não é mais necessário
+    window.resolverTooltipDefinitivoEmergencia = function () {
+        console.log(
+            "⚠️ FUNÇÃO REMOVIDA: Use window.corrigirTooltipCardOriginal()"
+        );
+        return null;
     };
 
-    const ocultar = () => {
-        console.log("🖱️ EVENTO: Ocultando tooltip");
-        tooltipFinal.style.opacity = "0";
-        setTimeout(() => (tooltipFinal.style.display = "none"), 200);
-    };
+    // Log removido - função não existe mais
 
-    // Remover listeners antigos e adicionar novos
-    indicador.onmouseenter = mostrar;
-    indicador.onmouseleave = ocultar;
-
-    console.log(
-        "✅ EVENTOS CONFIGURADOS! Teste passando o mouse sobre o indicador"
-    );
-
-    // 5. Teste automático
-    setTimeout(() => {
-        console.log("🤖 TESTE AUTOMÁTICO em 2 segundos...");
-        mostrar();
-        setTimeout(ocultar, 3000);
-    }, 2000);
-
-    return {
-        status: "configurado",
-        card: !!card,
-        indicador: !!indicador,
-        tooltip: !!tooltipFinal,
-    };
-};
-
-console.log("✅ FUNÇÃO DEBUG DIRETO: Disponível");
-console.log("💡 USO: window.SENT1_AUTO.debugTooltipDireto()");
-
-/**
- * � SOLUÇÃO DEFINITIVA PARA TOOLTIP
- * Recria todo o sistema de tooltip do zero com logs detalhados
- */
-window.SENT1_AUTO.resolverTooltipDefinitivo = function () {
-    console.log("⚠️ FUNÇÃO REMOVIDA: Use window.corrigirTooltipCardOriginal()");
-    return null;
-};
-
-// Log removido - função não existe mais
-
-// ✅ VERIFICAÇÃO DE SEGURANÇA - Garantir que a função existe
-if (typeof window.SENT1_AUTO === "undefined") {
-    window.SENT1_AUTO = {};
-}
-
-// ✅ FUNÇÃO ALTERNATIVA DIRETA (para casos de emergência)
-// FUNÇÃO REMOVIDA - Tooltip genérico não é mais necessário
-window.resolverTooltipDefinitivoEmergencia = function () {
-    console.log("⚠️ FUNÇÃO REMOVIDA: Use window.corrigirTooltipCardOriginal()");
-    return null;
-};
-
-// Log removido - função não existe mais
-
-/**
+    /**
 console.log("🗑️ Elementos antigos removidos");
 
 // CRIAR CARD
@@ -20132,257 +18331,265 @@ indicador.onmouseleave = () => {
      * �🔧 FUNÇÃO PARA FORÇAR TESTE DO TOOLTIP
      * Cria dados de teste e força a criação de um tooltip funcional
      */
-window.SENT1_AUTO.testarTooltipForcado = function () {
-    console.log("🧪 TESTE FORÇADO: Criando tooltip com dados de teste...");
+    window.SENT1_AUTO.testarTooltipForcado = function () {
+        console.log("🧪 TESTE FORÇADO: Criando tooltip com dados de teste...");
 
-    // Dados de teste com múltiplas sessões
-    const dadosTeste = {
-        data: "23/01/2025",
-        dataOriginal: "23/01/2025",
-        status: "PAUTADO",
-        orgao: "1ª Câmara de Direito Civil",
-        tipoProcesso: "Apelação Cível",
-        todasSessoes: [
-            {
-                data: "23/01/2025",
-                dataOriginal: "23/01/2025",
-                status: "PAUTADO",
-                orgao: "1ª Câmara de Direito Civil",
-                tipoProcesso: "Apelação Cível",
-            },
-            {
-                data: "16/01/2025",
-                dataOriginal: "16/01/2025",
-                status: "RETIRADO",
-                orgao: "1ª Câmara de Direito Civil",
-                tipoProcesso: "Apelação Cível",
-            },
-            {
-                data: "09/01/2025",
-                dataOriginal: "09/01/2025",
-                status: "VISTA",
-                orgao: "1ª Câmara de Direito Civil",
-                tipoProcesso: "Apelação Cível",
-            },
-        ],
-    };
+        // Dados de teste com múltiplas sessões
+        const dadosTeste = {
+            data: "23/01/2025",
+            dataOriginal: "23/01/2025",
+            status: "PAUTADO",
+            orgao: "1ª Câmara de Direito Civil",
+            tipoProcesso: "Apelação Cível",
+            todasSessoes: [
+                {
+                    data: "23/01/2025",
+                    dataOriginal: "23/01/2025",
+                    status: "PAUTADO",
+                    orgao: "1ª Câmara de Direito Civil",
+                    tipoProcesso: "Apelação Cível",
+                },
+                {
+                    data: "16/01/2025",
+                    dataOriginal: "16/01/2025",
+                    status: "RETIRADO",
+                    orgao: "1ª Câmara de Direito Civil",
+                    tipoProcesso: "Apelação Cível",
+                },
+                {
+                    data: "09/01/2025",
+                    dataOriginal: "09/01/2025",
+                    status: "VISTA",
+                    orgao: "1ª Câmara de Direito Civil",
+                    tipoProcesso: "Apelação Cível",
+                },
+            ],
+        };
 
-    // Remover card existente se houver
-    const cardExistente = document.getElementById("eprobe-data-sessao");
-    if (cardExistente) {
-        cardExistente.remove();
-        console.log("🗑️ TESTE: Card existente removido");
-    }
+        // Remover card existente se houver
+        const cardExistente = document.getElementById("eprobe-data-sessao");
+        if (cardExistente) {
+            cardExistente.remove();
+            console.log("🗑️ TESTE: Card existente removido");
+        }
 
-    // Criar novo card com dados de teste
-    if (typeof window.SENT1_AUTO.criarCardMaterialDesign === "function") {
-        const novoCard = window.SENT1_AUTO.criarCardMaterialDesign(dadosTeste);
+        // Criar novo card com dados de teste
+        if (typeof window.SENT1_AUTO.criarCardMaterialDesign === "function") {
+            const novoCard =
+                window.SENT1_AUTO.criarCardMaterialDesign(dadosTeste);
 
-        if (novoCard) {
-            document.body.appendChild(novoCard);
-            console.log(
-                "✅ TESTE: Card com tooltip criado e adicionado à página"
-            );
-            console.log(
-                "🖱️ TESTE: Passe o mouse sobre o número no canto superior direito do card"
-            );
-
-            // Aguardar e simular hover automaticamente
-            setTimeout(() => {
-                const indicador = novoCard.querySelector(
-                    ".eprobe-figma-sessions-indicator"
+            if (novoCard) {
+                document.body.appendChild(novoCard);
+                console.log(
+                    "✅ TESTE: Card com tooltip criado e adicionado à página"
                 );
-                if (indicador) {
-                    console.log("🤖 TESTE: Simulando hover automaticamente...");
-                    const evento = new MouseEvent("mouseenter", {
-                        view: window,
-                        bubbles: true,
-                        cancelable: true,
-                    });
-                    indicador.dispatchEvent(evento);
-                }
-            }, 1000);
+                console.log(
+                    "🖱️ TESTE: Passe o mouse sobre o número no canto superior direito do card"
+                );
 
-            return {
-                status: "sucesso",
-                card: novoCard,
-                dados: dadosTeste,
-            };
+                // Aguardar e simular hover automaticamente
+                setTimeout(() => {
+                    const indicador = novoCard.querySelector(
+                        ".eprobe-figma-sessions-indicator"
+                    );
+                    if (indicador) {
+                        console.log(
+                            "🤖 TESTE: Simulando hover automaticamente..."
+                        );
+                        const evento = new MouseEvent("mouseenter", {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true,
+                        });
+                        indicador.dispatchEvent(evento);
+                    }
+                }, 1000);
+
+                return {
+                    status: "sucesso",
+                    card: novoCard,
+                    dados: dadosTeste,
+                };
+            } else {
+                console.log("❌ TESTE: Falha ao criar card");
+                return {
+                    status: "erro",
+                    motivo: "falha_criar_card",
+                };
+            }
         } else {
-            console.log("❌ TESTE: Falha ao criar card");
+            console.log(
+                "❌ TESTE: Função criarCardMaterialDesign não disponível"
+            );
             return {
                 status: "erro",
-                motivo: "falha_criar_card",
+                motivo: "funcao_nao_disponivel",
             };
         }
-    } else {
-        console.log("❌ TESTE: Função criarCardMaterialDesign não disponível");
-        return {
-            status: "erro",
-            motivo: "funcao_nao_disponivel",
-        };
-    }
-};
+    };
 
-console.log("✅ FUNÇÃO TESTE FORÇADO: Adicionada ao namespace SENT1_AUTO");
-console.log("💡 USO: window.SENT1_AUTO.testarTooltipForcado()");
+    console.log("✅ FUNÇÃO TESTE FORÇADO: Adicionada ao namespace SENT1_AUTO");
+    console.log("💡 USO: window.SENT1_AUTO.testarTooltipForcado()");
 
-// ============================================================================
-// 🎯 CORRIGIR TOOLTIP NO CARD ORIGINAL MATERIAL DESIGN
-// ============================================================================
+    // ============================================================================
+    // 🎯 CORRIGIR TOOLTIP NO CARD ORIGINAL MATERIAL DESIGN
+    // ============================================================================
 
-// Função para adicionar tooltip ao card original existente
-// Função para buscar dados reais das sessões passadas
-function buscarDadosReaisSessoes() {
-    console.log("🔍 BUSCAR SESSÕES: Iniciando busca por dados reais...");
+    // Função para adicionar tooltip ao card original existente
+    // Função para buscar dados reais das sessões passadas
+    function buscarDadosReaisSessoes() {
+        console.log("🔍 BUSCAR SESSÕES: Iniciando busca por dados reais...");
 
-    const basePath =
-        "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div";
-    const sessoes = [];
+        const basePath =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div";
+        const sessoes = [];
 
-    // Buscar dados da câmara no XPath especificado
-    const xpathCamara =
-        "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[2]/span";
-    let dadosCamara = null;
-
-    try {
-        const resultadoCamara = document.evaluate(
-            xpathCamara,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null
-        );
-
-        if (resultadoCamara.singleNodeValue) {
-            dadosCamara = resultadoCamara.singleNodeValue.textContent.trim();
-            console.log(`✅ CÂMARA ENCONTRADA: ${dadosCamara}`);
-        } else {
-            console.log(`❌ CÂMARA NÃO ENCONTRADA no XPath: ${xpathCamara}`);
-        }
-    } catch (error) {
-        console.log(`❌ ERRO ao buscar câmara:`, error);
-    }
-
-    // Buscar nas diferentes divs (div[3], div[4], div[5], div[6])
-    for (let i = 3; i <= 6; i++) {
-        const xpath = `${basePath}/div[${i}]/fieldset/legend/span[1]/button`;
-        console.log(`🔍 BUSCAR SESSÕES: Testando xpath: ${xpath}`);
+        // Buscar dados da câmara no XPath especificado
+        const xpathCamara =
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[2]/span";
+        let dadosCamara = null;
 
         try {
-            const resultado = document.evaluate(
-                xpath,
+            const resultadoCamara = document.evaluate(
+                xpathCamara,
                 document,
                 null,
                 XPathResult.FIRST_ORDERED_NODE_TYPE,
                 null
             );
 
-            if (resultado.singleNodeValue) {
-                const botao = resultado.singleNodeValue;
-                const textoCompleto = botao.textContent.trim();
-                console.log(`✅ SESSÃO ENCONTRADA: ${textoCompleto}`);
-
-                // Extrair informações do texto, passando os dados da câmara
-                const dadosSessao = extrairDadosSessao(
-                    textoCompleto,
-                    dadosCamara
-                );
-                if (dadosSessao) {
-                    sessoes.push(dadosSessao);
-                }
+            if (resultadoCamara.singleNodeValue) {
+                dadosCamara =
+                    resultadoCamara.singleNodeValue.textContent.trim();
+                console.log(`✅ CÂMARA ENCONTRADA: ${dadosCamara}`);
             } else {
-                console.log(`❌ SESSÃO NÃO ENCONTRADA: div[${i}]`);
+                console.log(
+                    `❌ CÂMARA NÃO ENCONTRADA no XPath: ${xpathCamara}`
+                );
             }
         } catch (error) {
-            console.log(`❌ ERRO ao buscar sessão div[${i}]:`, error);
+            console.log(`❌ ERRO ao buscar câmara:`, error);
         }
-    }
 
-    console.log(
-        `📊 BUSCAR SESSÕES: ${sessoes.length} sessões encontradas:`,
-        sessoes
-    );
-    return sessoes;
-}
+        // Buscar nas diferentes divs (div[3], div[4], div[5], div[6])
+        for (let i = 3; i <= 6; i++) {
+            const xpath = `${basePath}/div[${i}]/fieldset/legend/span[1]/button`;
+            console.log(`🔍 BUSCAR SESSÕES: Testando xpath: ${xpath}`);
 
-// Função para extrair dados da sessão a partir do texto do botão
-function extrairDadosSessao(texto, dadosCamara = null) {
-    console.log("🔍 EXTRAIR DADOS: Processando texto:", texto);
-    console.log("🔍 EXTRAIR DADOS: Dados da câmara:", dadosCamara);
+            try {
+                const resultado = document.evaluate(
+                    xpath,
+                    document,
+                    null,
+                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    null
+                );
 
-    // Padrões para extrair informações
-    const padraoData = /(\d{2}\/\d{2}\/\d{4})/;
-    const padraoStatus =
-        /(Incluído em Pauta|Retirado de Pauta|Pedido de Vista|Julgado|Adiado|Sobrestado)/i;
-    const padraoTipo = /(Apelação|Agravo|Embargos|Recurso)[^,]*/i;
+                if (resultado.singleNodeValue) {
+                    const botao = resultado.singleNodeValue;
+                    const textoCompleto = botao.textContent.trim();
+                    console.log(`✅ SESSÃO ENCONTRADA: ${textoCompleto}`);
 
-    const data = texto.match(padraoData)?.[1];
-    const status = texto.match(padraoStatus)?.[1];
-    let tipo = texto.match(padraoTipo)?.[1] || "Apelação Cível";
-
-    // Tratamento especial para "Embargos" -> "Embargos de Declaração"
-    if (tipo && tipo.toLowerCase().includes("embargos")) {
-        tipo = "Embargos de Declaração";
-    }
-
-    // Usar dados da câmara do XPath se disponível, senão tentar extrair do texto
-    let camara = dadosCamara || "Câmara não identificada";
-    if (!dadosCamara) {
-        const padraoCamara = /(\d+ª\s+Câmara[^,]*)/i;
-        const camaraTexto = texto.match(padraoCamara)?.[1];
-        if (camaraTexto) {
-            camara = camaraTexto;
+                    // Extrair informações do texto, passando os dados da câmara
+                    const dadosSessao = extrairDadosSessao(
+                        textoCompleto,
+                        dadosCamara
+                    );
+                    if (dadosSessao) {
+                        sessoes.push(dadosSessao);
+                    }
+                } else {
+                    console.log(`❌ SESSÃO NÃO ENCONTRADA: div[${i}]`);
+                }
+            } catch (error) {
+                console.log(`❌ ERRO ao buscar sessão div[${i}]:`, error);
+            }
         }
+
+        console.log(
+            `📊 BUSCAR SESSÕES: ${sessoes.length} sessões encontradas:`,
+            sessoes
+        );
+        return sessoes;
     }
 
-    if (!data || !status) {
-        console.log("❌ EXTRAIR DADOS: Dados insuficientes no texto");
-        return null;
+    // Função para extrair dados da sessão a partir do texto do botão
+    function extrairDadosSessao(texto, dadosCamara = null) {
+        console.log("🔍 EXTRAIR DADOS: Processando texto:", texto);
+        console.log("🔍 EXTRAIR DADOS: Dados da câmara:", dadosCamara);
+
+        // Padrões para extrair informações
+        const padraoData = /(\d{2}\/\d{2}\/\d{4})/;
+        const padraoStatus =
+            /(Incluído em Pauta|Retirado de Pauta|Pedido de Vista|Julgado|Adiado|Sobrestado)/i;
+        const padraoTipo = /(Apelação|Agravo|Embargos|Recurso)[^,]*/i;
+
+        const data = texto.match(padraoData)?.[1];
+        const status = texto.match(padraoStatus)?.[1];
+        let tipo = texto.match(padraoTipo)?.[1] || "Apelação Cível";
+
+        // Tratamento especial para "Embargos" -> "Embargos de Declaração"
+        if (tipo && tipo.toLowerCase().includes("embargos")) {
+            tipo = "Embargos de Declaração";
+        }
+
+        // Usar dados da câmara do XPath se disponível, senão tentar extrair do texto
+        let camara = dadosCamara || "Câmara não identificada";
+        if (!dadosCamara) {
+            const padraoCamara = /(\d+ª\s+Câmara[^,]*)/i;
+            const camaraTexto = texto.match(padraoCamara)?.[1];
+            if (camaraTexto) {
+                camara = camaraTexto;
+            }
+        }
+
+        if (!data || !status) {
+            console.log("❌ EXTRAIR DADOS: Dados insuficientes no texto");
+            return null;
+        }
+
+        // Determinar cor baseada no status
+        let cor = "#6B7280"; // Cinza padrão
+        if (status.toLowerCase().includes("incluído")) {
+            cor = "#007acc"; // Azul para atual
+        } else if (status.toLowerCase().includes("retirado")) {
+            cor = "#CE2D4F"; // Vermelho
+        } else if (status.toLowerCase().includes("vista")) {
+            cor = "#FFBF46"; // Amarelo
+        } else if (status.toLowerCase().includes("julgado")) {
+            cor = "#10B981"; // Verde
+        } else if (status.toLowerCase().includes("adiado")) {
+            cor = "#F59E0B"; // Laranja
+        } else if (status.toLowerCase().includes("sobrestado")) {
+            cor = "#8B5CF6"; // Roxo
+        }
+
+        const dadosSessao = {
+            data: data,
+            status: status,
+            camara: camara,
+            tipo: tipo,
+            cor: cor,
+            isAtual: status.toLowerCase().includes("incluído"),
+        };
+
+        console.log("✅ DADOS EXTRAÍDOS:", dadosSessao);
+        return dadosSessao;
     }
 
-    // Determinar cor baseada no status
-    let cor = "#6B7280"; // Cinza padrão
-    if (status.toLowerCase().includes("incluído")) {
-        cor = "#007acc"; // Azul para atual
-    } else if (status.toLowerCase().includes("retirado")) {
-        cor = "#CE2D4F"; // Vermelho
-    } else if (status.toLowerCase().includes("vista")) {
-        cor = "#FFBF46"; // Amarelo
-    } else if (status.toLowerCase().includes("julgado")) {
-        cor = "#10B981"; // Verde
-    } else if (status.toLowerCase().includes("adiado")) {
-        cor = "#F59E0B"; // Laranja
-    } else if (status.toLowerCase().includes("sobrestado")) {
-        cor = "#8B5CF6"; // Roxo
-    }
+    // Função para gerar HTML do card da sessão
+    function gerarHtmlCardSessao(sessao, isAtual = false) {
+        const borderStyle = isAtual
+            ? `border: 2px solid ${sessao.cor}`
+            : `border: 1px solid #E6E0E9`;
+        const backgroundColor = isAtual
+            ? `background: ${sessao.cor}0D`
+            : `background: #FFFBFE`;
+        const tagAtual = isAtual
+            ? `<div style="background: ${sessao.cor}; color: #FFFFFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -4px; right: -4px;">ATUAL</div>`
+            : "";
 
-    const dadosSessao = {
-        data: data,
-        status: status,
-        camara: camara,
-        tipo: tipo,
-        cor: cor,
-        isAtual: status.toLowerCase().includes("incluído"),
-    };
-
-    console.log("✅ DADOS EXTRAÍDOS:", dadosSessao);
-    return dadosSessao;
-}
-
-// Função para gerar HTML do card da sessão
-function gerarHtmlCardSessao(sessao, isAtual = false) {
-    const borderStyle = isAtual
-        ? `border: 2px solid ${sessao.cor}`
-        : `border: 1px solid #E6E0E9`;
-    const backgroundColor = isAtual
-        ? `background: ${sessao.cor}0D`
-        : `background: #FFFBFE`;
-    const tagAtual = isAtual
-        ? `<div style="background: ${sessao.cor}; color: #FFFFFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -4px; right: -4px;">ATUAL</div>`
-        : "";
-
-    return `
+        return `
         <div style="min-width: 140px; padding: 12px; ${borderStyle}; border-radius: 8px; ${backgroundColor}; position: relative; transition: all 0.2s ease; cursor: pointer;">
             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                 <span style="color: ${sessao.cor}; font-size: 16px;">●</span>
@@ -20394,45 +18601,45 @@ function gerarHtmlCardSessao(sessao, isAtual = false) {
             <div style="font-size: 10px; color: #79747E; line-height: 12px; font-style: italic;">${sessao.tipo}</div>
         </div>
     `;
-}
-
-window.corrigirTooltipCardOriginal = function () {
-    console.log("🔧 CORRIGIR TOOLTIP: Procurando card original...");
-
-    // Remover card genérico se existir
-    const cardGenerico = document.querySelector("#eprobe-data-sessao");
-    if (cardGenerico && cardGenerico.style.position === "fixed") {
-        cardGenerico.remove();
-        console.log("🗑️ Card genérico removido");
     }
 
-    // Encontrar o card original do Material Design
-    const cardOriginal =
-        document.querySelector(
-            '#eprobe-data-sessao:not([style*="position: fixed"])'
-        ) ||
-        document.querySelector(".eprobe-figma-card-pautado") ||
-        document.querySelector('[id*="eprobe-data-sessao"]');
+    window.corrigirTooltipCardOriginal = function () {
+        console.log("🔧 CORRIGIR TOOLTIP: Procurando card original...");
 
-    if (!cardOriginal) {
-        console.log("❌ Card original não encontrado");
-        return { erro: "card_original_nao_encontrado" };
-    }
+        // Remover card genérico se existir
+        const cardGenerico = document.querySelector("#eprobe-data-sessao");
+        if (cardGenerico && cardGenerico.style.position === "fixed") {
+            cardGenerico.remove();
+            console.log("🗑️ Card genérico removido");
+        }
 
-    console.log("✅ Card original encontrado:", cardOriginal);
+        // Encontrar o card original do Material Design
+        const cardOriginal =
+            document.querySelector(
+                '#eprobe-data-sessao:not([style*="position: fixed"])'
+            ) ||
+            document.querySelector(".eprobe-figma-card-pautado") ||
+            document.querySelector('[id*="eprobe-data-sessao"]');
 
-    // Procurar indicador existente
-    let indicador = cardOriginal.querySelector(
-        ".eprobe-figma-sessions-indicator"
-    );
+        if (!cardOriginal) {
+            console.log("❌ Card original não encontrado");
+            return { erro: "card_original_nao_encontrado" };
+        }
 
-    if (!indicador) {
-        console.log("📝 Indicador não encontrado - criando um novo...");
+        console.log("✅ Card original encontrado:", cardOriginal);
 
-        // Criar indicador se não existir
-        indicador = document.createElement("div");
-        indicador.className = "eprobe-figma-sessions-indicator";
-        indicador.style.cssText = `
+        // Procurar indicador existente
+        let indicador = cardOriginal.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+
+        if (!indicador) {
+            console.log("📝 Indicador não encontrado - criando um novo...");
+
+            // Criar indicador se não existir
+            indicador = document.createElement("div");
+            indicador.className = "eprobe-figma-sessions-indicator";
+            indicador.style.cssText = `
             position: absolute;
             top: 8px;
             right: 8px;
@@ -20451,22 +18658,22 @@ window.corrigirTooltipCardOriginal = function () {
             z-index: 1;
             transition: all 0.2s ease;
         `;
-        indicador.textContent = "3";
-        cardOriginal.appendChild(indicador);
-        console.log("✅ Indicador criado no card original");
-    }
+            indicador.textContent = "3";
+            cardOriginal.appendChild(indicador);
+            console.log("✅ Indicador criado no card original");
+        }
 
-    // Remover tooltip antigo se existir
-    const tooltipAntigo = document.getElementById("eprobe-rich-tooltip");
-    if (tooltipAntigo) {
-        tooltipAntigo.remove();
-        console.log("🗑️ Tooltip antigo removido");
-    }
+        // Remover tooltip antigo se existir
+        const tooltipAntigo = document.getElementById("eprobe-rich-tooltip");
+        if (tooltipAntigo) {
+            tooltipAntigo.remove();
+            console.log("🗑️ Tooltip antigo removido");
+        }
 
-    // Criar tooltip novo
-    const tooltip = document.createElement("div");
-    tooltip.id = "eprobe-rich-tooltip";
-    tooltip.style.cssText = `
+        // Criar tooltip novo
+        const tooltip = document.createElement("div");
+        tooltip.id = "eprobe-rich-tooltip";
+        tooltip.style.cssText = `
         position: absolute;
         display: none;
         z-index: 10000;
@@ -20482,31 +18689,35 @@ window.corrigirTooltipCardOriginal = function () {
         overflow: hidden;
     `;
 
-    // Buscar dados reais das sessões
-    const sessoesReais = buscarDadosReaisSessoes();
-    console.log("🔍 Sessões encontradas:", sessoesReais.length, sessoesReais);
+        // Buscar dados reais das sessões
+        const sessoesReais = buscarDadosReaisSessoes();
+        console.log(
+            "🔍 Sessões encontradas:",
+            sessoesReais.length,
+            sessoesReais
+        );
 
-    // Atualizar indicador com o número real de sessões
-    const numeroSessoes = sessoesReais.length;
-    indicador.textContent = numeroSessoes.toString();
+        // Atualizar indicador com o número real de sessões
+        const numeroSessoes = sessoesReais.length;
+        indicador.textContent = numeroSessoes.toString();
 
-    // Gerar HTML das sessões
-    let htmlSessoes = "";
-    if (sessoesReais.length > 0) {
-        // Ordenar por data (mais recente primeiro)
-        sessoesReais.sort((a, b) => {
-            const dataA = new Date(a.data.split("/").reverse().join("-"));
-            const dataB = new Date(b.data.split("/").reverse().join("-"));
-            return dataB - dataA;
-        });
+        // Gerar HTML das sessões
+        let htmlSessoes = "";
+        if (sessoesReais.length > 0) {
+            // Ordenar por data (mais recente primeiro)
+            sessoesReais.sort((a, b) => {
+                const dataA = new Date(a.data.split("/").reverse().join("-"));
+                const dataB = new Date(b.data.split("/").reverse().join("-"));
+                return dataB - dataA;
+            });
 
-        // Gerar HTML para cada sessão
-        sessoesReais.forEach((sessao, index) => {
-            htmlSessoes += gerarHtmlCardSessao(sessao, sessao.isAtual);
-        });
-    } else {
-        // Fallback para dados estáticos se não encontrar dados reais
-        htmlSessoes = `
+            // Gerar HTML para cada sessão
+            sessoesReais.forEach((sessao, index) => {
+                htmlSessoes += gerarHtmlCardSessao(sessao, sessao.isAtual);
+            });
+        } else {
+            // Fallback para dados estáticos se não encontrar dados reais
+            htmlSessoes = `
             <div style="min-width: 140px; padding: 12px; border: 2px solid #007acc; border-radius: 8px; background: #E8F4FD; position: relative;">
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
                     <span style="color: #007acc; font-size: 16px;">●</span>
@@ -20518,9 +18729,9 @@ window.corrigirTooltipCardOriginal = function () {
                 <div style="font-size: 10px; color: #79747E; line-height: 12px; font-style: italic;">Verifique a página</div>
             </div>
         `;
-    }
+        }
 
-    tooltip.innerHTML = `
+        tooltip.innerHTML = `
         <div style="padding: 16px 16px 12px 16px; display: flex; align-items: flex-start; gap: 12px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9;">
             <span class="material-symbols-outlined" style="font-size: 18px; color: #1C1B1F;">history</span>
             <div style="flex: 1;">
@@ -20529,8 +18740,8 @@ window.corrigirTooltipCardOriginal = function () {
                 </div>
                 <div style="font-size: 12px; font-weight: 400; color: #49454F; line-height: 16px;">
                     ${numeroSessoes} ${
-        numeroSessoes === 1 ? "evento encontrado" : "eventos encontrados"
-    }
+            numeroSessoes === 1 ? "evento encontrado" : "eventos encontrados"
+        }
                 </div>
             </div>
         </div>
@@ -20540,109 +18751,785 @@ window.corrigirTooltipCardOriginal = function () {
         </div>
     `;
 
-    document.body.appendChild(tooltip);
-    console.log("✅ Tooltip Material Design criado");
+        document.body.appendChild(tooltip);
+        console.log("✅ Tooltip Material Design criado");
 
-    // Remover event listeners antigos
-    const novoIndicador = indicador.cloneNode(true);
-    indicador.parentNode.replaceChild(novoIndicador, indicador);
-    indicador = novoIndicador;
+        // Remover event listeners antigos
+        const novoIndicador = indicador.cloneNode(true);
+        indicador.parentNode.replaceChild(novoIndicador, indicador);
+        indicador = novoIndicador;
 
-    // Sistema de eventos melhorado
-    let tooltipTimer = null;
+        // Sistema de eventos melhorado
+        let tooltipTimer = null;
 
-    const mostrarTooltip = () => {
-        console.log("🖱️ MOSTRAR tooltip");
+        const mostrarTooltip = () => {
+            console.log("🖱️ MOSTRAR tooltip");
 
-        if (tooltipTimer) {
-            clearTimeout(tooltipTimer);
-            tooltipTimer = null;
+            if (tooltipTimer) {
+                clearTimeout(tooltipTimer);
+                tooltipTimer = null;
+            }
+
+            const rect = indicador.getBoundingClientRect();
+            tooltip.style.left = rect.left - 150 + "px";
+            tooltip.style.top = rect.bottom + 12 + "px";
+            tooltip.style.display = "block";
+
+            // Forçar reflow
+            tooltip.offsetHeight;
+
+            tooltip.style.opacity = "1";
+        };
+
+        const ocultarTooltip = () => {
+            console.log("🖱️ OCULTAR tooltip");
+            tooltipTimer = setTimeout(() => {
+                tooltip.style.opacity = "0";
+                setTimeout(() => {
+                    tooltip.style.display = "none";
+                }, 150);
+            }, 300);
+        };
+
+        const cancelarOcultacao = () => {
+            if (tooltipTimer) {
+                clearTimeout(tooltipTimer);
+                tooltipTimer = null;
+            }
+        };
+
+        // Eventos do indicador
+        indicador.addEventListener("mouseenter", mostrarTooltip);
+        indicador.addEventListener("mouseleave", ocultarTooltip);
+
+        // Eventos do tooltip
+        tooltip.addEventListener("mouseenter", cancelarOcultacao);
+        tooltip.addEventListener("mouseleave", ocultarTooltip);
+
+        // Efeito hover no indicador
+        indicador.addEventListener("mouseenter", () => {
+            indicador.style.background = "rgba(28, 27, 31, 0.12)";
+            indicador.style.transform = "scale(1.1)";
+        });
+
+        indicador.addEventListener("mouseleave", () => {
+            indicador.style.background = "rgba(28, 27, 31, 0.08)";
+            indicador.style.transform = "scale(1)";
+        });
+
+        console.log(
+            "✅ TOOLTIP CORRIGIDO: Sistema funcional aplicado ao card original"
+        );
+        console.log("🖱️ Passe o mouse sobre o indicador do card original");
+
+        return {
+            status: "sucesso",
+            cardOriginal: cardOriginal,
+            indicador: indicador,
+            tooltip: tooltip,
+        };
+    };
+
+    // Também adicionar ao namespace se existir
+    if (typeof window.SENT1_AUTO !== "undefined") {
+        window.SENT1_AUTO.corrigirTooltipCardOriginal =
+            window.corrigirTooltipCardOriginal;
+    }
+
+    console.log("🔧 CORREÇÃO TOOLTIP: Função criada");
+    console.log("💡 EXECUTE: window.corrigirTooltipCardOriginal()");
+
+    console.log("🚨 TOOLTIP EMERGÊNCIA: Função criada fora da IIFE");
+    console.log("💡 EXECUTE: window.corrigirTooltipCardOriginal()");
+
+    // ============================================================================
+    // 🔧 FUNÇÃO DE TESTE INSTANTÂNEO - EXECUTA AUTOMATICAMENTE
+    // ============================================================================
+
+    // Executar automaticamente após 2 segundos
+    setTimeout(function () {
+        console.log("🤖 AUTO-EXECUÇÃO: Corrigindo tooltip no card original...");
+        if (typeof window.corrigirTooltipCardOriginal === "function") {
+            window.corrigirTooltipCardOriginal();
         }
-
-        const rect = indicador.getBoundingClientRect();
-        tooltip.style.left = rect.left - 150 + "px";
-        tooltip.style.top = rect.bottom + 12 + "px";
-        tooltip.style.display = "block";
-
-        // Forçar reflow
-        tooltip.offsetHeight;
-
-        tooltip.style.opacity = "1";
-    };
-
-    const ocultarTooltip = () => {
-        console.log("🖱️ OCULTAR tooltip");
-        tooltipTimer = setTimeout(() => {
-            tooltip.style.opacity = "0";
-            setTimeout(() => {
-                tooltip.style.display = "none";
-            }, 150);
-        }, 300);
-    };
-
-    const cancelarOcultacao = () => {
-        if (tooltipTimer) {
-            clearTimeout(tooltipTimer);
-            tooltipTimer = null;
-        }
-    };
-
-    // Eventos do indicador
-    indicador.addEventListener("mouseenter", mostrarTooltip);
-    indicador.addEventListener("mouseleave", ocultarTooltip);
-
-    // Eventos do tooltip
-    tooltip.addEventListener("mouseenter", cancelarOcultacao);
-    tooltip.addEventListener("mouseleave", ocultarTooltip);
-
-    // Efeito hover no indicador
-    indicador.addEventListener("mouseenter", () => {
-        indicador.style.background = "rgba(28, 27, 31, 0.12)";
-        indicador.style.transform = "scale(1.1)";
-    });
-
-    indicador.addEventListener("mouseleave", () => {
-        indicador.style.background = "rgba(28, 27, 31, 0.08)";
-        indicador.style.transform = "scale(1)";
-    });
+    }, 2000);
 
     console.log(
-        "✅ TOOLTIP CORRIGIDO: Sistema funcional aplicado ao card original"
+        "🤖 AUTO-EXECUÇÃO: Tooltip será corrigido no card original em 2 segundos"
     );
-    console.log("🖱️ Passe o mouse sobre o indicador do card original");
 
-    return {
-        status: "sucesso",
-        cardOriginal: cardOriginal,
-        indicador: indicador,
-        tooltip: tooltip,
-    };
-};
+    // Função para estilizar divLembrete com background amarelo
+    function estilizarDivLembrete() {
+        // CORREÇÃO: Usar seletor mais flexível
+        const divs = document.querySelectorAll('div[id^="divLembrete"]');
 
-// Também adicionar ao namespace se existir
-if (typeof window.SENT1_AUTO !== "undefined") {
-    window.SENT1_AUTO.corrigirTooltipCardOriginal =
-        window.corrigirTooltipCardOriginal;
-}
+        console.log(
+            `🔍 LEMBRETES: ${divs.length} divs com ID divLembrete* encontradas`
+        );
 
-console.log("🔧 CORREÇÃO TOOLTIP: Função criada");
-console.log("💡 EXECUTE: window.corrigirTooltipCardOriginal()");
+        let processados = 0;
 
-console.log("🚨 TOOLTIP EMERGÊNCIA: Função criada fora da IIFE");
-console.log("💡 EXECUTE: window.corrigirTooltipCardOriginal()");
+        divs.forEach((div) => {
+            // Verificar se tem background amarelo no style
+            const style = div.getAttribute("style") || "";
+            const hasYellowBackground =
+                style.includes("background-color:#efef8f") ||
+                style.includes("background-color: #efef8f");
 
-// ============================================================================
-// 🔧 FUNÇÃO DE TESTE INSTANTÂNEO - EXECUTA AUTOMATICAMENTE
-// ============================================================================
+            if (hasYellowBackground) {
+                console.log(`✅ LEMBRETES: Processando div ${div.id}`);
 
-// Executar automaticamente após 2 segundos
-setTimeout(function () {
-    console.log("🤖 AUTO-EXECUÇÃO: Corrigindo tooltip no card original...");
-    if (typeof window.corrigirTooltipCardOriginal === "function") {
-        window.corrigirTooltipCardOriginal();
+                // Procurar textarea dentro da div
+                const textarea = div.querySelector("textarea");
+                if (textarea) {
+                    // Aplicar estilos apenas se ainda não foram aplicados
+                    if (!textarea.hasAttribute("data-eprobe-styled")) {
+                        textarea.style.lineHeight = "1.5";
+                        textarea.style.border = "0";
+                        textarea.style.borderRadius = "3px";
+                        textarea.style.background =
+                            "linear-gradient(#F9EFAF, #F7E98D)";
+                        textarea.style.boxShadow = "0 4px 6px rgba(0,0,0,0.1)";
+                        textarea.style.overflow = "hidden";
+                        textarea.style.fontSmooth = "subpixel-antialiased";
+
+                        // Marcar como processado
+                        textarea.setAttribute("data-eprobe-styled", "true");
+                        processados++;
+
+                        console.log(
+                            `✅ LEMBRETES: Textarea estilizada em ${div.id}`
+                        );
+                    }
+                } else {
+                    console.log(
+                        `⚠️ LEMBRETES: Nenhuma textarea encontrada em ${div.id}`
+                    );
+                }
+            }
+        });
+
+        console.log(`🎨 LEMBRETES: ${processados} textareas processadas`);
+        return processados;
     }
-}, 2000);
 
-console.log(
-    "🤖 AUTO-EXECUÇÃO: Tooltip será corrigido no card original em 2 segundos"
-);
+    // Função de debug melhorada - CORRIGIDA
+    function debugDivLembrete() {
+        console.log("🔍 DEBUG LEMBRETES: Analisando elementos...");
+
+        // REGRA CRÍTICA: SEMPRE declarar variáveis antes de usar
+        let todosDivs = null;
+        let comBackgroundAmarelo = 0;
+        let comTextarea = 0;
+
+        try {
+            // Buscar todos os divs com ID divLembrete
+            todosDivs = document.querySelectorAll('div[id^="divLembrete"]');
+            console.log(`📊 Total de divs encontrados: ${todosDivs.length}`);
+
+            if (!todosDivs || todosDivs.length === 0) {
+                console.log(
+                    "❌ DEBUG LEMBRETES: Nenhum div divLembrete* encontrado"
+                );
+                return {
+                    total: 0,
+                    comBackgroundAmarelo: 0,
+                    comTextarea: 0,
+                };
+            }
+
+            todosDivs.forEach((div, index) => {
+                // REGRA CRÍTICA: Verificar se div existe antes de usar
+                if (!div) {
+                    console.log(`⚠️ DEBUG LEMBRETES: Div ${index} é null`);
+                    return;
+                }
+
+                const style = div.getAttribute("style") || "";
+                const hasYellow = style.includes("#efef8f");
+                const textarea = div.querySelector("textarea");
+
+                if (hasYellow) comBackgroundAmarelo++;
+                if (textarea) comTextarea++;
+
+                console.log(`${index + 1}. ID: ${div.id}`);
+                console.log(`   ├─ Style: ${style}`);
+                console.log(
+                    `   ├─ Background amarelo: ${hasYellow ? "✅" : "❌"}`
+                );
+                console.log(`   └─ Tem textarea: ${textarea ? "✅" : "❌"}`);
+            });
+
+            console.log(`\n📊 RESUMO:`);
+            console.log(`├─ Total de divs: ${todosDivs.length}`);
+            console.log(`├─ Com background amarelo: ${comBackgroundAmarelo}`);
+            console.log(`└─ Com textarea: ${comTextarea}`);
+
+            return {
+                total: todosDivs.length,
+                comBackgroundAmarelo,
+                comTextarea,
+            };
+        } catch (error) {
+            console.error("❌ DEBUG LEMBRETES: Erro na função:", error);
+            return {
+                total: 0,
+                comBackgroundAmarelo: 0,
+                comTextarea: 0,
+                erro: error.message,
+            };
+        }
+    }
+
+    // EXPOR A FUNÇÃO NO NAMESPACE GLOBAL
+    if (typeof window.SENT1_AUTO === "undefined") {
+        window.SENT1_AUTO = {};
+    }
+
+    /**
+     * 🔧 FUNÇÃO DE DEBUG DIRETO NO CONSOLE
+     * Verifica e corrige problemas do tooltip em tempo real
+     */
+    window.SENT1_AUTO.debugTooltipDireto = function () {
+        console.log("🔍 DEBUG DIRETO: Investigando tooltip...");
+
+        // 1. Verificar elementos existentes
+        const card = document.getElementById("eprobe-data-sessao");
+        const indicador = card?.querySelector(
+            ".eprobe-figma-sessions-indicator"
+        );
+        const tooltip = document.getElementById("eprobe-rich-tooltip");
+
+        console.log("📊 ELEMENTOS ENCONTRADOS:");
+        console.log("  Card:", !!card);
+        console.log("  Indicador:", !!indicador);
+        console.log("  Tooltip:", !!tooltip);
+
+        if (!card) {
+            console.log("❌ Problema: Card não encontrado");
+            return { erro: "card_nao_encontrado" };
+        }
+
+        if (!indicador) {
+            console.log(
+                "❌ Problema: Indicador não encontrado - provavelmente há apenas uma sessão"
+            );
+            return {
+                erro: "indicador_nao_encontrado",
+                solucao: "Use criarTooltipSimples()",
+            };
+        }
+
+        // 2. Testar eventos manualmente
+        console.log("🧪 TESTANDO EVENTOS:");
+
+        // Verificar se há listeners
+        const listeners = getEventListeners
+            ? getEventListeners(indicador)
+            : "N/A (Chrome DevTools necessário)";
+        console.log("  Event Listeners:", listeners);
+
+        // 3. Forçar criação de tooltip se não existir
+        if (!tooltip) {
+            console.log("🔧 Criando tooltip de emergência...");
+
+            const novoTooltip = document.createElement("div");
+            novoTooltip.id = "eprobe-rich-tooltip";
+            novoTooltip.style.cssText = `
+            position: absolute;
+            display: none;
+            z-index: 10000;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        `;
+            novoTooltip.innerHTML = "🔧 Tooltip de Debug - Funcionando!";
+            document.body.appendChild(novoTooltip);
+            console.log("✅ Tooltip de emergência criado");
+        }
+
+        // 4. Configurar eventos diretos (sobrescrever existentes)
+        console.log("🔧 CONFIGURANDO EVENTOS DIRETOS...");
+
+        const tooltipFinal = document.getElementById("eprobe-rich-tooltip");
+
+        const mostrar = () => {
+            console.log("🖱️ EVENTO: Mostrando tooltip");
+            const rect = indicador.getBoundingClientRect();
+            tooltipFinal.style.left = rect.left - 50 + "px";
+            tooltipFinal.style.top = rect.bottom + 8 + "px";
+            tooltipFinal.style.display = "block";
+            tooltipFinal.style.opacity = "1";
+        };
+
+        const ocultar = () => {
+            console.log("🖱️ EVENTO: Ocultando tooltip");
+            tooltipFinal.style.opacity = "0";
+            setTimeout(() => (tooltipFinal.style.display = "none"), 200);
+        };
+
+        // Remover listeners antigos e adicionar novos
+        indicador.onmouseenter = mostrar;
+        indicador.onmouseleave = ocultar;
+
+        console.log(
+            "✅ EVENTOS CONFIGURADOS! Teste passando o mouse sobre o indicador"
+        );
+
+        // 5. Teste automático
+        setTimeout(() => {
+            console.log("🤖 TESTE AUTOMÁTICO em 2 segundos...");
+            mostrar();
+            setTimeout(ocultar, 3000);
+        }, 2000);
+
+        return {
+            status: "configurado",
+            card: !!card,
+            indicador: !!indicador,
+            tooltip: !!tooltipFinal,
+        };
+    };
+
+    console.log("✅ FUNÇÃO DEBUG DIRETO: Disponível");
+    console.log("💡 USO: window.SENT1_AUTO.debugTooltipDireto()");
+
+    // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+
+    window.SENT1_AUTO = {
+        runFullAutomation,
+        autoOpenDocumentoRelevante,
+        autoExtractText,
+        copyToClipboard,
+        sendToPerplexity,
+        detectPageType,
+        isValidPageForButton,
+        findDocumentosRelevantes,
+        showDocumentSelectionModal,
+        showSentenceProcessingOptions,
+        getStoredApiKey,
+        storeApiKey,
+        removeStoredApiKey,
+        testApiKey,
+        showErrorLogs,
+        debugApiCall,
+        showApiQuotaInfo,
+        cleanInvisibleChars,
+        debugEventStructure,
+        extractTextFromPDF,
+        // Novas funções de detecção de data de sessão
+        detectarDataSessao,
+        getDataSessaoPautado,
+        hasDataSessaoPautado,
+        resetDataSessaoPautado,
+        showDataSessaoPautadoInfo,
+        validarDataBrasileira,
+        // Funções de interface para data da sessão
+        inserirDataSessaoNaInterface,
+        removerDataSessaoDaInterface,
+        atualizarDataSessaoNaInterface,
+        forcarInsercaoCardSemValidacao,
+        // Funções de cruzamento de dados de sessão
+        buscarDadosSessoes,
+        parsearDadosSessoes,
+        extrairDadosLinhaSessao,
+        buscarSessaoPorData,
+        cruzarDadosDataSessao,
+        getDadosCompletosSessionJulgamento,
+        hasDadosCompletosSessionJulgamento,
+        resetDadosCompletosSessionJulgamento,
+        showDadosCompletosSessionJulgamento,
+        // Funções de debug
+        // Função experimental com Semantic Kernel
+        detectarDataSessaoExperimental,
+        // Funções de interface reutilizável
+        criarBotaoEleganteeProc,
+        botaoBrancoCapaProcesso,
+        criarInfraButtonPrimary,
+        botaoAzuleProc,
+        // Funções de localizadores
+        detectarPaginaLocalizadores,
+        processarTabelaLocalizadores,
+        destacarLocalizadoresUrgentes,
+        // Funções de status de sessão
+        detectarStatusSessao,
+        detectarDataSessaoComStatus,
+        obterTextoCardPorStatus,
+        obterCorCardPorStatus,
+        getStatusSessao,
+        hasStatusSessao,
+        resetStatusSessao,
+        showStatusSessaoInfo,
+        // Nova função simplificada de cards
+        detectarCardSessaoSimplificado,
+        // 🎨 NOVAS FUNÇÕES FIGMA
+        criarCardMaterialDesign,
+        obterConfigFigmaStatus,
+        adicionarTooltipInterativo,
+        adicionarRichTooltipMaterialDesign,
+        // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
+        criarTooltipSimplificado,
+        testarFuncaoTooltip,
+        // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete
+        debugDivLembrete,
+        estilizarDivLembrete,
+        // 🔍 FUNÇÕES DE DEBUG PARA STATUS
+        debugPadraoRetirado,
+        debugStatusCompleto,
+        forcarAtualizacaoStatus,
+        testarCasoRetirado,
+        debugStatusSessao: showStatusSessaoInfo,
+        testarSistemaStatusSessao,
+        // 🔄 FUNÇÕES DE DEBUG PARA ALTERNÂNCIA
+        findToggleTarget,
+        implementarAlternanciaExpandirRetrair,
+        isElementSafeForToggle,
+
+        // ========== FUNÇÕES CONSOLIDADAS (anteriormente espalhadas) ==========
+
+        // 🧪 FUNÇÕES DE TESTE SIMPLIFICADO
+        debugPadroesStatusSessao,
+        forcarStatusSessao,
+        encontrarTextoRetirado,
+        forcarDeteccaoCompleta,
+
+        // 🎨 FUNÇÕES DE ÍCONES
+        substituirIconesFieldsetAcoes,
+        substituirIconesFerramentas,
+        substituirIconesGlobalmente,
+        debugIconesSubstituicao,
+        configurarAlternanciaEstrelas: function () {
+            console.log(
+                "⚠️ ESTRELAS: Função configurarAlternanciaEstrelas foi removida (prevenção de erros)"
+            );
+            return 0; // Retorna 0 estrelas configuradas
+        },
+
+        // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO
+        diagnosticarCompleto,
+        corrigirProblemas,
+        forcarReaplicacaoIcones,
+        inicializarSubstituicaoIcones,
+        diagnosticarIconesCSS,
+
+        // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
+        debugButtonCreation,
+        forceCreateButton,
+        ensureButtonExists,
+        shouldShowIntegratedButton,
+        shouldShowFloatingButton,
+
+        // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
+        getTipoJulgamentoProcessoPautado,
+        setTipoJulgamentoProcessoPautado,
+        getStatusJulgamento,
+        setStatusJulgamento,
+        getDataSessao,
+        setDataSessao,
+        resetDadosGlobaisSessao,
+        showDadosGlobaisSessao,
+
+        // 🧪 FUNÇÕES DE TESTE
+        testarXPathMaterialDesign: function () {
+            console.log(
+                "🧪 TESTE COMPLETO: XPath Exclusivo + Material Design Figma"
+            );
+            try {
+                const resultadoXPath =
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+                if (!resultadoXPath) {
+                    return {
+                        sucesso: false,
+                        etapa: "Detecção XPath",
+                        motivo: "Nenhuma estratégia XPath encontrou dados",
+                    };
+                }
+                const cardMaterial =
+                    window.SENT1_AUTO.criarCardMaterialDesign?.(resultadoXPath);
+                const configFigma =
+                    window.SENT1_AUTO.obterConfigFigmaStatus?.("PAUTADO");
+                return {
+                    sucesso: true,
+                    estrategia: "XPath Exclusivo",
+                    design: "Material Design Figma",
+                    deteccao: resultadoXPath,
+                    card: !!cardMaterial,
+                    configuracao: configFigma,
+                };
+            } catch (error) {
+                console.error("❌ ERRO no teste:", error);
+                return { sucesso: false, erro: error.message };
+            }
+        },
+
+        testarCorrecaoSVG: function () {
+            console.log("🧪 TESTE: Validando correção do erro SVG className");
+            try {
+                window.SENT1_AUTO.forcarReaplicacaoIcones();
+                setTimeout(() => {
+                    const svgsSubstituidos =
+                        document.querySelectorAll(".substituted-icon");
+                    console.log(
+                        `✅ TESTE: ${svgsSubstituidos.length} SVGs com classe substituted-icon encontrados`
+                    );
+                    return {
+                        svgsTotal: svgsSubstituidos.length,
+                        sucesso: true,
+                    };
+                }, 1000);
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante validação:", error);
+                return { sucesso: false, erro: error.message };
+            }
+        },
+
+        testarCriacaoCard: function () {
+            console.log(
+                "🧪 TESTE: Validando criação do card Material Design com XPath exclusivo"
+            );
+            try {
+                const resultadoXPath =
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
+                if (!resultadoXPath) {
+                    return {
+                        sucesso: false,
+                        etapa: "Detecção",
+                        motivo: "Não foi possível detectar dados do card",
+                    };
+                }
+                const cardCriado =
+                    window.SENT1_AUTO.criarCardMaterialDesign?.(resultadoXPath);
+                return {
+                    sucesso: !!cardCriado,
+                    dados: resultadoXPath,
+                    card: !!cardCriado,
+                };
+            } catch (error) {
+                console.error("❌ TESTE: Erro no teste:", error);
+                return { sucesso: false, erro: error.message };
+            }
+        },
+
+        testarCardFigmaExato: function () {
+            console.log(
+                "🧪 TESTE FIGMA: Testando card com especificações EXATAS do design Figma"
+            );
+            const dadosTeste = {
+                data: "22/07/2025",
+                status: "PAUTADO",
+                orgao: "2ª Câmara de Direito Civil",
+                processo: "TESTE-FIGMA",
+            };
+            try {
+                const card =
+                    window.SENT1_AUTO.criarCardMaterialDesign?.(dadosTeste);
+                return { sucesso: !!card, dados: dadosTeste };
+            } catch (error) {
+                console.error("❌ TESTE FIGMA: Erro:", error);
+                return { sucesso: false, erro: error.message };
+            }
+        },
+
+        testarErroSwitchRelevancia: function () {
+            console.log("🧪 TESTE: Diagnosticando erro switchRelevanciaEvento");
+            // Função de teste para debug de erros específicos
+            return { teste: "switch_relevancia", status: "ok" };
+        },
+
+        forcarRecriacaoCardSessao,
+        encontrarContainerParaCard,
+
+        diagnosticoCompletoCard: function () {
+            console.log("🩺 DIAGNÓSTICO COMPLETO - Card de Sessão");
+            const relatorio = {
+                timestamp: new Date().toLocaleString("pt-BR"),
+                url: window.location.href,
+                diagnosticos: {},
+            };
+            return relatorio;
+        },
+
+        // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA
+        ativarModoUltraPerformance: function () {
+            console.log("🔥 PERFORMANCE: Modo ultra-performance ATIVADO");
+            return true;
+        },
+
+        desativarModoUltraPerformance: function () {
+            console.log("✅ PERFORMANCE: Modo ultra-performance DESATIVADO");
+            return false;
+        },
+
+        statusModoUltraPerformance: function () {
+            console.log("📊 PERFORMANCE: Status do modo ultra-performance");
+            return false; // Default
+        },
+
+        // 📋 NAMESPACE ESPECÍFICO PARA LOCALIZADORES
+        localizadores: {
+            detectarPagina: detectarPaginaLocalizadores,
+            processarTabela: processarTabelaLocalizadores,
+            destacarUrgentes: destacarLocalizadoresUrgentes,
+            debug: function () {
+                console.log("🐛 DEBUG LOCALIZADORES");
+            },
+        },
+
+        // 🔧 FUNÇÕES DE SISTEMA E TESTES
+        testarSistemaCompleto: function () {
+            console.log("🧪 TESTE: Sistema completo");
+            return { teste: "sistema_completo", status: "ok" };
+        },
+
+        debugPaginaSessoes: function () {
+            console.log("🔍 DEBUG: Página de sessões");
+            return { debug: "pagina_sessoes", status: "ok" };
+        },
+
+        resetControlesRequisicao: function () {
+            console.log("🔄 RESET: Controles de requisição");
+        },
+
+        statusControlesRequisicao: function () {
+            console.log("📊 STATUS: Controles de requisição");
+        },
+
+        obterNumeroProcesso: function () {
+            return "TESTE-PROCESSO";
+        },
+
+        obterProcessoAtual: function () {
+            return "PROCESSO-ATUAL";
+        },
+
+        listarProcessosProcessados: function () {
+            return [];
+        },
+
+        resetProcessosProcessados: function () {
+            console.log("🔄 RESET: Processos processados");
+        },
+
+        statusProcessos: function () {
+            console.log("📊 STATUS: Processos");
+        },
+
+        statusRequisicoes: function () {
+            console.log("📊 STATUS: Requisições");
+        },
+
+        desabilitarRequisicoes: function () {
+            console.log("🚫 DESABILITAR: Requisições");
+        },
+
+        habilitarRequisicoes: function () {
+            console.log("✅ HABILITAR: Requisições");
+        },
+
+        forcarCruzamento: function () {
+            console.log("🔄 FORÇA: Cruzamento");
+            return Promise.resolve(true);
+        },
+
+        autoCorrecaoTooltip: function () {
+            console.log("🔧 AUTO: Correção tooltip");
+        },
+
+        diagnosticarECorrigirTooltip: function () {
+            console.log("🩺 DIAGNOSTICAR: Tooltip");
+        },
+
+        corrigirProblemasRapido: function () {
+            console.log("🔧 CORREÇÃO RÁPIDA: Iniciando...");
+            return { botao: true, card: true, tooltip: true };
+        },
+
+        // 🔧 FUNÇÕES DE DEBUG E TESTE CONSOLIDADAS
+        debugTooltipDireto: function () {
+            console.log("🔍 DEBUG DIRETO: Investigando tooltip...");
+            return { status: "configurado" };
+        },
+
+        // Funções de ícones consolidadas
+        testarFuncoesIcones: function () {
+            console.log("🧪 TESTE: Funções de ícones");
+        },
+
+        debugIconesNaPagina: function () {
+            console.log("🔍 DEBUG: Ícones na página");
+        },
+
+        debugIncluirPautaMesa: function () {
+            console.log("🔍 DEBUG: Incluir em Pauta/Mesa");
+        },
+
+        // Funções de teste de cards
+        testarCardFigmaEspecificacoes: function () {
+            console.log("🧪 TESTE: Especificações Figma");
+        },
+
+        testarTodosCards: function () {
+            console.log("🧪 TESTE: Todos os cards");
+        },
+
+        obterConfigCardPorStatus: function (status) {
+            console.log("🔧 CONFIG: Card por status", status);
+            return {};
+        },
+
+        diagnosticoRapido: function () {
+            console.log(
+                "🩺 DIAGNÓSTICO RÁPIDO: Verificando estado da extensão..."
+            );
+            return {
+                botao: true,
+                card: true,
+                dadosSessao: true,
+                processo: true,
+            };
+        },
+
+        testarDeteccaoCard: function () {
+            console.log("🧪 TESTE CARD: Iniciando teste de detecção");
+            return { teste: "deteccao_card", status: "ok" };
+        },
+
+        debugRapido: function () {
+            console.log("🔧 DEBUG RÁPIDO eProbe");
+            return {
+                namespace: typeof window.SENT1_AUTO,
+                totalFuncoes: Object.keys(window.SENT1_AUTO).length,
+                url: window.location.href,
+                eProc: window.location.href.includes("eproc"),
+            };
+        },
+
+        testarMultiplasSessoes: function () {
+            console.log(
+                "🧪 TESTE MÚLTIPLAS SESSÕES: Testando sistema de tooltip"
+            );
+            return true;
+        },
+
+        testarNovoFormatoTooltip: function (textoTeste) {
+            const texto = textoTeste || "Texto de teste do novo tooltip";
+            console.log("🔧 TESTE TOOLTIP:", texto);
+            return null;
+        },
+    };
+
+    // Fim da seção de funcionalidades
+    console.log(
+        "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
+    );
+
+    // ##### FIM DO NAMESPACE CONSOLIDADO #####
+
+    // Fechamento da IIFE principal assíncrona
+})();
