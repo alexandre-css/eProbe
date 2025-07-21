@@ -5607,8 +5607,71 @@
                     eventoDescricao: doc.eventoDescricao,
                     seqEvento: doc.seqEvento,
                     tipoDocumento: doc.tipoDocumento,
+                    eventoData: doc.eventoData,
                 });
             });
+
+            // 📅 ORDENAÇÃO DECRESCENTE POR DATA DE ASSINATURA (mais novo em cima, mais antigo embaixo)
+            const documentosOrdenados = [...documentosRelevantes].sort(
+                (a, b) => {
+                    // Função auxiliar para converter data brasileira DD/MM/YYYY para Date
+                    const parseDataBrasileira = (dataStr) => {
+                        if (!dataStr || typeof dataStr !== "string")
+                            return null;
+
+                        // Extrair data no formato DD/MM/YYYY ou DD/MM/YY
+                        const match = dataStr.match(
+                            /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/
+                        );
+                        if (!match) return null;
+
+                        let [, dia, mes, ano] = match;
+
+                        // Se ano tem apenas 2 dígitos, assumir 20XX
+                        if (ano.length === 2) {
+                            ano = "20" + ano;
+                        }
+
+                        // Criar objeto Date (mês é 0-indexado)
+                        return new Date(
+                            parseInt(ano),
+                            parseInt(mes) - 1,
+                            parseInt(dia)
+                        );
+                    };
+
+                    const dataA = parseDataBrasileira(a.eventoData);
+                    const dataB = parseDataBrasileira(b.eventoData);
+
+                    // Se ambas as datas são válidas, ordenar por data (mais recente primeiro)
+                    if (dataA && dataB) {
+                        return dataB.getTime() - dataA.getTime();
+                    }
+
+                    // Se apenas uma data é válida, colocar a válida primeiro
+                    if (dataA && !dataB) return -1;
+                    if (!dataA && dataB) return 1;
+
+                    // Se nenhuma data é válida, manter ordem original por seqEvento
+                    const seqA = parseInt(a.seqEvento) || 0;
+                    const seqB = parseInt(b.seqEvento) || 0;
+                    return seqB - seqA; // Ordem decrescente por sequência
+                }
+            );
+
+            log(
+                "🔄 ORDENAÇÃO: Documentos ordenados por data (mais novo → mais antigo):"
+            );
+            documentosOrdenados.forEach((doc, i) => {
+                log(
+                    `  ${i + 1}. ${doc.eventoDescricao} - ${
+                        doc.eventoData || "Sem data"
+                    } (Evento ${doc.seqEvento})`
+                );
+            });
+
+            // Usar array ordenado para o resto da função
+            documentosRelevantes = documentosOrdenados;
 
             return new Promise((resolve) => {
                 // Remover modal anterior se existir
@@ -20387,6 +20450,137 @@
                 console.error("❌ Erro no debug:", error);
                 return { erro: error.message, url: window.location.href };
             }
+        },
+
+        // 🧪 FUNÇÃO DE TESTE PARA ORDENAÇÃO DE DOCUMENTOS POR DATA
+        testarOrdenacaoDocumentosPorData: function () {
+            console.log(
+                "🧪 TESTE: Validando ordenação de documentos por data de assinatura..."
+            );
+
+            // Dados de teste com diferentes datas
+            const documentosTeste = [
+                {
+                    eventoDescricao: "SENTENÇA MAIS ANTIGA",
+                    seqEvento: "10",
+                    tipoDocumento: "SENT1",
+                    eventoData: "15/01/2024",
+                    texto: "Documento antigo",
+                },
+                {
+                    eventoDescricao: "SENTENÇA MAIS RECENTE",
+                    seqEvento: "30",
+                    tipoDocumento: "SENT1",
+                    eventoData: "20/07/2025",
+                    texto: "Documento recente",
+                },
+                {
+                    eventoDescricao: "SENTENÇA MÉDIA",
+                    seqEvento: "20",
+                    tipoDocumento: "SENT1",
+                    eventoData: "10/06/2025",
+                    texto: "Documento médio",
+                },
+                {
+                    eventoDescricao: "DOCUMENTO SEM DATA",
+                    seqEvento: "5",
+                    tipoDocumento: "INIC1",
+                    eventoData: "",
+                    texto: "Sem data",
+                },
+            ];
+
+            console.log("📋 ANTES DA ORDENAÇÃO:");
+            documentosTeste.forEach((doc, i) => {
+                console.log(
+                    `  ${i + 1}. ${doc.eventoDescricao} - ${
+                        doc.eventoData || "Sem data"
+                    }`
+                );
+            });
+
+            // Aplicar a mesma lógica de ordenação do modal
+            const documentosOrdenados = [...documentosTeste].sort((a, b) => {
+                const parseDataBrasileira = (dataStr) => {
+                    if (!dataStr || typeof dataStr !== "string") return null;
+
+                    const match = dataStr.match(
+                        /(\d{1,2})\/(\d{1,2})\/(\d{2,4})/
+                    );
+                    if (!match) return null;
+
+                    let [, dia, mes, ano] = match;
+
+                    if (ano.length === 2) {
+                        ano = "20" + ano;
+                    }
+
+                    return new Date(
+                        parseInt(ano),
+                        parseInt(mes) - 1,
+                        parseInt(dia)
+                    );
+                };
+
+                const dataA = parseDataBrasileira(a.eventoData);
+                const dataB = parseDataBrasileira(b.eventoData);
+
+                if (dataA && dataB) {
+                    return dataB.getTime() - dataA.getTime();
+                }
+
+                if (dataA && !dataB) return -1;
+                if (!dataA && dataB) return 1;
+
+                const seqA = parseInt(a.seqEvento) || 0;
+                const seqB = parseInt(b.seqEvento) || 0;
+                return seqB - seqA;
+            });
+
+            console.log("🔄 APÓS A ORDENAÇÃO (mais novo → mais antigo):");
+            documentosOrdenados.forEach((doc, i) => {
+                console.log(
+                    `  ${i + 1}. ${doc.eventoDescricao} - ${
+                        doc.eventoData || "Sem data"
+                    }`
+                );
+            });
+
+            // Validar se a ordenação está correta
+            const validacao = {
+                primeiroEhMaisRecente:
+                    documentosOrdenados[0].eventoData === "20/07/2025",
+                segundoEhMedio:
+                    documentosOrdenados[1].eventoData === "10/06/2025",
+                terceiroEhMaisAntigo:
+                    documentosOrdenados[2].eventoData === "15/01/2024",
+                ultimoEhSemData: !documentosOrdenados[3].eventoData,
+            };
+
+            console.log("✅ VALIDAÇÃO DA ORDENAÇÃO:");
+            Object.entries(validacao).forEach(([teste, passou]) => {
+                console.log(
+                    `  ${passou ? "✅" : "❌"} ${teste}: ${
+                        passou ? "PASSOU" : "FALHOU"
+                    }`
+                );
+            });
+
+            const todosTestes = Object.values(validacao).every((v) => v);
+            console.log(
+                `🎯 RESULTADO FINAL: ${
+                    todosTestes
+                        ? "✅ TODOS OS TESTES PASSARAM"
+                        : "❌ ALGUNS TESTES FALHARAM"
+                }`
+            );
+
+            return {
+                sucesso: todosTestes,
+                documentosOriginais: documentosTeste,
+                documentosOrdenados: documentosOrdenados,
+                validacao: validacao,
+            };
         },
     };
 
