@@ -420,12 +420,16 @@
                 descricao: "Petição Inicial",
                 dataNome: "INIC",
             },
+            PET1: {
+                nome: "PET1",
+                descricao: "Petição 1",
+                dataNome: "PET1",
+            },
             DECI: {
                 nome: "DESPADEC",
                 descricao: "Decisão",
                 dataNome: "DESPADEC",
             },
-            DESP: { nome: "DESP", descricao: "Despacho", dataNome: "DESP" },
         };
 
         function log(message, ...args) {
