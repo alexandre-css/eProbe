@@ -6,6 +6,41 @@
 			"type": "shell",
 			"command": "echo 'Para testar a extensão, siga estes passos:'; echo ''; echo '1. Abra o Edge'; echo '2. Vá para edge://extensions/'; echo '3. Ative o \"Modo do desenvolvedor\"'; echo '4. Clique em \"Carregar sem compactação\"'; echo '5. Selecione a pasta c:\\eProbe'; echo '6. Navegue para uma página do eProc'; echo '7. Verifique se o botão \"AUTOMAÇÃO SENT1\" aparece integrado na página'; echo ''; echo 'O botão agora tenta se integrar na estrutura da página do eProc.'; echo 'Se não encontrar um container adequado, usa posição fixa como fallback.'",
 			"group": "test"
+		},
+		{
+			"label": "Verificar Namespace eProbe",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"echo '🔍 VERIFICANDO NAMESPACE EPROBE...'; echo ''; $content = Get-Content 'src/main.js' -Raw; $functions = ($content | Select-String -Pattern '^\\s*function\\s+(\\w+)' -AllMatches).Matches; $namespace = $content -match 'window\\.SENT1_AUTO\\s*=\\s*\\{[\\s\\S]*?\\}'; echo \"📊 Funções encontradas: $($functions.Count)\"; echo \"🎯 Namespace encontrado: $namespace\"; echo ''; if ($functions.Count -gt 0) { echo '📋 FUNÇÕES ENCONTRADAS:'; foreach ($func in $functions) { $funcName = $func.Groups[1].Value; echo \"  - $funcName\"; if ($content -match \"$funcName,\") { echo \"    ✅ No namespace\" } else { echo \"    ❌ FALTANDO no namespace\" } } }"
+			],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
+		},
+		{
+			"label": "Detectar ReferenceError Potenciais",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-Command",
+				"echo '🔍 DETECTANDO REFERENCEERROR POTENCIAIS...'; echo ''; $content = Get-Content 'src/main.js' -Raw; echo '⚠️ VARIÁVEIS POTENCIALMENTE PROBLEMÁTICAS:'; $problemVars = @('buttonCreationAttempts', 'processosJaProcessados', 'MAX_BUTTON_CREATION_ATTEMPTS', 'jQueryDetected', 'jQueryIntercepted'); foreach ($var in $problemVars) { $declarations = ($content | Select-String -Pattern \"let\\s+$var|const\\s+$var|var\\s+$var\" -AllMatches).Matches.Count; $usages = ($content | Select-String -Pattern \"\\b$var\\b\" -AllMatches).Matches.Count; echo \"📊 $var: $declarations declarações, $usages usos\"; if ($declarations -eq 0 -and $usages -gt 0) { echo \"  ❌ PROBLEMA: Usado sem declaração\"; } elseif ($declarations -gt 1) { echo \"  ⚠️ AVISO: Múltiplas declarações\"; } else { echo \"  ✅ OK\"; } }"
+			],
+			"group": "test",
+			"presentation": {
+				"echo": true,
+				"reveal": "always",
+				"focus": false,
+				"panel": "shared"
+			}
 		}
 	]
 }
