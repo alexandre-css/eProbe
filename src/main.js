@@ -412,14 +412,20 @@
         let debugMode = true;
         let isAutomationActive = false;
 
-        // Configuração dos tipos de documentos relevantes
+        // Configuração dos tipos de documentos relevantes - VERSÃO EXPANDIDA
         const TIPOS_DOCUMENTO_RELEVANTE = {
-            SENT1: { nome: "SENT1", descricao: "Sentença", dataNome: "SENT" },
-            INIC1: {
-                nome: "INIC1",
+            SENT: { nome: "SENT", descricao: "Sentença", dataNome: "SENT" },
+            INIC: {
+                nome: "INIC",
                 descricao: "Petição Inicial",
                 dataNome: "INIC",
             },
+            DECI: {
+                nome: "DESPADEC",
+                descricao: "Decisão",
+                dataNome: "DESPADEC",
+            },
+            DESP: { nome: "DESP", descricao: "Despacho", dataNome: "DESP" },
         };
 
         function log(message, ...args) {
@@ -428,8 +434,8 @@
             }
         }
 
-        // Detectar tipo de página e formato de documento
-        function detectPageType() {
+        // Detectar tipo de página e formato de documento - usando expressão de função
+        const detectPageType = function () {
             const url = window.location.href;
             log("🔍 Detectando tipo de página. URL:", url);
 
@@ -548,7 +554,7 @@
             }
 
             return "desconhecida";
-        }
+        };
         function isValidPageForButton() {
             // Verificar se está na página do processo (formulário frmProcessoLista + título específico)
             const formProcessoLista =
@@ -1861,17 +1867,130 @@
             const pageType = detectPageType();
             log(` Tipo de página detectado: ${pageType}`);
 
-            // Construir seletor dinamicamente baseado nos tipos configurados
-            const selectors = Object.values(TIPOS_DOCUMENTO_RELEVANTE)
-                .map((tipo) => [
-                    `a.infraLinkDocumento[data-nome="${tipo.dataNome}"]`,
-                    `a[data-nome="${tipo.dataNome}"]`,
-                ])
-                .flat()
-                .join(", ");
+            // Estratégias múltiplas para encontrar documentos relevantes
+            const estrategias = [
+                // Estratégia 1: Seletores específicos do eProc com data-nome
+                () => {
+                    const selectors = Object.values(TIPOS_DOCUMENTO_RELEVANTE)
+                        .map((tipo) => [
+                            `a.infraLinkDocumento[data-nome="${tipo.dataNome}"]`,
+                            `a[data-nome="${tipo.dataNome}"]`,
+                            `a.infraLinkDocumento[data-nome*="${tipo.dataNome}"]`,
+                        ])
+                        .flat()
+                        .join(", ");
+                    return document.querySelectorAll(selectors);
+                },
 
-            const links = document.querySelectorAll(selectors);
-            log(" Links de documentos relevantes encontrados:", links.length);
+                // Estratégia 2: Buscar por texto dos links que contenha os tipos
+                () => {
+                    const tiposValidos = Object.values(
+                        TIPOS_DOCUMENTO_RELEVANTE
+                    ).map((t) => t.nome);
+                    const todosLinks = document.querySelectorAll(
+                        'a.infraLinkDocumento, a[href*="documento"]'
+                    );
+                    return Array.from(todosLinks).filter((link) => {
+                        const texto = link.textContent.trim().toUpperCase();
+                        return tiposValidos.some((tipo) =>
+                            texto.includes(tipo)
+                        );
+                    });
+                },
+
+                // Estratégia 3: Buscar por padrões específicos no href
+                () => {
+                    const patterns = ["SENT", "INIC", "DECI", "DESP", "PETI"];
+                    const selector = patterns
+                        .map((p) => `a[href*="${p}"]`)
+                        .join(", ");
+                    return document.querySelectorAll(selector);
+                },
+
+                // Estratégia 4: Buscar em tabelas de eventos
+                () => {
+                    const linksEmTabelas = document.querySelectorAll(
+                        'table a[href*="documento"], table a.infraLinkDocumento'
+                    );
+                    return Array.from(linksEmTabelas).filter((link) => {
+                        const texto = link.textContent.trim().toUpperCase();
+                        return ["SENT", "INIC", "DECI", "DESP"].some((tipo) =>
+                            texto.includes(tipo)
+                        );
+                    });
+                },
+            ];
+
+            let links = [];
+            let estrategiaUsada = 0;
+
+            // Testar estratégias até encontrar documentos
+            for (let i = 0; i < estrategias.length; i++) {
+                try {
+                    const resultados = estrategias[i]();
+                    if (resultados && resultados.length > 0) {
+                        links = Array.from(resultados);
+                        estrategiaUsada = i + 1;
+                        log(
+                            `✅ Estratégia ${estrategiaUsada} funcionou - encontrados ${links.length} links`
+                        );
+                        break;
+                    }
+                } catch (error) {
+                    log(`❌ Estratégia ${i + 1} falhou:`, error);
+                }
+            }
+
+            log(
+                ` Links de documentos relevantes encontrados: ${links.length} (estratégia ${estrategiaUsada})`
+            );
+
+            if (links.length === 0) {
+                // Debug detalhado quando não encontrar nada
+                log(
+                    "🔍 DEBUG: Nenhum documento encontrado. Analisando página..."
+                );
+                log("📊 ANÁLISE DA PÁGINA:");
+                log(
+                    "  - Todos os links:",
+                    document.querySelectorAll("a").length
+                );
+                log(
+                    "  - Links com classe infraLinkDocumento:",
+                    document.querySelectorAll("a.infraLinkDocumento").length
+                );
+                log(
+                    "  - Links com href contendo 'documento':",
+                    document.querySelectorAll('a[href*="documento"]').length
+                );
+                log(
+                    "  - Elementos com data-nome:",
+                    document.querySelectorAll("[data-nome]").length
+                );
+
+                // Buscar patterns específicos no DOM
+                const todosLinks = Array.from(document.querySelectorAll("a"));
+                const linksSuspeitos = todosLinks.filter((link) => {
+                    const texto = link.textContent.trim().toUpperCase();
+                    const href = link.getAttribute("href") || "";
+                    return ["SENT", "INIC", "DECI", "DESP", "PETI"].some(
+                        (tipo) =>
+                            texto.includes(tipo) ||
+                            href.toUpperCase().includes(tipo)
+                    );
+                });
+
+                log("📋 Links suspeitos encontrados:", linksSuspeitos.length);
+                linksSuspeitos.forEach((link, i) => {
+                    log(
+                        `  ${
+                            i + 1
+                        }. "${link.textContent.trim()}" -> ${link.getAttribute(
+                            "href"
+                        )}`
+                    );
+                });
+            }
 
             const documentosData = [];
 
@@ -2363,11 +2482,119 @@
                 index: linkData.index,
             }));
 
+            // VERIFICAÇÃO FINAL E FALLBACK
+            if (documentosRelevantes.length === 0) {
+                log(
+                    "⚠️ NENHUM DOCUMENTO ENCONTRADO - Tentando estratégias de fallback..."
+                );
+
+                // Fallback 1: Buscar qualquer link que tenha padrões suspeitos
+                const linksSuspeitos = Array.from(
+                    document.querySelectorAll("a")
+                ).filter((link) => {
+                    const texto = link.textContent.trim().toUpperCase();
+                    const href = link.getAttribute("href") || "";
+
+                    // Padrões mais amplos
+                    const padroesSuspeitos = [
+                        /SENT\d*/i,
+                        /INIC\d*/i,
+                        /DECI\d*/i,
+                        /DESP\d*/i,
+                        /PETI\d*/i,
+                        /DOCUMENTO\s*\d+/i,
+                        /SENTENÇA/i,
+                        /PETIÇÃO/i,
+                        /DECISÃO/i,
+                        /DESPACHO/i,
+                    ];
+
+                    const temPadraoTexto = padroesSuspeitos.some((padrao) =>
+                        padrao.test(texto)
+                    );
+                    const temPadraoHref = padroesSuspeitos.some((padrao) =>
+                        padrao.test(href)
+                    );
+
+                    return (
+                        temPadraoTexto ||
+                        temPadraoHref ||
+                        (href.includes("documento") && texto.length > 2)
+                    );
+                });
+
+                if (linksSuspeitos.length > 0) {
+                    log(
+                        `✅ FALLBACK: Encontrados ${linksSuspeitos.length} links suspeitos`
+                    );
+
+                    // Converter para o formato esperado
+                    const documentosFallback = linksSuspeitos
+                        .slice(0, 10)
+                        .map((link, index) => {
+                            // Limitado a 10 para performance
+                            const texto = link.textContent.trim();
+                            const href = link.getAttribute("href") || "";
+
+                            // Determinar tipo baseado no texto
+                            let tipoDetectado = null;
+                            const tiposDisponiveis = Object.values(
+                                TIPOS_DOCUMENTO_RELEVANTE
+                            );
+
+                            for (const tipo of tiposDisponiveis) {
+                                if (
+                                    texto.toUpperCase().includes(tipo.nome) ||
+                                    href.toUpperCase().includes(tipo.dataNome)
+                                ) {
+                                    tipoDetectado = tipo;
+                                    break;
+                                }
+                            }
+
+                            // Fallback para tipo genérico
+                            if (!tipoDetectado) {
+                                tipoDetectado = {
+                                    nome: texto.substring(0, 8) || "DOC",
+                                    descricao: "Documento Relevante",
+                                    dataNome: "DOC",
+                                };
+                            }
+
+                            return {
+                                element: link,
+                                href: href,
+                                texto: texto,
+                                tipo: tipoDetectado,
+                                eventoId: "",
+                                docId: "",
+                                seqEvento: "",
+                                tipoDocumento: tipoDetectado.descricao,
+                                tamanho: "",
+                                eventoDescricao: tipoDetectado.descricao,
+                                eventoData: "",
+                                eventoMagistrado: "",
+                                magistradoInfo: null,
+                                index: index + 1,
+                                origem: "fallback",
+                            };
+                        });
+
+                    log(
+                        `✅ FALLBACK: Retornando ${documentosFallback.length} documentos`
+                    );
+                    return documentosFallback;
+                }
+            }
+
+            log(
+                `✅ RESULTADO FINAL: ${documentosRelevantes.length} documentos relevantes encontrados`
+            );
             return documentosRelevantes;
         }
 
-        // Abrir documento relevante automaticamente (com suporte a múltiplos documentos)
-        async function autoOpenDocumentoRelevante() {
+        // Abrir documento relevante automaticamente (com suporte a múltiplos documentos) - usando expressão de função
+        const autoOpenDocumentoRelevante = async function () {
             const pageType = detectPageType();
             log(" Tipo de página:", pageType);
 
@@ -2428,10 +2655,10 @@
             window.open(selectedDocument.href, "_blank");
 
             return true;
-        }
+        };
 
-        // Extrair texto do documento
-        async function autoExtractText() {
+        // Extrair texto do documento - usando expressão de função
+        const autoExtractText = async function () {
             const pageType = detectPageType();
             log(" Tipo de página:", pageType);
 
@@ -2818,7 +3045,7 @@
                 "success"
             );
             return texto.trim();
-        }
+        };
 
         // Extrair texto de documento PDF (petições iniciais)
         async function extractTextFromPDF() {
@@ -2966,8 +3193,8 @@
             });
         }
 
-        // Copiar para clipboard
-        async function copyToClipboard(text) {
+        // Copiar para clipboard - usando expressão de função
+        const copyToClipboard = async function (text) {
             try {
                 await navigator.clipboard.writeText(text);
                 log(" Texto copiado para clipboard");
@@ -2978,7 +3205,7 @@
                 showNotification("Erro ao copiar texto", "error");
                 return false;
             }
-        }
+        };
 
         // Limpar caracteres invisíveis que podem causar problemas no clipboard
         function cleanInvisibleChars(text) {
@@ -2993,24 +3220,9 @@
         // Copiar texto para clipboard com prefixo para IA
         async function copyToClipboardWithPrefix(texto) {
             try {
-                const prefixo = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
-
-tipo de ação,
-
-partes,
-
-pedido(s) do autor,
-
-decisão (improcedente/procedente/parcialmente procedente),
-
-fundamentos centrais,
-
-condenação (custas/honorários se houver).
-Seja objetivo e direto, sem redação em texto corrido.
-
-DOCUMENTO:
-
-`;
+                const prefixo = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver) Seja objetivo e direto, sem redação em texto corrido. 
+                
+                DOCUMENTO:`;
                 const textoLimpo = cleanInvisibleChars(texto);
                 const textoCompleto = cleanInvisibleChars(prefixo + textoLimpo);
 
@@ -3137,8 +3349,8 @@ DOCUMENTO:
             }
         }
 
-        // Enviar texto diretamente para Perplexity usando API
-        async function sendToPerplexity(texto) {
+        // Enviar texto diretamente para Perplexity usando API - usando expressão de função
+        const sendToPerplexity = async function (texto) {
             const requestId = Date.now().toString();
 
             try {
@@ -3155,24 +3367,7 @@ DOCUMENTO:
                     return false;
                 }
 
-                const prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique:
-
-tipo de ação,
-
-partes,
-
-pedido(s) do autor,
-
-decisão (improcedente/procedente/parcialmente procedente),
-
-fundamentos centrais,
-
-condenação (custas/honorários se houver).
-Seja objetivo e direto, sem redação em texto corrido.
-
-DOCUMENTO:
-
-${texto}`;
+                const prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido. DOCUMENTO: ${texto}`;
 
                 const requestBody = {
                     model: "sonar",
@@ -3350,7 +3545,7 @@ ${texto}`;
 
                 return await fallbackToManual(texto);
             }
-        }
+        };
 
         // Função auxiliar para fallback manual
         async function fallbackToManual(texto) {
@@ -4108,8 +4303,8 @@ ${texto}`;
             }
         }
 
-        // Automação completa
-        async function runFullAutomation() {
+        // Automação completa - usando expressão de função para evitar problemas de escopo
+        const runFullAutomation = async function () {
             if (isAutomationActive) {
                 log(" Automação já está ativa");
                 return;
@@ -4169,7 +4364,7 @@ ${texto}`;
             } finally {
                 isAutomationActive = false;
             }
-        }
+        };
 
         // Função para prevenir sobreposição de elementos da interface
         function preventElementOverlap() {
@@ -5464,129 +5659,132 @@ ${texto}`;
                     });
 
                     documentOptions += `
- <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
- class="document-option" data-index="${index}">
- <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(133, 190, 255);">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- ${tipoInfo} - ${seqEvento}
- </div>
- <div style="font-size: 13px; color: rgb(243, 246, 249); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
- </svg>
- ${eventoDesc}
- </div>
- <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
- </svg>
- Documento: ${documento.texto}${tamanhoInfo}
- </div>${
-     documento.magistradoInfo && documento.magistradoInfo.tipo === "magistrado"
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.magistradoInfo.nome}
- </div>${
-     documento.magistradoInfo.vara
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M10 18v-7"/>
- <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
- <path d="M14 18v-7"/>
- <path d="M18 18v-7"/>
- <path d="M3 22h18"/>
- <path d="M6 18v-7"/>
- </svg>
- ${documento.magistradoInfo.vara}
- </div>`
-         : ""
- }`
-         : documento.magistradoInfo &&
-           documento.magistradoInfo.tipo === "advogado"
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.magistradoInfo.nome}
- </div>`
-         : documento.eventoMagistrado
-         ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
- <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
- <circle cx="10" cy="7" r="4"/>
- </svg>
- ${documento.eventoMagistrado}
- </div>`
-         : ""
- }${
+                                <div style="margin-bottom: 12px; padding: 16px; border: 1px solid rgba(82, 82, 82, 0.3); border-radius: 8px; background: rgb(32, 39, 51); cursor: pointer; transition: all 0.2s ease; color: rgb(243, 246, 249);" 
+                                class="document-option" data-index="${index}">
+                                <div style="font-weight: 600; color: rgb(243, 246, 249); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; color: rgb(133, 190, 255);">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                ${tipoInfo} - ${seqEvento}
+                                </div>
+                                <div style="font-size: 13px; color: rgb(243, 246, 249); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                </svg>
+                                ${eventoDesc}
+                                </div>
+                                <div style="font-size: 12px; color: rgb(136, 152, 181); display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                Documento: ${documento.texto}${tamanhoInfo}
+                                </div>${
+                                    documento.magistradoInfo &&
+                                    documento.magistradoInfo.tipo ===
+                                        "magistrado"
+                                        ? `
+                                <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                                <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+                                <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+                                <circle cx="10" cy="7" r="4"/>
+                                </svg>
+                                ${documento.magistradoInfo.nome}
+                                </div>${
+                                    documento.magistradoInfo.vara
+                                        ? `
+            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <path d="M10 18v-7"/>
+            <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
+            <path d="M14 18v-7"/>
+            <path d="M18 18v-7"/>
+            <path d="M3 22h18"/>
+            <path d="M6 18v-7"/>
+            </svg>
+            ${documento.magistradoInfo.vara}
+            </div>`
+                                        : ""
+                                }`
+                                        : documento.magistradoInfo &&
+                                          documento.magistradoInfo.tipo ===
+                                              "advogado"
+                                        ? `
+            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+            <circle cx="10" cy="7" r="4"/>
+            </svg>
+            ${documento.magistradoInfo.nome}
+            </div>`
+                                        : documento.eventoMagistrado
+                                        ? `
+            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
+            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+            <circle cx="10" cy="7" r="4"/>
+            </svg>
+            ${documento.eventoMagistrado}
+            </div>`
+                                        : ""
+                                }${
                         documento.eventoData
                             ? `
- <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
- <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/>
- <path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/>
- <path d="m2.3 2.3 7.286 7.286"/>
- <circle cx="11" cy="11" r="2"/>
- </svg>
- Assinado em ${documento.eventoData}
- </div>`
+            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/>
+            <path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/>
+            <path d="m2.3 2.3 7.286 7.286"/>
+            <circle cx="11" cy="11" r="2"/>
+            </svg>
+            Assinado em ${documento.eventoData}
+            </div>`
                             : ""
                     }
- </div>
- `;
+            </div>
+            `;
                 });
 
                 modal.innerHTML = `
- <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
- <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
- <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(133, 190, 255);">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- Múltiplos Documentos Encontrados
- </h2>
- <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
- Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
- </p>
- </div>
- 
- <div id="document-options" style="margin-bottom: 20px;">
- ${documentOptions}
- </div>
+                                <div style="background: rgb(19, 67, 119); border-radius: 8px; padding: 24px; max-width: 620px; width: 90%; max-height: 80%; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.5); border: 1px solid rgba(82, 82, 82, 0.3);">
+                                <div style="margin-bottom: 20px; text-align: center; border-bottom: 1px solid rgba(82, 82, 82, 0.3); padding-bottom: 16px;">
+                                <h2 style="margin: 0; color: rgb(243, 246, 249); font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: -0.025em;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgb(133, 190, 255);">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                Múltiplos Documentos Encontrados
+                                </h2>
+                                <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
+                                Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
+                                </p>
+                                </div>
+                                
+                                <div id="document-options" style="margin-bottom: 20px;">
+                                ${documentOptions}
+                                </div>
 
- <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
- <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m18 6-12 12"/>
- <path d="m6 6 12 12"/>
- </svg>
- Cancelar
- </button>
- </div>
- </div>
- `;
+                                <div style="text-align: center; padding-top: 16px; border-top: 1px solid rgba(82, 82, 82, 0.3);">
+                                <button id="cancel-selection" style="background: rgb(32, 39, 51); color: rgb(243, 246, 249); border: 1px solid rgba(82, 82, 82, 0.5); padding: 12px 16px; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-height: 44px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="m18 6-12 12"/>
+                                <path d="m6 6 12 12"/>
+                                </svg>
+                                Cancelar
+                                </button>
+                                </div>
+                                </div>
+                                `;
 
                 document.body.appendChild(modal);
 
@@ -5671,84 +5869,84 @@ ${texto}`;
             modal.id = "api-key-config";
             modal.className = "eprobe-modal";
             modal.style.cssText = `
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.8);
- z-index: 100001;
- display: flex;
- align-items: center;
- justify-content: center;
- backdrop-filter: blur(4px);
- `;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            `;
 
             modal.innerHTML = `
- <div style="background: #134377; border-radius: 12px; padding: 32px; max-width: 560px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
- <div style="margin-bottom: 24px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 20px;">
- <h2 style="margin: 0; color: rgb(255, 255, 255); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; letter-spacing: -0.025em;">
- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <circle cx="12" cy="16" r="1"/>
- <rect x="3" y="10" width="18" height="12" rx="2"/>
- <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
- </svg>
- Configurar API Key do Perplexity
- </h2>
- </div>
- 
- <div style="margin-bottom: 24px; padding: 20px; background: rgba(32, 39, 51, 0.6); border-radius: 10px; font-size: 14px; line-height: 1.6; color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.1);">
- <div style="margin-bottom: 12px;">
- <strong style="color: rgb(133, 190, 255); font-size: 15px;">Como obter sua API Key do Perplexity:</strong>
- </div>
- <div style="padding-left: 8px; color: rgb(226, 232, 240);">
- <div style="margin-bottom: 8px;">1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(133, 190, 255); text-decoration: underline; font-weight: 500;">www.perplexity.ai/settings/api</a></div>
- <div style="margin-bottom: 8px;">2. Faça login na sua conta Perplexity</div>
- <div style="margin-bottom: 8px;">3. Clique em "Generate" para criar uma nova chave</div>
- <div>4. Copie a chave e cole abaixo</div>
- </div>
- </div>
+            <div style="background: #134377; border-radius: 12px; padding: 32px; max-width: 560px; width: 90%; box-shadow: 0 12px 40px rgba(0,0,0,0.6); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="margin-bottom: 24px; text-align: center; border-bottom: 1px solid rgba(255, 255, 255, 0.15); padding-bottom: 20px;">
+            <h2 style="margin: 0; color: rgb(255, 255, 255); font-size: 20px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 12px; letter-spacing: -0.025em;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="rgb(133, 190, 255)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="16" r="1"/>
+            <rect x="3" y="10" width="18" height="12" rx="2"/>
+            <path d="M7 10V7a5 5 0 0 1 10 0v3"/>
+            </svg>
+            Configurar API Key do Perplexity
+            </h2>
+            </div>
+            
+            <div style="margin-bottom: 24px; padding: 20px; background: rgba(32, 39, 51, 0.6); border-radius: 10px; font-size: 14px; line-height: 1.6; color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.1);">
+            <div style="margin-bottom: 12px;">
+            <strong style="color: rgb(133, 190, 255); font-size: 15px;">Como obter sua API Key do Perplexity:</strong>
+            </div>
+            <div style="padding-left: 8px; color: rgb(226, 232, 240);">
+            <div style="margin-bottom: 8px;">1. Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: rgb(133, 190, 255); text-decoration: underline; font-weight: 500;">www.perplexity.ai/settings/api</a></div>
+            <div style="margin-bottom: 8px;">2. Faça login na sua conta Perplexity</div>
+            <div style="margin-bottom: 8px;">3. Clique em "Generate" para criar uma nova chave</div>
+            <div>4. Copie a chave e cole abaixo</div>
+            </div>
+            </div>
 
- <div style="margin-bottom: 20px;">
- <label style="display: block; margin-bottom: 8px; font-weight: 600; color: rgb(255, 255, 255); font-size: 14px;">API Key:</label>
- <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-family: 'Roboto', monospace, sans-serif; background: rgba(32, 39, 51, 0.5); color: rgb(255, 255, 255); font-size: 14px; transition: all 0.2s ease; box-sizing: border-box;" value="${
-     currentKey || ""
- }" />
- </div>
+            <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: rgb(255, 255, 255); font-size: 14px;">API Key:</label>
+            <input type="password" id="api-key-input" placeholder="pplx-..." style="width: 100%; padding: 12px 16px; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; font-family: 'Roboto', monospace, sans-serif; background: rgba(32, 39, 51, 0.5); color: rgb(255, 255, 255); font-size: 14px; transition: all 0.2s ease; box-sizing: border-box;" value="${
+                currentKey || ""
+            }" />
+            </div>
 
- <div style="margin-bottom: 24px; padding: 16px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; font-size: 13px; display: flex; align-items: flex-start; gap: 12px; color: rgb(254, 240, 138);">
- <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
- <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
- <path d="M12 9v4"/>
- <path d="m12 17 .01 0"/>
- </svg>
- <span style="line-height: 1.5;"><strong>Privacidade:</strong> Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
- </div>
+            <div style="margin-bottom: 24px; padding: 16px; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 10px; font-size: 13px; display: flex; align-items: flex-start; gap: 12px; color: rgb(254, 240, 138);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2px;">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+            <path d="M12 9v4"/>
+            <path d="m12 17 .01 0"/>
+            </svg>
+            <span style="line-height: 1.5;"><strong>Privacidade:</strong> Sua API Key é armazenada apenas localmente no seu navegador e não é compartilhada.</span>
+            </div>
 
- <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
- <button id="save-key" style="background: rgb(133, 190, 255); color: #134377; border: 1px solid rgb(133, 190, 255); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 140px; justify-content: center;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <polyline points="20,6 9,17 4,12"/>
- </svg>
- Salvar e Testar
- </button>
- <button id="remove-key" style="background: rgb(145, 67, 61); color: white; border: 1px solid rgb(145, 67, 61); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 120px; justify-content: center;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <polyline points="3,6 5,6 21,6"/>
- <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
- </svg>
- Remover
- </button>
- <button id="cancel-config" style="background: rgba(255, 255, 255, 0.1); color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 100px; justify-content: center;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m18 6-12 12"/>
- <path d="m6 6 12 12"/>
- </svg>
- Cancelar
- </button>
- </div>
- </div>
- `;
+            <div style="text-align: center; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+            <button id="save-key" style="background: rgb(133, 190, 255); color: #134377; border: 1px solid rgb(133, 190, 255); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 140px; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20,6 9,17 4,12"/>
+            </svg>
+            Salvar e Testar
+            </button>
+            <button id="remove-key" style="background: rgb(145, 67, 61); color: white; border: 1px solid rgb(145, 67, 61); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 120px; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3,6 5,6 21,6"/>
+            <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
+            </svg>
+            Remover
+            </button>
+            <button id="cancel-config" style="background: rgba(255, 255, 255, 0.1); color: rgb(255, 255, 255); border: 1px solid rgba(255, 255, 255, 0.2); padding: 14px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; min-width: 100px; justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m18 6-12 12"/>
+            <path d="m6 6 12 12"/>
+            </svg>
+            Cancelar
+            </button>
+            </div>
+            </div>
+            `;
 
             document.body.appendChild(modal);
 
@@ -9375,14 +9573,9 @@ ${texto}`;
         return textoLimpo;
     }
 
-    // Inicializar observer para prevenir sobreposições
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () => {
-            setupInterfaceObserver();
-        });
-    } else {
-        setupInterfaceObserver();
-    }
+    // ⚠️ NOTA: Observer de interface foi removido desta seção pois setupInterfaceObserver()
+    // está definido dentro da IIFE principal e não é acessível aqui.
+    // A inicialização do observer já é feita corretamente dentro da IIFE principal.
 
     // Função auxiliar para validar data brasileira
     // 🔍 IDENTIFICAR PROCESSO - Extrair número do processo atual
@@ -10410,18 +10603,18 @@ ${texto}`;
             const dados = dadosCompletosSessionJulgamento;
             const info = `📋 DADOS COMPLETOS DA SESSÃO:
 
-🏛️ Órgão Julgador: ${dados.orgaoJulgador}
-📅 Data da Sessão: ${dados.dataSessao}
-⏰ Horário: ${dados.horaSessao}
-🖥️ Tipo: ${dados.tipoSessao}
-📍 Local: ${dados.localSessao}
-📋 Status: ${dados.statusSessao}
+            🏛️ Órgão Julgador: ${dados.orgaoJulgador}
+            📅 Data da Sessão: ${dados.dataSessao}
+            ⏰ Horário: ${dados.horaSessao}
+            🖥️ Tipo: ${dados.tipoSessao}
+            📍 Local: ${dados.localSessao}
+            📋 Status: ${dados.statusSessao}
 
-📅 Data Limite Pauta: ${dados.dataLimitePauta}
-📅 Data Limite Mesa: ${dados.dataLimiteMesa}
-📅 Data Limite Minutas: ${dados.dataLimiteMinutas}
+            📅 Data Limite Pauta: ${dados.dataLimitePauta}
+            📅 Data Limite Mesa: ${dados.dataLimiteMesa}
+            📅 Data Limite Minutas: ${dados.dataLimiteMinutas}
 
-🆔 ID: ${dados.id}`;
+            🆔 ID: ${dados.id}`;
 
             console.log(info);
             alert(info);
@@ -16662,6 +16855,25 @@ ${texto}`;
         }
     }, 2000);
 
+    // 🔍 EXECUÇÃO AUTOMÁTICA - Inicializar observer de interface
+    setTimeout(() => {
+        console.log("🔍 OBSERVER: Iniciando observer de interface...");
+        try {
+            if (typeof setupInterfaceObserver === "function") {
+                setupInterfaceObserver();
+                console.log(
+                    "✅ OBSERVER: Interface observer inicializado com sucesso"
+                );
+            } else {
+                console.warn(
+                    "⚠️ OBSERVER: Função setupInterfaceObserver não encontrada"
+                );
+            }
+        } catch (error) {
+            console.error("❌ OBSERVER: Erro na inicialização:", error);
+        }
+    }, 500);
+
     // 🔧 EXECUÇÃO ROBUSTA - Segunda tentativa para correção de inconsistências
     setTimeout(() => {
         console.log("🔧 ROBUSTA: Verificação e correção de inconsistências...");
@@ -18223,114 +18435,114 @@ ${texto}`;
     // Log removido - função não existe mais
 
     /**
-console.log("🗑️ Elementos antigos removidos");
+                                                                            console.log("🗑️ Elementos antigos removidos");
 
-// CRIAR CARD
-const card = document.createElement("div");
-card.id = "eprobe-data-sessao";
-card.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        width: 169px;
-        height: 60px;
-        background: #FEF7FF;
-        border: 1px solid #CAC4D0;
-        border-radius: 9px;
-        box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
-        z-index: 10000;
-        font-family: Arial, sans-serif;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #1D1B20;
-    `;
-card.innerHTML =
-    '<div style="text-align: center;"><div style="font-weight: 500;">Pautado</div><div style="font-size: 11px;">Sessão: 23/01/2025</div></div>';
+                                                                            // CRIAR CARD
+                                                                            const card = document.createElement("div");
+                                                                            card.id = "eprobe-data-sessao";
+                                                                            card.style.cssText = `
+                                                                                    position: fixed;
+                                                                                    top: 20px;
+                                                                                    right: 20px;
+                                                                                    width: 169px;
+                                                                                    height: 60px;
+                                                                                    background: #FEF7FF;
+                                                                                    border: 1px solid #CAC4D0;
+                                                                                    border-radius: 9px;
+                                                                                    box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.25);
+                                                                                    z-index: 10000;
+                                                                                    font-family: Arial, sans-serif;
+                                                                                    display: flex;
+                                                                                    align-items: center;
+                                                                                    justify-content: center;
+                                                                                    color: #1D1B20;
+                                                                                `;
+                                                                            card.innerHTML =
+                                                                                '<div style="text-align: center;"><div style="font-weight: 500;">Pautado</div><div style="font-size: 11px;">Sessão: 23/01/2025</div></div>';
 
-// CRIAR INDICADOR
-const indicador = document.createElement("div");
-indicador.style.cssText = `
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 20px;
-        height: 16px;
-        background: rgba(28, 27, 31, 0.08);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 10px;
-        font-weight: 500;
-        color: #1C1B1F;
-        cursor: help;
-    `;
-indicador.textContent = "3";
-card.appendChild(indicador);
+                                                                            // CRIAR INDICADOR
+                                                                            const indicador = document.createElement("div");
+                                                                            indicador.style.cssText = `
+                                                                                    position: absolute;
+                                                                                    top: 8px;
+                                                                                    right: 8px;
+                                                                                    width: 20px;
+                                                                                    height: 16px;
+                                                                                    background: rgba(28, 27, 31, 0.08);
+                                                                                    border-radius: 8px;
+                                                                                    display: flex;
+                                                                                    align-items: center;
+                                                                                    justify-content: center;
+                                                                                    font-size: 10px;
+                                                                                    font-weight: 500;
+                                                                                    color: #1C1B1F;
+                                                                                    cursor: help;
+                                                                                `;
+                                                                            indicador.textContent = "3";
+                                                                            card.appendChild(indicador);
 
-// CRIAR TOOLTIP
-const tooltip = document.createElement("div");
-tooltip.id = "eprobe-rich-tooltip";
-tooltip.style.cssText = `
-        position: absolute;
-        display: none;
-        z-index: 10001;
-        background: white;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        padding: 16px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        font-family: Arial, sans-serif;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-        min-width: 300px;
-    `;
-tooltip.innerHTML = `
-        <div style="font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <span>📅</span>
-            <span>Histórico de Sessões</span>
-        </div>
-        <div style="border-top: 1px solid #eee; padding-top: 12px;">
-            <div style="margin-bottom: 8px; padding: 8px; background: #e8f5e8; border-radius: 4px; border-left: 4px solid #3AB795;">
-                <strong>23/01/2025 - Incluído em Pauta</strong> <span style="background: #3AB795; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">ATUAL</span>
-                <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
-            </div>
-            <div style="margin-bottom: 8px; padding: 8px; background: #fee; border-radius: 4px; border-left: 4px solid #CE2D4F;">
-                <strong>16/01/2025 - Retirado de Pauta</strong>
-                <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
-            </div>
-            <div style="padding: 8px; background: #fff3cd; border-radius: 4px; border-left: 4px solid #FFBF46;">
-                <strong>09/01/2025 - Pedido de Vista</strong>
-                <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
-            </div>
-        </div>
-    `;
+                                                                            // CRIAR TOOLTIP
+                                                                            const tooltip = document.createElement("div");
+                                                                            tooltip.id = "eprobe-rich-tooltip";
+                                                                            tooltip.style.cssText = `
+                                                                                    position: absolute;
+                                                                                    display: none;
+                                                                                    z-index: 10001;
+                                                                                    background: white;
+                                                                                    border: 1px solid #ccc;
+                                                                                    border-radius: 8px;
+                                                                                    padding: 16px;
+                                                                                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                                                                                    font-family: Arial, sans-serif;
+                                                                                    opacity: 0;
+                                                                                    transition: opacity 0.2s ease;
+                                                                                    min-width: 300px;
+                                                                                `;
+                                                                            tooltip.innerHTML = `
+                                                                                    <div style="font-weight: 500; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                                                                                        <span>📅</span>
+                                                                                        <span>Histórico de Sessões</span>
+                                                                                    </div>
+                                                                                    <div style="border-top: 1px solid #eee; padding-top: 12px;">
+                                                                                        <div style="margin-bottom: 8px; padding: 8px; background: #e8f5e8; border-radius: 4px; border-left: 4px solid #3AB795;">
+                                                                                            <strong>23/01/2025 - Incluído em Pauta</strong> <span style="background: #3AB795; color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px;">ATUAL</span>
+                                                                                            <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
+                                                                                        </div>
+                                                                                        <div style="margin-bottom: 8px; padding: 8px; background: #fee; border-radius: 4px; border-left: 4px solid #CE2D4F;">
+                                                                                            <strong>16/01/2025 - Retirado de Pauta</strong>
+                                                                                            <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
+                                                                                        </div>
+                                                                                        <div style="padding: 8px; background: #fff3cd; border-radius: 4px; border-left: 4px solid #FFBF46;">
+                                                                                            <strong>09/01/2025 - Pedido de Vista</strong>
+                                                                                            <div style="font-size: 12px; color: #666;">1ª Câmara de Direito Civil</div>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                `;
 
-// ADICIONAR À PÁGINA
-document.body.appendChild(card);
-document.body.appendChild(tooltip);
+                                                                            // ADICIONAR À PÁGINA
+                                                                            document.body.appendChild(card);
+                                                                            document.body.appendChild(tooltip);
 
-// CONFIGURAR EVENTOS
-indicador.onmouseenter = () => {
-    console.log("🖱️ MOSTRAR tooltip");
-    const rect = indicador.getBoundingClientRect();
-    tooltip.style.left = rect.left - 150 + "px";
-    tooltip.style.top = rect.bottom + 12 + "px";
-    tooltip.style.display = "block";
-    tooltip.style.opacity = "1";
-};
+                                                                            // CONFIGURAR EVENTOS
+                                                                            indicador.onmouseenter = () => {
+                                                                                console.log("🖱️ MOSTRAR tooltip");
+                                                                                const rect = indicador.getBoundingClientRect();
+                                                                                tooltip.style.left = rect.left - 150 + "px";
+                                                                                tooltip.style.top = rect.bottom + 12 + "px";
+                                                                                tooltip.style.display = "block";
+                                                                                tooltip.style.opacity = "1";
+                                                                            };
 
-indicador.onmouseleave = () => {
-    console.log("🖱️ OCULTAR tooltip");
-    tooltip.style.opacity = "0";
-    setTimeout(() => (tooltip.style.display = "none"), 200);
-    // Log removido - função não existe mais
+                                                                            indicador.onmouseleave = () => {
+                                                                                console.log("🖱️ OCULTAR tooltip");
+                                                                                tooltip.style.opacity = "0";
+                                                                                setTimeout(() => (tooltip.style.display = "none"), 200);
+                                                                                // Log removido - função não existe mais
 
-    /**
-     * �🔧 FUNÇÃO PARA FORÇAR TESTE DO TOOLTIP
-     * Cria dados de teste e força a criação de um tooltip funcional
-     */
+                                                                                /**
+                                                                                * �🔧 FUNÇÃO PARA FORÇAR TESTE DO TOOLTIP
+                                                                                * Cria dados de teste e força a criação de um tooltip funcional
+                                                                                */
     window.SENT1_AUTO.testarTooltipForcado = function () {
         console.log("🧪 TESTE FORÇADO: Criando tooltip com dados de teste...");
 
@@ -19100,72 +19312,584 @@ indicador.onmouseleave = () => {
     console.log("✅ FUNÇÃO DEBUG DIRETO: Disponível");
     console.log("💡 USO: window.SENT1_AUTO.debugTooltipDireto()");
 
+    // ##### VERIFICAÇÃO E CORREÇÃO DE ESCOPO DAS FUNÇÕES PRINCIPAIS #####
+
+    // Garantir que as funções principais estejam acessíveis no namespace
+    // Esta seção corrige problemas de escopo com expressões de função
+
+    if (typeof runFullAutomation === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: runFullAutomation não encontrada, redeclarando..."
+        );
+        var runFullAutomation = async function () {
+            console.error(
+                "❌ ERRO: runFullAutomation chamada mas não implementada corretamente"
+            );
+            return false;
+        };
+    }
+
+    if (typeof autoOpenDocumentoRelevante === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: autoOpenDocumentoRelevante não encontrada, redeclarando..."
+        );
+        var autoOpenDocumentoRelevante = async function () {
+            console.error(
+                "❌ ERRO: autoOpenDocumentoRelevante chamada mas não implementada corretamente"
+            );
+            return false;
+        };
+    }
+
+    if (typeof autoExtractText === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: autoExtractText não encontrada, redeclarando..."
+        );
+        var autoExtractText = async function () {
+            console.error(
+                "❌ ERRO: autoExtractText chamada mas não implementada corretamente"
+            );
+            return null;
+        };
+    }
+
+    if (typeof copyToClipboard === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: copyToClipboard não encontrada, redeclarando..."
+        );
+        var copyToClipboard = async function (text) {
+            console.error(
+                "❌ ERRO: copyToClipboard chamada mas não implementada corretamente"
+            );
+            return false;
+        };
+    }
+
+    if (typeof sendToPerplexity === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: sendToPerplexity não encontrada, redeclarando..."
+        );
+        var sendToPerplexity = async function (texto) {
+            console.error(
+                "❌ ERRO: sendToPerplexity chamada mas não implementada corretamente"
+            );
+            return false;
+        };
+    }
+
+    if (typeof detectPageType === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: detectPageType não encontrada, redeclarando..."
+        );
+        var detectPageType = function () {
+            console.error(
+                "❌ ERRO: detectPageType chamada mas não implementada corretamente"
+            );
+            return "unknown";
+        };
+    }
+
+    if (typeof shouldShowIntegratedButton === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: shouldShowIntegratedButton não encontrada, redeclarando..."
+        );
+        var shouldShowIntegratedButton = function () {
+            const formProcessoLista =
+                document.querySelector("#frmProcessoLista");
+            const tituloConsultaProcessual = document.querySelector("h1");
+            return (
+                formProcessoLista &&
+                tituloConsultaProcessual &&
+                tituloConsultaProcessual.textContent.includes(
+                    "Consulta Processual - Detalhes do Processo"
+                )
+            );
+        };
+    }
+
+    if (typeof shouldShowFloatingButton === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: shouldShowFloatingButton não encontrada, redeclarando..."
+        );
+        var shouldShowFloatingButton = function () {
+            const url = window.location.href;
+            return (
+                url.includes("eproc") &&
+                (url.includes("documento") || url.includes("processo"))
+            );
+        };
+    }
+
+    if (typeof ensureButtonExists === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: ensureButtonExists não encontrada, redeclarando..."
+        );
+        var ensureButtonExists = function () {
+            console.log(
+                "⚠️ FALLBACK: ensureButtonExists chamada mas não implementada"
+            );
+            return false;
+        };
+    }
+
+    if (typeof getCachedBoundingRect === "undefined") {
+        console.warn(
+            "🔧 CORREÇÃO: getCachedBoundingRect não encontrada, redeclarando..."
+        );
+        window.getCachedBoundingRect = function (element) {
+            if (
+                !element ||
+                typeof element.getBoundingClientRect !== "function"
+            ) {
+                return {
+                    top: 0,
+                    left: 0,
+                    width: 0,
+                    height: 0,
+                    bottom: 0,
+                    right: 0,
+                };
+            }
+            return element.getBoundingClientRect();
+        };
+    }
+
+    console.log(
+        "✅ VERIFICAÇÃO: Funções principais verificadas e corrigidas se necessário"
+    );
+
+    // ##### SEÇÃO DE FUNÇÕES PRINCIPAIS PARA NAMESPACE #####
+    // Garantir que as funções estejam disponíveis para o namespace
+
+    // Re-declarar as funções principais que podem ter problemas de escopo
+    let nsRunFullAutomation =
+        runFullAutomation ||
+        async function () {
+            console.error(
+                "❌ NAMESPACE: runFullAutomation não está disponível"
+            );
+            return false;
+        };
+
+    let nsAutoOpenDocumentoRelevante =
+        autoOpenDocumentoRelevante ||
+        async function () {
+            console.error(
+                "❌ NAMESPACE: autoOpenDocumentoRelevante não está disponível"
+            );
+            return false;
+        };
+
+    let nsAutoExtractText =
+        autoExtractText ||
+        async function () {
+            console.error("❌ NAMESPACE: autoExtractText não está disponível");
+            return null;
+        };
+
+    let nsCopyToClipboard =
+        copyToClipboard ||
+        async function (text) {
+            console.error("❌ NAMESPACE: copyToClipboard não está disponível");
+            return false;
+        };
+
+    let nsSendToPerplexity =
+        sendToPerplexity ||
+        async function (texto) {
+            console.error("❌ NAMESPACE: sendToPerplexity não está disponível");
+            return false;
+        };
+
+    let nsDetectPageType =
+        detectPageType ||
+        function () {
+            console.error("❌ NAMESPACE: detectPageType não está disponível");
+            return "unknown";
+        };
+
+    let nsIsValidPageForButton = (function () {
+        if (typeof isValidPageForButton === "function") {
+            return isValidPageForButton;
+        }
+
+        // Fallback seguro se a função não estiver acessível
+        return function () {
+            console.warn(
+                "⚠️ NAMESPACE: Usando fallback para isValidPageForButton"
+            );
+
+            // Implementar lógica básica de validação
+            const url = window.location.href;
+            const hasProcessForm =
+                !!document.querySelector("#frmProcessoLista");
+            const hasProcessTitle = document
+                .querySelector("h1")
+                ?.textContent.includes(
+                    "Consulta Processual - Detalhes do Processo"
+                );
+
+            return (
+                (hasProcessForm && hasProcessTitle) ||
+                (url.includes("eproc") &&
+                    (url.includes("documento") || url.includes("processo")))
+            );
+        };
+    })();
+
+    let nsFindDocumentosRelevantes =
+        findDocumentosRelevantes ||
+        function () {
+            console.error(
+                "❌ NAMESPACE: findDocumentosRelevantes não está disponível"
+            );
+            return [];
+        };
+
+    let nsShowDocumentSelectionModal =
+        showDocumentSelectionModal ||
+        function (docs) {
+            console.error(
+                "❌ NAMESPACE: showDocumentSelectionModal não está disponível"
+            );
+            return false;
+        };
+
+    let nsShowSentenceProcessingOptions =
+        showSentenceProcessingOptions ||
+        function () {
+            console.error(
+                "❌ NAMESPACE: showSentenceProcessingOptions não está disponível"
+            );
+            return false;
+        };
+
+    // Funções de API e armazenamento
+    let nsGetStoredApiKey =
+        getStoredApiKey ||
+        async function () {
+            console.error("❌ NAMESPACE: getStoredApiKey não está disponível");
+            return null;
+        };
+
+    let nsExtractTextFromPDF =
+        extractTextFromPDF ||
+        async function () {
+            console.error(
+                "❌ NAMESPACE: extractTextFromPDF não está disponível"
+            );
+            return null;
+        };
+
+    let nsDetectarDataSessao =
+        detectarDataSessao ||
+        async function () {
+            console.error(
+                "❌ NAMESPACE: detectarDataSessao não está disponível"
+            );
+            return null;
+        };
+
+    // Funções de utilidade
+    let nsCleanInvisibleChars =
+        cleanInvisibleChars ||
+        function (text) {
+            console.error(
+                "❌ NAMESPACE: cleanInvisibleChars não está disponível"
+            );
+            return text || "";
+        };
+
+    let nsStoreApiKey =
+        storeApiKey ||
+        async function (apiKey) {
+            console.error("❌ NAMESPACE: storeApiKey não está disponível");
+            return false;
+        };
+
+    // Funções de debug e API
+    let nsRemoveStoredApiKey =
+        removeStoredApiKey ||
+        async function () {
+            console.error(
+                "❌ NAMESPACE: removeStoredApiKey não está disponível"
+            );
+            return false;
+        };
+
+    let nsDebugEventStructure =
+        debugEventStructure ||
+        function (linkElement) {
+            console.error(
+                "❌ NAMESPACE: debugEventStructure não está disponível"
+            );
+            return {};
+        };
+
+    let nsShouldShowIntegratedButton =
+        shouldShowIntegratedButton ||
+        function () {
+            console.error(
+                "❌ NAMESPACE: shouldShowIntegratedButton não está disponível"
+            );
+            return false;
+        };
+
+    let nsShouldShowFloatingButton =
+        shouldShowFloatingButton ||
+        function () {
+            console.error(
+                "❌ NAMESPACE: shouldShowFloatingButton não está disponível"
+            );
+            return false;
+        };
+
+    let nsEnsureButtonExists =
+        ensureButtonExists ||
+        function () {
+            console.error(
+                "❌ NAMESPACE: ensureButtonExists não está disponível"
+            );
+            return false;
+        };
+
+    console.log("🔧 NAMESPACE: Funções principais preparadas para o namespace");
+
+    // ##### SISTEMA DE FALLBACK UNIVERSAL #####
+    // Criar versões seguras para TODAS as funções do namespace que podem não estar disponíveis
+
+    const createSafeFallback = (funcName, returnValue = null) => {
+        return function (...args) {
+            console.error(`❌ NAMESPACE: ${funcName} não está disponível`);
+            return returnValue;
+        };
+    };
+
+    const createAsyncSafeFallback = (funcName, returnValue = null) => {
+        return async function (...args) {
+            console.error(`❌ NAMESPACE: ${funcName} não está disponível`);
+            return returnValue;
+        };
+    };
+
+    // Verificar e criar fallbacks para funções críticas
+    const safeFunctions = {
+        testApiKey: testApiKey || createAsyncSafeFallback("testApiKey", false),
+        showErrorLogs:
+            showErrorLogs || createSafeFallback("showErrorLogs", false),
+        debugApiCall: debugApiCall || createSafeFallback("debugApiCall", {}),
+        showApiQuotaInfo:
+            showApiQuotaInfo || createSafeFallback("showApiQuotaInfo", false),
+        getDataSessaoPautado:
+            getDataSessaoPautado ||
+            createSafeFallback("getDataSessaoPautado", null),
+        hasDataSessaoPautado:
+            hasDataSessaoPautado ||
+            createSafeFallback("hasDataSessaoPautado", false),
+        resetDataSessaoPautado:
+            resetDataSessaoPautado ||
+            createSafeFallback("resetDataSessaoPautado", true),
+        showDataSessaoPautadoInfo:
+            showDataSessaoPautadoInfo ||
+            createSafeFallback("showDataSessaoPautadoInfo", false),
+        validarDataBrasileira:
+            validarDataBrasileira ||
+            createSafeFallback("validarDataBrasileira", false),
+
+        // Funções de interface
+        inserirDataSessaoNaInterface:
+            inserirDataSessaoNaInterface ||
+            createSafeFallback("inserirDataSessaoNaInterface", false),
+        removerDataSessaoDaInterface:
+            removerDataSessaoDaInterface ||
+            createSafeFallback("removerDataSessaoDaInterface", false),
+        atualizarDataSessaoNaInterface:
+            atualizarDataSessaoNaInterface ||
+            createSafeFallback("atualizarDataSessaoNaInterface", false),
+        forcarInsercaoCardSemValidacao:
+            forcarInsercaoCardSemValidacao ||
+            createSafeFallback("forcarInsercaoCardSemValidacao", false),
+
+        // Funções de dados de sessão
+        buscarDadosSessoes:
+            buscarDadosSessoes ||
+            createAsyncSafeFallback("buscarDadosSessoes", []),
+        parsearDadosSessoes:
+            parsearDadosSessoes ||
+            createSafeFallback("parsearDadosSessoes", []),
+        extrairDadosLinhaSessao:
+            extrairDadosLinhaSessao ||
+            createSafeFallback("extrairDadosLinhaSessao", null),
+        buscarSessaoPorData:
+            buscarSessaoPorData ||
+            createSafeFallback("buscarSessaoPorData", null),
+        cruzarDadosDataSessao:
+            cruzarDadosDataSessao ||
+            createAsyncSafeFallback("cruzarDadosDataSessao", null),
+
+        // Funções experimentais
+        detectarDataSessaoExperimental:
+            detectarDataSessaoExperimental ||
+            createAsyncSafeFallback("detectarDataSessaoExperimental", null),
+    };
+
+    // Fallbacks para funções de interface e botões
+    const interfaceFunctions = {
+        criarBotaoEleganteeProc:
+            criarBotaoEleganteeProc ||
+            createSafeFallback("criarBotaoEleganteeProc", null),
+        botaoBrancoCapaProcesso:
+            botaoBrancoCapaProcesso ||
+            createSafeFallback("botaoBrancoCapaProcesso", null),
+        criarInfraButtonPrimary:
+            criarInfraButtonPrimary ||
+            createSafeFallback("criarInfraButtonPrimary", null),
+        botaoAzuleProc:
+            botaoAzuleProc || createSafeFallback("botaoAzuleProc", null),
+    };
+
+    // Fallbacks para funções de localizadores
+    const localizadorFunctions = {
+        detectarPaginaLocalizadores:
+            detectarPaginaLocalizadores ||
+            createSafeFallback("detectarPaginaLocalizadores", false),
+        processarTabelaLocalizadores:
+            processarTabelaLocalizadores ||
+            createSafeFallback("processarTabelaLocalizadores", []),
+        destacarLocalizadoresUrgentes:
+            destacarLocalizadoresUrgentes ||
+            createSafeFallback("destacarLocalizadoresUrgentes", 0),
+    };
+
+    // Fallbacks para funções de status
+    const statusFunctions = {
+        detectarStatusSessao:
+            detectarStatusSessao ||
+            createSafeFallback("detectarStatusSessao", null),
+        detectarDataSessaoComStatus:
+            detectarDataSessaoComStatus ||
+            createSafeFallback("detectarDataSessaoComStatus", null),
+        obterTextoCardPorStatus:
+            obterTextoCardPorStatus ||
+            createSafeFallback(
+                "obterTextoCardPorStatus",
+                "Status não encontrado"
+            ),
+        obterCorCardPorStatus:
+            obterCorCardPorStatus ||
+            createSafeFallback("obterCorCardPorStatus", "#6B7280"),
+        getStatusSessao:
+            getStatusSessao || createSafeFallback("getStatusSessao", null),
+        hasStatusSessao:
+            hasStatusSessao || createSafeFallback("hasStatusSessao", false),
+        resetStatusSessao:
+            resetStatusSessao || createSafeFallback("resetStatusSessao", true),
+        showStatusSessaoInfo:
+            showStatusSessaoInfo ||
+            createSafeFallback("showStatusSessaoInfo", false),
+    };
+
+    // Fallbacks para funções de dados completos de sessão
+    const sessionDataFunctions = {
+        getDadosCompletosSessionJulgamento:
+            getDadosCompletosSessionJulgamento ||
+            createSafeFallback("getDadosCompletosSessionJulgamento", null),
+        hasDadosCompletosSessionJulgamento:
+            hasDadosCompletosSessionJulgamento ||
+            createSafeFallback("hasDadosCompletosSessionJulgamento", false),
+        resetDadosCompletosSessionJulgamento:
+            resetDadosCompletosSessionJulgamento ||
+            createSafeFallback("resetDadosCompletosSessionJulgamento", true),
+        showDadosCompletosSessionJulgamento:
+            showDadosCompletosSessionJulgamento ||
+            createSafeFallback("showDadosCompletosSessionJulgamento", false),
+    };
+
+    console.log(
+        "✅ NAMESPACE: Todos os fallbacks seguros configurados - extensão protegida contra ReferenceError"
+    );
+
+    console.log("🔧 NAMESPACE: Sistema de fallback universal configurado");
+
     // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 
     window.SENT1_AUTO = {
-        runFullAutomation,
-        autoOpenDocumentoRelevante,
-        autoExtractText,
-        copyToClipboard,
-        sendToPerplexity,
-        detectPageType,
-        isValidPageForButton,
-        findDocumentosRelevantes,
-        showDocumentSelectionModal,
-        showSentenceProcessingOptions,
-        getStoredApiKey,
-        storeApiKey,
-        removeStoredApiKey,
-        testApiKey,
-        showErrorLogs,
-        debugApiCall,
-        showApiQuotaInfo,
-        cleanInvisibleChars,
-        debugEventStructure,
-        extractTextFromPDF,
+        runFullAutomation: nsRunFullAutomation,
+        autoOpenDocumentoRelevante: nsAutoOpenDocumentoRelevante,
+        autoExtractText: nsAutoExtractText,
+        copyToClipboard: nsCopyToClipboard,
+        sendToPerplexity: nsSendToPerplexity,
+        detectPageType: nsDetectPageType,
+        isValidPageForButton: nsIsValidPageForButton,
+        findDocumentosRelevantes: nsFindDocumentosRelevantes,
+        showDocumentSelectionModal: nsShowDocumentSelectionModal,
+        showSentenceProcessingOptions: nsShowSentenceProcessingOptions,
+        getStoredApiKey: nsGetStoredApiKey,
+        storeApiKey: nsStoreApiKey,
+        removeStoredApiKey: nsRemoveStoredApiKey,
+        testApiKey: safeFunctions.testApiKey,
+        showErrorLogs: safeFunctions.showErrorLogs,
+        debugApiCall: safeFunctions.debugApiCall,
+        showApiQuotaInfo: safeFunctions.showApiQuotaInfo,
+        cleanInvisibleChars: nsCleanInvisibleChars,
+        debugEventStructure: nsDebugEventStructure,
+        extractTextFromPDF: nsExtractTextFromPDF,
         // Novas funções de detecção de data de sessão
-        detectarDataSessao,
-        getDataSessaoPautado,
-        hasDataSessaoPautado,
-        resetDataSessaoPautado,
-        showDataSessaoPautadoInfo,
-        validarDataBrasileira,
+        detectarDataSessao: nsDetectarDataSessao,
+        getDataSessaoPautado: safeFunctions.getDataSessaoPautado,
+        hasDataSessaoPautado: safeFunctions.hasDataSessaoPautado,
+        resetDataSessaoPautado: safeFunctions.resetDataSessaoPautado,
+        showDataSessaoPautadoInfo: safeFunctions.showDataSessaoPautadoInfo,
+        validarDataBrasileira: safeFunctions.validarDataBrasileira,
         // Funções de interface para data da sessão
-        inserirDataSessaoNaInterface,
-        removerDataSessaoDaInterface,
-        atualizarDataSessaoNaInterface,
-        forcarInsercaoCardSemValidacao,
+        inserirDataSessaoNaInterface:
+            safeFunctions.inserirDataSessaoNaInterface,
+        removerDataSessaoDaInterface:
+            safeFunctions.removerDataSessaoDaInterface,
+        atualizarDataSessaoNaInterface:
+            safeFunctions.atualizarDataSessaoNaInterface,
+        forcarInsercaoCardSemValidacao:
+            safeFunctions.forcarInsercaoCardSemValidacao,
         // Funções de cruzamento de dados de sessão
-        buscarDadosSessoes,
-        parsearDadosSessoes,
-        extrairDadosLinhaSessao,
-        buscarSessaoPorData,
-        cruzarDadosDataSessao,
-        getDadosCompletosSessionJulgamento,
-        hasDadosCompletosSessionJulgamento,
-        resetDadosCompletosSessionJulgamento,
-        showDadosCompletosSessionJulgamento,
+        buscarDadosSessoes: safeFunctions.buscarDadosSessoes,
+        parsearDadosSessoes: safeFunctions.parsearDadosSessoes,
+        extrairDadosLinhaSessao: safeFunctions.extrairDadosLinhaSessao,
+        buscarSessaoPorData: safeFunctions.buscarSessaoPorData,
+        cruzarDadosDataSessao: safeFunctions.cruzarDadosDataSessao,
+        getDadosCompletosSessionJulgamento:
+            sessionDataFunctions.getDadosCompletosSessionJulgamento,
+        hasDadosCompletosSessionJulgamento:
+            sessionDataFunctions.hasDadosCompletosSessionJulgamento,
+        resetDadosCompletosSessionJulgamento:
+            sessionDataFunctions.resetDadosCompletosSessionJulgamento,
+        showDadosCompletosSessionJulgamento:
+            sessionDataFunctions.showDadosCompletosSessionJulgamento,
         // Funções de debug
         // Função experimental com Semantic Kernel
-        detectarDataSessaoExperimental,
+        detectarDataSessaoExperimental:
+            safeFunctions.detectarDataSessaoExperimental,
         // Funções de interface reutilizável
-        criarBotaoEleganteeProc,
-        botaoBrancoCapaProcesso,
-        criarInfraButtonPrimary,
-        botaoAzuleProc,
+        criarBotaoEleganteeProc: interfaceFunctions.criarBotaoEleganteeProc,
+        botaoBrancoCapaProcesso: interfaceFunctions.botaoBrancoCapaProcesso,
+        criarInfraButtonPrimary: interfaceFunctions.criarInfraButtonPrimary,
+        botaoAzuleProc: interfaceFunctions.botaoAzuleProc,
         // Funções de localizadores
-        detectarPaginaLocalizadores,
-        processarTabelaLocalizadores,
-        destacarLocalizadoresUrgentes,
+        detectarPaginaLocalizadores:
+            localizadorFunctions.detectarPaginaLocalizadores,
+        processarTabelaLocalizadores:
+            localizadorFunctions.processarTabelaLocalizadores,
+        destacarLocalizadoresUrgentes:
+            localizadorFunctions.destacarLocalizadoresUrgentes,
         // Funções de status de sessão
-        detectarStatusSessao,
-        detectarDataSessaoComStatus,
-        obterTextoCardPorStatus,
-        obterCorCardPorStatus,
-        getStatusSessao,
-        hasStatusSessao,
-        resetStatusSessao,
-        showStatusSessaoInfo,
+        detectarStatusSessao: statusFunctions.detectarStatusSessao,
+        detectarDataSessaoComStatus:
+            statusFunctions.detectarDataSessaoComStatus,
+        obterTextoCardPorStatus: statusFunctions.obterTextoCardPorStatus,
+        obterCorCardPorStatus: statusFunctions.obterCorCardPorStatus,
+        getStatusSessao: statusFunctions.getStatusSessao,
+        hasStatusSessao: statusFunctions.hasStatusSessao,
+        resetStatusSessao: statusFunctions.resetStatusSessao,
+        showStatusSessaoInfo: statusFunctions.showStatusSessaoInfo,
         // Nova função simplificada de cards
         detectarCardSessaoSimplificado,
         // 🎨 NOVAS FUNÇÕES FIGMA
@@ -19221,9 +19945,9 @@ indicador.onmouseleave = () => {
         // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
         debugButtonCreation,
         forceCreateButton,
-        ensureButtonExists,
-        shouldShowIntegratedButton,
-        shouldShowFloatingButton,
+        ensureButtonExists: nsEnsureButtonExists,
+        shouldShowIntegratedButton: nsShouldShowIntegratedButton,
+        shouldShowFloatingButton: nsShouldShowFloatingButton,
 
         // 🌐 FUNÇÕES GLOBAIS PARA DADOS DA SESSÃO
         getTipoJulgamentoProcessoPautado,
@@ -19522,14 +20246,156 @@ indicador.onmouseleave = () => {
             console.log("🔧 TESTE TOOLTIP:", texto);
             return null;
         },
+
+        // 🔍 FUNÇÃO DE DEBUG ESPECÍFICA PARA DOCUMENTOS RELEVANTES
+        debugDocumentosRelevantes: function () {
+            console.log("🔍 DEBUG DOCUMENTOS RELEVANTES: Analisando página...");
+
+            const resultado = {
+                pageType: detectPageType ? detectPageType() : "N/A",
+                url: window.location.href,
+                analise: {},
+                documentosEncontrados: [],
+                estrategias: {},
+            };
+
+            try {
+                // Analisar elementos disponíveis
+                resultado.analise = {
+                    todosLinks: document.querySelectorAll("a").length,
+                    linksInfraLinkDocumento: document.querySelectorAll(
+                        "a.infraLinkDocumento"
+                    ).length,
+                    linksComHrefDocumento: document.querySelectorAll(
+                        'a[href*="documento"]'
+                    ).length,
+                    elementosComDataNome:
+                        document.querySelectorAll("[data-nome]").length,
+                    tabelasNaPagina: document.querySelectorAll("table").length,
+                    linksEmTabelas: document.querySelectorAll("table a").length,
+                };
+
+                // Testar estratégias individuais
+                const tiposRelevantes = [
+                    "SENT",
+                    "INIC",
+                    "DECI",
+                    "DESP",
+                    "PETI",
+                ];
+
+                // Estratégia 1: Por data-nome
+                resultado.estrategias.porDataNome = [];
+                tiposRelevantes.forEach((tipo) => {
+                    const links = document.querySelectorAll(
+                        `a[data-nome*="${tipo}"]`
+                    );
+                    if (links.length > 0) {
+                        resultado.estrategias.porDataNome.push({
+                            tipo: tipo,
+                            quantidade: links.length,
+                            elementos: Array.from(links).map((l) => ({
+                                texto: l.textContent.trim(),
+                                href: l.getAttribute("href"),
+                                dataNome: l.getAttribute("data-nome"),
+                            })),
+                        });
+                    }
+                });
+
+                // Estratégia 2: Por texto do link
+                resultado.estrategias.porTexto = [];
+                const todosLinks = Array.from(document.querySelectorAll("a"));
+                tiposRelevantes.forEach((tipo) => {
+                    const linksPorTipo = todosLinks.filter((link) => {
+                        const texto = link.textContent.trim().toUpperCase();
+                        return texto.includes(tipo);
+                    });
+                    if (linksPorTipo.length > 0) {
+                        resultado.estrategias.porTexto.push({
+                            tipo: tipo,
+                            quantidade: linksPorTipo.length,
+                            elementos: linksPorTipo.map((l) => ({
+                                texto: l.textContent.trim(),
+                                href: l.getAttribute("href"),
+                                classe: l.className,
+                            })),
+                        });
+                    }
+                });
+
+                // Estratégia 3: Por href
+                resultado.estrategias.porHref = [];
+                tiposRelevantes.forEach((tipo) => {
+                    const links = document.querySelectorAll(
+                        `a[href*="${tipo}"]`
+                    );
+                    if (links.length > 0) {
+                        resultado.estrategias.porHref.push({
+                            tipo: tipo,
+                            quantidade: links.length,
+                            elementos: Array.from(links).map((l) => ({
+                                texto: l.textContent.trim(),
+                                href: l.getAttribute("href"),
+                            })),
+                        });
+                    }
+                });
+
+                // Chamar a função original se estiver disponível
+                if (typeof findDocumentosRelevantes === "function") {
+                    try {
+                        const documentos = findDocumentosRelevantes();
+                        resultado.documentosEncontrados = documentos || [];
+                        resultado.funcaoOriginalFuncionou = true;
+                    } catch (error) {
+                        resultado.erroFuncaoOriginal = error.message;
+                    }
+                } else {
+                    resultado.funcaoOriginalDisponivel = false;
+                }
+
+                console.log("📊 RESULTADO COMPLETO:", resultado);
+
+                console.log("\n📋 RESUMO:");
+                console.log(`  • Tipo de página: ${resultado.pageType}`);
+                console.log(
+                    `  • Links totais: ${resultado.analise.todosLinks}`
+                );
+                console.log(
+                    `  • Links infraLinkDocumento: ${resultado.analise.linksInfraLinkDocumento}`
+                );
+                console.log(
+                    `  • Estratégia por data-nome: ${resultado.estrategias.porDataNome.length} tipos encontrados`
+                );
+                console.log(
+                    `  • Estratégia por texto: ${resultado.estrategias.porTexto.length} tipos encontrados`
+                );
+                console.log(
+                    `  • Estratégia por href: ${resultado.estrategias.porHref.length} tipos encontrados`
+                );
+                console.log(
+                    `  • Documentos finais: ${
+                        Array.isArray(resultado.documentosEncontrados)
+                            ? resultado.documentosEncontrados.length
+                            : "N/A"
+                    }`
+                );
+
+                return resultado;
+            } catch (error) {
+                console.error("❌ Erro no debug:", error);
+                return { erro: error.message, url: window.location.href };
+            }
+        },
     };
 
     // Fim da seção de funcionalidades
+    // ##### FIM DO NAMESPACE CONSOLIDADO #####
+
     console.log(
         "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
     );
-
-    // ##### FIM DO NAMESPACE CONSOLIDADO #####
 
     // Fechamento da IIFE principal assíncrona
 })();
