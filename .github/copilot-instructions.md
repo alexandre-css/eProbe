@@ -25,10 +25,10 @@ if (minhaVariavel) { ... } // Usar depois
 
 ### 📁 ORGANIZAÇÃO OBRIGATÓRIA DE ARQUIVOS MARKDOWN
 
-**REGRA ABSOLUTA**: SEMPRE criar arquivos `.md` em `C:\eProbe\src\md\` - NUNCA em outras pastas.
+**REGRA ABSOLUTA**: SEMPRE criar arquivos `.md` em `C:\eProbe\md\` - NUNCA em outras pastas.
 
 ```
-✅ CORRETO: C:\eProbe\src\md\NOVA_DOCUMENTACAO.md
+✅ CORRETO: C:\eProbe\md\NOVA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\NOVA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\development\NOVA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\src\NOVA_DOCUMENTACAO.md
@@ -480,17 +480,16 @@ let processoComDadosCompletos = null; // Process with complete data
 
 ### Documentation Standards
 
--   **Documentation files**: All `.md` files should be saved in `src/md/` directory
+-   **Documentation files**: All `.md` files should be saved in `/md/` directory
 -   **Code files**: JavaScript, HTML, CSS in `src/` root
--   **Backup files**: Legacy/old versions in `src/old/`
 -   **Configuration**: Extension manifest and settings in project root
 
 ### 📝 REGRA OBRIGATÓRIA - Criação de Arquivos Markdown
 
-**SEMPRE** criar arquivos `.md` em `C:\eProbe\src\md\` - NUNCA em outras pastas.
+**SEMPRE** criar arquivos `.md` em `C:\eProbe\md\` - NUNCA em outras pastas.
 
 ```
-✅ CORRETO: C:\eProbe\src\md\MINHA_DOCUMENTACAO.md
+✅ CORRETO: C:\eProbe\md\MINHA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\MINHA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\development\MINHA_DOCUMENTACAO.md
 ❌ ERRADO: C:\eProbe\src\MINHA_DOCUMENTACAO.md
@@ -504,10 +503,10 @@ let processoComDadosCompletos = null; // Process with complete data
 
 ### Current Documentation Structure
 
--   `src/md/Anotações.md` - Domain requirements for session detection
--   `src/md/BUSCA_DADOS_SESSAO.md` - Session data extraction specifications
--   `src/md/EXTRACAO_MINUTAS_DETALHADAS.md` - Court minutes extraction details
--   **New documentation**: Should follow this pattern and be placed in `src/md/`
+-   `md/Anotações.md` - Domain requirements for session detection
+-   `md/BUSCA_DADOS_SESSAO.md` - Session data extraction specifications
+-   `md/EXTRACAO_MINUTAS_DETALHADAS.md` - Court minutes extraction details
+-   **New documentation**: Should follow this pattern and be placed in `md/`
 
 ## File Priority for Understanding
 
@@ -515,8 +514,8 @@ let processoComDadosCompletos = null; // Process with complete data
 2. `src/popup.js` - Theme system and user interface patterns (clean, CSP-compliant version)
 3. `src/themeApply.js` - Global theme application functions
 4. `src/main.js` - Content script with message handlers
-5. `src/md/Anotações.md` - Domain requirements for session detection
-6. `src/md/*.md` - Additional documentation (all markdown files organized in md folder)
+5. `md/Anotações.md` - Domain requirements for session detection
+6. `md/*.md` - Additional documentation (all markdown files organized in md folder)
 
 ## Recent Updates & Architecture Changes
 

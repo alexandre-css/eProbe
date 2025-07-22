@@ -25,7 +25,6 @@
                 "https://eproc2g.tjsc.jus.br/*"
             ],
             "js": [
-                "src/CardMaterialFigma.js",
                 "src/main.js",
                 "src/themeApply.js",
                 "src/semanticKernel.js"

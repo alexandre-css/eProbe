@@ -1551,7 +1551,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgb(var(--color-primary-600));
+    background: rgb(var(--color-primary-500));
     transition: 0.3s ease;
     border-radius: 24px;
     border: 1px solid rgb(var(--color-neutral-600) / 0.3);
@@ -1582,6 +1582,7 @@ input:checked + .slider:before {
 
 .slider:hover {
     box-shadow: 0 0 8px rgb(var(--color-primary-600) / 0.3);
+    background: rgb(var(--color-primary-600));
 }
 
 input:checked + .slider:hover {

@@ -389,154 +389,667 @@
 
     inserirDataSessaoNaInterface = function () {
         try {
-            console.log("🎯 INTERFACE: Tentando inserir card de sessão...");
+            console.log("🎯 INTERFACE: Criando card de sessão...");
 
-            // Verificar se já existe um card
+            // Remover card existente se houver
             const cardExistente = document.getElementById("eprobe-data-sessao");
             if (cardExistente) {
-                console.log(
-                    "ℹ️ INTERFACE: Card já existe, removendo para recriar"
-                );
                 cardExistente.remove();
+                console.log("🗑️ INTERFACE: Card anterior removido");
             }
 
             // Verificar se temos dados
             if (!hasDataSessaoPautado()) {
-                console.log(
-                    "⚠️ INTERFACE: Sem dados de sessão para criar card"
-                );
+                console.log("⚠️ INTERFACE: Sem dados de sessão disponíveis");
                 return false;
             }
 
             const dados = getDataSessaoPautado();
-            console.log("📊 INTERFACE: Dados disponíveis:", dados);
+            console.log("📊 INTERFACE: Dados encontrados:", dados);
 
-            // Criar card simples para teste
+            // Criar card Material Design moderno
             const card = document.createElement("div");
             card.id = "eprobe-data-sessao";
+            card.className = "eprobe-session-card";
             card.style.cssText = `
                 position: fixed;
-                top: 20px;
+                top: 80px;
                 right: 20px;
-                background: #2563eb;
-                color: white;
-                padding: 12px 16px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                background: #ffffff;
+                border: 1px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
                 z-index: 10000;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                font-size: 14px;
-                min-width: 200px;
+                min-width: 280px;
+                max-width: 350px;
+                overflow: hidden;
+                animation: slideIn 0.3s ease-out;
             `;
 
+            // Criar conteúdo do card
+            const dataTexto =
+                dados.dataFormatada || dados.data || "Data não disponível";
+            const statusTexto = dados.status || "Status não disponível";
+            const tipoTexto = dados.tipo || "Tipo não informado";
+            const orgaoTexto = dados.orgao || "Órgão não informado";
+
             card.innerHTML = `
-                <div style="font-weight: 600; margin-bottom: 4px;">📅 Sessão Detectada</div>
-                <div>${
-                    dados.dataFormatada || dados.data || "Data não disponível"
-                }</div>
-                <div style="font-size: 12px; opacity: 0.9; margin-top: 4px;">
-                    ${dados.status || "Status não disponível"}
+                <style>
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                </style>
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 20px;">📅</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px;">Sessão Detectada</div>
+                            <div style="font-size: 14px; opacity: 0.9;">${dataTexto}</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 16px;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Tipo</div>
+                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${tipoTexto}</div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Status</div>
+                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${statusTexto}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Órgão</div>
+                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${orgaoTexto}</div>
+                    </div>
                 </div>
             `;
+
+            // Adicionar botão de fechar ao header
+            const header = card.querySelector("div");
+            const btnFechar = document.createElement("button");
+            btnFechar.innerHTML = "×";
+            btnFechar.style.cssText = `
+                position: absolute;
+                top: 8px;
+                right: 8px;
+                background: rgba(255,255,255,0.2);
+                border: none;
+                color: white;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0.8;
+                transition: opacity 0.2s;
+            `;
+            btnFechar.onclick = () => card.remove();
+            btnFechar.onmouseenter = () => (btnFechar.style.opacity = "1");
+            btnFechar.onmouseleave = () => (btnFechar.style.opacity = "0.8");
+
+            header.appendChild(btnFechar);
 
             // Inserir no DOM
             document.body.appendChild(card);
 
-            console.log("✅ INTERFACE: Card de sessão criado com sucesso");
+            console.log(
+                "✅ INTERFACE: Card Material Design criado com sucesso!"
+            );
             return true;
         } catch (error) {
-            console.error("❌ INTERFACE: Erro ao inserir card:", error);
+            console.error("❌ INTERFACE: Erro ao criar card:", error);
             return false;
         }
     };
 
-    function detectarCardSessaoSimplificado() {
+    // 🎨 FUNÇÃO PARA CRIAR CARD MATERIAL DE SESSÃO - DESIGN FIGMA
+    function criarCardSessaoMaterial(cardInfo) {
         try {
+            console.log("🎨 CRIANDO CARD MATERIAL FIGMA:", cardInfo);
+
+            // Verificar se já existe um card
+            const cardExistente = document.getElementById(
+                "eprobe-card-sessao-material"
+            );
+            if (cardExistente) {
+                console.log("ℹ️ CARD: Removendo card existente");
+                cardExistente.remove();
+            }
+
+            // Mapeamento de cores do Figma por status
+            const coresFigma = {
+                PAUTADO: "#5C85B4",
+                RETIRADO: "#CE2D4F",
+                VISTA: "#FFBF46",
+                JULGADO: "#3AB795",
+                ADIADO: "#F55D3E",
+                ADIADO_935: "#731963",
+                SOBRESTADO: "#FCB0B3",
+                DILIGENCIA: "#00171F",
+            };
+
+            // Determinar status e cor
+            const status = cardInfo.status || "PAUTADO";
+            const statusKey = status
+                .toUpperCase()
+                .replace(/\s+/g, "_")
+                .replace(/[()\.]/g, "");
+            const corIcon = coresFigma[statusKey] || coresFigma["PAUTADO"];
+
             console.log(
-                "🎯 DETECÇÃO XPATH: Buscando dados de sessão em fieldset[6]"
+                "🎨 STATUS DETECTADO:",
+                status,
+                "→",
+                statusKey,
+                "→",
+                corIcon
             );
 
-            const sessoes = [];
-            let contador = 2; // Começar com div[2]
+            // Criar card Material Light pequeno (design Figma)
+            const card = document.createElement("div");
+            card.id = "eprobe-card-sessao-material";
+            card.className = "eprobe-session-card-figma";
 
-            while (true) {
-                const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${contador}]/fieldset/legend/span[1]`;
+            // Estilo do card Figma: Material Light pequeno - PARA INTEGRAÇÃO
+            card.style.cssText = `
+                width: 169px;
+                height: 60px;
+                background: #FEF7FF;
+                border: 0.75px solid #CAC4D0;
+                border-radius: 9px;
+                box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                display: flex;
+                align-items: center;
+                padding: 8px 12px;
+                gap: 8px;
+                cursor: pointer;
+                transition: transform 0.2s ease;
+                animation: slideInCard 0.3s ease-out;
+                margin-top: 8px;
+            `;
+
+            // Ícone de clock pequeno do Figma
+            const iconSvg = `
+                <svg width="25" height="25" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2.48973 23.5714C1.80506 23.5714 1.21914 23.3408 0.731981 22.8796C0.244824 22.4184 0.00082991 21.8633 0 21.2143V4.71429C0 4.06607 0.243994 3.51136 0.731981 3.05014C1.21997 2.58893 1.80589 2.35793 2.48973 2.35714H3.7346V0H6.22433V2.35714H16.1833V0H18.673V2.35714H19.9179C20.6025 2.35714 21.1889 2.58814 21.6768 3.05014C22.1648 3.51214 22.4084 4.06686 22.4076 4.71429V10.2241C22.4076 10.558 22.2881 10.8381 22.0491 11.0644C21.81 11.2907 21.5146 11.4035 21.1627 11.4027C20.8108 11.4019 20.5154 11.2888 20.2764 11.0633C20.0374 10.8378 19.9179 10.558 19.9179 10.2241V9.42857H2.48973V21.2143H9.70995C10.0627 21.2143 10.3585 21.3274 10.5975 21.5537C10.8366 21.78 10.9556 22.0597 10.9548 22.3929C10.954 22.726 10.8345 23.0061 10.5963 23.2332C10.3581 23.4603 10.0627 23.573 9.70995 23.5714H2.48973ZM18.673 24.75C16.9509 24.75 15.4832 24.1753 14.2699 23.0258C13.0566 21.8763 12.4495 20.4867 12.4487 18.8571C12.4478 17.2276 13.0549 15.838 14.2699 14.6885C15.4849 13.539 16.9526 12.9643 18.673 12.9643C20.3934 12.9643 21.8615 13.539 23.0773 14.6885C24.2931 15.838 24.8998 17.2276 24.8973 18.8571C24.8948 20.4867 24.2877 21.8766 23.0761 23.0269C21.8644 24.1772 20.3967 24.7516 18.673 24.75ZM20.7581 21.6562L21.6295 20.8313L19.2954 18.6214V15.3214H18.0506V19.0929L20.7581 21.6562Z" fill="${corIcon}"/>
+                </svg>
+            `;
+
+            // Texto do status mapeado
+            const statusTextos = {
+                PAUTADO: "Pautado",
+                RETIRADO: "Retirado de Pauta",
+                VISTA: "Pedido de Vista",
+                JULGADO: "Julgado",
+                ADIADO: "Adiado",
+                ADIADO_935: "Adiado (art. 935)",
+                SOBRESTADO: "Sobrestado (art. 942)",
+                DILIGENCIA: "Conv. em Diligência",
+            };
+
+            const statusTexto = statusTextos[statusKey] || status;
+            const dataTexto = cardInfo.data || "getData()";
+
+            card.innerHTML = `
+                <style>
+                    @keyframes slideInCard {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    .eprobe-session-card-figma:hover {
+                        transform: translateY(-1px);
+                        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+                    }
+                </style>
+                <div style="flex-shrink: 0;">
+                    ${iconSvg}
+                </div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="
+                        font-size: 14px; 
+                        font-weight: 500; 
+                        color: #1C1B1F; 
+                        line-height: 20px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    ">${statusTexto}</div>
+                    <div style="
+                        font-size: 12px; 
+                        color: #49454F; 
+                        line-height: 16px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    ">Sessão: ${dataTexto}</div>
+                </div>
+            `;
+
+            // Adicionar tooltip com informações das sessões (em vez de fechar ao clicar)
+            card.style.cursor = "pointer";
+            card.style.position = "relative";
+
+            // Criar tooltip para múltiplas sessões
+            const tooltip = document.createElement("div");
+            tooltip.id = "eprobe-tooltip-sessoes";
+            tooltip.style.cssText = `
+                position: absolute;
+                display: none;
+                z-index: 10001;
+                background: #FFFBFE;
+                border: 1px solid #CAC4D0;
+                border-radius: 12px;
+                min-width: 280px;
+                max-width: 420px;
+                box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+                font-family: 'Roboto', sans-serif;
+                top: 100%;
+                left: 0;
+                margin-top: 8px;
+                opacity: 0;
+                transition: opacity 0.2s ease-in-out;
+                pointer-events: none;
+            `;
+
+            // Conteúdo do tooltip com histórico de sessões
+            const sessoes = cardInfo.sessoes || [];
+            let tooltipContent = `
+                <div style="padding: 16px 16px 12px 16px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9; border-radius: 12px 12px 0 0;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 25 25" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M2.48973 23.5714C1.80506 23.5714 1.21914 23.3408 0.731981 22.8796C0.244824 22.4184 0.00082991 21.8633 0 21.2143V4.71429C0 4.06607 0.243994 3.51136 0.731981 3.05014C1.21997 2.58893 1.80589 2.35793 2.48973 2.35714H3.7346V0H6.22433V2.35714H16.1833V0H18.673V2.35714H19.9179C20.6025 2.35714 21.1889 2.58814 21.6768 3.05014C22.1648 3.51214 22.4084 4.06686 22.4076 4.71429V10.2241C22.4076 10.558 22.2881 10.8381 22.0491 11.0644C21.81 11.2907 21.5146 11.4035 21.1627 11.4027C20.8108 11.4019 20.5154 11.2888 20.2764 11.0633C20.0374 10.8378 19.9179 10.558 19.9179 10.2241V9.42857H2.48973V21.2143H9.70995C10.0627 21.2143 10.3585 21.3274 10.5975 21.5537C10.8366 21.78 10.9556 22.0597 10.9548 22.3929C10.954 22.726 10.8345 23.0061 10.5963 23.2332C10.3581 23.4603 10.0627 23.573 9.70995 23.5714H2.48973ZM18.673 24.75C16.9509 24.75 15.4832 24.1753 14.2699 23.0258C13.0566 21.8763 12.4495 20.4867 12.4487 18.8571C12.4478 17.2276 13.0549 15.838 14.2699 14.6885C15.4849 13.539 16.9526 12.9643 18.673 12.9643C20.3934 12.9643 21.8615 13.539 23.0773 14.6885C24.2931 15.838 24.8998 17.2276 24.8973 18.8571C24.8948 20.4867 24.2877 21.8766 23.0761 23.0269C21.8644 24.1772 20.3967 24.7516 18.673 24.75ZM20.7581 21.6562L21.6295 20.8313L19.2954 18.6214V15.3214H18.0506V19.0929L20.7581 21.6562Z" fill="#1C1B1F"/>
+                        </svg>
+                        <div style="font-size: 14px; font-weight: 500; color: #1C1B1F;">Histórico de Sessões</div>
+                    </div>
+                    <div style="font-size: 12px; color: #49454F;">
+                        ${sessoes.length} ${
+                sessoes.length === 1
+                    ? "evento encontrado"
+                    : "eventos encontrados"
+            }
+                    </div>
+                </div>
+                <div style="padding: 16px; max-height: 300px; overflow-y: auto;">
+            `;
+
+            if (sessoes.length > 0) {
+                sessoes.forEach((sessao, index) => {
+                    const isAtual = index === 0; // Primeira sessão é a mais recente
+                    tooltipContent += `
+                        <div style="
+                            padding: 12px;
+                            border: 1px solid ${isAtual ? corIcon : "#E6E0E9"};
+                            border-radius: 8px;
+                            margin-bottom: ${
+                                index < sessoes.length - 1 ? "12px" : "0"
+                            };
+                            background: ${isAtual ? "#FEF7FF" : "#FFFFFF"};
+                        ">
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <div style="
+                                    width: 8px;
+                                    height: 8px;
+                                    border-radius: 50%;
+                                    background: ${sessao.cor || corIcon};
+                                "></div>
+                                <div style="font-size: 13px; font-weight: 500; color: #1C1B1F;">
+                                    ${sessao.status}
+                                </div>
+                                ${
+                                    isAtual
+                                        ? '<span style="font-size: 11px; color: #6750A4; font-weight: 500; background: #E8DEF8; padding: 2px 6px; border-radius: 4px;">ATUAL</span>'
+                                        : ""
+                                }
+                            </div>
+                            <div style="font-size: 12px; color: #49454F; margin-bottom: 6px; display: flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">event_repeat</span>${sessao.data}
+                            </div>
+                            <div style="font-size: 12px; color: #49454F; margin-bottom: 4px; display: flex; align-items: center;">
+                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">gavel</span>${sessao.orgao}
+                            </div>
+                            <div style="font-size: 11px; color: #79747E;">
+                                ${sessao.tipo}
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                tooltipContent += `
+                    <div style="text-align: center; padding: 20px; color: #79747E;">
+                        <span class="material-symbols-outlined" style="font-size: 24px; margin-bottom: 8px; color: #79747E;">event_repeat</span>
+                        <div style="font-size: 13px;">Nenhuma sessão adicional encontrada</div>
+                    </div>
+                `;
+            }
+
+            tooltipContent += "</div>";
+            tooltip.innerHTML = tooltipContent;
+
+            // Adicionar tooltip ao card
+            card.appendChild(tooltip);
+
+            // Event listeners para mostrar/ocultar tooltip
+            let tooltipTimer = null;
+
+            const mostrarTooltip = () => {
+                if (tooltipTimer) clearTimeout(tooltipTimer);
+                tooltip.style.display = "block";
+                tooltip.style.pointerEvents = "auto";
+                setTimeout(() => {
+                    tooltip.style.opacity = "1";
+                }, 10);
+            };
+
+            const ocultarTooltip = () => {
+                tooltip.style.opacity = "0";
+                tooltipTimer = setTimeout(() => {
+                    tooltip.style.display = "none";
+                    tooltip.style.pointerEvents = "none";
+                }, 200);
+            };
+
+            const cancelarOcultacao = () => {
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = null;
+                }
+            };
+
+            // Eventos do card
+            card.addEventListener("mouseenter", mostrarTooltip);
+            card.addEventListener("mouseleave", ocultarTooltip);
+
+            // Eventos do tooltip
+            tooltip.addEventListener("mouseenter", cancelarOcultacao);
+            tooltip.addEventListener("mouseleave", ocultarTooltip);
+
+            // Click no card não fecha mais - apenas mostra/oculta tooltip
+            card.onclick = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (tooltip.style.display === "block") {
+                    ocultarTooltip();
+                } else {
+                    mostrarTooltip();
+                }
+            };
+
+            // Inserir card usando a função de interface específica
+            const inserido = inserirCardNaInterface(card);
+            if (!inserido) {
+                // Fallback: inserir no body se não conseguir inserir na interface
+                document.body.appendChild(card);
+                console.log("⚠️ CARD FIGMA: Inserido como fallback no body");
+            }
+
+            console.log(
+                "✅ CARD FIGMA: Criado com design Material Light pequeno!"
+            );
+            console.log(
+                "� COR APLICADA:",
+                corIcon,
+                "para status:",
+                statusTexto
+            );
+
+            return card;
+        } catch (error) {
+            console.error("❌ CARD FIGMA: Erro ao criar card:", error);
+            return null;
+        }
+    }
+
+    // 🏛️ MAPA OFICIAL DE ÓRGÃOS TJSC - Conversão Sigla → Nome Completo
+    const mapaOrgaosTJSC = {
+        CAMCIV1: "1ª Câmara de Direito Civil",
+        CAMCIV2: "2ª Câmara de Direito Civil",
+        CAMCIV3: "3ª Câmara de Direito Civil",
+        CAMCIV4: "4ª Câmara de Direito Civil",
+        CAMCIV5: "5ª Câmara de Direito Civil",
+        CAMCIV6: "6ª Câmara de Direito Civil",
+        CAMCIV7: "7ª Câmara de Direito Civil",
+        CAMCIV8: "8ª Câmara de Direito Civil",
+        CAMCOM1: "1ª Câmara de Direito Comercial",
+        CAMCOM2: "2ª Câmara de Direito Comercial",
+        CAMCOM3: "3ª Câmara de Direito Comercial",
+        CAMCOM4: "4ª Câmara de Direito Comercial",
+        CAMCOM5: "5ª Câmara de Direito Comercial",
+        CAMCOM6: "6ª Câmara de Direito Comercial",
+        CAMCRI1: "1ª Câmara Criminal",
+        CAMCRI2: "2ª Câmara Criminal",
+        CAMCRI3: "3ª Câmara Criminal",
+        CAMCRI4: "4ª Câmara Criminal",
+        CAMCRI5: "5ª Câmara Criminal",
+        CAMEEA1S: "1ª Câmara Especial de Enfrentamento de Acervos",
+        CAMEEA2S: "2ª Câmara Especial de Enfrentamento de Acervos",
+        CAMEEA3S: "3ª Câmara Especial de Enfrentamento de Acervos",
+        CAMPREC: "Câmara de Precatórios",
+        CAMPUB1: "1ª Câmara de Direito Público",
+        CAMPUB2: "2ª Câmara de Direito Público",
+        CAMPUB3: "3ª Câmara de Direito Público",
+        CAMPUB4: "4ª Câmara de Direito Público",
+        CAMPUB5: "5ª Câmara de Direito Público",
+        SGRUCIV: "Grupo de Câmaras de Direito Civil",
+        SGRUCOM: "Grupo de Câmaras de Direito Comercial",
+        SGRUCRI1: "Primeiro Grupo de Direito Criminal",
+        SGRUCRI2: "Segundo Grupo de Direito Criminal",
+        SGRUPUB: "Grupo de Câmaras de Direito Público",
+        SORGESP: "Órgão Especial",
+        SCAMRECD: "Câmara de Recursos Delegados",
+        TPLTURUNIF: "Turma de Uniformização",
+        VPRES1: "1ª Vice-Presidência",
+        VPRES2: "2ª Vice-Presidência",
+        VPRES3: "3ª Vice-Presidência",
+        SSECCRI: "Seção Criminal",
+    };
+
+    // 🔄 TRADUZIR SIGLA DO ÓRGÃO
+    function traduzirSiglaOrgao(sigla) {
+        if (!sigla) return "Órgão não identificado";
+
+        // Limpar espaços e converter para maiúsculo
+        sigla = sigla.trim().toUpperCase();
+
+        // Primeiro, tentar match exato no mapa oficial
+        if (mapaOrgaosTJSC[sigla]) {
+            return mapaOrgaosTJSC[sigla];
+        }
+
+        // Fallback para códigos não mapeados
+        return `${sigla} (Órgão)`;
+    }
+
+    // 🎨 TRADUZIR STATUS DA SESSÃO
+    function traduzirStatusSessao(statusCompleto) {
+        if (!statusCompleto) return { status: "Desconhecido", cor: "#6B7280" };
+
+        const statusUpper = statusCompleto.toUpperCase();
+
+        // Mapeamento de status conhecidos
+        const mapeamentoStatus = {
+            "INCLUÍDO EM PAUTA": { status: "PAUTADO", cor: "#5C85B4" },
+            "JULGADO EM PAUTA": { status: "JULGADO", cor: "#3AB795" },
+            "RETIRADO DE PAUTA": { status: "RETIRADO", cor: "#CE2D4F" },
+            "PEDIDO DE VISTA": { status: "VISTA", cor: "#FFBF46" },
+            ADIADO: { status: "ADIADO", cor: "#F55D3E" },
+            SOBRESTADO: { status: "SOBRESTADO", cor: "#FCB0B3" },
+        };
+
+        for (const [key, value] of Object.entries(mapeamentoStatus)) {
+            if (statusUpper.includes(key)) {
+                return value;
+            }
+        }
+
+        return { status: statusCompleto, cor: "#6B7280" };
+    }
+
+    /**
+     * 🎯 DETECÇÃO SIMPLIFICADA DE SESSÕES - APENAS XPATH QUE FUNCIONA
+     * Remove todos os fallbacks e mantém apenas o sistema XPath comprovado
+     */
+    function detectarCardSessaoSimplificado() {
+        try {
+            console.log("🎯 DETECÇÃO: Iniciando busca XPath por sessões...");
+
+            // Verificar se o container fieldset[6] existe
+            const containerFieldset = document.evaluate(
+                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]",
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (!containerFieldset) {
+                console.log(
+                    "❌ DETECÇÃO: Container fieldset[6] não encontrado"
+                );
+                return null;
+            }
+
+            console.log("✅ DETECÇÃO: Container fieldset[6] encontrado");
+
+            const sessoes = [];
+            let contador = 1;
+
+            // Buscar até 10 divs de sessão
+            while (contador <= 10) {
+                const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${contador}]/fieldset/legend/span[1]/button/text()`;
 
                 const resultado = document.evaluate(
                     xpath,
                     document,
                     null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    XPathResult.STRING_TYPE,
                     null
                 );
 
-                if (!resultado.singleNodeValue) {
-                    console.log(
-                        `🔍 DETECÇÃO: Parou no índice ${contador} - não encontrou mais sessões`
-                    );
-                    break;
-                }
+                let textoButton = resultado.stringValue?.trim();
 
-                const spanElement = resultado.singleNodeValue;
-                const onmouseoverAttr = spanElement.getAttribute("onmouseover");
+                // Se não encontrou no XPath padrão, tentar alternativa
+                if (!textoButton) {
+                    const xpathDiv = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${contador}]`;
+                    const divElement = document.evaluate(
+                        xpathDiv,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue;
 
-                if (onmouseoverAttr) {
-                    const match = onmouseoverAttr.match(
-                        /infraTooltipMostrar\('([^']+)'/
-                    );
-                    if (match) {
-                        const conteudoTooltip = match[1];
+                    if (!divElement) {
                         console.log(
-                            `✅ SESSÃO ${contador - 1}: ${conteudoTooltip}`
+                            `🔍 DETECÇÃO: Div[${contador}] não existe - finalizando`
                         );
+                        break;
+                    }
 
-                        const padraoGeral =
-                            /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)(\s*\(\d+\))?/g;
-                        let matchDados = padraoGeral.exec(conteudoTooltip);
-
-                        if (matchDados) {
-                            sessoes.push({
-                                data: matchDados[1].trim(),
-                                status: matchDados[2].trim(),
-                                documento: matchDados[3].trim(),
-                                textoCompleto: conteudoTooltip,
-                                indice: contador,
-                            });
-                        }
+                    // Buscar texto no botão da div
+                    const button = divElement.querySelector(
+                        "fieldset legend span button"
+                    );
+                    if (button) {
+                        textoButton = button.textContent?.trim();
                     }
                 }
+
+                if (textoButton) {
+                    console.log(`✅ SESSÃO ${contador}: "${textoButton}"`);
+
+                    // Regex universal para parsing
+                    const padraoUniversal =
+                        /^([A-Za-zÀ-ÿ\s]+?)\s*\(([A-Za-z\s]+em\s+Pauta)\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s*a\s*\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
+                    const match = textoButton.match(padraoUniversal);
+
+                    if (match) {
+                        const [, tipoSessao, statusCompleto, data, siglaOrgao] =
+                            match;
+
+                        // Traduzir status e órgão
+                        const statusTraduzido =
+                            traduzirStatusSessao(statusCompleto);
+                        const nomeOrgao = traduzirSiglaOrgao(siglaOrgao.trim());
+
+                        sessoes.push({
+                            indice: contador,
+                            tipo: tipoSessao.trim(),
+                            status: statusTraduzido?.status || "Desconhecido",
+                            statusCompleto: statusCompleto,
+                            data: data.trim(),
+                            siglaOrgao: siglaOrgao.trim(),
+                            orgao: nomeOrgao,
+                            cor: statusTraduzido?.cor || "#6B7280",
+                            textoCompleto: textoButton,
+                        });
+
+                        console.log(`🎯 DADOS EXTRAÍDOS:`, {
+                            tipo: tipoSessao.trim(),
+                            status: statusTraduzido?.status,
+                            data: data.trim(),
+                            orgao: nomeOrgao,
+                        });
+                    }
+                }
+
                 contador++;
             }
 
-            if (sessoes.length > 0) {
-                console.log(
-                    `✅ DETECÇÃO: ${sessoes.length} sessões encontradas`
-                );
-
-                // Armazenar primeira sessão como principal
-                const sessaoPrincipal = sessoes[0];
-                dataSessaoPautado = {
-                    data: sessaoPrincipal.data,
-                    dataFormatada: sessaoPrincipal.data,
-                    status: sessaoPrincipal.status,
-                    textoCompleto: sessaoPrincipal.textoCompleto,
-                };
-                processoComDataSessao = obterNumeroProcesso();
-
-                return {
-                    sessoes: sessoes,
-                    sessaoPrincipal: sessaoPrincipal,
-                    total: sessoes.length,
-                    data: sessaoPrincipal.data,
-                    dataFormatada: sessaoPrincipal.data,
-                    status: sessaoPrincipal.status,
-                };
+            if (sessoes.length === 0) {
+                console.log("❌ DETECÇÃO: Nenhuma sessão encontrada");
+                return null;
             }
 
-            console.log("❌ DETECÇÃO: Nenhuma sessão encontrada");
-            return null;
+            // Ordenar por data (mais recente primeiro)
+            sessoes.sort((a, b) => {
+                const dataA = new Date(a.data.split("/").reverse().join("-"));
+                const dataB = new Date(b.data.split("/").reverse().join("-"));
+                return dataB - dataA;
+            });
+
+            console.log(
+                `✅ DETECÇÃO: ${sessoes.length} sessões encontradas e ordenadas`
+            );
+            console.log("📊 SESSÃO MAIS RECENTE:", sessoes[0]);
+
+            // Armazenar dados da sessão mais recente
+            const sessaoMaisRecente = sessoes[0];
+            const processo = obterNumeroProcesso();
+
+            if (processo) {
+                dataSessaoPautado = sessaoMaisRecente.data;
+                processoComDataSessao = processo;
+
+                // Adicionar dados completos
+                window.dadosCompletosMinutas = sessaoMaisRecente;
+
+                console.log(
+                    `✅ DADOS ARMAZENADOS: dataSessaoPautado="${dataSessaoPautado}" | processo="${processo}"`
+                );
+            }
+
+            // Criar card com dados da sessão mais recente
+            const cardInfo = {
+                data: sessaoMaisRecente.data,
+                tipo: sessaoMaisRecente.tipo,
+                status: sessaoMaisRecente.status,
+                orgao: sessaoMaisRecente.orgao,
+                cor: sessaoMaisRecente.cor,
+                totalSessoes: sessoes.length,
+                sessoes: sessoes,
+            };
+
+            criarCardSessaoMaterial(cardInfo);
+            return cardInfo;
         } catch (error) {
-            console.error("❌ DETECÇÃO: Erro na detecção:", error);
+            console.error("❌ DETECÇÃO: Erro na detecção XPath:", error);
             return null;
         }
     }
@@ -702,6 +1215,11 @@
     // Adicionar Material Icons History e Chat Bubble
     if (!document.querySelector('link[href*="Material+Symbols+Outlined"]')) {
         const materialIconsHistory = document.createElement("link");
+        materialIconsHistory.rel = "stylesheet";
+        materialIconsHistory.href =
+            "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=event_repeat,gavel";
+        document.head.appendChild(materialIconsHistory);
+
         // Carregar CSS dos Material Symbols
         const materialIconsCSS = document.createElement("link");
         materialIconsCSS.rel = "stylesheet";
@@ -7328,16 +7846,16 @@
                 // Criar card Material Base - versão segura
                 let card = null;
                 if (
-                    typeof window.SENT1_AUTO?.criarCardMaterialDesign ===
+                    typeof window.SENT1_AUTO?.criarCardSessaoMaterial ===
                     "function"
                 ) {
                     card =
-                        window.SENT1_AUTO.criarCardMaterialDesign(dadosTeste);
-                } else if (typeof criarCardMaterialDesign === "function") {
-                    card = criarCardMaterialDesign(dadosTeste);
+                        window.SENT1_AUTO.criarCardSessaoMaterial(dadosTeste);
+                } else if (typeof criarCardSessaoMaterial === "function") {
+                    card = criarCardSessaoMaterial(dadosTeste);
                 } else {
                     console.warn(
-                        "⚠️ TESTE: criarCardMaterialDesign não disponível"
+                        "⚠️ TESTE: criarCardSessaoMaterial não disponível"
                     );
                     return { erro: "Função não disponível", disponivel: false };
                 }
@@ -10033,122 +10551,16 @@
         return removerCardMaterialDesign();
     }
 
-    /**
-     * 🎯 FUNÇÃO PRINCIPAL - Detecta dados com XPath e cria card Material Design
-     * Conecta detectarCardSessaoSimplificado() com criarCardMaterialDesign() usando getData()
-     * @returns {HTMLElement|null} - Card criado ou null se erro
-     */
-    function detectarECriarCardMaterialDesign() {
-        console.log("🎯 DETECÇÃO+CARD: Iniciando processo integrado...");
-
-        try {
-            // 1. DETECTAR DADOS USANDO XPATH EXCLUSIVO
-            const dadosDetectados = detectarCardSessaoSimplificado();
-
-            if (!dadosDetectados) {
-                console.log(
-                    "❌ DETECÇÃO+CARD: Nenhum dado detectado via XPath"
-                );
-                return null;
-            }
-
-            console.log("✅ DETECÇÃO+CARD: Dados detectados:", dadosDetectados);
-            console.log(
-                `📊 DETECÇÃO+CARD: Total sessões: ${dadosDetectados.total}`
-            );
-            console.log(
-                `📊 DETECÇÃO+CARD: Data principal: ${dadosDetectados.data}`
-            );
-            console.log(
-                `📊 DETECÇÃO+CARD: Status principal: ${dadosDetectados.status}`
-            );
-
-            // 2. PREPARAR DADOS NO FORMATO ESPERADO PELO CARD
-            const dadosParaCard = {
-                // Propriedades principais (sessão principal)
-                data: dadosDetectados.data,
-                dataFormatada:
-                    dadosDetectados.dataFormatada || dadosDetectados.data,
-                status: dadosDetectados.status,
-                textoCompleto:
-                    dadosDetectados.sessaoPrincipal?.textoCompleto || "",
-
-                // Dados de múltiplas sessões
-                sessoes: dadosDetectados.sessoes || [],
-                todasSessoes: dadosDetectados.sessoes || [],
-                total: dadosDetectados.total || 1,
-
-                // Metadados
-                origem: "xpath_simplificado",
-                timestamp: new Date().toISOString(),
-            };
-
-            // 3. VALIDAR EXTRAÇÃO DE DATA
-            const dataExtraida = getData(dadosParaCard);
-            console.log(
-                `📅 DETECÇÃO+CARD: getData() extraiu: "${dataExtraida}"`
-            );
-
-            if (
-                dataExtraida === "Data não disponível" ||
-                dataExtraida === "Erro na data"
-            ) {
-                console.log("❌ DETECÇÃO+CARD: Falha na extração da data");
-                return null;
-            }
-
-            // 4. CRIAR CARD MATERIAL DESIGN
-            console.log("🎨 DETECÇÃO+CARD: Criando card Material Design...");
-            const cardCriado = criarCardMaterialDesign(dadosParaCard);
-
-            if (!cardCriado) {
-                console.log("❌ DETECÇÃO+CARD: Falha na criação do card");
-                return null;
-            }
-
-            // 5. INSERIR CARD NA INTERFACE
-            console.log("📍 DETECÇÃO+CARD: Inserindo card na interface...");
-            const inseridoComSucesso = inserirCardNaInterface(cardCriado);
-
-            if (!inseridoComSucesso) {
-                console.log(
-                    "⚠️ DETECÇÃO+CARD: Card criado mas inserção falhou"
-                );
-            }
-
-            // 6. ARMAZENAR DADOS GLOBALMENTE
-            if (typeof window.SENT1_AUTO !== "undefined") {
-                window.SENT1_AUTO.ultimosDadosDetectados = dadosParaCard;
-                window.SENT1_AUTO.todasSessoesDetectadas =
-                    dadosDetectados.sessoes || [];
-            }
-
-            console.log("✅ DETECÇÃO+CARD: Processo concluído com sucesso!");
-            console.log("🎯 DETECÇÃO+CARD: Card ID:", cardCriado.id);
-            console.log("📊 DETECÇÃO+CARD: Dados finais:", dadosParaCard);
-
-            return cardCriado;
-        } catch (error) {
-            console.error(
-                "❌ DETECÇÃO+CARD: Erro no processo integrado:",
-                error
-            );
-            return null;
-        }
-    }
-
     // Função para atualizar data da sessão na interface
-    // VERSÃO MATERIAL DESIGN - Usa apenas sistema novo
+    // VERSÃO SIMPLIFICADA - Usa sistema XPath direto
     function atualizarDataSessaoNaInterface() {
-        console.log(
-            "🔄 ATUALIZAR: Redirecionando para sistema Material Design..."
-        );
+        console.log("🔄 ATUALIZAR: Usando sistema XPath simplificado...");
 
         // Remover cards antigos
         removerDataSessaoDaInterface();
 
-        // Usar exclusivamente o sistema Material Design
-        return detectarECriarCardMaterialDesign();
+        // Usar sistema simplificado
+        return detectarCardSessaoSimplificado();
     }
 
     // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
@@ -12239,7 +12651,7 @@
             dataFormatada: "22/07/2025",
         };
 
-        const card = criarCardMaterialDesign(dadosMock);
+        const card = criarCardSessaoMaterial(dadosMock);
         if (card) {
             // Remover card existente se houver
             const cardExistente = document.getElementById("eprobe-data-sessao");
@@ -14995,7 +15407,7 @@
         },
         // Ações Preferenciais
         "acoes preferenciais": {
-            newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+            newSvg: '<span class="material-symbols-outlined gray">build</span>',
             selector: 'img[alt="acoes preferenciais"]',
         },
         // Atualizar/Refresh
@@ -15307,6 +15719,15 @@
 
     // Função para substituir ícones no fieldset de ações
     function substituirIconesFieldsetAcoes() {
+        // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes("minuta_cadastrar")) {
+            console.log(
+                "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições"
+            );
+            return false;
+        }
+
         console.log(
             "🎨 ÍCONES: Iniciando substituição de ícones no fieldset de ações"
         );
@@ -15544,7 +15965,7 @@
             },
             {
                 selector: 'img[src*="configuracao.gif"]',
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                newSvg: '<span class="material-symbols-outlined gray">build</span>',
             },
             {
                 selector: 'img[src*="refresh.gif"]',
@@ -15580,11 +16001,11 @@
             },
             {
                 selector: 'img[src*="linkeditor.png"]',
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+                newSvg: '<span class="material-symbols-outlined light-gray">link</span>',
             },
             {
                 selector: 'img[src*="html.gif"]',
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+                newSvg: '<span class="material-symbols-outlined blue">document_scanner</span>',
             },
             {
                 selector: 'img[src*="tooltip.gif"]',
@@ -15843,6 +16264,15 @@
 
     // Função adicional para substituição global de ícones específicos
     function substituirIconesGlobalmente() {
+        // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes("minuta_cadastrar")) {
+            console.log(
+                "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições globais"
+            );
+            return false;
+        }
+
         console.log(
             "🎨 ÍCONES: Iniciando substituição global de ícones específicos"
         );
@@ -15858,7 +16288,7 @@
                     'img[title*="Ações Preferenciais"]',
                     'img[alt*="Ações Preferenciais"]',
                 ],
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                newSvg: '<span class="material-symbols-outlined gray">build</span>',
                 name: "Configuração",
             },
             {
@@ -15939,7 +16369,7 @@
                     'img[alt*="Link"]',
                     'img[title*="Link"]',
                 ],
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+                newSvg: '<span class="material-symbols-outlined light-gray">link</span>',
                 name: "Link",
             },
             {
@@ -15949,7 +16379,7 @@
                     'img[title*="Visualizar Documento"]',
                     'img[alt*="Visualizar"]',
                 ],
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>',
+                newSvg: '<span class="material-symbols-outlined blue">document_scanner</span>',
                 name: "Visualizar HTML",
             },
             {
@@ -16268,6 +16698,15 @@
 
     // Função para substituir ícones de ferramentas em toda a página
     function substituirIconesFerramentas() {
+        // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes("minuta_cadastrar")) {
+            console.log(
+                "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições"
+            );
+            return { ignorado: true, motivo: "pagina_minuta_cadastrar" };
+        }
+
         const agora = Date.now();
 
         // ===== CONTROLE DE THROTTLING ULTRA-RIGOROSO =====
@@ -16324,7 +16763,7 @@
                         'img[title*="Ações Preferenciais"]',
                         'img[alt*="Ações Preferenciais"]',
                     ],
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wrench-icon lucide-wrench"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+                    newSvg: `<span class="material-symbols-outlined gray">build</span>`,
                 },
                 // Ícones de refresh/atualização
                 Refresh: {
@@ -16397,7 +16836,7 @@
                         'img[alt*="Link"]',
                         'img[title*="Link"]',
                     ],
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-link-icon lucide-link"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
+                    newSvg: `<span class="material-symbols-outlined light-gray">link</span>`,
                 },
                 // Ícones de visualizar documento HTML
                 "Visualizar HTML": {
@@ -16406,7 +16845,7 @@
                         'img[title*="Visualizar Documento"]',
                         'img[alt*="Visualizar"]',
                     ],
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-text-icon lucide-file-text"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>`,
+                    newSvg: `<span class="material-symbols-outlined blue">document_scanner</span>`,
                 },
                 // Ícones de PDF
                 PDF: {
@@ -17284,6 +17723,7 @@
     // Função de detecção global ao namespace
     // Função de detecção global REMOVIDA - usar apenas detectarCardSessaoSimplificado()
     // para evitar conflitos e duplicação de lógica
+
     /**
      * Função auxiliar para traduzir status de sessão conforme regras específicas
      * @param {string} statusOriginal - Status original do sistema eProc
@@ -18587,7 +19027,7 @@
         // Padrões para extrair informações
         const padraoData = /(\d{2}\/\d{2}\/\d{4})/;
         const padraoStatus =
-            /(Incluído em Pauta|Retirado de Pauta|Pedido de Vista|Julgado|Adiado|Sobrestado)/i;
+            /(Incluído em Pauta|Retirado de Pauta|Pedido de Vista|Julgado em Pauta|Adiado|Sobrestado)/i;
         const padraoTipo = /(Apelação|Agravo|Embargos|Recurso)[^,]*/i;
 
         const data = texto.match(padraoData)?.[1];
@@ -19248,8 +19688,8 @@
             "detectarCardSessaoSimplificado",
             null
         ),
-        criarCardMaterialDesign: createSafeFallback(
-            "criarCardMaterialDesign",
+        criarCardSessaoMaterial: createSafeFallback(
+            "criarCardSessaoMaterial",
             null
         ),
         obterConfigFigmaStatus: createSafeFallback(
@@ -19437,6 +19877,9 @@
         extrairDadosLinhaSessao: safeFunctions.extrairDadosLinhaSessao,
         buscarSessaoPorData: safeFunctions.buscarSessaoPorData,
         cruzarDadosDataSessao: safeFunctions.cruzarDadosDataSessao,
+
+        // 🏛️ FUNÇÕES DE TRADUÇÃO DE ÓRGÃOS TJSC
+        traduzirSiglaOrgao: traduzirSiglaOrgao,
         getDadosCompletosSessionJulgamento:
             sessionDataFunctions.getDadosCompletosSessionJulgamento,
         hasDadosCompletosSessionJulgamento:
@@ -19468,12 +19911,13 @@
         hasStatusSessao: statusFunctions.hasStatusSessao,
         resetStatusSessao: statusFunctions.resetStatusSessao,
         showStatusSessaoInfo: statusFunctions.showStatusSessaoInfo,
-        // Nova função simplificada de cards
+        // ✅ FUNÇÃO SIMPLIFICADA - DETECÇÃO XPATH DIRETO
         detectarCardSessaoSimplificado: detectarCardSessaoSimplificado,
-        // � FUNÇÃO PRINCIPAL INTEGRADA - Detecta dados XPath e cria card
-        detectarECriarCardMaterialDesign: detectarECriarCardMaterialDesign,
-        // �🎨 NOVAS FUNÇÕES FIGMA
-        criarCardMaterialDesign: criarCardMaterialDesign,
+        criarCardSessaoMaterial: criarCardSessaoMaterial,
+        detectarPaginaLocalizadores: detectarPaginaLocalizadores,
+        processarTabelaLocalizadores: processarTabelaLocalizadores,
+        destacarLocalizadoresUrgentes: destacarLocalizadoresUrgentes,
+        // � FUNÇÕES MATERIAL DESIGN
         obterConfigFigmaStatus: obterConfigFigmaStatus,
         adicionarTooltipInterativo: adicionarTooltipInterativo,
         adicionarRichTooltipMaterialDesign: adicionarRichTooltipMaterialDesign,
@@ -19629,6 +20073,257 @@
                 cardCriado: cardCriado,
                 cardExiste: cardExiste,
             };
+        },
+
+        // 🧪 FUNÇÃO DE TESTE PARA O NOVO CARD FIGMA COM TOOLTIP
+        testarCardFigmaAtualizado: function () {
+            console.log(
+                "🎨 TESTE FIGMA: Testando novo card com ícone clock e tooltip..."
+            );
+
+            try {
+                // Dados de teste com múltiplas sessões para tooltip
+                const dadosTeste = [
+                    {
+                        status: "PAUTADO",
+                        data: "28/01/2025",
+                        orgao: "2ª CÂMARA",
+                        tipo: "Incluído em Pauta",
+                        sessoes: [
+                            {
+                                status: "PAUTADO",
+                                data: "28/01/2025",
+                                orgao: "2ª CÂMARA",
+                                tipo: "Incluído em Pauta",
+                                cor: "#5C85B4",
+                            },
+                            {
+                                status: "ADIADO",
+                                data: "20/01/2025",
+                                orgao: "2ª CÂMARA",
+                                tipo: "Sessão Adiada",
+                                cor: "#F55D3E",
+                            },
+                            {
+                                status: "VISTA",
+                                data: "15/01/2025",
+                                orgao: "2ª CÂMARA",
+                                tipo: "Pedido de Vista",
+                                cor: "#FFBF46",
+                            },
+                        ],
+                    },
+                    {
+                        status: "JULGADO",
+                        data: "28/01/2025",
+                        orgao: "1ª CÂMARA",
+                        tipo: "Julgamento Finalizado",
+                        sessoes: [
+                            {
+                                status: "JULGADO",
+                                data: "28/01/2025",
+                                orgao: "1ª CÂMARA",
+                                tipo: "Julgamento Finalizado",
+                                cor: "#3AB795",
+                            },
+                            {
+                                status: "PAUTADO",
+                                data: "21/01/2025",
+                                orgao: "1ª CÂMARA",
+                                tipo: "Incluído em Pauta",
+                                cor: "#5C85B4",
+                            },
+                        ],
+                    },
+                    {
+                        status: "RETIRADO",
+                        data: "28/01/2025",
+                        orgao: "3ª CÂMARA",
+                        tipo: "Retirado de Pauta",
+                    },
+                    {
+                        status: "SOBRESTADO",
+                        data: "28/01/2025",
+                        orgao: "PLENO",
+                        tipo: "Sobrestamento",
+                        sessoes: [
+                            {
+                                status: "SOBRESTADO",
+                                data: "28/01/2025",
+                                orgao: "PLENO",
+                                tipo: "Sobrestamento",
+                                cor: "#FCB0B3",
+                            },
+                            {
+                                status: "PAUTADO",
+                                data: "14/01/2025",
+                                orgao: "PLENO",
+                                tipo: "Incluído em Pauta",
+                                cor: "#5C85B4",
+                            },
+                            {
+                                status: "VISTA",
+                                data: "07/01/2025",
+                                orgao: "PLENO",
+                                tipo: "Pedido de Vista",
+                                cor: "#FFBF46",
+                            },
+                            {
+                                status: "ADIADO",
+                                data: "03/01/2025",
+                                orgao: "PLENO",
+                                tipo: "Sessão Adiada",
+                                cor: "#F55D3E",
+                            },
+                        ],
+                    },
+                ];
+
+                console.log(
+                    "🎯 TESTE: Testando com",
+                    dadosTeste.length,
+                    "variações com tooltip..."
+                );
+
+                dadosTeste.forEach((dados, index) => {
+                    setTimeout(() => {
+                        console.log(
+                            `🎨 TESTE ${index + 1}: Criando card para status ${
+                                dados.status
+                            } ${
+                                dados.sessoes
+                                    ? `(${dados.sessoes.length} sessões)`
+                                    : "(sem histórico)"
+                            }`
+                        );
+
+                        // Remover card anterior
+                        const cardAnterior = document.getElementById(
+                            "eprobe-card-sessao-material"
+                        );
+                        if (cardAnterior) {
+                            cardAnterior.remove();
+                        }
+
+                        // Criar novo card
+                        const card = criarCardSessaoMaterial(dados);
+
+                        if (card) {
+                            console.log(
+                                `✅ TESTE ${
+                                    index + 1
+                                }: Card criado com sucesso!`
+                            );
+                            console.log(
+                                `🎨 STATUS: ${dados.status} → COR aplicada`
+                            );
+                            console.log(
+                                `📍 POSIÇÃO: Card integrado na interface`
+                            );
+                            if (dados.sessoes && dados.sessoes.length > 1) {
+                                console.log(
+                                    `🖱️ TOOLTIP: Passe o mouse sobre o card para ver ${dados.sessoes.length} sessões!`
+                                );
+                            }
+                        } else {
+                            console.log(
+                                `❌ TESTE ${index + 1}: Falha ao criar card`
+                            );
+                        }
+                    }, index * 3000); // 3 segundos entre cada teste para permitir interação
+                });
+
+                return "🎨 TESTE FIGMA: Sequência de testes com tooltip iniciada!";
+            } catch (error) {
+                console.error("❌ TESTE FIGMA: Erro no teste:", error);
+                return "❌ TESTE FIGMA: Erro no teste - veja console";
+            }
+        },
+
+        // 🧪 FUNÇÃO DE TESTE ESPECÍFICA PARA TOOLTIP
+        testarTooltipSessoes: function () {
+            console.log(
+                "🧪 TESTE TOOLTIP: Testando tooltip com múltiplas sessões..."
+            );
+
+            try {
+                const dadosExemplo = {
+                    status: "PAUTADO",
+                    data: "28/01/2025",
+                    orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                    tipo: "Incluído em Pauta em 28/01/2025 - 2CCiv",
+                    sessoes: [
+                        {
+                            status: "PAUTADO",
+                            data: "28/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Incluído em Pauta em 28/01/2025 - 2CCiv",
+                            cor: "#5C85B4",
+                        },
+                        {
+                            status: "ADIADO",
+                            data: "21/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Sessão Adiada em 21/01/2025 - 2CCiv",
+                            cor: "#F55D3E",
+                        },
+                        {
+                            status: "VISTA",
+                            data: "14/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Pedido de Vista em 14/01/2025 - 2CCiv",
+                            cor: "#FFBF46",
+                        },
+                        {
+                            status: "PAUTADO",
+                            data: "07/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Incluído em Pauta em 07/01/2025 - 2CCiv",
+                            cor: "#5C85B4",
+                        },
+                        {
+                            status: "ADIADO",
+                            data: "31/12/2024",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Sessão Adiada em 31/12/2024 - 2CCiv",
+                            cor: "#F55D3E",
+                        },
+                    ],
+                };
+
+                setTimeout(() => {
+                    console.log("📋 Criando card com tooltip rico...");
+
+                    // Remover card anterior se existir
+                    const cardAnterior = document.getElementById(
+                        "eprobe-card-sessao-material"
+                    );
+                    if (cardAnterior) {
+                        cardAnterior.remove();
+                    }
+
+                    const card = criarCardSessaoMaterial(dadosExemplo);
+
+                    if (card) {
+                        setTimeout(() => {
+                            console.log(
+                                "💡 Dica: Passe o mouse sobre o card para ver o tooltip!"
+                            );
+                            console.log(
+                                "🖱️ Ou clique no card para alternar a visualização do tooltip"
+                            );
+                            console.log(
+                                `📊 Tooltip contém ${dadosExemplo.sessoes.length} sessões históricas`
+                            );
+                        }, 1000);
+                    }
+                }, 500);
+
+                return "🧪 TESTE TOOLTIP: Card com tooltip criado!";
+            } catch (error) {
+                console.error("❌ TESTE TOOLTIP: Erro:", error);
+                return "❌ TESTE TOOLTIP: Erro - veja console";
+            }
         },
 
         // 🧪 FUNÇÃO DE TESTE SIMPLES PARA CARD DE SESSÃO
@@ -19901,6 +20596,90 @@
         testarSistemaCompleto: function () {
             console.log("🧪 TESTE: Sistema completo");
             return { teste: "sistema_completo", status: "ok" };
+        },
+        testarTooltipSessoes: function () {
+            console.log(
+                "🧪 TESTE TOOLTIP: Testando tooltip com múltiplas sessões..."
+            );
+
+            try {
+                const dadosExemplo = {
+                    status: "PAUTADO",
+                    data: "28/01/2025",
+                    orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                    tipo: "Incluído em Pauta em 28/01/2025 - 2CCiv",
+                    sessoes: [
+                        {
+                            status: "PAUTADO",
+                            data: "28/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Incluído em Pauta em 28/01/2025 - 2CCiv",
+                            cor: "#5C85B4",
+                        },
+                        {
+                            status: "ADIADO",
+                            data: "21/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Sessão Adiada em 21/01/2025 - 2CCiv",
+                            cor: "#F55D3E",
+                        },
+                        {
+                            status: "VISTA",
+                            data: "14/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Pedido de Vista em 14/01/2025 - 2CCiv",
+                            cor: "#FFBF46",
+                        },
+                        {
+                            status: "PAUTADO",
+                            data: "07/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Incluído em Pauta em 07/01/2025 - 2CCiv",
+                            cor: "#5C85B4",
+                        },
+                        {
+                            status: "ADIADO",
+                            data: "31/12/2024",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Sessão Adiada em 31/12/2024 - 2CCiv",
+                            cor: "#F55D3E",
+                        },
+                    ],
+                };
+
+                setTimeout(() => {
+                    console.log("📋 Criando card com tooltip rico...");
+
+                    // Remover card anterior se existir
+                    const cardAnterior = document.getElementById(
+                        "eprobe-card-sessao-material"
+                    );
+                    if (cardAnterior) {
+                        cardAnterior.remove();
+                    }
+
+                    const card = criarCardSessaoMaterial(dadosExemplo);
+
+                    if (card) {
+                        setTimeout(() => {
+                            console.log(
+                                "💡 Dica: Passe o mouse sobre o card para ver o tooltip!"
+                            );
+                            console.log(
+                                "🖱️ Ou clique no card para alternar a visualização do tooltip"
+                            );
+                            console.log(
+                                `📊 Tooltip contém ${dadosExemplo.sessoes.length} sessões históricas`
+                            );
+                        }, 1000);
+                    }
+                }, 500);
+
+                return "🧪 TESTE TOOLTIP: Card com tooltip criado!";
+            } catch (error) {
+                console.error("❌ TESTE TOOLTIP: Erro:", error);
+                return "❌ TESTE TOOLTIP: Erro - veja console";
+            }
         },
 
         debugPaginaSessoes: function () {
@@ -21088,5 +21867,200 @@
         "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
     );
 
+    // ========================================
+    // 🔧 FUNÇÕES DE LOCALIZADORES - ESCOPO GLOBAL
+    // ========================================
+
+    // Função para detectar e processar página "Meus Localizadores"
+    function detectarPaginaLocalizadores() {
+        const currentUrl = window.location.href;
+
+        // Verifica se está na página de Meus Localizadores
+        if (
+            !currentUrl.includes(
+                "acao=usuario_tipo_monitoramento_localizador_listar"
+            )
+        ) {
+            return false;
+        }
+
+        console.log("📋 LOCALIZADORES: Página 'Meus Localizadores' detectada");
+
+        // Processa a tabela de localizadores
+        processarTabelaLocalizadores();
+
+        return true;
+    }
+
+    // Função para processar a tabela de localizadores
+    function processarTabelaLocalizadores() {
+        console.log("🔍 LOCALIZADORES: Iniciando processamento da tabela");
+
+        // Busca a tabela de localizadores
+        const tabela = document.querySelector(
+            'table.infraTable[summary*="Localizadores"]'
+        );
+
+        if (!tabela) {
+            console.log(
+                "⚠️ LOCALIZADORES: Tabela de localizadores não encontrada"
+            );
+            return [];
+        }
+
+        console.log("✅ LOCALIZADORES: Tabela encontrada, processando...");
+
+        // Destaca localizadores urgentes
+        const urgentes = destacarLocalizadoresUrgentes(tabela);
+
+        return { tabela, urgentes };
+    }
+
+    // Função para destacar localizadores urgentes
+    function destacarLocalizadoresUrgentes(tabela) {
+        console.log("🔴 LOCALIZADORES: Destacando localizadores urgentes");
+
+        const linhas = tabela.querySelectorAll("tbody tr");
+        let urgentesEncontrados = 0;
+
+        linhas.forEach((linha, index) => {
+            const primeiraColuna = linha.querySelector("td:first-child");
+
+            if (primeiraColuna) {
+                const textoLocalizador =
+                    primeiraColuna.textContent.toLowerCase();
+
+                // Verifica se contém a palavra "urgente" (case insensitive)
+                if (textoLocalizador.includes("urgente")) {
+                    // Aplica estilo de destaque vermelho suave
+                    linha.style.backgroundColor = "#fecaca";
+                    linha.style.border = "1px solid #f87171";
+                    linha.style.transition = "all 0.2s ease";
+
+                    urgentesEncontrados++;
+                    console.log(
+                        `🔴 LOCALIZADORES: Linha ${
+                            index + 1
+                        } marcada como urgente: "${primeiraColuna.textContent.trim()}"`
+                    );
+                }
+            }
+        });
+
+        if (urgentesEncontrados > 0) {
+            console.log(
+                `✅ LOCALIZADORES: ${urgentesEncontrados} localizador(es) urgente(s) destacado(s)`
+            );
+        } else {
+            console.log(
+                "ℹ️ LOCALIZADORES: Nenhum localizador urgente encontrado"
+            );
+        }
+
+        return urgentesEncontrados;
+    }
+
     // Fechamento da IIFE principal assíncrona
-})();
+})().catch((error) => {
+    console.error("❌ ERRO na IIFE principal:", error);
+
+    // FALLBACK DE EMERGÊNCIA - Criar namespace mínimo se houver erro
+    if (typeof window.SENT1_AUTO === "undefined") {
+        console.log("🚨 FALLBACK: Criando namespace mínimo de emergência...");
+
+        window.SENT1_AUTO = {
+            detectarCardSessaoSimplificado:
+                detectarCardSessaoSimplificado ||
+                function () {
+                    console.log(
+                        "⚠️ EMERGÊNCIA: detectarCardSessaoSimplificado via fallback"
+                    );
+                    return null;
+                },
+            detectarPaginaLocalizadores:
+                detectarPaginaLocalizadores ||
+                function () {
+                    console.log(
+                        "⚠️ EMERGÊNCIA: detectarPaginaLocalizadores via fallback"
+                    );
+                    return false;
+                },
+            processarTabelaLocalizadores:
+                processarTabelaLocalizadores ||
+                function () {
+                    console.log(
+                        "⚠️ EMERGÊNCIA: processarTabelaLocalizadores via fallback"
+                    );
+                    return [];
+                },
+            destacarLocalizadoresUrgentes:
+                destacarLocalizadoresUrgentes ||
+                function () {
+                    console.log(
+                        "⚠️ EMERGÊNCIA: destacarLocalizadoresUrgentes via fallback"
+                    );
+                    return 0;
+                },
+            criarCardSessaoMaterial:
+                criarCardSessaoMaterial ||
+                function () {
+                    console.log(
+                        "⚠️ EMERGÊNCIA: criarCardSessaoMaterial via fallback"
+                    );
+                    return false;
+                },
+            // Função de debug para verificar estado
+            debugEmergencia: function () {
+                console.log("🚨 DEBUG EMERGÊNCIA:");
+                console.log("- Namespace criado via fallback");
+                console.log("- Funções disponíveis:", Object.keys(this).length);
+                return {
+                    namespace: "fallback",
+                    funcoes: Object.keys(this).length,
+                    detectarCardSessaoSimplificado:
+                        typeof this.detectarCardSessaoSimplificado ===
+                        "function",
+                };
+            },
+        };
+
+        console.log("✅ FALLBACK: Namespace mínimo criado com sucesso");
+    }
+});
+
+// ========================================
+// 🚨 VERIFICAÇÃO FINAL DE SEGURANÇA
+// ========================================
+
+// Garantir que o namespace existe SEMPRE
+setTimeout(() => {
+    if (typeof window.SENT1_AUTO === "undefined") {
+        console.error(
+            "🚨 ERRO CRÍTICO: Namespace não foi criado após timeout!"
+        );
+
+        // Última tentativa - namespace super básico
+        window.SENT1_AUTO = {
+            detectarCardSessaoSimplificado: function () {
+                console.log(
+                    "⚠️ TIMEOUT FALLBACK: detectarCardSessaoSimplificado"
+                );
+                return null;
+            },
+            debug: function () {
+                return {
+                    status: "timeout_fallback",
+                    timestamp: new Date().toISOString(),
+                };
+            },
+        };
+
+        console.log("🆘 TIMEOUT FALLBACK: Namespace básico criado");
+    } else {
+        console.log("✅ VERIFICAÇÃO: Namespace window.SENT1_AUTO confirmado");
+        console.log(
+            "📊 Funções disponíveis:",
+            Object.keys(window.SENT1_AUTO).length
+        );
+    }
+}, 1000);
