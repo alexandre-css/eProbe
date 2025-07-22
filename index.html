@@ -4,15 +4,16 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>eProbe - Automação Inteligente para o Sistema eproc/TJSC</title>
+    <title>eProbe v1.0.1 - Automação Inteligente para o Sistema eProc/TJSC</title>
     <meta name="description"
-        content="Extensão Chrome que automatiza detecção de documentos, extração de texto e análise de dados do sistema eproc/TJSC com IA integrada." />
-    <link rel="icon" type="image/png" href="assets/icon16.png" />
+        content="Extensão Chrome avançada que automatiza detecção de documentos, extração de texto, sistema de cards Material Design, múltiplas sessões e análise de dados do sistema eProc/TJSC com IA integrada." />
+    <link rel="icon" type="image/png" href="assets/400x.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
         href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
         rel="stylesheet" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
 
     <style>
@@ -258,6 +259,67 @@
             right: 0;
             height: 4px;
             background: var(--gradient-accent);
+        }
+
+
+        .feature-card.new-feature::after {
+            content: "NOVO";
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--gradient-accent);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .install-status {
+            background: var(--gradient-accent);
+            color: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow);
+        }
+
+        .install-status h3 {
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .install-status p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .install-status p:last-child {
+            opacity: 0.9;
+        }
+
+        .progress-icon {
+            font-family: 'Material Symbols Outlined';
+            font-size: 1.5rem;
+            display: inline-block;
+            animation: spin 2s linear infinite;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .feature-icon {
@@ -569,7 +631,7 @@
     <header>
         <nav>
             <div class="logo">
-                <img src="assets/iconmain.png" alt="eProbe Logo" />
+                <img src="assets/40x.png" alt="eProbe Logo" />
                 <span>eProbe</span>
             </div>
             <ul class="nav-links">
@@ -604,11 +666,11 @@
             <div class="section-title animate-on-scroll">
                 <h2>
                     Funcionalidades
-                    <span class="text-gradient">Inteligentes</span>
+                    <span class="text-gradient">Avançadas</span>
                 </h2>
                 <p>
-                    Desenvolvido especificamente para o sistema eproc/TJSC
-                    com foco em produtividade e precisão
+                    Desenvolvido especificamente para o sistema eProc/TJSC
+                    com foco em produtividade, design moderno e precisão
                 </p>
             </div>
 
@@ -617,11 +679,35 @@
                     <div class="feature-icon">
                         <i data-lucide="search"></i>
                     </div>
-                    <h3>Detecção Automática</h3>
+                    <h3>Detecção Automática Ultra-Robusta</h3>
                     <p>
-                        Identifica automaticamente documentos relevantes
-                        (sentença, inicial, recurso) e extrai dados
-                        do processo com precisão.
+                        Sistema avançado que identifica automaticamente documentos relevantes
+                        (sentença, inicial, recurso) com múltiplas estratégias de detecção
+                        e diagnóstico automático de problemas.
+                    </p>
+                </div>
+
+                <div class="feature-card new-feature animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="layout-dashboard"></i>
+                    </div>
+                    <h3>Cards Material Design (Figma)</h3>
+                    <p>
+                        Sistema completo de cards com 8 designs únicos baseados em Figma,
+                        cada um personalizado para diferentes status de sessão com cores,
+                        ícones e layouts específicos.
+                    </p>
+                </div>
+
+                <div class="feature-card new-feature animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="layers"></i>
+                    </div>
+                    <h3>Sistema de Múltiplas Sessões</h3>
+                    <p>
+                        Exibe histórico completo de todas as sessões de julgamento através
+                        de tooltip interativo, com cores diferenciadas por status e
+                        navegação cronológica intuitiva.
                     </p>
                 </div>
 
@@ -632,8 +718,8 @@
                     <h3>Extração de Texto Avançada</h3>
                     <p>
                         Suporte completo para documentos PDF e HTML com
-                        múltiplas estratégias de extração e limpeza
-                        inteligente de conteúdo.
+                        múltiplas estratégias de extração, limpeza
+                        inteligente e performance otimizada.
                     </p>
                 </div>
 
@@ -643,9 +729,9 @@
                     </div>
                     <h3>Integração com IA</h3>
                     <p>
-                        Envio direto para IA com prefixos
-                        otimizados para análise jurídica e processamento
-                        inteligente.
+                        Envio direto para Perplexity AI com prefixos
+                        otimizados para análise jurídica, processamento
+                        inteligente e conformidade com LGPD.
                     </p>
                 </div>
 
@@ -653,11 +739,11 @@
                     <div class="feature-icon">
                         <i data-lucide="calendar-days"></i>
                     </div>
-                    <h3>Dados de Sessão</h3>
+                    <h3>Dados de Sessão Inteligentes</h3>
                     <p>
                         Extração automática de datas de julgamento, órgãos
                         julgadores e status das sessões diretamente das
-                        minutas.
+                        minutas com detecção XPath otimizada.
                     </p>
                 </div>
 
@@ -668,8 +754,8 @@
                     <h3>Minutas Detalhadas</h3>
                     <p>
                         Acesso automatizado aos textos completos de acórdãos
-                        e relatórios/votos com interface intuitiva e
-                        expansível.
+                        e relatórios/votos com interface expansível e
+                        organização inteligente.
                     </p>
                 </div>
 
@@ -677,10 +763,23 @@
                     <div class="feature-icon">
                         <i data-lucide="palette"></i>
                     </div>
-                    <h3>Temas Personalizáveis</h3>
+                    <h3>Sistema de Temas Consolidado</h3>
                     <p>
-                        temas visuais para personalizar
-                        a experiência no sistema eproc.
+                        4 temas visuais completos (azul, escuro, claro, violeta)
+                        integrados diretamente no main.js, com aplicação
+                        em tempo real e sincronização automática.
+                    </p>
+                </div>
+
+                <div class="feature-card new-feature animate-on-scroll">
+                    <div class="feature-icon">
+                        <i data-lucide="gauge"></i>
+                    </div>
+                    <h3>Performance Ultra-Otimizada</h3>
+                    <p>
+                        Sistema com debounce avançado, event listeners passivos,
+                        throttling de requisições, cache inteligente e
+                        otimizações específicas para o eProc.
                     </p>
                 </div>
             </div>
@@ -693,23 +792,26 @@
             <div class="demo-content">
                 <div class="demo-text animate-on-scroll">
                     <h2>
-                        Veja o eProbe em
+                        Veja o eProbe v1.0.1 em
                         <span class="text-gradient">Ação</span>
                     </h2>
                     <p>
-                        Transforme sua produtividade com automação
-                        inteligente. O eProbe integra-se perfeitamente ao
-                        sistema eproc, oferecendo funcionalidades avançadas
-                        sem alterar a interface original.
+                        Transforme sua produtividade com automação avançada e design moderno. 
+                        O eProbe v1.0.1 integra-se perfeitamente ao sistema eProc, oferecendo 
+                        funcionalidades profissionais sem alterar a interface original.
                     </p>
 
                     <ul class="demo-features">
-                        <li>Detecção automática em tempo real</li>
+                        <li>Sistema de cards Material Design baseado em Figma</li>
+                        <li>Múltiplas sessões com tooltip interativo</li>
+                        <li>Detecção automática com diagnóstico de problemas</li>
+                        <li>Performance ultra-otimizada com event listeners passivos</li>
                         <li>Interface integrada e não-intrusiva</li>
-                        <li>Processamento em segundo plano</li>
+                        <li>Sistema de temas consolidado (4 opções)</li>
                         <li>Cache inteligente por processo</li>
-                        <li>Funções de debug e monitoramento</li>
+                        <li>Funções de debug e monitoramento avançadas</li>
                         <li>Controle de requisições para segurança</li>
+                        <li>Conformidade total com LGPD</li>
                     </ul>
 
                     <a href="https://github.com/alexandre-css/eProbe" class="cta-button">Ver no GitHub</a>
@@ -732,12 +834,16 @@
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-item animate-on-scroll">
-                    <div class="stat-number">9000+</div>
+                    <div class="stat-number">21000+</div>
                     <div class="stat-label">Linhas de Código</div>
                 </div>
                 <div class="stat-item animate-on-scroll">
-                    <div class="stat-number">15+</div>
+                    <div class="stat-number">50+</div>
                     <div class="stat-label">Funções Principais</div>
+                </div>
+                <div class="stat-item animate-on-scroll">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Cards Material Design</div>
                 </div>
                 <div class="stat-item animate-on-scroll">
                     <div class="stat-number">4</div>
@@ -759,8 +865,19 @@
                     Instalação <span class="text-gradient">Simples</span>
                 </h2>
                 <p>
-                    Configure o eProbe em menos de 5 minutos e comece a
-                    automatizar seu trabalho
+                    Configure o eProbe v1.0.1 em menos de 5 minutos e comece a
+                    automatizar seu trabalho com cards Material Design
+                </p>
+            </div>
+
+            <!-- Chrome Web Store Status -->
+            <div class="install-status animate-on-scroll">
+                <h3><span class="progress-icon">cached</span>Status da Chrome Web Store</h3>
+                <p>
+                    <strong>Em revisão</strong> - A extensão eProbe v1.0.1 está sendo analisada pela Chrome Web Store
+                </p>
+                <p>
+                    Enquanto isso, você pode instalar manualmente seguindo os passos abaixo
                 </p>
             </div>
 
@@ -768,8 +885,9 @@
                 <div class="install-step animate-on-scroll" data-step="1">
                     <h3>Download</h3>
                     <p>
-                        Baixe o código-fonte do projeto eProbe do
-                        repositório GitHub oficial.
+                        Baixe o código-fonte do projeto eProbe v1.0.1 do
+                        repositório GitHub oficial ou aguarde aprovação
+                        na Chrome Web Store.
                     </p>
                 </div>
 
@@ -777,7 +895,7 @@
                     <h3>Chrome Extensions</h3>
                     <p>
                         Abra o Chrome/Edge, vá para chrome://extensions/ ou
-                        edge://extensions/e ative o "Modo desenvolvedor".
+                        edge://extensions/ e ative o "Modo desenvolvedor".
                     </p>
                 </div>
 
@@ -785,15 +903,15 @@
                     <h3>Carregar Extensão</h3>
                     <p>
                         Clique em "Carregar sem compactação" e selecione a
-                        pasta do eProbe.
+                        pasta do eProbe. A extensão será carregada automaticamente.
                     </p>
                 </div>
 
                 <div class="install-step animate-on-scroll" data-step="4">
                     <h3>Pronto!</h3>
                     <p>
-                        Navegue para o eproc e veja o botão "Resumir
-                        Documento" integrado na página.
+                        Navegue para o eProc e veja o botão "Resumir Documento"
+                        integrado na página, com cards Material Design automáticos.
                     </p>
                 </div>
             </div>
@@ -804,11 +922,12 @@
     <footer>
         <div class="footer-content">
             <div class="footer-section">
-                <h3>eProbe</h3>
+                <h3>eProbe v1.0.1</h3>
                 <p class="footer-description">
-                    Automação inteligente para o sistema eproc/TJSC.
-                    Desenvolvido com foco em produtividade e precisão para
-                    servidores do Poder Judiciário de Santa Catarina.
+                    Automação inteligente para o sistema eProc/TJSC.
+                    Desenvolvido com foco em produtividade, design moderno e precisão para
+                    servidores do Poder Judiciário de Santa Catarina. Sistema completo
+                    com cards Material Design, múltiplas sessões e performance otimizada.
                 </p>
             </div>
 
@@ -818,12 +937,16 @@
                 <a href="PRIVACY_POLICY.md">Política de Privacidade</a>
                 <a href="https://github.com/alexandre-css/eProbe">Código Fonte</a>
                 <a href="https://github.com/alexandre-css/eProbe/issues">Reportar Bug</a>
+                <a href="md/CHECKLIST_FINAL_CHROME_STORE.md">Status Chrome Store</a>
             </div>
 
             <div class="footer-section">
-                <h3>Recursos</h3>
-                <a href="src/md/BUSCA_DADOS_SESSAO.md">Sistema de Busca</a>
-                <a href="src/md/EXTRACAO_MINUTAS_DETALHADAS.md">Extração de Minutas</a>
+                <h3>Recursos Avançados</h3>
+                <a href="md/FIGMA_CARD_DESIGN_IMPLEMENTATION.md">Cards Material Design</a>
+                <a href="md/SISTEMA_MULTIPLAS_SESSOES.md">Sistema de Múltiplas Sessões</a>
+                <a href="md/CONSOLIDACAO_SISTEMA_TEMAS.md">Sistema de Temas</a>
+                <a href="md/BUSCA_DADOS_SESSAO.md">Sistema de Busca</a>
+                <a href="md/EXTRACAO_MINUTAS_DETALHADAS.md">Extração de Minutas</a>
                 <a href="#demo">Demonstração</a>
                 <a href="#features">Funcionalidades</a>
             </div>
@@ -833,16 +956,18 @@
                 <a href="https://github.com/alexandre-css">Alexandre Claudino Simas Santos</a>
                 <a href="mailto:alexandress@tjsc.jus.br">alexandress@tjsc.jus.br</a>
                 <p>
-                    Versão: 1.0.0-beta<br />Última atualização: Julho de
-                    2025
+                    Versão: v1.0.1<br />
+                    Última atualização: Janeiro de 2025<br />
+                    Status: Em revisão na Chrome Web Store<br />
+                    Funcionalidades: 50+ funções integradas
                 </p>
             </div>
         </div>
 
         <div class="footer-bottom">
             <p>
-                &copy; 2025 eProbe. Projeto open source desenvolvido para o
-                sistema eproc/TJSC.
+                &copy; 2025 eProbe v1.0.1. Projeto open source desenvolvido para o
+                sistema eProc/TJSC com sistema avançado de cards Material Design e múltiplas sessões.
             </p>
         </div>
     </footer>
@@ -961,22 +1086,36 @@
 
         // Log eProbe information to console for developers
         console.log(`
-🔍 eProbe - Automação Inteligente para eproc/TJSC
-📊 Versão: 1.0.0
+🔍 eProbe v1.0.1 - Automação Inteligente para eProc/TJSC
+📊 Versão: v1.0.1 (Janeiro 2025)
 🚀 Desenvolvido por: Alexandre Claudino Simas Santos
 📄 Documentação: README.md
 🔗 GitHub: https://github.com/alexandre-css/eProbe
 🌐 Landing Page: https://e-probe.vercel.app/
 
-Funcionalidades principais:
-✅ Detecção automática de documentos (SENT1, INIC1)
-✅ Extração de texto PDF/HTML
-✅ Dados de sessão das minutas
+Funcionalidades principais v1.0.1:
+✅ Sistema de cards Material Design baseado em Figma (8 variantes)
+✅ Sistema de múltiplas sessões com tooltip interativo
+✅ Detecção automática ultra-robusta com diagnóstico
+✅ Extração de texto PDF/HTML otimizada
+✅ Dados de sessão das minutas com XPath exclusivo
 ✅ Textos detalhados de acórdãos e votos
-✅ Integração com IA (ChatGPT/Perplexity)
-✅ Temas personalizáveis
+✅ Integração com IA (Perplexity) com conformidade LGPD
+✅ Sistema de temas consolidado (4 opções)
+✅ Performance ultra-otimizada com event listeners passivos
 ✅ Sistema de cache inteligente
-✅ Funções de debug avançadas
+✅ Funções de debug avançadas (50+ funções)
+✅ Controle de requisições para segurança
+✅ Conformidade total com Chrome Web Store
+
+Melhorias técnicas:
+🔧 21.000+ linhas de código otimizado
+🔧 Sistema de namespace consolidado
+🔧 Event listeners passivos para performance
+🔧 Debounce avançado e throttling
+🔧 Diagnóstico automático de problemas
+🔧 Correção automática de funcionalidades
+🔧 Sistema de ícones visuais integrado
         `);
 
         // Initialize Lucide icons

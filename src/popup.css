@@ -178,12 +178,12 @@ body {
 }
 
 /* Ícone principal com círculo branco fino */
-.header h1 img.icon {
+/* .header h1 img.icon {
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.6);
     padding: 1px;
     background-color: rgba(255, 255, 255, 0.1);
-}
+} */
 
 /* Ícones nos botões */
 .btn .icon {

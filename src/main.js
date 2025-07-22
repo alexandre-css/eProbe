@@ -1193,7 +1193,7 @@ RESPOSTA (apenas JSON válido):`;
             card.id = "eprobe-card-sessao-material";
             card.className = "eprobe-session-card-figma";
 
-            // Estilo do card Figma: Material Light pequeno - PARA INTEGRAÇÃO
+            // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA NÃO INTERFERIR
             card.style.cssText = `
                 width: 169px;
                 height: 60px;
@@ -1201,7 +1201,7 @@ RESPOSTA (apenas JSON válido):`;
                 border: 0.75px solid #CAC4D0;
                 border-radius: 9px;
                 box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-                z-index: 1000;
+                z-index: 9999;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 display: flex;
                 align-items: center;
@@ -1210,7 +1210,9 @@ RESPOSTA (apenas JSON válido):`;
                 cursor: pointer;
                 transition: transform 0.2s ease;
                 animation: slideInCard 0.3s ease-out;
-                margin-top: 8px;
+                margin: 0;
+                flex-shrink: 0;
+                position: relative;
             `;
 
             // Ícone de clock pequeno do Figma
@@ -14844,15 +14846,15 @@ RESPOSTA (apenas JSON válido):`;
      */
     function inserirCardNaInterface(card) {
         console.log(
-            "🎯 MATERIAL: Iniciando inserção do card ao lado do elemento específico..."
+            "🎯 MATERIAL: Iniciando inserção do card no XPath específico solicitado..."
         );
 
-        // Estratégia 1: XPATH ESPECÍFICO solicitado pelo usuário
+        // XPATH EXATO SOLICITADO PELO USUÁRIO
         const xpathElemento =
-            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[3]";
+            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[3]/label";
 
         try {
-            const elementoAlvo = document.evaluate(
+            const elementoLabel = document.evaluate(
                 xpathElemento,
                 document,
                 null,
@@ -14860,91 +14862,71 @@ RESPOSTA (apenas JSON válido):`;
                 null
             ).singleNodeValue;
 
-            if (elementoAlvo) {
+            if (elementoLabel) {
                 console.log(
-                    "✅ MATERIAL: Elemento XPath específico encontrado!"
+                    "✅ MATERIAL: Elemento label encontrado via XPath!"
+                );
+                console.log(
+                    "📍 MATERIAL: Elemento:",
+                    elementoLabel.tagName,
+                    elementoLabel.textContent
                 );
 
-                // Garantir que o elemento pai tenha position relative
-                elementoAlvo.style.position = "relative";
+                // Obter o elemento pai do label para posicionamento
+                const containerPai = elementoLabel.parentElement;
+                if (containerPai) {
+                    // Configurar o container pai para position relative
+                    containerPai.style.position = "relative";
 
-                // Posicionar o card de forma absoluta ao lado direito
-                card.style.position = "absolute";
-                card.style.top = "0";
-                card.style.left = "calc(100% + 12px)"; // 12px de espaçamento
-                card.style.zIndex = "1000";
+                    // Posicionar o card de forma absoluta ao lado direito do label
+                    card.style.position = "absolute";
+                    card.style.top = "0";
+                    card.style.left = "calc(100% + 15px)"; // 15px de espaçamento à direita
+                    card.style.zIndex = "9999";
+                    card.style.maxWidth = "180px";
+                    card.style.pointerEvents = "auto";
 
-                // Adicionar ao elemento alvo
-                elementoAlvo.appendChild(card);
+                    // Inserir o card no container pai do label
+                    containerPai.appendChild(card);
 
+                    console.log(
+                        "✅ MATERIAL: Card posicionado ao lado direito do label específico"
+                    );
+                    console.log(
+                        "🎯 MATERIAL: Posição: absolute left:calc(100% + 15px) top:0"
+                    );
+                    return true;
+                } else {
+                    console.log(
+                        "⚠️ MATERIAL: Container pai do label não encontrado"
+                    );
+                }
+            } else {
                 console.log(
-                    "✅ MATERIAL: Card posicionado ao lado direito do elemento específico"
+                    "❌ MATERIAL: Elemento label não encontrado no XPath especificado"
                 );
-                return true;
             }
         } catch (error) {
-            console.log("⚠️ MATERIAL: Erro ao buscar elemento XPath:", error);
-        }
-
-        // Estratégia 2: Fallback - Procurar por fieldset[1]
-        const fieldset1 = document.querySelector("fieldset:first-of-type");
-        if (fieldset1) {
-            console.log("✅ MATERIAL: Fieldset[1] encontrado como fallback");
-            const containerDiv = fieldset1.querySelector(
-                "div div div:nth-child(3)"
+            console.log(
+                "❌ MATERIAL: Erro ao buscar elemento via XPath:",
+                error
             );
-            if (containerDiv) {
-                containerDiv.style.position = "relative";
-                card.style.position = "absolute";
-                card.style.top = "0";
-                card.style.left = "calc(100% + 12px)";
-                card.style.zIndex = "1000";
-                containerDiv.appendChild(card);
-                console.log("✅ MATERIAL: Card inserido via fallback fieldset");
-                return true;
-            }
         }
 
-        // Estratégia 3: Fallback - lblMagistrado
-        const lblMagistrado = document.querySelector("#lblMagistrado");
-        if (lblMagistrado) {
-            const rowMt2 = lblMagistrado.closest(".row.mt-2");
-            if (rowMt2) {
-                rowMt2.style.position = "relative";
-                card.style.position = "absolute";
-                card.style.top = "0";
-                card.style.right = "-240px";
-                card.style.zIndex = "1000";
-                rowMt2.appendChild(card);
-                console.log(
-                    "✅ MATERIAL: Card inserido ao lado do lblMagistrado"
-                );
-                return true;
-            }
-        }
+        // FALLBACK ÚNICO: Se não encontrar o XPath específico, usar posição fixa simples
+        console.log(
+            "⚠️ MATERIAL: Usando fallback - posição fixa no canto direito"
+        );
 
-        // Estratégia 4: Fallback - Área do processo
-        const areaProcesso = document.querySelector("#divInfraAreaProcesso");
-        if (areaProcesso) {
-            console.log("✅ MATERIAL: Área do processo encontrada (fallback)");
-            areaProcesso.style.position = "relative";
-            card.style.position = "absolute";
-            card.style.top = "20px";
-            card.style.right = "20px";
-            card.style.zIndex = "1000";
-            areaProcesso.appendChild(card);
-            console.log("✅ MATERIAL: Card inserido na área do processo");
-            return true;
-        }
-
-        // Estratégia 5: FALLBACK ABSOLUTO - Posição fixa no viewport
-        console.log("⚠️ MATERIAL: Usando fallback absoluto - posição fixa");
         card.style.position = "fixed";
-        card.style.top = "100px";
-        card.style.right = "20px";
+        card.style.top = "200px";
+        card.style.right = "30px";
         card.style.zIndex = "9999";
+        card.style.maxWidth = "180px";
+        card.style.pointerEvents = "auto";
+
         document.body.appendChild(card);
-        console.log("✅ MATERIAL: Card inserido no body (fallback garantido)");
+        console.log("✅ MATERIAL: Card inserido com fallback garantido");
         return true;
     }
 
