@@ -25,9 +25,7 @@
                 "https://eproc2g.tjsc.jus.br/*"
             ],
             "js": [
-                "src/main.js",
-                "src/themeApply.js",
-                "src/semanticKernel.js"
+                "src/main.js"
             ],
             "run_at": "document_end"
         }
