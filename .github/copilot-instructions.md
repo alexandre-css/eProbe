@@ -22,6 +22,9 @@ if (minhaVariavel) { ... } // Usar depois
 3. ✅ Escopo das variáveis está correto?
 4. ✅ Funções retornam valores consistentes (boolean, string, object)?
 5. ✅ Não há referências a variáveis undefined?
+6. ✅ **NOVO**: Event listeners usam `{ passive: true }` quando apropriado?
+7. ✅ **NOVO**: setTimeout/setInterval são otimizados (debounce, backoff)?
+8. ✅ **NOVO**: MutationObserver usa debounce para performance?
 
 ### 📁 ORGANIZAÇÃO OBRIGATÓRIA DE ARQUIVOS MARKDOWN
 
@@ -109,6 +112,69 @@ window.SENT1_AUTO = {
 -   Criar `window.SENT1_AUTO.novaFuncao =` fora do namespace consolidado
 -   Duplicar funções no namespace
 -   Esquecer de adicionar novas funções ao namespace
+
+### 🚀 OTIMIZAÇÃO DE PERFORMANCE - REGRAS OBRIGATÓRIAS
+
+**REGRA ABSOLUTA**: SEMPRE otimizar para performance seguindo padrões estabelecidos.
+
+#### Event Listeners Otimizados
+```javascript
+// ❌ ERRO - Event listener sem otimização:
+button.addEventListener("mouseenter", handler);
+
+// ✅ CORRETO - Event listener otimizado:
+button.addEventListener("mouseenter", handler, { passive: true });
+```
+
+#### Debounce Obrigatório
+```javascript
+// ❌ ERRO - setTimeout direto:
+setTimeout(minhaFuncao, 200);
+
+// ✅ CORRETO - Usar debounce global:
+const debouncedFunction = window.debounce(minhaFuncao, 200);
+debouncedFunction();
+```
+
+#### MutationObserver Eficiente
+```javascript
+// ❌ ERRO - Observer sem debounce:
+const observer = new MutationObserver((mutations) => {
+    mutations.forEach(mutation => processarMutacao(mutation));
+});
+
+// ✅ CORRETO - Observer com debounce e early exit:
+const observer = new MutationObserver((mutations) => {
+    let shouldProcess = false;
+    for (const mutation of mutations) {
+        if (condicaoAtendida(mutation)) {
+            shouldProcess = true;
+            break; // Early exit
+        }
+    }
+    if (shouldProcess) {
+        debouncedProcess();
+    }
+});
+```
+
+#### Backoff Exponencial
+```javascript
+// ❌ ERRO - Timeouts fixos repetidos:
+setTimeout(tentarNovamente, 1000);
+setTimeout(tentarNovamente, 1000);
+
+// ✅ CORRETO - Backoff exponencial:
+const delay = Math.min(1000 * Math.pow(1.5, tentativas - 1), 5000);
+setTimeout(tentarNovamente, delay);
+```
+
+**PADRÕES DE PERFORMANCE OBRIGATÓRIOS**:
+1. ✅ Event listeners sempre com `{ passive: true }` para scroll/hover
+2. ✅ MutationObserver sempre com debounce de 50ms mínimo
+3. ✅ setTimeout repetidos sempre com backoff exponencial
+4. ✅ Loops sempre com early exit quando possível
+5. ✅ Timer cleanup obrigatório (clearTimeout/clearInterval)
 
 ## Project Overview
 

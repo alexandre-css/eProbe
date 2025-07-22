@@ -143,19 +143,56 @@
             return false;
         };
 
-        // Tentar interceptar jQuery imediatamente e em intervalos
-        interceptJQuery();
-        setTimeout(interceptJQuery, 100);
-        setTimeout(interceptJQuery, 500);
-        setTimeout(interceptJQuery, 1000);
+        // Interceptação jQuery otimizada com debounce inteligente
+        let jQueryAttempts = 0;
+        const maxJQueryAttempts = 3; // Reduzido de 5 para 3 tentativas
+
+        const interceptWithBackoff = () => {
+            if (jQueryAttempts >= maxJQueryAttempts) {
+                console.log(
+                    "🎯 PERFORMANCE: jQuery intercept finalizado (max attempts)"
+                );
+                return;
+            }
+
+            jQueryAttempts++;
+            if (interceptJQuery()) {
+                console.log("✅ PERFORMANCE: jQuery interceptado com sucesso");
+                return;
+            }
+
+            // Backoff exponencial: 100ms, 400ms, 1000ms
+            const delay = 100 * Math.pow(2, jQueryAttempts - 1);
+            setTimeout(interceptWithBackoff, delay);
+        };
+
+        // Iniciar interceptação otimizada
+        interceptWithBackoff();
 
         console.log("🚀 PERFORMANCE: Sistema otimizado carregado");
         console.log(
-            "🎯 PERFORMANCE: Interceptação jQuery limitada a 5 tentativas"
+            "🎯 PERFORMANCE: Interceptação jQuery otimizada com backoff exponencial"
         );
     })();
 
-    // 2.5. FUNÇÃO HELPER GLOBAL PARA EVENTOS PASSIVOS
+    // 2.5. FUNÇÃO DEBOUNCE GLOBAL PARA PERFORMANCE
+    window.debounce = (func, delay) => {
+        let timeoutId;
+        const debounced = function (...args) {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => func.apply(this, args), delay);
+        };
+
+        // Método para cancelar timeout pendente
+        debounced.cancel = () => {
+            clearTimeout(timeoutId);
+            timeoutId = null;
+        };
+
+        return debounced;
+    };
+
+    // 2.6. FUNÇÃO HELPER GLOBAL PARA EVENTOS PASSIVOS
     window.addPassiveEventListener = (element, eventType, handler) => {
         // Lista de eventos que devem ser passivos
         const passiveEvents = [
@@ -261,6 +298,607 @@
 
     // Aguardar APIs antes de continuar
     await aguardarAPIsExtensao();
+
+    // ============================================================================
+    // 🎨 SISTEMA DE TEMAS INTEGRADO (ex-themeApply.js)
+    // ============================================================================
+
+    /*
+    ========================================
+    FUNCIONALIDADES DE STATUS DE SESSÃO
+    ========================================
+
+    O eProbe agora detecta automaticamente o status da sessão do processo:
+
+    📋 STATUS DETECTADOS:
+    • "Processo Pautado" - Incluído em Pauta em [data]
+    • "Processo Julgado" - Julgado em Pauta em [data] 
+    • "Processo Retirado de Pauta" - Retirado em Pauta em [data]
+
+    🎨 INTERFACE DINÂMICA:
+    • Cores automáticas baseadas no status:
+      - Azul (#3b82f6) para Pautado
+      - Verde (#16a34a) para Julgado
+      - Vermelho (#dc2626) para Retirado
+
+    🔍 FUNÇÕES DE DEBUG:
+    • window.SENT1_AUTO.debugDeteccaoStatusSessao() - Detectar status manualmente
+    • window.SENT1_AUTO.debugStatusSessao() - Mostrar informações do status
+    • window.SENT1_AUTO.getStatusSessao() - Obter dados do status atual
+
+    ⚙️ IMPLEMENTAÇÃO:
+    • Detecção automática via regex nas minutas do processo
+    • Fallback para detecção padrão se status específico não for encontrado
+    • Interface atualizada automaticamente com cores e textos dinâmicos
+    */
+
+    // Função para controlar exibição da data da sessão
+    function toggleSessionDateDisplay(isEnabled) {
+        const sessionDateElement =
+            document.getElementById("eprobe-data-sessao");
+
+        if (sessionDateElement) {
+            if (isEnabled) {
+                sessionDateElement.style.display = "flex";
+                console.log("✅ Data da sessão exibida");
+            } else {
+                sessionDateElement.style.display = "none";
+                console.log("❌ Data da sessão ocultada");
+            }
+        } else {
+            console.log(
+                "ℹ️ Elemento da data da sessão não encontrado na página"
+            );
+        }
+    }
+
+    // Função para aplicar estilos do tema (definida globalmente)
+    function applyThemeStyles(themeName) {
+        console.log(`🎨 Aplicando tema ${themeName} automaticamente...`);
+
+        // Remove estilos de tema anteriores
+        const existingThemeStyle = document.getElementById(
+            "eprobe-theme-styles"
+        );
+        if (existingThemeStyle) {
+            existingThemeStyle.remove();
+        }
+
+        // Define as cores dos temas
+        const themeColors = {
+            blue: {
+                navbar: "linear-gradient(to left, #0d1c2c, #007ebd)",
+                name: "Azul",
+            },
+            dark: {
+                navbar: "linear-gradient(to left, #1a1a1a, #696363)",
+                name: "Escuro",
+            },
+            light: {
+                navbar: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                name: "Claro",
+            },
+            violet: {
+                navbar: "linear-gradient(to left, #6b46c1, #4c1d95)",
+                name: "Violeta",
+            },
+        };
+
+        const theme = themeColors[themeName];
+        if (!theme) {
+            console.log(`❌ Tema ${themeName} não encontrado`);
+            return;
+        }
+
+        // Aplica o estilo IMEDIATAMENTE via CSS inline para evitar qualquer delay
+        const navbar =
+            document.querySelector("#navbar.navbar.bg-instancia") ||
+            document.querySelector(".navbar.bg-instancia") ||
+            document.querySelector("nav.navbar.bg-instancia");
+
+        if (navbar) {
+            navbar.style.backgroundImage = theme.navbar;
+            navbar.style.transition = "background-image 0.3s ease";
+            console.log(
+                `🎨 Estilo aplicado diretamente na navbar: ${theme.name}`
+            );
+        }
+
+        // Cria elemento de estilo para garantir que persista
+        const styleElement = document.createElement("style");
+        styleElement.id = "eprobe-theme-styles";
+        styleElement.textContent = `
+            /* eProbe Theme: ${theme.name} */
+            #navbar.navbar.bg-instancia {
+                background-image: ${theme.navbar} !important;
+                transition: background-image 0.3s ease !important;
+            }
+            
+            .navbar.bg-instancia {
+                background-image: ${theme.navbar} !important;
+                transition: background-image 0.3s ease !important;
+            }
+            
+            /* Para compatibilidade com diferentes versões do eProc */
+            nav.navbar.bg-instancia,
+            .navbar.text-white.bg-instancia,
+            .navbar.text-white.d-xl-flex.bg-instancia {
+                background-image: ${theme.navbar} !important;
+                transition: background-image 0.3s ease !important;
+            }
+            
+            /* Efeitos de hover para o elemento eProbe na navbar - CORRIGIDO para ser mais visível como o nativo */
+            #eprobe-navbar-element {
+                transition: all 0.2s ease !important;
+                position: relative !important;
+                font-family: 'Exo 2', 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                font-weight: 500 !important;
+                font-display: swap !important;
+            }
+            
+            #eprobe-navbar-element:hover {
+                background-color: rgba(255, 255, 255, 0.15) !important;
+                color: #ffffff !important;
+                opacity: 1 !important;
+                text-decoration: none !important;
+                border-radius: 4px !important;
+            }
+            
+            #eprobe-navbar-element:active {
+                background-color: rgba(255, 255, 255, 0.2) !important;
+                opacity: 1 !important;
+                border-radius: 4px !important;
+            }
+            
+            /* Garantir que mantém a mesma aparência dos outros links da navbar */
+            #eprobe-navbar-element:focus {
+                outline: none !important;
+                background-color: rgba(255, 255, 255, 0.15) !important;
+                opacity: 1 !important;
+                border-radius: 4px !important;
+            }
+        `;
+
+        // Adiciona o estilo ao head da página
+        document.head.appendChild(styleElement);
+
+        console.log(`✅ Tema ${theme.name} aplicado automaticamente!`);
+    }
+
+    // Função para verificar e aplicar tema salvo - OTIMIZADA
+    function loadAndApplyTheme() {
+        // Primeiro tentar localStorage para aplicação instantânea
+        try {
+            const localTheme = localStorage.getItem("eprobe_selected_theme");
+            if (localTheme) {
+                console.log(
+                    `⚡ Tema local encontrado: ${localTheme} - aplicando instantaneamente`
+                );
+                applyThemeStyles(localTheme);
+            }
+        } catch (e) {
+            console.warn("⚠️ Erro ao acessar localStorage:", e);
+        }
+
+        // Depois verificar chrome.storage para sincronização
+        if (typeof chrome !== "undefined" && chrome.storage) {
+            chrome.storage.sync.get(["selectedTheme"], function (result) {
+                const savedTheme = result.selectedTheme || "blue";
+                console.log(`💾 Tema sincronizado encontrado: ${savedTheme}`);
+
+                // Salvar no localStorage para próxima vez
+                try {
+                    localStorage.setItem("eprobe_selected_theme", savedTheme);
+                } catch (e) {
+                    console.warn("⚠️ Erro ao salvar no localStorage:", e);
+                }
+
+                applyThemeStyles(savedTheme);
+            });
+        } else {
+            // Fallback: aplicar tema blue se não há chrome.storage
+            console.log("🔄 Chrome storage não disponível, usando tema blue");
+            applyThemeStyles("blue");
+        }
+    }
+
+    // Verifica configuração inicial da data da sessão - OTIMIZADA
+    if (typeof chrome !== "undefined" && chrome.storage) {
+        chrome.storage.sync.get(["highlightSessionDate"], function (result) {
+            const isEnabled = result.highlightSessionDate !== false; // default true
+            console.log(
+                `💾 Configuração inicial do destaque da data da sessão: ${
+                    isEnabled ? "ATIVO" : "INATIVO"
+                }`
+            );
+
+            // Aplica a configuração imediatamente se o elemento já existir
+            toggleSessionDateDisplay(isEnabled);
+        });
+    }
+
+    // Escuta mudanças no storage para aplicar temas em tempo real
+    if (typeof chrome !== "undefined" && chrome.storage) {
+        chrome.storage.onChanged.addListener(function (changes, area) {
+            console.log(
+                "🔄 STORAGE: Mudança detectada no storage:",
+                changes,
+                "área:",
+                area
+            );
+            if (area === "sync") {
+                // Mudança de tema
+                if (changes.selectedTheme) {
+                    const newTheme = changes.selectedTheme.newValue;
+                    console.log(`🔄 Tema alterado para: ${newTheme}`);
+                    applyThemeStyles(newTheme);
+                }
+
+                // Mudança no destaque da data da sessão
+                if (changes.highlightSessionDate) {
+                    const isEnabled = changes.highlightSessionDate.newValue;
+                    console.log(
+                        `🔄 Destaque da data da sessão alterado para: ${
+                            isEnabled ? "ATIVO" : "INATIVO"
+                        }`
+                    );
+                    toggleSessionDateDisplay(isEnabled);
+                }
+            }
+        });
+        console.log("✅ STORAGE: Listener de mudanças registrado");
+    }
+
+    // Aplica tema IMEDIATAMENTE para evitar delay visual
+    console.log("🎨 eProbe Theme Script carregado");
+    loadAndApplyTheme();
+
+    // Também aplica quando o DOM estiver pronto como backup
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", loadAndApplyTheme);
+    }
+
+    // Exposição das funções globais para chamada direta (debugging)
+    window.applyThemeStyles = applyThemeStyles;
+    window.testVioletTheme = function () {
+        console.log("🧪 TESTE: Aplicando tema violeta diretamente...");
+        applyThemeStyles("violet");
+    };
+    console.log("🌐 GLOBAL: Funções de tema expostas globalmente");
+    console.log(
+        "🧪 TESTE: Use window.testVioletTheme() para testar o tema violeta"
+    );
+
+    // ============================================================================
+    // 🎨 FIM DO SISTEMA DE TEMAS INTEGRADO
+    // ============================================================================
+
+    // ============================================================================
+    // 🧠 SEMANTIC KERNEL INTEGRADO (ex-semanticKernel.js)
+    // ============================================================================
+
+    /**
+     * eProbe Semantic Kernel - Módulo Experimental
+     * Implementação controlada para testes iniciais
+     * Foco: Detecção inteligente de datas de sessão
+     */
+
+    // 🧠 CONFIGURAÇÃO EXPERIMENTAL DO SEMANTIC KERNEL
+    class eProbeSemanticKernel {
+        constructor() {
+            this.isEnabled = false;
+            this.testMode = true;
+            this.fallbackToRegex = true;
+            this.apiKey = null;
+            this.requestCount = 0;
+            this.maxRequests = 5; // Limite para testes
+
+            console.log(
+                "🧠 SEMANTIC KERNEL: Módulo inicializado em modo experimental"
+            );
+        }
+
+        // 🔧 CONFIGURAÇÃO E INICIALIZAÇÃO
+        async initialize() {
+            console.log("🧠 SEMANTIC KERNEL: Tentando inicializar...");
+
+            try {
+                // Verificar se há API key configurada
+                this.apiKey = await this.getApiKey();
+                if (!this.apiKey) {
+                    console.log(
+                        "⚠️ SEMANTIC KERNEL: API Key não encontrada - usando modo fallback"
+                    );
+                    return false;
+                }
+
+                this.isEnabled = true;
+                console.log("✅ SEMANTIC KERNEL: Inicializado com sucesso");
+                return true;
+            } catch (error) {
+                console.error(
+                    "❌ SEMANTIC KERNEL: Erro na inicialização:",
+                    error
+                );
+                return false;
+            }
+        }
+
+        async getApiKey() {
+            // Reutilizar a mesma API key do eProbe
+            if (typeof window.SENT1_AUTO?.getStoredApiKey === "function") {
+                return await window.SENT1_AUTO.getStoredApiKey();
+            }
+            return null;
+        }
+
+        // 🎯 FUNÇÃO PRINCIPAL: Detecção Inteligente de Datas
+        async detectarDataSessaoIA(textoCompleto) {
+            if (!this.isEnabled || this.requestCount >= this.maxRequests) {
+                console.log(
+                    "🧠 SEMANTIC KERNEL: Usando fallback (regex tradicional)"
+                );
+                return await this.fallbackDetection(textoCompleto);
+            }
+
+            console.log(
+                "🧠 SEMANTIC KERNEL: Iniciando detecção inteligente de data da sessão"
+            );
+            this.requestCount++;
+
+            try {
+                const prompt = this.createDateDetectionPrompt(textoCompleto);
+                const response = await this.callOpenAI(prompt);
+                const resultado = this.parseResponse(response);
+
+                if (resultado && resultado.dataEncontrada) {
+                    console.log(
+                        `✅ SEMANTIC KERNEL: Data detectada via IA: ${resultado.dataEncontrada}`
+                    );
+                    return {
+                        dataEncontrada: resultado.dataEncontrada,
+                        confianca: resultado.confianca || 0.8,
+                        contexto: resultado.contexto || "",
+                        metodo: "semantic-kernel",
+                    };
+                } else {
+                    console.log(
+                        "⚠️ SEMANTIC KERNEL: IA não encontrou data, usando fallback"
+                    );
+                    return await this.fallbackDetection(textoCompleto);
+                }
+            } catch (error) {
+                console.error(
+                    "❌ SEMANTIC KERNEL: Erro na detecção IA:",
+                    error
+                );
+                return await this.fallbackDetection(textoCompleto);
+            }
+        }
+
+        // 📝 CRIAÇÃO DO PROMPT ESPECIALIZADO
+        createDateDetectionPrompt(textoCompleto) {
+            // Limitar o texto para evitar custos excessivos
+            const textoLimitado = textoCompleto.substring(0, 2000);
+
+            return `Você é um especialista em documentos jurídicos brasileiros do sistema eProc/TJSC.
+
+TAREFA: Encontrar a data da sessão de julgamento no texto fornecido.
+
+CONTEXTO: O texto vem de uma página do eProc que pode conter informações sobre quando um processo foi pautado para julgamento.
+
+PADRÕES TÍPICOS A PROCURAR:
+- "Data da sessão: DD/MM/AAAA"
+- "Sessão de julgamento em DD/MM/AAAA"
+- "Julgamento para DD/MM/AAAA"
+- "Pautado em DD/MM/AAAA"
+- "Agendado para DD/MM/AAAA"
+
+FORMATO DE RESPOSTA OBRIGATÓRIO (JSON):
+{
+  "dataEncontrada": "DD/MM/AAAA ou null",
+  "confianca": 0.0-1.0,
+  "contexto": "texto ao redor da data encontrada",
+  "explicacao": "por que esta data foi escolhida"
+}
+
+REGRAS:
+1. Apenas datas no formato brasileiro DD/MM/AAAA
+2. Apenas datas entre 2020 e 2030
+3. Se não encontrar com certeza, retorne dataEncontrada: null
+4. Priorize datas relacionadas a sessões/julgamentos
+5. Ignore datas de protocolo, autuação ou outras não relacionadas a julgamento
+
+TEXTO PARA ANÁLISE:
+${textoLimitado}
+
+RESPOSTA (apenas JSON válido):`;
+        }
+
+        // 🔗 CHAMADA PARA OPENAI API
+        async callOpenAI(prompt) {
+            const response = await fetch(
+                "https://api.openai.com/v1/chat/completions",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${this.apiKey}`,
+                    },
+                    body: JSON.stringify({
+                        model: "gpt-3.5-turbo",
+                        messages: [
+                            {
+                                role: "user",
+                                content: prompt,
+                            },
+                        ],
+                        max_tokens: 200,
+                        temperature: 0.1, // Baixa temperatura para respostas mais consistentes
+                        response_format: { type: "json_object" },
+                    }),
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(
+                    `API Error: ${response.status} ${response.statusText}`
+                );
+            }
+
+            const data = await response.json();
+            return data.choices[0].message.content;
+        }
+
+        // 📊 PARSE DA RESPOSTA DA IA
+        parseResponse(responseText) {
+            try {
+                const response = JSON.parse(responseText);
+
+                // Validar estrutura da resposta
+                if (typeof response === "object" && response !== null) {
+                    return {
+                        dataEncontrada: response.dataEncontrada || null,
+                        confianca: parseFloat(response.confianca) || 0.5,
+                        contexto: response.contexto || "",
+                        explicacao: response.explicacao || "",
+                    };
+                }
+
+                return null;
+            } catch (error) {
+                console.error(
+                    "❌ SEMANTIC KERNEL: Erro ao fazer parse da resposta:",
+                    error
+                );
+                return null;
+            }
+        }
+
+        // 🔄 FALLBACK PARA REGEX TRADICIONAL
+        async fallbackDetection(textoCompleto) {
+            console.log(
+                "🔄 SEMANTIC KERNEL: Executando detecção via regex (fallback)"
+            );
+
+            // Usar os mesmos padrões do sistema atual
+            const padroes = [
+                /(?:data\s*da\s*sess[aã]o|sess[aã]o\s*(?:de|em|para|:)?)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                /(?:julgamento\s*(?:em|para|:)|para\s*julgamento)\s*:?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                /(?:pautado|agendar|agendado|marcado).*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
+            ];
+
+            for (const padrao of padroes) {
+                const match = textoCompleto.match(padrao);
+                if (match) {
+                    return {
+                        dataEncontrada: match[1],
+                        confianca: 0.7,
+                        contexto: match[0],
+                        metodo: "regex-fallback",
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        // 📈 FUNÇÕES DE MONITORAMENTO E DEBUG
+        getStats() {
+            return {
+                enabled: this.isEnabled,
+                requestCount: this.requestCount,
+                maxRequests: this.maxRequests,
+                requestsRemaining: this.maxRequests - this.requestCount,
+                testMode: this.testMode,
+                fallbackEnabled: this.fallbackToRegex,
+            };
+        }
+
+        reset() {
+            this.requestCount = 0;
+            console.log("🔄 SEMANTIC KERNEL: Contador de requisições resetado");
+        }
+
+        disable() {
+            this.isEnabled = false;
+            console.log("🚫 SEMANTIC KERNEL: Desabilitado");
+        }
+
+        enable() {
+            this.isEnabled = true;
+            console.log("✅ SEMANTIC KERNEL: Habilitado");
+        }
+    }
+
+    // 🌍 INSTÂNCIA GLOBAL DO SEMANTIC KERNEL
+    window.eProbeSemanticKernel = new eProbeSemanticKernel();
+
+    // 🔗 INTEGRAÇÃO COM O SISTEMA EXISTENTE
+    // Função melhorada que usa IA + fallback
+    async function detectarDataSessaoComIA() {
+        console.log("🧠 INICIANDO: Detecção de data da sessão com IA");
+
+        const sk = window.eProbeSemanticKernel;
+
+        // Verificar se o Semantic Kernel está disponível
+        if (!sk.isEnabled) {
+            await sk.initialize();
+        }
+
+        // Obter texto da página
+        const textoCompleto = document.body.innerText;
+
+        try {
+            // Tentar detecção com IA
+            const resultado = await sk.detectarDataSessaoIA(textoCompleto);
+
+            if (resultado && resultado.dataEncontrada) {
+                // Validar a data usando a função existente
+                if (
+                    typeof window.SENT1_AUTO?.validarDataBrasileira ===
+                    "function"
+                ) {
+                    const dataValidada =
+                        window.SENT1_AUTO.validarDataBrasileira(
+                            resultado.dataEncontrada
+                        );
+
+                    if (dataValidada) {
+                        console.log(
+                            `✅ IA + VALIDAÇÃO: Data validada: ${dataValidada.dataFormatada}`
+                        );
+                        console.log(
+                            `📊 IA: Método: ${resultado.metodo}, Confiança: ${resultado.confianca}`
+                        );
+
+                        return {
+                            ...dataValidada,
+                            metodoDeteccao: resultado.metodo,
+                            confiancaIA: resultado.confianca,
+                            contexto: resultado.contexto,
+                        };
+                    }
+                }
+            }
+
+            console.log(
+                "⚠️ IA: Não encontrou data válida, usando sistema original"
+            );
+            return null;
+        } catch (error) {
+            console.error("❌ IA: Erro na detecção:", error);
+            return null;
+        }
+    }
+
+    // 🚀 EXPOSIÇÃO DAS FUNÇÕES EXPERIMENTAIS SERÁ FEITA NO NAMESPACE CONSOLIDADO
+    // As funções experimentais serão expostas no namespace window.SENT1_AUTO.experimental
+
+    // ============================================================================
+    // 🧠 FIM DO SEMANTIC KERNEL INTEGRADO
+    // ============================================================================
+
     console.log("🚀 INIT: Iniciando eProbe após APIs ficarem prontas...");
 
     // 🌐 VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO - DECLARADAS NO TOPO
@@ -709,10 +1347,14 @@
                                 }
                             </div>
                             <div style="font-size: 12px; color: #49454F; margin-bottom: 6px; display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">event_repeat</span>${sessao.data}
+                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">event_repeat</span>${
+                                    sessao.data
+                                }
                             </div>
                             <div style="font-size: 12px; color: #49454F; margin-bottom: 4px; display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">gavel</span>${sessao.orgao}
+                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">gavel</span>${
+                                    sessao.orgao
+                                }
                             </div>
                             <div style="font-size: 11px; color: #79747E;">
                                 ${sessao.tipo}
@@ -747,37 +1389,73 @@
                 }, 10);
             };
 
+            // Sistema de tooltip otimizado com debounce
+            const debouncedHideTooltip = window.debounce(() => {
+                tooltip.style.display = "none";
+                tooltip.style.pointerEvents = "none";
+            }, 200);
+
             const ocultarTooltip = () => {
                 tooltip.style.opacity = "0";
-                tooltipTimer = setTimeout(() => {
-                    tooltip.style.display = "none";
-                    tooltip.style.pointerEvents = "none";
-                }, 200);
+                debouncedHideTooltip();
             };
 
             const cancelarOcultacao = () => {
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
+                // Cancelar qualquer timer de ocultação pendente
+                debouncedHideTooltip.cancel?.();
             };
 
-            // Eventos do card
-            card.addEventListener("mouseenter", mostrarTooltip);
-            card.addEventListener("mouseleave", ocultarTooltip);
+            // Eventos do card (otimizados para performance)
+            card.addEventListener("mouseenter", mostrarTooltip, {
+                passive: true,
+            });
+            card.addEventListener("mouseleave", ocultarTooltip, {
+                passive: true,
+            });
 
-            // Eventos do tooltip
-            tooltip.addEventListener("mouseenter", cancelarOcultacao);
-            tooltip.addEventListener("mouseleave", ocultarTooltip);
+            // Eventos do tooltip (otimizados para performance)
+            tooltip.addEventListener("mouseenter", cancelarOcultacao, {
+                passive: true,
+            });
+            tooltip.addEventListener("mouseleave", ocultarTooltip, {
+                passive: true,
+            });
 
-            // Click no card não fecha mais - apenas mostra/oculta tooltip
+            // Click no card abre a tela de sessão
             card.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (tooltip.style.display === "block") {
-                    ocultarTooltip();
+
+                console.log("🖱️ CLICK: Clique no card de sessão detectado");
+
+                // Tentar abrir a tela de sessão
+                const urlSessao = construirUrlSessao(cardInfo);
+
+                if (urlSessao) {
+                    console.log(
+                        "🌐 NAVEGAÇÃO: Abrindo tela de sessão:",
+                        urlSessao
+                    );
+
+                    // Abrir em nova aba
+                    window.open(urlSessao, "_blank");
+
+                    // Feedback visual
+                    card.style.transform = "scale(0.95)";
+                    setTimeout(() => {
+                        card.style.transform = "scale(1)";
+                    }, 150);
                 } else {
-                    mostrarTooltip();
+                    console.warn(
+                        "⚠️ NAVEGAÇÃO: URL da sessão não pôde ser construída"
+                    );
+
+                    // Fallback: mostrar tooltip se não conseguir navegar
+                    if (tooltip.style.display === "block") {
+                        ocultarTooltip();
+                    } else {
+                        mostrarTooltip();
+                    }
                 }
             };
 
@@ -889,6 +1567,101 @@
         }
 
         return { status: statusCompleto, cor: "#6B7280" };
+    }
+
+    // 🔗 FUNÇÃO PARA EXTRAIR LINK DA SESSÃO
+    function extrairLinkSessao(indiceSessao = 1) {
+        try {
+            console.log(`🔗 LINK: Extraindo link para sessão ${indiceSessao}`);
+
+            // XPath baseado no caminho fornecido pelo usuário
+            const xpathBase = `/html/body/div[1]/div/div/div/div[1]/div/div/div/div[2]/div/form/div[2]/div/table/tbody/tr[${indiceSessao}]/td[1]/a`;
+
+            const linkElement = document.evaluate(
+                xpathBase,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (linkElement && linkElement.href) {
+                console.log(
+                    `✅ LINK: Encontrado para sessão ${indiceSessao}:`,
+                    linkElement.href
+                );
+                return linkElement.href;
+            }
+
+            // Fallback: tentar buscar na estrutura do fieldset atual
+            const xpathFieldset = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${indiceSessao}]//a[contains(@href, "sessao_julgamento_exibir_painel")]`;
+
+            const linkElementFallback = document.evaluate(
+                xpathFieldset,
+                document,
+                null,
+                XPathResult.FIRST_ORDERED_NODE_TYPE,
+                null
+            ).singleNodeValue;
+
+            if (linkElementFallback && linkElementFallback.href) {
+                console.log(
+                    `✅ LINK FALLBACK: Encontrado para sessão ${indiceSessao}:`,
+                    linkElementFallback.href
+                );
+                return linkElementFallback.href;
+            }
+
+            console.log(`❌ LINK: Não encontrado para sessão ${indiceSessao}`);
+            return null;
+        } catch (error) {
+            console.error(
+                `❌ LINK: Erro ao extrair link da sessão ${indiceSessao}:`,
+                error
+            );
+            return null;
+        }
+    }
+
+    // 🌐 FUNÇÃO PARA CONSTRUIR URL DA SESSÃO
+    function construirUrlSessao(dadosSessao) {
+        try {
+            console.log("🌐 URL: Construindo URL da sessão", dadosSessao);
+
+            // Primeiro, tentar extrair link real da página
+            const linkReal = extrairLinkSessao(dadosSessao.indice || 1);
+            if (linkReal) {
+                // Se encontrou link real, usar ele completamente
+                const baseUrl = window.location.origin;
+                if (linkReal.startsWith("http")) {
+                    return linkReal;
+                } else if (linkReal.startsWith("controlador.php")) {
+                    return `${baseUrl}/eproc/${linkReal}`;
+                } else {
+                    return `${baseUrl}${linkReal}`;
+                }
+            }
+
+            // Fallback: construir URL baseada nos dados da sessão (pode não funcionar sem parâmetros específicos)
+            const baseUrl = window.location.origin;
+            const numeroProcesso = obterNumeroProcesso();
+
+            console.log(
+                "⚠️ URL: Link real não encontrado, usando construção manual (pode não funcionar)"
+            );
+
+            // URL básica - requer parâmetros específicos que não temos
+            const urlBasica = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_exibir_painel`;
+
+            if (numeroProcesso) {
+                return `${urlBasica}&txtNumProcesso=${numeroProcesso}`;
+            }
+
+            return urlBasica;
+        } catch (error) {
+            console.error("❌ URL: Erro ao construir URL da sessão:", error);
+            return null;
+        }
     }
 
     /**
@@ -1037,6 +1810,7 @@
 
             // Criar card com dados da sessão mais recente
             const cardInfo = {
+                indice: sessaoMaisRecente.indice,
                 data: sessaoMaisRecente.data,
                 tipo: sessaoMaisRecente.tipo,
                 status: sessaoMaisRecente.status,
@@ -2274,18 +3048,26 @@
                         buttonCreationAttempts = 0;
                     } else {
                         console.log(
-                            "⚠️ BOTÃO: Falha na criação, tentando novamente em 1s"
+                            "⚠️ BOTÃO: Falha na criação, tentando novamente com backoff"
                         );
-                        // Tentar novamente após 1 segundo
-                        setTimeout(ensureButtonExists, 1000);
+                        // Backoff exponencial baseado nas tentativas
+                        const backoffDelay = Math.min(
+                            1000 * Math.pow(1.5, buttonCreationAttempts - 1),
+                            5000
+                        );
+                        setTimeout(ensureButtonExists, backoffDelay);
                     }
                 }, 200);
             } else {
                 console.log(
-                    "❌ BOTÃO: Página não atende aos critérios, tentando novamente em 2s"
+                    "❌ BOTÃO: Página não atende aos critérios, tentando novamente com backoff"
                 );
-                // Tentar novamente após 2 segundos em caso de página ainda carregando
-                setTimeout(ensureButtonExists, 2000);
+                // Backoff exponencial para páginas que ainda estão carregando
+                const backoffDelay = Math.min(
+                    2000 * Math.pow(1.2, buttonCreationAttempts - 1),
+                    8000
+                );
+                setTimeout(ensureButtonExists, backoffDelay);
             }
 
             return false;
@@ -7597,7 +8379,12 @@
                     console.log(
                         "🔍 Tentando detectar data da sessão automaticamente..."
                     );
-                    detectarCardSessaoSimplificado();
+                    if (
+                        window.SENT1_AUTO &&
+                        window.SENT1_AUTO.detectarCardSessaoSimplificado
+                    ) {
+                        window.SENT1_AUTO.detectarCardSessaoSimplificado();
+                    }
                 }
             }, 500); // Reduzido de 800ms para 500ms
 
@@ -7610,7 +8397,12 @@
                     console.log(
                         "🔍 Segunda tentativa de detecção da data da sessão..."
                     );
-                    detectarCardSessaoSimplificado();
+                    if (
+                        window.SENT1_AUTO &&
+                        window.SENT1_AUTO.detectarCardSessaoSimplificado
+                    ) {
+                        window.SENT1_AUTO.detectarCardSessaoSimplificado();
+                    }
                 }
             }, 1500); // Reduzido de 2000ms para 1500ms
 
@@ -7767,16 +8559,24 @@
                 }
             }, 50);
 
-            // Adicionar eventos para hover, focus e blur
-            button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "#0f3a66";
-                button.style.borderColor = "#0f3a66";
-            });
+            // Adicionar eventos para hover, focus e blur (otimizados para performance)
+            button.addEventListener(
+                "mouseenter",
+                () => {
+                    button.style.backgroundColor = "#0f3a66";
+                    button.style.borderColor = "#0f3a66";
+                },
+                { passive: true }
+            );
 
-            button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "#134377";
-                button.style.borderColor = "#134377";
-            });
+            button.addEventListener(
+                "mouseleave",
+                () => {
+                    button.style.backgroundColor = "#134377";
+                    button.style.borderColor = "#134377";
+                },
+                { passive: true }
+            );
 
             button.addEventListener("focus", () => {
                 button.style.backgroundColor = "#0f3a66";
@@ -7974,20 +8774,27 @@
     // ========================================
 
     /**
-     * 🔧 SETUP INTERFACE OBSERVER - Monitora mudanças na interface
-     * Função movida para escopo global para estar disponível em todos os contextos
+     * 🔧 SETUP INTERFACE OBSERVER - Monitora mudanças na interface (OTIMIZADO)
+     * Observer unificado com debounce para melhor performance
      */
     function setupInterfaceObserver() {
-        console.log("🔍 OBSERVER: Configurando observer de interface");
+        console.log(
+            "🔍 OBSERVER: Configurando observer de interface otimizado"
+        );
 
-        // Observer para detectar mudanças nos elementos da interface
+        // Debounce para evitar múltiplas execuções
+        let debounceTimer = null;
+        const debounceDelay = 50;
+
+        // Observer otimizado para detectar mudanças nos elementos da interface
         const observer = new MutationObserver((mutations) => {
             let shouldCheckOverlap = false;
 
-            mutations.forEach((mutation) => {
+            // Processar mutações de forma mais eficiente
+            for (const mutation of mutations) {
                 // Se elementos foram adicionados ou removidos
                 if (mutation.type === "childList") {
-                    mutation.addedNodes.forEach((node) => {
+                    for (const node of mutation.addedNodes) {
                         if (node.nodeType === Node.ELEMENT_NODE) {
                             const id = node.id;
                             if (
@@ -7996,9 +8803,10 @@
                                 id === "documento-relevante-options-menu"
                             ) {
                                 shouldCheckOverlap = true;
+                                break;
                             }
                         }
-                    });
+                    }
                 }
 
                 // Se atributos de estilo mudaram
@@ -8014,13 +8822,21 @@
                 ) {
                     shouldCheckOverlap = true;
                 }
-            });
 
+                // Early exit se já encontrou o que precisa
+                if (shouldCheckOverlap) break;
+            }
+
+            // Debounce da verificação de overlap
             if (
                 shouldCheckOverlap &&
                 typeof preventElementOverlap === "function"
             ) {
-                setTimeout(preventElementOverlap, 50);
+                if (debounceTimer) clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(
+                    preventElementOverlap,
+                    debounceDelay
+                );
             }
         });
 
@@ -8198,7 +9014,11 @@
         if (!hasDataSessaoPautado()) {
             console.log("📅 Forçando detecção de data da sessão...");
             try {
-                const dataDetectada = detectarCardSessaoSimplificado();
+                const dataDetectada =
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado
+                        ? window.SENT1_AUTO.detectarCardSessaoSimplificado()
+                        : null;
                 resultadoCorrecao.acoes.push({
                     acao: "Detecção de data da sessão",
                     status: "Executada",
@@ -10560,7 +11380,10 @@
         removerDataSessaoDaInterface();
 
         // Usar sistema simplificado
-        return detectarCardSessaoSimplificado();
+        return window.SENT1_AUTO &&
+            window.SENT1_AUTO.detectarCardSessaoSimplificado
+            ? window.SENT1_AUTO.detectarCardSessaoSimplificado()
+            : null;
     }
 
     // 🚨 FUNÇÃO PARA FORÇAR INSERÇÃO DO CARD MESMO PARA PROCESSOS PROCESSADOS
@@ -10585,7 +11408,11 @@
             }
 
             // Detectar data
-            const dataDetectada = detectarCardSessaoSimplificado();
+            const dataDetectada =
+                window.SENT1_AUTO &&
+                window.SENT1_AUTO.detectarCardSessaoSimplificado
+                    ? window.SENT1_AUTO.detectarCardSessaoSimplificado()
+                    : null;
 
             if (!dataDetectada) {
                 console.log("❌ FORÇA: Falha na detecção da data");
@@ -11229,7 +12056,12 @@
 
                 // 2. Testar detecção de data
                 console.log("🔍 TESTE: Testando detecção de data...");
-                detectarCardSessaoSimplificado();
+                if (
+                    window.SENT1_AUTO &&
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado
+                ) {
+                    window.SENT1_AUTO.detectarCardSessaoSimplificado();
+                }
 
                 if (hasDataSessaoPautado()) {
                     console.log("✅ TESTE: Data detectada com sucesso!");
@@ -17362,106 +18194,11 @@
         setTimeout(inicializarMaterialDesign, 1000);
     }
 
-    // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE (movidas para namespace principal)
-
-    // 🧪 FUNÇÕES DE TESTE E DEBUG (movidas para namespace principal)
-
-    // 🧪 FUNÇÃO ESPECÍFICA PARA TESTAR DETECÇÃO DE CARD DE SESSÃO
-    window.SENT1_AUTO.testarDeteccaoCard = function () {
-        console.log(
-            "🧪 TESTE CARD: Iniciando teste de detecção de card de sessão"
-        );
-
-        try {
-            // 1. Verificar botões infraLegendObrigatorio com classes completas
-            const botoesInfra = document.querySelectorAll(
-                "button.infraLegendObrigatorio.btn.btn-link.btn-sm.p-0"
-            );
-            console.log(
-                `🔍 TESTE: ${botoesInfra.length} botões infraLegendObrigatorio.btn.btn-link.btn-sm.p-0 encontrados`
-            );
-
-            if (botoesInfra.length > 0) {
-                botoesInfra.forEach((botao, index) => {
-                    const texto = botao.textContent || botao.innerText || "";
-                    console.log(
-                        `📄 BOTÃO ${index + 1}:`,
-                        texto.substring(0, 150)
-                    );
-
-                    // Testar TODOS os padrões de sessão
-                    const resultado = extrairDadosSessaoCompleto(texto);
-                    if (resultado) {
-                        console.log(
-                            `✅ TESTE: ${resultado.status} encontrado!`
-                        );
-                        console.log(`   - Tipo: ${resultado.tipoProcesso}`);
-                        console.log(
-                            `   - Data: ${resultado.data.dataFormatada}`
-                        );
-                        console.log(`   - Órgão: ${resultado.orgao}`);
-                        console.log(`   - Status: ${resultado.statusCompleto}`);
-                    } else if (texto.includes("em Pauta em")) {
-                        console.log(
-                            "⚠️ TESTE: Padrão parcial encontrado, mas não validado:",
-                            texto.substring(0, 100)
-                        );
-                    }
-                });
-            }
-
-            // 2. Testar fallback (todos os botões)
-            const todosBotoes = document.querySelectorAll("button");
-            let botoesComPadrao = 0;
-
-            todosBotoes.forEach((botao) => {
-                const texto = botao.textContent || botao.innerText || "";
-                if (texto.includes("em Pauta em")) {
-                    // Usar função unificada para validação completa
-                    const resultado = extrairDadosSessaoCompleto(texto);
-                    if (resultado) {
-                        botoesComPadrao++;
-                        console.log(
-                            "📄 FALLBACK VALIDADO:",
-                            texto.substring(0, 150)
-                        );
-                        console.log(
-                            `   🎯 STATUS: ${resultado.status} (${resultado.statusCompleto})`
-                        );
-                        console.log(
-                            `   📅 DATA: ${resultado.data.dataFormatada}`
-                        );
-                        console.log(`   🏢 ÓRGÃO: ${resultado.orgao}`);
-                    } else if (texto.includes("em Pauta em")) {
-                        console.log(
-                            "⚠️ FALLBACK PARCIAL:",
-                            texto.substring(0, 100)
-                        );
-                        console.log("   ❌ Não validado pela função unificada");
-                    }
-                }
-            });
-
-            console.log(
-                `🔍 TESTE: ${botoesComPadrao} botões com padrões de sessão encontrados`
-            );
-
-            // 3. Executar detecção real
-            console.log("🚀 TESTE: Executando detecção real...");
-            const resultado =
-                window.SENT1_AUTO.detectarCardSessaoSimplificado?.();
-
-            return {
-                botoesInfra: botoesInfra.length,
-                botoesComPadrao: botoesComPadrao,
-                deteccaoSucesso: !!resultado,
-                resultado: resultado,
-            };
-        } catch (error) {
-            console.error("❌ TESTE: Erro no teste:", error);
-            return { erro: error.message };
-        }
-    };
+    // 🧪 FUNÇÕES DE TESTE MOVIDAS PARA O NAMESPACE CONSOLIDADO
+    // ✅ As funções de teste agora estão disponíveis em:
+    // - window.SENT1_AUTO.testarDeteccaoCard()
+    // - window.SENT1_AUTO.debugRapido()
+    // - window.SENT1_AUTO.testarSistemaCompleto()
 
     // 🚫 FUNÇÃO REMOVIDA - USE AS FUNÇÕES PRINCIPAIS NO NAMESPACE:
     // - window.SENT1_AUTO.testarMaterialBaseLayout()
@@ -17474,248 +18211,59 @@
 
     // Fim da seção de funcionalidades
 
-    // 🩺 FUNÇÃO DE DIAGNÓSTICO COMPLETO DO CARD DE SESSÃO
-    // 🚫 FUNÇÃO REMOVIDA - USE AS DUAS FUNÇÕES PRINCIPAIS NO NAMESPACE
+    // 🩺 FUNÇÕES DE TESTE MOVIDAS PARA O NAMESPACE CONSOLIDADO
+    // ✅ Todas as funções de teste estão disponíveis em window.SENT1_AUTO:
+    // - debugRapido()
+    // - testarMultiplasSessoes()
+    // - testarNovoFormatoTooltip()
+    // - debugXPathEProc()
+    // - debugNormalizacaoData()
+    // - testarDesignFigma()
+    // - testarTodosDesignsFigma()
+    //
+    // ❌ TODAS AS DUPLICAÇÕES REMOVIDAS: Para evitar ReferenceError e TypeError
+    // ✅ Todas as funções estão no namespace consolidado window.SENT1_AUTO
 
-    // 🔧 FUNÇÃO DE DEBUG RÁPIDO
-    window.SENT1_AUTO.debugRapido = function () {
-        console.log("🔧 DEBUG RÁPIDO eProbe");
-        console.log("1. Namespace existe:", typeof window.SENT1_AUTO);
-        console.log("2. É objeto:", typeof window.SENT1_AUTO === "object");
+    console.log(
+        "✅ NAMESPACE: Todos os fallbacks seguros configurados - extensão protegida contra ReferenceError"
+    );
 
-        if (typeof window.SENT1_AUTO === "object") {
-            const funcoes = Object.keys(window.SENT1_AUTO).filter(
-                (key) => typeof window.SENT1_AUTO[key] === "function"
-            );
-            console.log(`3. Total de funções: ${funcoes.length}`);
-            console.log("4. Funções disponíveis:", funcoes.slice(0, 10));
-        }
+    console.log("🔧 NAMESPACE: Sistema de fallback universal configurado");
 
-        console.log("5. URL atual:", window.location.href);
-        console.log("6. É eProc:", window.location.href.includes("eproc"));
+    // ============================================================================
+    // 🔧 FUNÇÕES DE TESTE MOVIDAS PARA O NAMESPACE CONSOLIDADO
+    // As funções testarNamespaceSENT1_AUTO e verificarReferenceErrors agora estão
+    // corretamente no namespace window.SENT1_AUTO para acesso adequado
+    // ============================================================================
 
-        return {
-            namespace: typeof window.SENT1_AUTO,
-            totalFuncoes:
-                typeof window.SENT1_AUTO === "object"
-                    ? Object.keys(window.SENT1_AUTO).filter(
-                          (key) => typeof window.SENT1_AUTO[key] === "function"
-                      ).length
-                    : 0,
-            url: window.location.href,
-            eProc: window.SENT1_AUTO && window.location.href.includes("eproc"),
-        };
+    // ============================================================================
+    // 🔧 TODAS AS DUPLICAÇÕES REMOVIDAS - NAMESPACE MOVIDO PARA LINHA 19742
+    // ✅ O namespace consolidado correto está na linha 19742
+    // ============================================================================
+
+    // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+
+    window.SENT1_AUTO = {
+        // ⚠️ ESTE NAMESPACE FOI DUPLICADO - O CORRETO ESTÁ NA LINHA 19742
+        // 🔧 Todas as funções estão no namespace consolidado da linha 19742
+        _orphanedNamespace: "REMOVIDO - usar namespace correto na linha 19742",
     };
 
-    // 🧪 FUNÇÃO DE TESTE PARA MÚLTIPLAS SESSÕES
-    window.SENT1_AUTO.testarMultiplasSessoes = function () {
-        console.log(
-            "🧪 TESTE MÚLTIPLAS SESSÕES: Testando sistema de tooltip elegante"
-        );
+    // ============================================================================
+    // 🔧 FIM DA SEÇÃO ÓRFÃ - NAMESPACE CORRETO NA LINHA 19742
+    // ============================================================================
 
-        // Criar dados de teste com múltiplas sessões
-        const dadosTesteSessoes = {
-            status: "Retirado",
-            statusCompleto: "Retirado em Pauta",
-            statusOriginal: "Retirado em Pauta",
-            tipoProcesso: "RELATÓRIO/VOTO",
-            data: "10/04/2025",
-            codigo: "5201740",
-            cor: "#dc2626",
-            totalSessoes: 4,
-            todasSessoes: [
-                {
-                    data: "10/04/2025",
-                    status: "Retirado",
-                    statusOriginal: "Retirado em Pauta",
-                    cor: "#dc2626",
-                },
-                {
-                    data: "06/02/2025",
-                    status: "Sobrestado (art. 942)",
-                    statusOriginal: "Sobrestado - art. 942 CPC em Pauta",
-                    cor: "#f59e0b",
-                },
-                {
-                    data: "05/12/2024",
-                    status: "Pedido de Vista",
-                    statusOriginal: "Pedido de Vista em Pauta",
-                    cor: "#8b5cf6",
-                },
-                {
-                    data: "19/11/2024",
-                    status: "Julgado",
-                    statusOriginal: "Julgado em Pauta",
-                    cor: "#16a34a",
-                },
-            ],
-        };
+    console.log(
+        "✅ NAMESPACE: Todos os fallbacks seguros configurados - extensão protegida contra ReferenceError"
+    );
 
-        console.log("📊 DADOS DE TESTE:", dadosTesteSessoes);
+    console.log("🔧 NAMESPACE: Sistema de fallback universal configurado");
 
-        try {
-            // Remover card existente
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ Card existente removido");
-            }
-
-            // Criar novo card com dados de teste
-            const novoCard =
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosTesteSessoes);
-
-            // Inserir na interface
-            const resultado = inserirCardNaInterface(novoCard);
-
-            if (resultado) {
-                console.log("✅ TESTE: Card criado com sucesso!");
-                console.log(
-                    "💡 INSTRUÇÃO: Passe o mouse sobre '4 sessões (passe o mouse para ver histórico)' para ver o tooltip elegante"
-                );
-                return {
-                    sucesso: true,
-                    totalSessoes: dadosTesteSessoes.totalSessoes,
-                    cardCriado: !!document.getElementById("eprobe-data-sessao"),
-                    mensagem:
-                        "Tooltip elegante com ícones Lucide e design minimalista",
-                    design: "Background branco, bordas sutis, ícones SVG, badge azul para sessão atual",
-                };
-            } else {
-                console.log("❌ TESTE: Falha ao inserir card na interface");
-                return { sucesso: false, erro: "Falha na inserção" };
-            }
-        } catch (error) {
-            console.error("💥 TESTE: Erro durante teste:", error);
-            return { sucesso: false, erro: error.message };
-        }
-    };
-
-    // 🧪 FUNÇÃO DE TESTE PARA O NOVO FORMATO DE TOOLTIP
-    window.SENT1_AUTO.testarNovoFormatoTooltip = function (textoTeste) {
-        console.log(
-            "🧪 TESTE NOVO FORMATO: Testando extração de dados de sessão"
-        );
-
-        // Usar texto de exemplo se não fornecido
-        const texto =
-            textoTeste ||
-            "10/04/2025 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>06/02/2025 - Sobrestado - art. 942 CPC em Pauta - RELATÓRIO/VOTO (5201740)<br/>05/12/2024 - Pedido de Vista em Pauta - RELATÓRIO/VOTO (5201740)<br/>19/11/2024 - Retirado em Pauta - RELATÓRIO/VOTO (5201740)<br/>";
-
-        console.log("📝 TEXTO DE TESTE:", texto);
-
-        try {
-            const resultado = extrairDadosCardSessaoGlobal(texto);
-
-            if (resultado) {
-                console.log("✅ SUCESSO: Dados extraídos com sucesso!");
-                console.log("📊 RESULTADO:", resultado);
-                console.log(`📈 TOTAL DE SESSÕES: ${resultado.totalSessoes}`);
-                console.log("🎯 SESSÃO MAIS RECENTE:", {
-                    data: resultado.data,
-                    status: resultado.status,
-                    statusOriginal: resultado.statusOriginal,
-                    cor: resultado.cor,
-                });
-
-                // Mostrar todas as sessões encontradas
-                if (resultado.todasSessoes) {
-                    console.log("📋 TODAS AS SESSÕES:");
-                    resultado.todasSessoes.forEach((sessao, index) => {
-                        console.log(
-                            `   ${index + 1}. ${sessao.data} - ${
-                                sessao.status
-                            } (${sessao.statusOriginal})`
-                        );
-                    });
-                }
-
-                return resultado;
-            } else {
-                console.log("❌ FALHA: Nenhum dado extraído");
-                return null;
-            }
-        } catch (error) {
-            console.error("💥 ERRO no teste:", error);
-            return { erro: error.message };
-        }
-    };
-
-    // 🔧 FUNÇÃO DE TESTE XPATH REMOVIDA - usar window.SENT1_AUTO.detectarCardSessaoSimplificado() diretamente
-
-    // 🧪 FUNÇÃO DE DEBUG XPATH ÚNICA - Para diagnosticar problemas
-    window.SENT1_AUTO.debugXPathEProc = function () {
-        console.log("🔍 DEBUG XPATH: Diagnosticando busca no eProc");
-
-        const xpathExpression =
-            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[2]/fieldset/legend/span[1]";
-
-        console.log("📍 XPath:", xpathExpression);
-        console.log("📄 URL atual:", window.location.href);
-        console.log("📊 DOM readyState:", document.readyState);
-
-        // Teste direto no console
-        console.log("🔧 Para testar manualmente, execute no console:");
-        console.log(`   $x("${xpathExpression}")`);
-
-        // Busca pelo elemento
-        const elemento = document.evaluate(
-            xpathExpression,
-            document,
-            null,
-            XPathResult.FIRST_ORDERED_NODE_TYPE,
-            null
-        ).singleNodeValue;
-
-        if (elemento) {
-            console.log("✅ ELEMENTO ENCONTRADO!");
-            console.log("   Tag:", elemento.tagName);
-            console.log("   ID:", elemento.id || "sem-id");
-            console.log("   Classe:", elemento.className || "sem-classe");
-            console.log("   Texto:", elemento.textContent || "sem-texto");
-            console.log(
-                "   onmouseover:",
-                elemento.getAttribute("onmouseover") || "sem-onmouseover"
-            );
-
-            // Tentar executar a detecção completa
-            const resultado =
-                window.SENT1_AUTO.detectarCardSessaoSimplificado();
-            if (resultado) {
-                console.log("✅ DETECÇÃO COMPLETA FUNCIONOU:", resultado);
-            } else {
-                console.log("❌ DETECÇÃO COMPLETA FALHOU");
-            }
-        } else {
-            console.log("❌ ELEMENTO NÃO ENCONTRADO");
-            console.log("   Verifique se você está na página certa do eProc");
-            console.log("   Aguarde o carregamento completo da página");
-        }
-
-        return { elemento: !!elemento, xpath: xpathExpression };
-    };
-
-    // 🔧 FUNÇÃO DE DEBUG PARA NORMALIZAÇÃO DE DADOS
-    window.SENT1_AUTO.debugNormalizacaoData = function (dadosTest) {
-        console.log("🔍 DEBUG NORMALIZAÇÃO: Testando extração de data");
-
-        if (!dadosTest) {
-            console.log("⚠️ Forneça dados para testar:");
-            console.log(
-                "   window.SENT1_AUTO.debugNormalizacaoData({ data: '23/01/2025' })"
-            );
-            console.log(
-                "   window.SENT1_AUTO.debugNormalizacaoData({ dataFormatada: '23/01/2025' })"
-            );
-            return;
-        }
-
-        const resultado = getData(dadosTest);
-        console.log("📅 RESULTADO:", resultado);
-
-        return resultado;
-    };
-
+    // ============================================================================
+    // � FUNÇÕES DE TESTE MOVIDAS PARA O NAMESPACE CONSOLIDADO
+    // As funções testarNamespaceSENT1_AUTO e verificarReferenceErrors agora estão
+    // corretamente no namespace window.SENT1_AUTO para acesso adequado
+    // ============================================================================
     console.log(
         "✅ FUNÇÕES DE TESTE: Carregadas fora da IIFE - sempre disponíveis"
     );
@@ -17881,129 +18429,16 @@
         return dadosSessao;
     }
 
-    // 🎨 FUNÇÃO DE TESTE PARA DESIGNS FIGMA
-    window.SENT1_AUTO.testarDesignFigma = function (statusTeste = "Julgado") {
-        console.log(
-            `🎨 TESTE FIGMA: Testando design Figma para status "${statusTeste}"`
-        );
+    // ============================================================================
+    // 🔧 FUNÇÕES PRINCIPAIS CARREGADAS
+    // Material Design Cards, Tema Relevância, XPath Session Detection
+    // ============================================================================
 
-        try {
-            // Criar dados de sessão simulados para teste
-            const dadosSessaoTeste = {
-                data: "15/01/2025",
-                status: statusTeste,
-                statusOriginal: statusTeste,
-                totalSessoes: 3,
-                todasSessoes: [
-                    {
-                        data: "15/01/2025",
-                        status: statusTeste,
-                        statusOriginal: statusTeste,
-                    },
-                    {
-                        data: "08/01/2025",
-                        status: "Pautado",
-                        statusOriginal: "Pautado",
-                    },
-                    {
-                        data: "20/12/2024",
-                        status: "Adiado",
-                        statusOriginal: "Adiado em Pauta",
-                    },
-                ],
-            };
+    console.log("🔧 FUNÇÕES AUXILIARES: Carregadas com sucesso");
 
-            console.log("📊 DADOS DE TESTE:", dadosSessaoTeste);
-
-            // Criar card com design Figma
-            const card =
-                window.SENT1_AUTO.criarCardMaterialDesign(dadosSessaoTeste);
-
-            if (!card) {
-                console.error("❌ FIGMA: Falha ao criar card");
-                return { sucesso: false, erro: "Card não foi criado" };
-            }
-
-            console.log("✅ FIGMA: Card criado com sucesso", card);
-
-            // Remover card existente se houver
-            const cardExistente = document.getElementById("eprobe-data-sessao");
-            if (cardExistente) {
-                cardExistente.remove();
-                console.log("🗑️ FIGMA: Card anterior removido");
-            }
-
-            // Inserir card na página
-            const containers = [
-                "#fldCapa #divCapaProcesso .row.mt-2",
-                "#divCapaProcesso .row.mt-2",
-                ".row.mt-2",
-                "#fldCapa",
-                "#divCapaProcesso",
-                "body",
-            ];
-
-            let inserido = false;
-            for (const seletor of containers) {
-                const container = document.querySelector(seletor);
-                if (container) {
-                    container.appendChild(card);
-                    inserido = true;
-                    console.log(`✅ FIGMA: Card inserido em "${seletor}"`);
-                    break;
-                }
-            }
-
-            if (!inserido) {
-                console.warn(
-                    "⚠️ FIGMA: Não foi possível inserir o card automaticamente"
-                );
-                console.log(
-                    "💡 FIGMA: Card criado e disponível na variável:",
-                    card
-                );
-                return {
-                    sucesso: true,
-                    card: card,
-                    aviso: "Card criado mas não inserido automaticamente",
-                };
-            }
-
-            // Testar todas as configurações de status
-            const todosStatus = [
-                "Julgado",
-                "Retirado",
-                "Sobrestado (art. 942)",
-                "Pedido de Vista",
-                "Pautado",
-                "Adiado (art. 935)",
-                "Adiado",
-                "Conv. em Diligência",
-            ];
-
-            console.log(
-                "🎨 FIGMA: Status disponíveis para teste:",
-                todosStatus
-            );
-
-            return {
-                sucesso: true,
-                card: card,
-                statusTeste: statusTeste,
-                configuracao:
-                    window.SENT1_AUTO.obterConfigFigmaStatus(statusTeste),
-                todosStatusDisponiveis: todosStatus,
-                dica: "Use window.SENT1_AUTO.testarDesignFigma('STATUS') para testar outros status",
-            };
-        } catch (error) {
-            console.error("❌ FIGMA: Erro durante teste:", error);
-            return {
-                sucesso: false,
-                erro: error.message,
-                stack: error.stack,
-            };
-        }
-    };
+    // ============================================================================
+    // 🔧 SISTEMA DE CONFIGURAÇÃO E INICIALIZAÇÃO
+    // ============================================================================
 
     // 🌈 FUNÇÃO PARA TESTAR TODOS OS DESIGNS FIGMA
     window.SENT1_AUTO.testarTodosDesignsFigma = function () {
@@ -20597,6 +21032,15 @@
             console.log("🧪 TESTE: Sistema completo");
             return { teste: "sistema_completo", status: "ok" };
         },
+
+        // 🔗 FUNÇÕES DE NAVEGAÇÃO PARA SESSÃO
+        extrairLinkSessao: function (indiceSessao = 1) {
+            return extrairLinkSessao(indiceSessao);
+        },
+        construirUrlSessao: function (dadosSessao) {
+            return construirUrlSessao(dadosSessao);
+        },
+
         testarTooltipSessoes: function () {
             console.log(
                 "🧪 TESTE TOOLTIP: Testando tooltip com múltiplas sessões..."
@@ -21857,6 +22301,68 @@
                 total: funcoesChave.length,
                 funcionais: funcoesChave.length - problemas.length,
             };
+        },
+
+        // 🧠 SEMANTIC KERNEL - FUNCIONALIDADES EXPERIMENTAIS
+        experimental: {
+            detectarDataSessaoComIA: detectarDataSessaoComIA,
+            semanticKernel: window.eProbeSemanticKernel,
+
+            // Função para testar o sistema
+            async testarIA() {
+                console.log("🧪 TESTE: Iniciando teste do Semantic Kernel");
+
+                const sk = window.eProbeSemanticKernel;
+                console.log("📊 Stats:", sk.getStats());
+
+                const resultado = await detectarDataSessaoComIA();
+
+                if (resultado) {
+                    console.log("✅ TESTE: Sucesso!", resultado);
+                    alert(
+                        `Teste do Semantic Kernel:\n\n✅ Sucesso!\nData: ${
+                            resultado.dataFormatada
+                        }\nMétodo: ${resultado.metodoDeteccao}\nConfiança: ${
+                            resultado.confiancaIA || "N/A"
+                        }`
+                    );
+                } else {
+                    console.log("❌ TESTE: Nenhuma data encontrada");
+                    alert(
+                        "Teste do Semantic Kernel:\n\n❌ Nenhuma data encontrada\n\nVerifique se há informações de sessão na página atual."
+                    );
+                }
+
+                console.log("📊 Stats finais:", sk.getStats());
+                return resultado;
+            },
+
+            // Função para habilitar/desabilitar
+            toggleIA(enable) {
+                const sk = window.eProbeSemanticKernel;
+                if (enable) {
+                    sk.enable();
+                } else {
+                    sk.disable();
+                }
+                console.log(`🔧 IA ${enable ? "habilitada" : "desabilitada"}`);
+            },
+
+            // Função para ver estatísticas
+            statsIA() {
+                const stats = window.eProbeSemanticKernel.getStats();
+                console.log("📊 SEMANTIC KERNEL STATS:", stats);
+                alert(
+                    `Estatísticas do Semantic Kernel:\n\n• Habilitado: ${
+                        stats.enabled ? "Sim" : "Não"
+                    }\n• Requisições usadas: ${stats.requestCount}/${
+                        stats.maxRequests
+                    }\n• Restantes: ${stats.requestsRemaining}\n• Modo teste: ${
+                        stats.testMode ? "Sim" : "Não"
+                    }\n• Fallback: ${stats.fallbackEnabled ? "Sim" : "Não"}`
+                );
+                return stats;
+            },
         },
     };
 
