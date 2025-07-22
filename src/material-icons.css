@@ -1,0 +1,112 @@
+/* Material Symbols Outlined - Configuração para eProbe */
+@import url("https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200");
+
+.material-symbols-outlined {
+    font-family: "Material Symbols Outlined" !important;
+    font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 20 !important;
+
+    /* Contorno preto */
+    -webkit-text-stroke: 0.2px black;
+    text-shadow: 1px 1px 0 black, -1px -1px 0 black, 1px -1px 0 black,
+        -1px 1px 0 black;
+
+    /* Sombra suave para profundidade */
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3));
+
+    /* Propriedades base */
+    font-size: 18px;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Cores específicas */
+.material-symbols-outlined.cream {
+    color: #f8ffd6 !important;
+}
+
+.material-symbols-outlined.orange {
+    color: #f78d8d !important;
+}
+
+.material-symbols-outlined.jordy.blue,
+.material-symbols-outlined.jordy-blue {
+    color: #8dc0f7 !important;
+    font-family: "Material Symbols Outlined" !important;
+    font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 20 !important;
+}
+
+.material-symbols-outlined.dark-text {
+    color: #1c1b1f !important;
+}
+
+/* Variações de tamanho */
+.material-symbols-outlined.small {
+    font-size: 16px;
+}
+
+.material-symbols-outlined.medium {
+    font-size: 20px;
+}
+
+.material-symbols-outlined.large {
+    font-size: 24px;
+}
+
+/* Variação sem contorno (se necessário) */
+.material-symbols-outlined.no-stroke {
+    -webkit-text-stroke: none;
+    text-shadow: none;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Variações de cor específicas para eProbe */
+.material-symbols-outlined.cream {
+    color: #f8ffd6;
+}
+
+.material-symbols-outlined.dark-text {
+    color: #1c1b1f;
+}
+
+/* Cor rosa/pink para ícones list_alt */
+.material-symbols-outlined.pink {
+    color: #ff88cc !important;
+}
+
+/* Regra de especificidade alta para sobrepor configurações do eProc */
+span.material-symbols-outlined.pink,
+.material-symbols-outlined.pink,
+fieldset .material-symbols-outlined.pink,
+.infraFieldset .material-symbols-outlined.pink,
+legend .material-symbols-outlined.pink {
+    color: #ff88cc !important;
+    font-family: "Material Symbols Outlined" !important;
+}
+
+/* Regra específica para sobrepor .infraLegendObrigatorio */
+.infraLegendObrigatorio .material-symbols-outlined.pink,
+legend.infraLegendObrigatorio .material-symbols-outlined.pink,
+.infraFieldset .infraLegendObrigatorio .material-symbols-outlined.pink {
+    color: #ff88cc !important;
+    font-family: "Material Symbols Outlined" !important;
+    font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 20 !important;
+}
+
+/* Regras específicas para ícones jordy.blue (list_alt) */
+span.material-symbols-outlined.jordy.blue,
+.material-symbols-outlined.jordy.blue,
+fieldset .material-symbols-outlined.jordy.blue,
+.infraFieldset .material-symbols-outlined.jordy.blue,
+legend .material-symbols-outlined.jordy.blue,
+.infraLegendObrigatorio .material-symbols-outlined.jordy.blue,
+legend.infraLegendObrigatorio .material-symbols-outlined.jordy.blue {
+    color: #8dc0f7 !important;
+    font-family: "Material Symbols Outlined" !important;
+    font-variation-settings: "FILL" 1, "wght" 600, "GRAD" 0, "opsz" 20 !important;
+    -webkit-text-stroke: 0.2px black !important;
+    text-shadow: 1px 1px 0 black, -1px -1px 0 black, 1px -1px 0 black,
+        -1px 1px 0 black !important;
+    filter: drop-shadow(1px 1px 2px rgba(0, 0, 0, 0.3)) !important;
+}

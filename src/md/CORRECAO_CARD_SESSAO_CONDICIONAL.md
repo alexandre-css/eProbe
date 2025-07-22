@@ -114,10 +114,10 @@ console.log(
 
 ### 🔍 Critérios de Validação:
 
--   ✅ `hasDataSessaoPautado()` retorna `true`
--   ✅ `getDataSessaoPautado()` retorna dados válidos
--   ✅ Dados contêm `dataFormatada` válida
--   ✅ Dados estão associados ao processo atual
+- ✅ `hasDataSessaoPautado()` retorna `true`
+- ✅ `getDataSessaoPautado()` retorna dados válidos
+- ✅ Dados contêm `dataFormatada` válida
+- ✅ Dados estão associados ao processo atual
 
 ## 🧪 TESTE DAS ALTERAÇÕES
 
@@ -156,10 +156,10 @@ window.SENT1_AUTO.inserirDataSessaoNaInterface();
 
 ## ✅ RESULTADO FINAL
 
--   ❌ **Problema**: Card aparecia sempre, mesmo sem dados válidos
--   ✅ **Solução**: Card aparece **apenas quando há dados válidos de sessão**
--   🎯 **Benefício**: Interface mais limpa e precisa
--   📊 **Compatibilidade**: Mantida com todas as funções existentes
+- ❌ **Problema**: Card aparecia sempre, mesmo sem dados válidos
+- ✅ **Solução**: Card aparece **apenas quando há dados válidos de sessão**
+- 🎯 **Benefício**: Interface mais limpa e precisa
+- 📊 **Compatibilidade**: Mantida com todas as funções existentes
 
 ---
 

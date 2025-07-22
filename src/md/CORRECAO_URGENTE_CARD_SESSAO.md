@@ -8,18 +8,18 @@
 
 ### 1. **Fluxo Interrompido**
 
--   As funções `processarTooltipContent()` e `extrairDadosSessaoCompleto()` salvavam os dados mas **não criavam o card**
--   O fluxo de criação foi quebrado na tentativa de tornar o sistema condicional
+- As funções `processarTooltipContent()` e `extrairDadosSessaoCompleto()` salvavam os dados mas **não criavam o card**
+- O fluxo de criação foi quebrado na tentativa de tornar o sistema condicional
 
 ### 2. **Validação Muito Restritiva**
 
--   A função `inserirDataSessaoNaInterface()` exigia especificamente `dadosDetectados.dataFormatada`
--   Mas os dados podem vir em formatos diferentes: `dataOriginal`, `data`, ou mesmo string direta
+- A função `inserirDataSessaoNaInterface()` exigia especificamente `dadosDetectados.dataFormatada`
+- Mas os dados podem vir em formatos diferentes: `dataOriginal`, `data`, ou mesmo string direta
 
 ### 3. **Problema na Função `hasDataSessaoPautado()`**
 
--   A função comparava `processoAtual` como variável global, mas não a atualizava dinamicamente
--   Isso causava falsos negativos na validação
+- A função comparava `processoAtual` como variável global, mas não a atualizava dinamicamente
+- Isso causava falsos negativos na validação
 
 ## ✅ CORREÇÕES APLICADAS
 
