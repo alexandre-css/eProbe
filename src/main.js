@@ -1,5 +1,5 @@
 ﻿// ===== SISTEMA DE LOGGING CONTROLADO =====
-const DEBUG_MODE = false; // ⚡ TROCAR PARA true APENAS PARA DEBUG
+const DEBUG_MODE = true; // ⚡ ATIVO PARA DEBUG DE DETECÇÃO DE SESSÃO
 const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silenciosos por padrão
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
@@ -1033,113 +1033,99 @@ RESPOSTA (apenas JSON válido):`;
 
         inserirDataSessaoNaInterface = function () {
             try {
-                log("🎯 INTERFACE: Criando card de sessão...");
+                log("🎯 INTERFACE: Iniciando inserção de card de sessão...");
+                logCritical(
+                    "🚨 INTERFACE: INÍCIO - inserirDataSessaoNaInterface()"
+                );
 
-                // Remover card existente se houver
-                const cardExistente =
-                    document.getElementById("eprobe-data-sessao");
-                if (cardExistente) {
-                    cardExistente.remove();
-                    log("🗑️ INTERFACE: Card anterior removido");
-                }
+                // Remover cards existentes
+                const cardsExistentes = [
+                    document.getElementById("eprobe-data-sessao"),
+                    document.getElementById("eprobe-card-sessao-material"),
+                ];
+
+                cardsExistentes.forEach((card) => {
+                    if (card) {
+                        card.remove();
+                        log("🗑️ INTERFACE: Card anterior removido");
+                    }
+                });
 
                 // Verificar se temos dados
                 if (!hasDataSessaoPautado()) {
                     logError("⚠️ INTERFACE: Sem dados de sessão disponíveis");
-                    return false;
+
+                    // Tentar detectar dados primeiro
+                    log("� INTERFACE: Tentando detectar dados de sessão...");
+                    const dadosDetectados = detectarCardSessaoSimplificado();
+
+                    if (!dadosDetectados) {
+                        logError(
+                            "❌ INTERFACE: Não foi possível detectar dados de sessão"
+                        );
+                        return false;
+                    }
+
+                    log(
+                        "✅ INTERFACE: Dados detectados durante inserção:",
+                        dadosDetectados
+                    );
                 }
 
                 const dados = getDataSessaoPautado();
-                log("📊 INTERFACE: Dados encontrados:", dados);
+                log("📊 INTERFACE: Dados para criação do card:", dados);
 
-                // Criar card Material Design moderno
-                const card = document.createElement("div");
-                card.id = "eprobe-data-sessao";
-                card.className = "session-card";
-                card.style.cssText = `
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                background: #ffffff;
-                border: 1px solid #e5e7eb;
-                border-radius: 12px;
-                box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
-                z-index: 10000;
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                min-width: 280px;
-                max-width: 350px;
-                overflow: hidden;
-            `;
+                // Preparar dados para o card Material
+                const cardInfo = {
+                    data:
+                        dados?.data ||
+                        dados?.dataFormatada ||
+                        "Data não disponível",
+                    status: dados?.status || "PAUTADO",
+                    orgao: dados?.orgao || "Órgão não informado",
+                    tipo: dados?.tipo || "Tipo não informado",
+                    totalSessoes: dados?.totalSessoes || 1,
+                    sessoes: dados?.sessoes || [],
+                };
 
-                // Criar conteúdo do card
-                const dataTexto =
-                    dados.dataFormatada || dados.data || "Data não disponível";
-                const statusTexto = dados.status || "Status não disponível";
-                const tipoTexto = dados.tipo || "Tipo não informado";
-                const orgaoTexto = dados.orgao || "Órgão não informado";
+                log(
+                    "🎨 INTERFACE: Chamando criarCardSessaoMaterial com:",
+                    cardInfo
+                );
 
-                card.innerHTML = `
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 20px;">📅</span>
-                        <div>
-                            <div style="font-weight: 600; font-size: 16px;">Sessão Detectada</div>
-                            <div style="font-size: 14px; opacity: 0.9;">${dataTexto}</div>
-                        </div>
-                    </div>
-                </div>
-                <div style="padding: 16px;">
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Tipo</div>
-                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${tipoTexto}</div>
-                    </div>
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Status</div>
-                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${statusTexto}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 12px; color: #6b7280; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Órgão</div>
-                        <div style="font-size: 14px; color: #374151; font-weight: 500;">${orgaoTexto}</div>
-                    </div>
-                </div>
-            `;
+                // Usar a função Material Design
+                const cardCriado = criarCardSessaoMaterial(cardInfo);
 
-                // Adicionar botão de fechar ao header
-                const header = card.querySelector("div");
-                const btnFechar = document.createElement("button");
-                btnFechar.innerHTML = "×";
-                btnFechar.style.cssText = `
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                background: rgba(255,255,255,0.2);
-                border: none;
-                color: white;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 16px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                opacity: 0.8;
-                transition: opacity 0.2s;
-            `;
-                btnFechar.onclick = () => card.remove();
-                btnFechar.onmouseenter = () => (btnFechar.style.opacity = "1");
-                btnFechar.onmouseleave = () =>
-                    (btnFechar.style.opacity = "0.8");
+                if (cardCriado !== null) {
+                    log(
+                        "✅ INTERFACE: Card Material Design criado com sucesso!"
+                    );
 
-                header.appendChild(btnFechar);
+                    // Verificar se o card foi inserido no DOM
+                    setTimeout(() => {
+                        const cardNoDOM = document.getElementById(
+                            "eprobe-card-sessao-material"
+                        );
+                        if (cardNoDOM) {
+                            logCritical(
+                                "✅ VERIFICAÇÃO: Card encontrado no DOM!"
+                            );
+                        } else {
+                            logError(
+                                "❌ VERIFICAÇÃO: Card NÃO encontrado no DOM!"
+                            );
+                        }
+                    }, 100);
 
-                // Inserir no DOM
-                document.body.appendChild(card);
-
-                log("✅ INTERFACE: Card Material Design criado com sucesso!");
-                return true;
+                    return true;
+                } else {
+                    logError(
+                        "❌ INTERFACE: Falha ao criar card Material Design"
+                    );
+                    return false;
+                }
             } catch (error) {
-                console.error("❌ INTERFACE: Erro ao criar card:", error);
+                console.error("❌ INTERFACE: Erro ao inserir card:", error);
                 return false;
             }
         };
@@ -1205,6 +1191,15 @@ RESPOSTA (apenas JSON válido):`;
 
                 log("🎨 CRIANDO CARD MATERIAL FIGMA:", cardInfo);
 
+                if (!cardInfo) {
+                    logError("❌ CARD: cardInfo é null ou undefined");
+                    return null;
+                }
+
+                log(
+                    "✅ CARD: Validação inicial passou, verificando card existente..."
+                );
+
                 // Verificar se já existe um card
                 const cardExistente = document.getElementById(
                     "eprobe-card-sessao-material"
@@ -1213,6 +1208,8 @@ RESPOSTA (apenas JSON válido):`;
                     log("ℹ️ CARD: Removendo card existente");
                     cardExistente.remove();
                 }
+
+                log("🎨 CARD: Processando cores e status...");
 
                 // Mapeamento de cores do Figma por status
                 const coresFigma = {
@@ -1242,6 +1239,8 @@ RESPOSTA (apenas JSON válido):`;
                     "→",
                     corIcon
                 );
+
+                log("📦 CARD: Criando elemento DOM...");
 
                 // Criar card Material Light pequeno (design Figma)
                 const card = document.createElement("div");
@@ -1521,6 +1520,8 @@ RESPOSTA (apenas JSON válido):`;
                 logCritical(
                     "🎯 INSERÇÃO: Tentando inserir card na interface..."
                 );
+                log("📍 CARD: Procurando local para inserção...");
+
                 const inserido = inserirCardNaInterface(card);
                 if (!inserido) {
                     // Fallback: inserir no body se não conseguir inserir na interface
@@ -1529,18 +1530,40 @@ RESPOSTA (apenas JSON válido):`;
                     );
                     document.body.appendChild(card);
                     logError("⚠️ CARD FIGMA: Inserido como fallback no body");
+                    log("📍 CARD: Posição fallback aplicada no body");
                 } else {
                     logCritical(
                         "✅ SUCESSO: Card inserido na interface com sucesso!"
                     );
+                    log("📍 CARD: Inserido na posição correta da interface");
                 }
 
                 log("✅ CARD FIGMA: Criado com design Material Light pequeno!");
-                log("� COR APLICADA:", corIcon, "para status:", statusTexto);
+                log("🎨 COR APLICADA:", corIcon, "para status:", statusTexto);
 
+                // Verificação final
+                const cardNoDom = document.getElementById(
+                    "eprobe-card-sessao-material"
+                );
+                const cardVisivel =
+                    cardNoDom && cardNoDom.style.display !== "none";
+
+                logCritical(
+                    `🔍 VERIFICAÇÃO FINAL: Card no DOM: ${!!cardNoDom}, Visível: ${cardVisivel}`
+                );
+
+                if (cardNoDom) {
+                    const rect = cardNoDom.getBoundingClientRect();
+                    log(
+                        `📐 CARD: Posição final - x:${rect.x}, y:${rect.y}, width:${rect.width}, height:${rect.height}`
+                    );
+                }
+
+                logCritical("✅ CARD MATERIAL: Criação concluída com sucesso!");
                 return card;
             } catch (error) {
-                console.error("❌ CARD FIGMA: Erro ao criar card:", error);
+                logError("❌ CARD FIGMA: Erro ao criar card:", error);
+                logError("📍 STACK TRACE:", error.stack);
                 return null;
             }
         }
@@ -1923,250 +1946,103 @@ RESPOSTA (apenas JSON válido):`;
         const DETECTION_COOLDOWN = 1000; // 1 segundo entre execuções
 
         /**
-         * 🎯 DETECÇÃO SIMPLIFICADA DE SESSÕES - APENAS XPATH QUE FUNCIONA
-         * Remove todos os fallbacks e mantém apenas o sistema XPath comprovado
+         * 🎯 DETECÇÃO ROBUSTA DE SESSÕES - APENAS fieldset[id="fldMinutas"]
+         * Busca especificamente pelo fieldset com id="fldMinutas" e processa suas minutas
          */
         function detectarCardSessaoSimplificado() {
             try {
-                // 🚨 LOG CRÍTICO: Início da detecção
-                logCritical(
-                    "🚨 CARD SESSÃO: Iniciando detectarCardSessaoSimplificado()"
-                );
-                logCritical(
-                    `🕐 TIMESTAMP: ${new Date().toLocaleString("pt-BR")}`
-                );
-                logCritical(`📍 URL ATUAL: ${window.location.href}`);
-                logCritical(`🔄 PROCESSO: ${obterNumeroProcesso() || "N/A"}`);
-
                 // Verificar cooldown para evitar execuções duplicadas
                 const now = Date.now();
                 if (now - lastDetectionTime < DETECTION_COOLDOWN) {
-                    logCritical(
-                        "⏰ DETECÇÃO: Aguardando cooldown, retornando resultado anterior"
-                    );
-                    logCritical(
-                        `⏱️ TEMPO RESTANTE: ${
-                            DETECTION_COOLDOWN - (now - lastDetectionTime)
-                        }ms`
-                    );
                     return lastDetectionResult;
                 }
 
                 lastDetectionTime = now;
 
-                logCritical(
-                    "🎯 DETECÇÃO: Iniciando busca XPath por sessões..."
-                );
+                // Buscar especificamente o fieldset com id="fldMinutas"
+                const fieldsetMinutas = document.querySelector("#fldMinutas");
 
-                // Verificar múltiplos fieldsets possíveis (6 e 7)
-                logCritical(
-                    "🔍 VERIFICANDO: Containers fieldset[6] e fieldset[7]..."
-                );
-
-                const fieldsetsParaVerificar = [6, 7];
-                let containerFieldset = null;
-                let fieldsetEncontrado = null;
-
-                // Buscar fieldset[6] ou fieldset[7] que contenha sessões
-                for (const fieldsetNum of fieldsetsParaVerificar) {
-                    const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
-                    const fieldsetCandidate = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue;
-
-                    if (fieldsetCandidate) {
-                        logCritical(
-                            `✅ ENCONTRADO: fieldset[${fieldsetNum}] existe`
-                        );
-
-                        // Verificar se este fieldset tem sessões (tentando encontrar pelo menos uma)
-                        const xpathTeste = `${xpath}/div/div[2]/fieldset/legend/span[1]/button/text()`;
-                        const textoTeste = document
-                            .evaluate(
-                                xpathTeste,
-                                document,
-                                null,
-                                XPathResult.STRING_TYPE,
-                                null
-                            )
-                            .stringValue?.trim();
-
-                        if (textoTeste) {
-                            logCritical(
-                                `🎯 SESSÃO ENCONTRADA em fieldset[${fieldsetNum}]: "${textoTeste}"`
-                            );
-                            containerFieldset = fieldsetCandidate;
-                            fieldsetEncontrado = fieldsetNum;
-                            break;
-                        } else {
-                            logCritical(
-                                `⚠️ fieldset[${fieldsetNum}] existe mas não tem sessões detectáveis`
-                            );
-                        }
-                    } else {
-                        logCritical(
-                            `❌ fieldset[${fieldsetNum}] não encontrado`
-                        );
-                    }
-                }
-
-                if (!containerFieldset) {
-                    logCritical(
-                        "❌ CRÍTICO: NENHUM Container fieldset com sessões encontrado!"
-                    );
-                    logCritical(
-                        "🔍 DIAGNÓSTICO: Verificando estrutura da página..."
-                    );
-
-                    // Diagnóstico da estrutura DOM
-                    const body = document.body;
-                    const divPrincipal = document.querySelector(
-                        "body > div:nth-child(2)"
-                    );
-                    const formProcesso =
-                        document.querySelector("#frmProcessoLista");
-
-                    logCritical(`📊 BODY existe: ${!!body}`);
-                    logCritical(`📊 Div principal existe: ${!!divPrincipal}`);
-                    logCritical(`📊 Form processo existe: ${!!formProcesso}`);
-
-                    if (formProcesso) {
-                        const fieldsets =
-                            formProcesso.querySelectorAll("fieldset");
-                        logCritical(
-                            `📊 FIELDSETS encontrados: ${fieldsets.length}`
-                        );
-                        fieldsets.forEach((fs, i) => {
-                            logCritical(
-                                `   - Fieldset ${i + 1}: ${
-                                    fs
-                                        .querySelector("legend")
-                                        ?.textContent?.trim() || "Sem legend"
-                                }`
-                            );
-                        });
-                    }
-
+                if (!fieldsetMinutas) {
                     lastDetectionResult = null;
                     return null;
                 }
 
-                logCritical(
-                    `✅ SUCESSO: Container fieldset[${fieldsetEncontrado}] encontrado e ativo!`
+                // Encontrar o número do fieldset na estrutura DOM
+                const xpath = fieldsetMinutas.closest(
+                    'form[name="frmProcessoLista"]'
+                );
+                if (!xpath) {
+                    lastDetectionResult = null;
+                    return null;
+                }
+
+                // Buscar todos os fieldsets dentro do fieldset de minutas
+                const minutasFieldsets = fieldsetMinutas.querySelectorAll(
+                    "div > div:nth-child(2) > fieldset"
                 );
 
                 const sessoes = [];
-                let contador = 1;
+                let dadosEncontrados = [];
 
-                // Buscar até 10 divs de sessão no fieldset encontrado
-                logCritical(
-                    `🔍 BUSCANDO SESSÕES: Processando fieldset[${fieldsetEncontrado}]...`
-                );
-                while (contador <= 10) {
-                    const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetEncontrado}]/div/div[${contador}]/fieldset/legend/span[1]/button/text()`;
-
-                    const resultado = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.STRING_TYPE,
-                        null
+                // Processar cada fieldset de minuta
+                minutasFieldsets.forEach((fieldset, index) => {
+                    const botao = fieldset.querySelector(
+                        "legend > span:first-child > button"
                     );
+                    if (botao) {
+                        const textoMinuta = botao.textContent?.trim();
+                        if (textoMinuta) {
+                            dadosEncontrados.push(textoMinuta);
 
-                    let textoButton = resultado.stringValue?.trim();
+                            // Regex universal para parsing
+                            const padraoUniversal =
+                                /^([A-Za-zÀ-ÿ\s]+?)\s*\(([A-Za-z\s]+em\s+Pauta)\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s*a\s*\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
+                            const match = textoMinuta.match(padraoUniversal);
 
-                    // Se não encontrou no XPath padrão, tentar alternativa
-                    if (!textoButton) {
-                        const xpathDiv = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetEncontrado}]/div/div[${contador}]`;
-                        const divElement = document.evaluate(
-                            xpathDiv,
-                            document,
-                            null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE,
-                            null
-                        ).singleNodeValue;
+                            if (match) {
+                                const [
+                                    ,
+                                    tipoSessao,
+                                    statusCompleto,
+                                    data,
+                                    siglaOrgao,
+                                ] = match;
 
-                        if (!divElement) {
-                            log(
-                                `🔍 DETECÇÃO: Div[${contador}] não existe no fieldset[${fieldsetEncontrado}] - finalizando`
-                            );
-                            break;
-                        }
+                                // Traduzir status e órgão
+                                const statusTraduzido =
+                                    traduzirStatusSessao(statusCompleto);
+                                const nomeOrgao = traduzirSiglaOrgao(
+                                    siglaOrgao.trim()
+                                );
 
-                        // Buscar texto no botão da div
-                        const button = divElement.querySelector(
-                            "fieldset legend span button"
-                        );
-                        if (button) {
-                            textoButton = button.textContent?.trim();
-                        }
-                    }
-
-                    if (textoButton) {
-                        log(`✅ SESSÃO ${contador}: "${textoButton}"`);
-
-                        // Regex universal para parsing
-                        const padraoUniversal =
-                            /^([A-Za-zÀ-ÿ\s]+?)\s*\(([A-Za-z\s]+em\s+Pauta)\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s*a\s*\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
-                        const match = textoButton.match(padraoUniversal);
-
-                        if (match) {
-                            const [
-                                ,
-                                tipoSessao,
-                                statusCompleto,
-                                data,
-                                siglaOrgao,
-                            ] = match;
-
-                            // Traduzir status e órgão
-                            const statusTraduzido =
-                                traduzirStatusSessao(statusCompleto);
-                            const nomeOrgao = traduzirSiglaOrgao(
-                                siglaOrgao.trim()
-                            );
-
-                            sessoes.push({
-                                indice: contador,
-                                tipo: tipoSessao.trim(),
-                                status:
-                                    statusTraduzido?.status || "Desconhecido",
-                                statusCompleto: statusCompleto,
-                                data: data.trim(),
-                                siglaOrgao: siglaOrgao.trim(),
-                                orgao: nomeOrgao,
-                                cor: statusTraduzido?.cor || "#6B7280",
-                                textoCompleto: textoButton,
-                            });
-
-                            log(`🎯 DADOS EXTRAÍDOS (sessão ${contador}):`, {
-                                tipo: tipoSessao.trim(),
-                                status: statusTraduzido?.status,
-                                data: data.trim(),
-                                orgao: nomeOrgao,
-                                totalSessoesAtual: sessoes.length,
-                            });
+                                sessoes.push({
+                                    indice: index + 1,
+                                    tipo: tipoSessao.trim(),
+                                    status:
+                                        statusTraduzido?.status ||
+                                        "Desconhecido",
+                                    statusCompleto: statusCompleto,
+                                    data: data.trim(),
+                                    siglaOrgao: siglaOrgao.trim(),
+                                    orgao: nomeOrgao,
+                                    cor: statusTraduzido?.cor || "#6B7280",
+                                    textoCompleto: textoMinuta,
+                                });
+                            }
                         }
                     }
+                });
 
-                    contador++;
-                }
-
-                log(
-                    `📊 VERIFICAÇÃO FINAL: Array sessoes tem ${sessoes.length} elementos`
+                // LOG CRÍTICO ÚNICO com resultado
+                logCritical(
+                    `🎯 MINUTAS ENCONTRADAS: Processo ${
+                        obterNumeroProcesso() || "N/A"
+                    } | Local: fieldset#fldMinutas | Total: ${
+                        dadosEncontrados.length
+                    } minutas | Dados: ${JSON.stringify(dadosEncontrados)}`
                 );
 
                 if (sessoes.length === 0) {
-                    logCritical("❌ CRÍTICO: NENHUMA SESSÃO ENCONTRADA!");
-                    logCritical("🔍 POSSÍVEIS CAUSAS:");
-                    logCritical("   - Estrutura DOM diferente do esperado");
-                    logCritical("   - Processo não tem sessões pautadas");
-                    logCritical("   - XPath não localiza botões corretamente");
-                    logCritical("   - Regex não faz match com o texto");
                     lastDetectionResult = null;
                     return null;
                 }
@@ -2182,11 +2058,6 @@ RESPOSTA (apenas JSON válido):`;
                     return dataB - dataA;
                 });
 
-                logCritical(
-                    `✅ CRÍTICO: ${sessoes.length} sessões encontradas e ordenadas`
-                );
-                logCritical("📊 SESSÃO MAIS RECENTE:", sessoes[0]);
-
                 // Armazenar dados da sessão mais recente
                 const sessaoMaisRecente = sessoes[0];
                 const processo = obterNumeroProcesso();
@@ -2197,14 +2068,9 @@ RESPOSTA (apenas JSON válido):`;
 
                     // Adicionar dados completos
                     window.dadosCompletosMinutas = sessaoMaisRecente;
-
-                    logCritical(
-                        `✅ CRÍTICO: DADOS ARMAZENADOS - dataSessaoPautado="${dataSessaoPautado}" | processo="${processo}"`
-                    );
                 } else {
-                    logCritical(
-                        "⚠️ CRÍTICO: Processo não identificado - dados não salvos!"
-                    );
+                    lastDetectionResult = null;
+                    return null;
                 }
 
                 // Criar card com dados da sessão mais recente
@@ -2219,26 +2085,11 @@ RESPOSTA (apenas JSON válido):`;
                     sessoes: sessoes,
                 };
 
-                logCritical(
-                    "🎨 CRÍTICO: Chamando criarCardSessaoMaterial com dados:",
-                    cardInfo
-                );
                 criarCardSessaoMaterial(cardInfo);
                 lastDetectionResult = cardInfo;
 
-                logCritical(
-                    "✅ CRÍTICO: detectarCardSessaoSimplificado FINALIZADO COM SUCESSO!"
-                );
                 return cardInfo;
             } catch (error) {
-                logCritical(
-                    "💥 CRÍTICO: ERRO FATAL em detectarCardSessaoSimplificado!"
-                );
-                logCritical("🚨 DETALHES DO ERRO:", error);
-                logCritical("📍 STACK:", error.stack);
-                logCritical("🔍 URL:", window.location.href);
-                logCritical("🔍 PROCESSO:", obterNumeroProcesso() || "N/A");
-                console.error("❌ DETECÇÃO: Erro na detecção XPath:", error);
                 lastDetectionResult = null;
                 return null;
             }
@@ -19262,11 +19113,7 @@ RESPOSTA (apenas JSON válido):`;
                 0
             ),
 
-            // Funções de card e sessão
-            detectarCardSessaoSimplificado: createSafeFallback(
-                "detectarCardSessaoSimplificado",
-                null
-            ),
+            // Funções de card e sessão (detectarCardSessaoSimplificado movido para linha 19345)
             criarCardSessaoMaterial: createSafeFallback(
                 "criarCardSessaoMaterial",
                 null
@@ -19418,6 +19265,210 @@ RESPOSTA (apenas JSON válido):`;
 
         log("🔧 NAMESPACE: Sistema de fallback universal configurado");
 
+        // ============================================================
+        // 🔧 IMPLEMENTAÇÃO DAS FUNÇÕES FALTANTES PARA NAMESPACE
+        // ============================================================
+
+        /**
+         * 🔍 DIAGNÓSTICO ESTRUTURA DOM MINUTAS
+         * Analisa a estrutura DOM das minutas para debug
+         */
+        function diagnosticarEstruturaDOMMinutas() {
+            try {
+                log(
+                    "🔍 DIAGNÓSTICO DOM: Iniciando análise da estrutura das minutas..."
+                );
+
+                const resultados = {
+                    fieldsetPrincipal: null,
+                    minutasEncontradas: [],
+                    estrutura: {},
+                    recomendacoes: [],
+                };
+
+                // 1. Buscar o fieldset principal #fldMinutas
+                const fieldsetPrincipal = document.querySelector("#fldMinutas");
+                if (!fieldsetPrincipal) {
+                    logCritical(
+                        "❌ DIAGNÓSTICO: fieldset#fldMinutas NÃO ENCONTRADO!"
+                    );
+                    resultados.recomendacoes.push(
+                        "Verificar se está na página correta de minutas"
+                    );
+                    return resultados;
+                }
+
+                resultados.fieldsetPrincipal = {
+                    encontrado: true,
+                    id: fieldsetPrincipal.id,
+                    classes: fieldsetPrincipal.className,
+                    filhos: fieldsetPrincipal.children.length,
+                };
+
+                log("✅ DIAGNÓSTICO: fieldset#fldMinutas encontrado!");
+
+                // 2. Analisar fieldsets internos
+                const minutasFieldsets = fieldsetPrincipal.querySelectorAll(
+                    "div > div:nth-child(2) > fieldset"
+                );
+                log(
+                    `🔍 DIAGNÓSTICO: ${minutasFieldsets.length} fieldsets de minutas encontrados`
+                );
+
+                minutasFieldsets.forEach((fieldset, index) => {
+                    const botao = fieldset.querySelector(
+                        "legend > span:first-child > button"
+                    );
+                    const textoMinuta =
+                        botao?.textContent?.trim() || "Sem texto";
+
+                    resultados.minutasEncontradas.push({
+                        indice: index + 1,
+                        temBotao: !!botao,
+                        texto: textoMinuta,
+                        comprimento: textoMinuta.length,
+                    });
+
+                    log(
+                        `📋 MINUTA ${index + 1}: ${textoMinuta.substring(
+                            0,
+                            100
+                        )}...`
+                    );
+                });
+
+                // 3. Estrutura geral
+                resultados.estrutura = {
+                    totalMinutas: minutasFieldsets.length,
+                    minutasComTexto: resultados.minutasEncontradas.filter(
+                        (m) => m.texto !== "Sem texto"
+                    ).length,
+                    minutasComBotao: resultados.minutasEncontradas.filter(
+                        (m) => m.temBotao
+                    ).length,
+                };
+
+                // 4. Recomendações
+                if (minutasFieldsets.length === 0) {
+                    resultados.recomendacoes.push(
+                        "Nenhuma minuta encontrada - verificar seletor CSS"
+                    );
+                } else if (resultados.estrutura.minutasComTexto === 0) {
+                    resultados.recomendacoes.push(
+                        "Minutas encontradas mas sem texto - verificar estrutura interna"
+                    );
+                } else {
+                    resultados.recomendacoes.push(
+                        `Sistema funcionando: ${resultados.estrutura.minutasComTexto} minutas com texto`
+                    );
+                }
+
+                logCritical(
+                    `🎯 DIAGNÓSTICO COMPLETO: ${JSON.stringify(
+                        resultados.estrutura
+                    )}`
+                );
+                return resultados;
+            } catch (error) {
+                console.error("❌ DIAGNÓSTICO: Erro na análise DOM:", error);
+                return {
+                    erro: error.message,
+                    recomendacoes: [
+                        "Erro interno - verificar console para detalhes",
+                    ],
+                };
+            }
+        }
+
+        /**
+         * 🧪 TESTE ROBUSTO DE DETECÇÃO
+         * Executa testes completos do sistema de detecção
+         */
+        function testarDeteccaoRobusta() {
+            try {
+                log("🧪 TESTE ROBUSTO: Iniciando bateria de testes...");
+
+                const resultados = {
+                    timestamp: new Date().toLocaleString(),
+                    processo: obterNumeroProcesso() || "N/A",
+                    url: window.location.href,
+                    testes: {},
+                };
+
+                // TESTE 1: Diagnóstico DOM
+                log("🔍 TESTE 1: Diagnóstico da estrutura DOM...");
+                resultados.testes.diagnosticoDOM =
+                    diagnosticarEstruturaDOMMinutas();
+
+                // TESTE 2: Detecção simplificada
+                log("🔍 TESTE 2: Detecção simplificada de sessão...");
+                const deteccaoSimplificada = detectarCardSessaoSimplificado();
+                resultados.testes.deteccaoSimplificada = {
+                    sucesso: !!deteccaoSimplificada,
+                    dados: deteccaoSimplificada,
+                    sessaoEncontrada: !!dataSessaoPautado,
+                };
+
+                // TESTE 3: Verificação de cache
+                log("🔍 TESTE 3: Verificação de dados em cache...");
+                resultados.testes.cache = {
+                    dataSessaoPautado: dataSessaoPautado,
+                    processoComDataSessao: processoComDataSessao,
+                    dadosCompletosMinutas: window.dadosCompletosMinutas || null,
+                };
+
+                // TESTE 4: Criação de card
+                log("🔍 TESTE 4: Teste de criação de card...");
+                if (deteccaoSimplificada) {
+                    try {
+                        criarCardSessaoMaterial(deteccaoSimplificada);
+                        resultados.testes.criacaoCard = { sucesso: true };
+                    } catch (cardError) {
+                        resultados.testes.criacaoCard = {
+                            sucesso: false,
+                            erro: cardError.message,
+                        };
+                    }
+                } else {
+                    resultados.testes.criacaoCard = {
+                        sucesso: false,
+                        motivo: "Nenhum dado de sessão encontrado",
+                    };
+                }
+
+                // RELATÓRIO FINAL
+                const totalTestes = Object.keys(resultados.testes).length;
+                const testesPassaram = Object.values(resultados.testes).filter(
+                    (t) =>
+                        t.sucesso === true ||
+                        (t.diagnosticoDOM &&
+                            t.diagnosticoDOM.fieldsetPrincipal?.encontrado) ||
+                        (t.cache &&
+                            (t.cache.dataSessaoPautado ||
+                                t.cache.dadosCompletosMinutas))
+                ).length;
+
+                logCritical(
+                    `🎯 TESTE ROBUSTO CONCLUÍDO: ${testesPassaram}/${totalTestes} testes passaram`
+                );
+                logCritical(
+                    `📊 RESULTADOS: ${JSON.stringify(resultados, null, 2)}`
+                );
+
+                return resultados;
+            } catch (error) {
+                console.error("❌ TESTE ROBUSTO: Erro durante testes:", error);
+                return {
+                    erro: error.message,
+                    timestamp: new Date().toLocaleString(),
+                };
+            }
+        }
+
+        // ============================================================
+        // 🔧 FIM DAS IMPLEMENTAÇÕES - FUNÇÕES PRONTAS PARA NAMESPACE
+        // ============================================================
+
         // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 
         window.SENT1_AUTO = {
@@ -19448,18 +19499,15 @@ RESPOSTA (apenas JSON válido):`;
                 );
                 return window.SENT1_AUTO.detectarCardSessaoSimplificado();
             },
-            getDataSessaoPautado: safeFunctions.getDataSessaoPautado,
-            hasDataSessaoPautado: safeFunctions.hasDataSessaoPautado,
-            resetDataSessaoPautado: safeFunctions.resetDataSessaoPautado,
-            showDataSessaoPautadoInfo: safeFunctions.showDataSessaoPautadoInfo,
-            validarDataBrasileira: safeFunctions.validarDataBrasileira,
+            getDataSessaoPautado: getDataSessaoPautado,
+            hasDataSessaoPautado: hasDataSessaoPautado,
+            resetDataSessaoPautado: resetDataSessaoPautado,
+            showDataSessaoPautadoInfo: showDataSessaoPautadoInfo,
+            validarDataBrasileira: validarDataBrasileira,
             // Funções de interface para data da sessão
-            inserirDataSessaoNaInterface:
-                safeFunctions.inserirDataSessaoNaInterface,
-            removerDataSessaoDaInterface:
-                safeFunctions.removerDataSessaoDaInterface,
-            atualizarDataSessaoNaInterface:
-                safeFunctions.atualizarDataSessaoNaInterface,
+            inserirDataSessaoNaInterface: inserirDataSessaoNaInterface,
+            removerDataSessaoDaInterface: removerDataSessaoDaInterface,
+            atualizarDataSessaoNaInterface: atualizarDataSessaoNaInterface,
             forcarInsercaoCardSemValidacao:
                 safeFunctions.forcarInsercaoCardSemValidacao,
             // Funções de cruzamento de dados de sessão
@@ -19516,6 +19564,11 @@ RESPOSTA (apenas JSON válido):`;
             // ✅ FUNÇÃO SIMPLIFICADA - DETECÇÃO XPATH DIRETO
             detectarCardSessaoSimplificado: detectarCardSessaoSimplificado,
             criarCardSessaoMaterial: criarCardSessaoMaterial,
+
+            // 🔍 FUNÇÕES DE DIAGNÓSTICO E TESTE IMPLEMENTADAS
+            diagnosticarEstruturaDOMMinutas: diagnosticarEstruturaDOMMinutas,
+            testarDeteccaoRobusta: testarDeteccaoRobusta,
+
             // ✅ FUNÇÕES DE LOCALIZADORES (referência corrigida - removida duplicação)
             // As funções de localizadores já estão definidas acima na linha 20410
             // � FUNÇÕES MATERIAL DESIGN
@@ -19845,6 +19898,313 @@ RESPOSTA (apenas JSON válido):`;
                 } catch (error) {
                     console.error("❌ TESTE FIGMA: Erro no teste:", error);
                     return "❌ TESTE FIGMA: Erro no teste - veja console";
+                }
+            },
+
+            // � FUNÇÃO DE DIAGNÓSTICO DOM PARA ESTRUTURA ROBUSTA
+            diagnosticarEstruturaDOMMinutas: function () {
+                logCritical(
+                    "🩺 DIAGNÓSTICO: Verificando estrutura DOM para minutas"
+                );
+
+                const diagnostico = {
+                    timestamp: new Date().toLocaleString("pt-BR"),
+                    url: window.location.href,
+                    processo: obterNumeroProcesso() || "N/A",
+                    estrutura: {},
+                };
+
+                try {
+                    // 1. Verificar elementos básicos
+                    diagnostico.estrutura.body = !!document.body;
+                    diagnostico.estrutura.formProcesso =
+                        !!document.querySelector(
+                            'form[name="frmProcessoLista"]'
+                        );
+
+                    // 2. Verificar todos os fieldsets na página
+                    const todosFieldsets =
+                        document.querySelectorAll("fieldset");
+                    diagnostico.estrutura.totalFieldsets =
+                        todosFieldsets.length;
+
+                    // 3. Verificar especificamente o fieldset de minutas
+                    const fieldsetMinutas =
+                        document.querySelector("#fldMinutas");
+                    diagnostico.estrutura.fieldsetMinutas = !!fieldsetMinutas;
+
+                    if (fieldsetMinutas) {
+                        // 4. Verificar estrutura interna das minutas
+                        const minutasFieldsets =
+                            fieldsetMinutas.querySelectorAll(
+                                "div > div:nth-child(2) > fieldset"
+                            );
+                        diagnostico.estrutura.fieldsetsInternos =
+                            minutasFieldsets.length;
+
+                        // 5. Verificar botões de minutas
+                        const botoes = fieldsetMinutas.querySelectorAll(
+                            "legend > span:first-child > button"
+                        );
+                        diagnostico.estrutura.botoesMinutas = botoes.length;
+
+                        // 6. Capturar textos dos botões
+                        diagnostico.estrutura.textosMinutas = Array.from(botoes)
+                            .map((botao) => botao.textContent?.trim())
+                            .filter((texto) => texto);
+                    }
+
+                    // 7. Verificar fieldsets por posição (método antigo para comparação)
+                    for (let i = 1; i <= 20; i++) {
+                        const fieldsetPorPosicao = document.querySelector(
+                            `form[name="frmProcessoLista"] fieldset:nth-child(${i})`
+                        );
+                        if (fieldsetPorPosicao) {
+                            const id = fieldsetPorPosicao.id;
+                            const legend = fieldsetPorPosicao
+                                .querySelector("legend")
+                                ?.textContent?.trim();
+                            if (
+                                id === "fldMinutas" ||
+                                legend?.includes("Minutas")
+                            ) {
+                                diagnostico.estrutura[`fieldset_posicao_${i}`] =
+                                    { id, legend };
+                            }
+                        }
+                    }
+
+                    logCritical("📊 DIAGNÓSTICO COMPLETO:", diagnostico);
+
+                    // Mostrar resultado resumido
+                    if (diagnostico.estrutura.fieldsetMinutas) {
+                        logCritical(
+                            `✅ SUCESSO: fieldset#fldMinutas encontrado com ${diagnostico.estrutura.fieldsetsInternos} fieldsets internos e ${diagnostico.estrutura.botoesMinutas} botões`
+                        );
+                    } else {
+                        logCritical(
+                            "❌ PROBLEMA: fieldset#fldMinutas não encontrado - verifique se você está na página correta"
+                        );
+                    }
+
+                    return diagnostico;
+                } catch (error) {
+                    diagnostico.erro = error.message;
+                    logCritical(
+                        `❌ DIAGNÓSTICO: Erro durante a verificação - ${error.message}`
+                    );
+                    return diagnostico;
+                }
+            },
+
+            // 🧪 FUNÇÃO DE TESTE COMPLETO COM LOGS DETALHADOS
+            testarDeteccaoComLogsCompletos: function () {
+                logCritical(
+                    "🧪 TESTE COMPLETO: Iniciando teste com logs detalhados"
+                );
+                logCritical(
+                    `🕐 TIMESTAMP: ${new Date().toLocaleString("pt-BR")}`
+                );
+                logCritical(`🌐 URL: ${window.location.href}`);
+                logCritical(`🔍 PROCESSO: ${obterNumeroProcesso() || "N/A"}`);
+
+                try {
+                    // 1. Reset completo
+                    logCritical("🔄 PASSO 1: Resetando sistema...");
+                    this.resetarSistemaCard();
+
+                    // 2. Diagnóstico estrutural
+                    logCritical("🩺 PASSO 2: Diagnóstico da estrutura DOM...");
+                    const diagnostico = this.diagnosticarEstruturaDOMMinutas();
+
+                    if (!diagnostico.estrutura.fieldsetMinutas) {
+                        logError(
+                            "❌ TESTE: fieldset#fldMinutas não encontrado - teste abortado"
+                        );
+
+                        // TESTE EMERGENCIAL: Forçar criação do card mesmo sem dados
+                        logCritical(
+                            "🚨 TESTE EMERGENCIAL: Criando card com dados de teste..."
+                        );
+                        this.forcarCriacaoCardTeste();
+
+                        return {
+                            sucesso: false,
+                            erro: "fieldset não encontrado",
+                            diagnostico: diagnostico,
+                            cardTeste: true,
+                        };
+                    }
+
+                    // 3. Detecção robusta
+                    logCritical("🎯 PASSO 3: Executando detecção robusta...");
+                    const dadosDetectados =
+                        this.detectarCardSessaoSimplificado();
+
+                    // 4. Verificação final
+                    logCritical("🔍 PASSO 4: Verificação final...");
+
+                    const cardExiste = !!(
+                        document.getElementById(
+                            "eprobe-card-sessao-material"
+                        ) || document.getElementById("eprobe-data-sessao")
+                    );
+                    const temDados = !!dadosDetectados;
+                    const processo = obterNumeroProcesso();
+
+                    const resultado = {
+                        sucesso: temDados && cardExiste,
+                        timestamp: new Date().toISOString(),
+                        url: window.location.href,
+                        processo: processo,
+                        diagnostico: {
+                            fieldsetEncontrado:
+                                diagnostico.estrutura.fieldsetMinutas,
+                            fieldsetsInternos:
+                                diagnostico.estrutura.fieldsetsInternos,
+                            botoesMinutas: diagnostico.estrutura.botoesMinutas,
+                        },
+                        deteccao: {
+                            dadosEncontrados: temDados,
+                            numeroSessoes: dadosDetectados?.totalSessoes || 0,
+                            dadosCompletos: dadosDetectados,
+                        },
+                        card: {
+                            existe: cardExiste,
+                            elemento: cardExiste
+                                ? document.getElementById(
+                                      "eprobe-card-sessao-material"
+                                  ) ||
+                                  document.getElementById("eprobe-data-sessao")
+                                : null,
+                        },
+                    };
+
+                    // 5. Relatório final
+                    logCritical("📊 RESULTADO FINAL DO TESTE:");
+                    logCritical(`  ✅ Sucesso geral: ${resultado.sucesso}`);
+                    logCritical(
+                        `  🔍 fieldset encontrado: ${resultado.diagnostico.fieldsetEncontrado}`
+                    );
+                    logCritical(
+                        `  📊 fieldsets internos: ${resultado.diagnostico.fieldsetsInternos}`
+                    );
+                    logCritical(
+                        `  🔘 botões de minutas: ${resultado.diagnostico.botoesMinutas}`
+                    );
+                    logCritical(
+                        `  📅 dados detectados: ${resultado.deteccao.dadosEncontrados}`
+                    );
+                    logCritical(
+                        `  🎯 sessões encontradas: ${resultado.deteccao.numeroSessoes}`
+                    );
+                    logCritical(`  🎨 card criado: ${resultado.card.existe}`);
+
+                    if (resultado.sucesso) {
+                        logCritical("🎉 TESTE CONCLUÍDO COM SUCESSO!");
+                        logCritical(
+                            "💡 O card deve estar visível na interface"
+                        );
+                    } else {
+                        logError(
+                            "❌ TESTE FALHOU - verifique os logs acima para detalhes"
+                        );
+
+                        if (!resultado.diagnostico.fieldsetEncontrado) {
+                            logError(
+                                "💡 SOLUÇÃO: Navegue para uma página de detalhes de processo no eProc"
+                            );
+                        } else if (!resultado.deteccao.dadosEncontrados) {
+                            logError(
+                                "💡 SOLUÇÃO: Verifique se há informações de sessão/minutas na página"
+                            );
+                        } else if (!resultado.card.existe) {
+                            logError(
+                                "💡 SOLUÇÃO: Execute window.SENT1_AUTO.forcarCriacaoCardTeste() manualmente"
+                            );
+                        }
+                    }
+
+                    return resultado;
+                } catch (error) {
+                    logError("❌ TESTE: Erro durante execução:", error);
+
+                    // TESTE EMERGENCIAL em caso de erro
+                    logCritical(
+                        "🚨 ERRO DETECTADO: Executando teste emergencial..."
+                    );
+                    this.forcarCriacaoCardTeste();
+
+                    return {
+                        sucesso: false,
+                        erro: error.message,
+                        stack: error.stack,
+                        cardTeste: true,
+                    };
+                }
+            },
+
+            // �🧪 FUNÇÃO DE TESTE PARA A NOVA DETECÇÃO ROBUSTA
+            testarDeteccaoRobusta: function () {
+                logCritical(
+                    "🧪 TESTE ROBUSTA: Testando nova detecção com fieldset#fldMinutas"
+                );
+
+                try {
+                    // 1. Verificar se o fieldset existe
+                    const fieldsetMinutas =
+                        document.querySelector("#fldMinutas");
+                    logCritical(
+                        `📍 FIELDSET fldMinutas encontrado: ${!!fieldsetMinutas}`
+                    );
+
+                    if (!fieldsetMinutas) {
+                        logCritical(
+                            "❌ TESTE: fieldset#fldMinutas não encontrado na página atual"
+                        );
+                        return {
+                            sucesso: false,
+                            motivo: "fieldset não encontrado",
+                        };
+                    }
+
+                    // 2. Verificar estrutura interna
+                    const minutasFieldsets = fieldsetMinutas.querySelectorAll(
+                        "div > div:nth-child(2) > fieldset"
+                    );
+                    logCritical(
+                        `📍 FIELDSETS internos encontrados: ${minutasFieldsets.length}`
+                    );
+
+                    // 3. Testar a função principal
+                    const resultado = this.detectarCardSessaoSimplificado();
+                    logCritical(
+                        `📍 RESULTADO da detecção: ${JSON.stringify(resultado)}`
+                    );
+
+                    // 4. Verificar se dados foram salvos
+                    const temDados = this.hasDataSessaoPautado();
+                    const dados = this.getDataSessaoPautado();
+                    logCritical(`📍 DADOS salvos: ${temDados} | ${dados}`);
+
+                    // 5. Verificar se card foi criado
+                    const cardExiste =
+                        !!document.getElementById("eprobe-data-sessao");
+                    logCritical(`📍 CARD criado: ${cardExiste}`);
+
+                    return {
+                        sucesso: !!resultado,
+                        fieldsetEncontrado: !!fieldsetMinutas,
+                        fieldsetsInternos: minutasFieldsets.length,
+                        resultado: resultado,
+                        dadosSalvos: temDados,
+                        cardCriado: cardExiste,
+                    };
+                } catch (error) {
+                    logCritical(
+                        `❌ TESTE: Erro durante o teste - ${error.message}`
+                    );
+                    return { sucesso: false, erro: error.message };
                 }
             },
 
@@ -20883,8 +21243,90 @@ RESPOSTA (apenas JSON válido):`;
                 return {
                     dadosDetectados: !!dados,
                     cardCriado: resultado,
-                    cardExiste: !!document.getElementById("eprobe-data-sessao"),
+                    cardExiste: !!(
+                        document.getElementById("eprobe-data-sessao") ||
+                        document.getElementById("eprobe-card-sessao-material")
+                    ),
                 };
+            },
+
+            // 🚨 FUNÇÃO DE TESTE EMERGENCIAL - FORÇA CRIAÇÃO DO CARD
+            forcarCriacaoCardTeste: function () {
+                logCritical(
+                    "🚨 TESTE EMERGENCIAL: Forçando criação de card com dados de teste"
+                );
+
+                try {
+                    // Dados de teste para garantir que o card apareça
+                    const dadosTeste = {
+                        data: "28/01/2025",
+                        status: "PAUTADO",
+                        orgao: "2ª Câmara de Direito Civil",
+                        tipo: "Incluído em Pauta",
+                        totalSessoes: 1,
+                        sessoes: [
+                            {
+                                data: "28/01/2025",
+                                status: "PAUTADO",
+                                orgao: "2ª Câmara de Direito Civil",
+                                tipo: "Incluído em Pauta",
+                                cor: "#5C85B4",
+                            },
+                        ],
+                    };
+
+                    logCritical("📊 DADOS DE TESTE:", dadosTeste);
+
+                    // Criar card diretamente
+                    const card = criarCardSessaoMaterial(dadosTeste);
+
+                    if (card) {
+                        // Garantir posição fixa visível
+                        card.style.position = "fixed";
+                        card.style.top = "100px";
+                        card.style.right = "20px";
+                        card.style.zIndex = "99999";
+                        card.style.display = "block";
+
+                        // Inserir no body se não estiver no DOM
+                        if (!document.body.contains(card)) {
+                            document.body.appendChild(card);
+                        }
+
+                        logCritical(
+                            "✅ TESTE EMERGENCIAL: Card de teste criado e inserido!"
+                        );
+                        logCritical(
+                            "📍 Posição: fixed top:100px right:20px z-index:99999"
+                        );
+
+                        // Verificação visual
+                        setTimeout(() => {
+                            const cardVisivel = document.getElementById(
+                                "eprobe-card-sessao-material"
+                            );
+                            if (cardVisivel) {
+                                const rect =
+                                    cardVisivel.getBoundingClientRect();
+                                logCritical(
+                                    `✅ VERIFICAÇÃO: Card visível! Posição: x:${rect.x}, y:${rect.y}`
+                                );
+                            } else {
+                                logError(
+                                    "❌ VERIFICAÇÃO: Card ainda não visível!"
+                                );
+                            }
+                        }, 100);
+
+                        return true;
+                    } else {
+                        logError("❌ TESTE EMERGENCIAL: Falha ao criar card");
+                        return false;
+                    }
+                } catch (error) {
+                    logError("❌ TESTE EMERGENCIAL: Erro:", error);
+                    return false;
+                }
             },
 
             resetarSistemaCard: function () {
@@ -21751,6 +22193,48 @@ RESPOSTA (apenas JSON válido):`;
         logCritical(
             "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
         );
+
+        // ========================================
+        // 🔧 TESTE DE NAMESPACE - VALIDAÇÃO IMEDIATA
+        // ========================================
+
+        // Teste imediato das funções críticas
+        setTimeout(() => {
+            try {
+                if (typeof window.SENT1_AUTO === "object") {
+                    const funcoesCriticas = [
+                        "detectarCardSessaoSimplificado",
+                        "testarDeteccaoRobusta",
+                        "diagnosticarEstruturaDOMMinutas",
+                    ];
+                    const resultados = funcoesCriticas.map((nome) => {
+                        const existe =
+                            typeof window.SENT1_AUTO[nome] === "function";
+                        return `${existe ? "✅" : "❌"} ${nome}: ${
+                            existe ? "OK" : "AUSENTE"
+                        }`;
+                    });
+                    logCritical("🔍 TESTE NAMESPACE IMEDIATO:");
+                    resultados.forEach((r) => logCritical(`  ${r}`));
+
+                    if (resultados.every((r) => r.includes("✅"))) {
+                        logCritical(
+                            "🎉 SUCESSO: Todas as funções críticas estão disponíveis!"
+                        );
+                    } else {
+                        console.error(
+                            "❌ PROBLEMA: Algumas funções estão ausentes no namespace"
+                        );
+                    }
+                } else {
+                    console.error(
+                        "❌ CRÍTICO: window.SENT1_AUTO não foi criado!"
+                    );
+                }
+            } catch (error) {
+                console.error("❌ ERRO no teste de namespace:", error);
+            }
+        }, 100);
 
         // ========================================
         // 🔧 FUNÇÕES FINAIS - APENAS VALIDAÇÃO
