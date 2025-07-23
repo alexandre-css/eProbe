@@ -1,8 +1,200 @@
-﻿// Content script automatizado para DocumentosRelevantes
-// 🔧 VERSÃO CORRIGIDA PARA MICROSOFT EDGE
+﻿// ===== APLICAÇÃO INSTANTÂNEA DE ESTILOS - ELIMINAR FLASH =====
+(function aplicarEstilosInstantaneos() {
+    console.log("⚡ INSTANT: Aplicando estilos críticos instantaneamente...");
 
-// 🎯 TEMA SIMPLES: Aplicação básica delegada ao themeApply.js
-// Removidas otimizações complexas que causavam problemas de performance
+    // CSS crítico aplicado IMEDIATAMENTE para eliminar flash
+    const cssInstantaneo = document.createElement("style");
+    cssInstantaneo.id = "eprobe-instant-styles";
+    cssInstantaneo.textContent = `
+        /* ===== ESTILOS INSTANTÂNEOS ANTI-FLASH ===== */
+        
+        /* Ocultar flash inicial com transição suave */
+        body {
+            transition: opacity 0.1s ease-in-out !important;
+        }
+        
+        /* Preparar containers para elementos eProbe */
+        .navbar, #navbar {
+            position: relative !important;
+        }
+        
+        /* Fontes críticas carregadas instantaneamente */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');
+        
+        /* Cards de sessão unificados */
+        .session-card {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Navbar com fade-in */
+        #eprobe-navbar-element {
+            opacity: 0 !important;
+            animation: fadeInNavbar 0.4s ease-out 0.2s forwards !important;
+        }
+        
+        @keyframes fadeInNavbar {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Botões da extensão com transição suave */
+        [id*="sent1"], [class*="eprobe"] {
+            opacity: 0;
+            animation: fadeInElement 0.5s ease-out 0.3s forwards;
+        }
+        
+        @keyframes fadeInElement {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Tooltips preparados */
+        .eprobe-tooltip {
+            opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        
+        /* ===== ESTILOS SVG FIGMA INSTANTÂNEOS ===== */
+        .eprobe-figma-card-svg {
+            display: inline-block;
+            margin: 8px 0;
+            position: relative;
+            opacity: 0;
+            animation: fadeInElement 0.5s ease-out 0.4s forwards;
+        }
+        
+        .eprobe-figma-svg-container {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .eprobe-figma-svg-container svg {
+            transition: all 0.2s ease;
+            display: block;
+        }
+        
+        .eprobe-figma-card-svg:hover .eprobe-figma-svg-container svg {
+            transform: translateY(-1px);
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+        }
+        
+        .eprobe-figma-data-overlay {
+            position: absolute;
+            bottom: 12px;
+            left: 24px;
+            right: 24px;
+            pointer-events: none;
+            z-index: 10;
+        }
+        
+        .eprobe-figma-data-text {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 11px;
+            font-weight: 500;
+            color: #1D1B20;
+            opacity: 0.9;
+            text-align: left;
+            display: block;
+            line-height: 1.2;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 4px;
+            border-radius: 4px;
+            backdrop-filter: blur(4px);
+        }
+        
+        /* ===== ELEMENTOS DE INTERFACE PREPARADOS ===== */
+        #sent1-auto-button,
+        .documento-relevante-button,
+        .eprobe-button {
+            opacity: 0;
+            animation: fadeInElement 0.5s ease-out 0.3s forwards;
+        }
+        
+        /* ===== MODAL E NOTIFICAÇÕES PREPARADAS ===== */
+        .eprobe-modal,
+        .eprobe-notification {
+            opacity: 0;
+            animation: fadeInElement 0.3s ease-out forwards;
+        }
+    `;
+
+    // Inserir no head IMEDIATAMENTE - antes de qualquer outro script
+    const head =
+        document.head ||
+        document.getElementsByTagName("head")[0] ||
+        document.documentElement;
+    if (head) {
+        head.insertBefore(cssInstantaneo, head.firstChild);
+        console.log("✅ INSTANT: CSS crítico aplicado no topo do head");
+    }
+
+    // Aplicar tema salvo do localStorage instantaneamente (sem aguardar APIs)
+    const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
+    if (temaLocalStorage && temaLocalStorage !== "blue") {
+        console.log(
+            `⚡ INSTANT: Aplicando tema ${temaLocalStorage} do localStorage`
+        );
+
+        const temasDisponiveis = {
+            dark: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
+            light: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%)",
+            violet: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8e44ad 100%)",
+            blue: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+        };
+
+        const gradientTema =
+            temasDisponiveis[temaLocalStorage] || temasDisponiveis.blue;
+
+        const temaInstantaneo = document.createElement("style");
+        temaInstantaneo.id = "eprobe-instant-theme";
+        temaInstantaneo.textContent = `
+            /* Tema aplicado instantaneamente */
+            #navbar.navbar.bg-instancia,
+            .navbar.bg-instancia,
+            nav.navbar.bg-instancia,
+            .navbar.text-white.bg-instancia,
+            .navbar.text-white.d-xl-flex.bg-instancia {
+                background-image: ${gradientTema} !important;
+                transition: background-image 0.3s ease !important;
+            }
+        `;
+        head.insertBefore(temaInstantaneo, head.firstChild);
+        console.log("✅ INSTANT: Tema aplicado instantaneamente");
+    }
+
+    // ===== APLICAÇÃO ULTRA-RÁPIDA DE ELEMENTOS CRÍTICOS =====
+    // Executar imediatamente após 1ms para garantir que DOM básico está pronto
+    setTimeout(() => {
+        try {
+            // Garantir que navbar está visível instantaneamente
+            const navbar =
+                document.querySelector("#navbar.navbar.bg-instancia") ||
+                document.querySelector(".navbar.bg-instancia") ||
+                document.querySelector("nav.navbar.bg-instancia");
+
+            if (navbar) {
+                navbar.style.opacity = "1";
+                navbar.style.transition = "all 0.3s ease";
+                console.log(
+                    "⚡ INSTANT: Navbar forcada a aparecer instantaneamente"
+                );
+            }
+
+            // Forçar aplicação de tema se ainda não foi aplicado
+            if (temaLocalStorage && navbar && !navbar.style.backgroundImage) {
+                const gradientTema =
+                    temasDisponiveis[temaLocalStorage] || temasDisponiveis.blue;
+                navbar.style.backgroundImage = gradientTema;
+                console.log("⚡ INSTANT: Tema forçado diretamente na navbar");
+            }
+        } catch (error) {
+            console.warn("⚠️ INSTANT: Erro na aplicação ultra-rápida:", error);
+        }
+    }, 1);
+})();
 
 (async function () {
     "use strict";
@@ -191,72 +383,6 @@
 
         return debounced;
     };
-
-    // 2.6. FUNÇÃO HELPER GLOBAL PARA EVENTOS PASSIVOS
-    window.addPassiveEventListener = (element, eventType, handler) => {
-        // Lista de eventos que devem ser passivos
-        const passiveEvents = [
-            "scroll",
-            "wheel",
-            "touchstart",
-            "touchmove",
-            "touchend",
-            "mouseenter",
-            "mouseleave",
-            "mouseover",
-            "mouseout",
-            "mousedown",
-            "mouseup",
-            "mousemove",
-            "resize",
-            "orientationchange",
-            "contextmenu",
-            "dragstart",
-            "dragover",
-            "drop",
-            "keydown",
-            "keyup",
-            "pointermove",
-            "pointerdown",
-            "pointerup",
-            "pointerenter",
-            "pointerleave",
-            "focus",
-            "blur",
-            "input",
-            "change",
-            "load",
-            "DOMContentLoaded",
-            "readystatechange",
-            "beforeunload",
-            "unload",
-            "error",
-            "abort",
-            "select",
-            "submit",
-            "reset",
-            "toggle",
-            "transitionend",
-            "animationend",
-            "animationstart",
-            "animationiteration",
-        ];
-
-        const options = passiveEvents.includes(eventType)
-            ? { passive: true }
-            : false;
-
-        element.addEventListener(eventType, handler, options);
-
-        if (passiveEvents.includes(eventType)) {
-            console.log(
-                `🔒 PASSIVE: Event "${eventType}" adicionado com passive=true`
-            );
-        }
-    };
-
-    // Alias local para uso interno
-    const addPassiveEventListener = window.addPassiveEventListener;
 
     // 🔧 AGUARDAR APIS DE EXTENSÃO (CORREÇÃO PARA EDGE)
     function aguardarAPIsExtensao() {
@@ -552,11 +678,6 @@
     // Aplica tema IMEDIATAMENTE para evitar delay visual
     console.log("🎨 eProbe Theme Script carregado");
     loadAndApplyTheme();
-
-    // Também aplica quando o DOM estiver pronto como backup
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", loadAndApplyTheme);
-    }
 
     // Exposição das funções globais para chamada direta (debugging)
     window.applyThemeStyles = applyThemeStyles;
@@ -1048,7 +1169,7 @@ RESPOSTA (apenas JSON válido):`;
             // Criar card Material Design moderno
             const card = document.createElement("div");
             card.id = "eprobe-data-sessao";
-            card.className = "eprobe-session-card";
+            card.className = "session-card";
             card.style.cssText = `
                 position: fixed;
                 top: 80px;
@@ -1062,7 +1183,6 @@ RESPOSTA (apenas JSON válido):`;
                 min-width: 280px;
                 max-width: 350px;
                 overflow: hidden;
-                animation: slideIn 0.3s ease-out;
             `;
 
             // Criar conteúdo do card
@@ -1073,12 +1193,6 @@ RESPOSTA (apenas JSON válido):`;
             const orgaoTexto = dados.orgao || "Órgão não informado";
 
             card.innerHTML = `
-                <style>
-                    @keyframes slideIn {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                </style>
                 <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px;">
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="font-size: 20px;">📅</span>
@@ -1191,7 +1305,7 @@ RESPOSTA (apenas JSON válido):`;
             // Criar card Material Light pequeno (design Figma)
             const card = document.createElement("div");
             card.id = "eprobe-card-sessao-material";
-            card.className = "eprobe-session-card-figma";
+            card.className = "session-card";
 
             // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA NÃO INTERFERIR
             card.style.cssText = `
@@ -1209,7 +1323,6 @@ RESPOSTA (apenas JSON válido):`;
                 gap: 8px;
                 cursor: pointer;
                 transition: transform 0.2s ease;
-                animation: slideInCard 0.3s ease-out;
                 margin: 0;
                 flex-shrink: 0;
                 position: relative;
@@ -1239,11 +1352,7 @@ RESPOSTA (apenas JSON válido):`;
 
             card.innerHTML = `
                 <style>
-                    @keyframes slideInCard {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    .eprobe-session-card-figma:hover {
+                    .session-card:hover {
                         transform: translateY(-1px);
                         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
                     }
@@ -1349,17 +1458,19 @@ RESPOSTA (apenas JSON válido):`;
                                 }
                             </div>
                             <div style="font-size: 12px; color: #49454F; margin-bottom: 6px; display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">event_repeat</span>${
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="font-size: 14px; margin-right: 4px; pointer-events: none;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>${
                                     sessao.data
                                 }
                             </div>
                             <div style="font-size: 12px; color: #49454F; margin-bottom: 4px; display: flex; align-items: center;">
-                                <span class="material-symbols-outlined" style="font-size: 14px; margin-right: 4px;">gavel</span>${
+                                <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor" style="font-size: 14px; margin-right: 4px; pointer-events: none;"><path d="M164.87-109.52V-190h458v80.48h-458Zm219.26-195L161.48-525.61 265.13-628.7l221.09 222.09-102.09 102.09Zm260.74-261.31L423.78-786.91 525.87-890l222.65 222.09-103.65 102.08ZM813-169.39 308.91-673.48 378-743.13l504.09 504.65L813-169.39Z"/></svg>${
                                     sessao.orgao
                                 }
                             </div>
-                            <div style="font-size: 11px; color: #79747E;">
-                                ${sessao.tipo}
+                            <div style="font-size: 11px; color: #79747E; display: flex; align-items: center;">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="currentColor" style="font-size: 12px; margin-right: 4px; pointer-events: none;"><path d="M76.78-124.78v-98H431v-428.39q-20.74-9.13-36.54-25.22-15.81-16.09-24.94-36.83H253.57l113.21 260.74q-1 55.36-44.74 89.31-43.75 33.95-100.05 33.95-56.29 0-100.25-33.95t-44.96-89.31l113.78-260.74h-65.78v-98h244.39q14.18-33.13 43.83-52.56 29.65-19.44 66.96-19.44 37.3 0 67 19.44 29.69 19.43 43.87 52.21h244.39v98.35h-65.78l113.78 260.5q0 55.6-43.75 89.55-43.74 33.95-100.54 33.95-56.8 0-100.76-33.95-43.95-33.95-44.95-89.31l113.21-260.74H590.48q-9.13 20.74-24.94 36.83-15.8 16.09-36.54 25.22v428.39h354.22v98H76.78ZM666.7-458.7h143.04l-71.52-163.21L666.7-458.7Zm-515.87 0h143.04l-72.09-163.21-70.95 163.21Zm329.12-271.47q13.35 0 22.44-9.45 9.09-9.44 9.09-22.63 0-13.18-8.92-22.31-8.92-9.14-22.11-9.14t-22.56 8.93q-9.37 8.92-9.37 22.1 0 13.19 9.04 22.84 9.03 9.66 22.39 9.66Z"/></svg>${
+                                    sessao.tipo
+                                }
                             </div>
                         </div>
                     `;
@@ -1367,7 +1478,7 @@ RESPOSTA (apenas JSON válido):`;
             } else {
                 tooltipContent += `
                     <div style="text-align: center; padding: 20px; color: #79747E;">
-                        <span class="material-symbols-outlined" style="font-size: 24px; margin-bottom: 8px; color: #79747E;">event_repeat</span>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#79747E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="font-size: 24px; margin-bottom: 8px; pointer-events: none;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                         <div style="font-size: 13px;">Nenhuma sessão adicional encontrada</div>
                     </div>
                 `;
@@ -1571,16 +1682,16 @@ RESPOSTA (apenas JSON válido):`;
         return { status: statusCompleto, cor: "#6B7280" };
     }
 
-    // 🔗 FUNÇÃO PARA EXTRAIR LINK DA SESSÃO
+    // 🔗 FUNÇÃO PARA EXTRAIR LINK DA SESSÃO - MÉTODO ÚNICO
     function extrairLinkSessao(indiceSessao = 1) {
         try {
             console.log(`🔗 LINK: Extraindo link para sessão ${indiceSessao}`);
 
-            // XPath baseado no caminho fornecido pelo usuário
-            const xpathBase = `/html/body/div[1]/div/div/div/div[1]/div/div/div/div[2]/div/form/div[2]/div/table/tbody/tr[${indiceSessao}]/td[1]/a`;
+            // XPath específico - ÚNICO MÉTODO
+            const xpathUnico = `/html/body/div[1]/div/div/div/div[1]/div/div/div/div[2]/div/form/div[2]/div/table/tbody/tr[${indiceSessao}]/td[1]/a`;
 
             const linkElement = document.evaluate(
-                xpathBase,
+                xpathUnico,
                 document,
                 null,
                 XPathResult.FIRST_ORDERED_NODE_TYPE,
@@ -1588,30 +1699,56 @@ RESPOSTA (apenas JSON válido):`;
             ).singleNodeValue;
 
             if (linkElement && linkElement.href) {
-                console.log(
-                    `✅ LINK: Encontrado para sessão ${indiceSessao}:`,
-                    linkElement.href
-                );
-                return linkElement.href;
-            }
+                // Obter tanto o href decodificado quanto o atributo bruto
+                const linkCompleto = linkElement.href;
+                const hrefBruto = linkElement.getAttribute("href");
 
-            // Fallback: tentar buscar na estrutura do fieldset atual
-            const xpathFieldset = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${indiceSessao}]//a[contains(@href, "sessao_julgamento_exibir_painel")]`;
+                console.log(`🔍 LINK: href decodificado:`, linkCompleto);
+                console.log(`🔍 LINK: href bruto do HTML:`, hrefBruto);
 
-            const linkElementFallback = document.evaluate(
-                xpathFieldset,
-                document,
-                null,
-                XPathResult.FIRST_ORDERED_NODE_TYPE,
-                null
-            ).singleNodeValue;
+                // Verificar se o link começa com o padrão esperado (tanto no decodificado quanto no bruto)
+                const inicioPadrao =
+                    "controlador.php?acao=sessao_julgamento_exibir_painel";
+                const inicioPadraoAmp =
+                    "controlador.php?acao=sessao_julgamento_exibir_painel&amp;id_sessao_julgamento=";
 
-            if (linkElementFallback && linkElementFallback.href) {
-                console.log(
-                    `✅ LINK FALLBACK: Encontrado para sessão ${indiceSessao}:`,
-                    linkElementFallback.href
-                );
-                return linkElementFallback.href;
+                const contemInicio =
+                    linkCompleto.includes(inicioPadrao) ||
+                    hrefBruto.includes(inicioPadrao);
+                const contemInicioAmp =
+                    linkCompleto.includes(inicioPadraoAmp) ||
+                    hrefBruto.includes(inicioPadraoAmp);
+
+                // Extrair apenas a parte do link até antes de "target="
+                let linkLimpo = linkCompleto;
+                const posicaoTarget = linkCompleto.indexOf("target=");
+                if (posicaoTarget !== -1) {
+                    // Cortar o link antes de "target="
+                    linkLimpo = linkCompleto.substring(0, posicaoTarget);
+                    // Remover & ou ? final se houver
+                    linkLimpo = linkLimpo.replace(/[&?]$/, "");
+                }
+
+                if (contemInicio || contemInicioAmp) {
+                    console.log(
+                        `✅ LINK: Encontrado e validado para sessão ${indiceSessao}:`,
+                        linkLimpo
+                    );
+                    console.log(
+                        `🔍 LINK: Formato correto - inicia com sessao_julgamento_exibir_painel`
+                    );
+                    return linkLimpo;
+                } else {
+                    console.log(
+                        `❌ LINK: Formato inválido para sessão ${indiceSessao}:`,
+                        linkCompleto
+                    );
+                    console.log(
+                        `⚠️ LINK: Esperado que contivesse: ${inicioPadrao}`
+                    );
+                    console.log(`⚠️ LINK: Ou contivesse: ${inicioPadraoAmp}`);
+                    return null;
+                }
             }
 
             console.log(`❌ LINK: Não encontrado para sessão ${indiceSessao}`);
@@ -1985,22 +2122,106 @@ RESPOSTA (apenas JSON válido):`;
         .eprobe-notification *, .eprobe-tooltip *, .eprobe-modal *, .eprobe-button *, .eprobe-menu * {
             font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
         }
+        
+        /* CORREÇÃO CRÍTICA: Ícones substituídos não devem interceptar cliques */
+        .substituted-icon:not(.clickable-icon) {
+            pointer-events: none !important;
+        }
+        
+        /* Material Icons substituídos também não devem interceptar cliques */
+        .material-symbols-outlined.substituted-icon:not(.clickable-icon) {
+            pointer-events: none !important;
+        }
+
+        /* CRÍTICO: Containers de ícones substituídos também não devem interceptar cliques */
+        span:has(.substituted-icon:not(.clickable-icon)) {
+            pointer-events: none !important;
+        }
+        
+        /* Fallback para navegadores que não suportam :has() */
+        .eprobe-icon-container:not(.clickable-container) {
+            pointer-events: none !important;
+        }
+        
+        /* FORÇA MÁXIMA: SVGs de ícones eProbe (mas não os em links) */
+        svg.substituted-icon:not(.clickable-icon) {
+            pointer-events: none !important;
+        }
+        
+        svg.iconeFerramentas:not(.clickable-icon) {
+            pointer-events: none !important;
+        }
+        
+        /* Especificamente para elementos com data-eprobe-icon-replaced (mas não em links) */
+        [data-eprobe-icon-replaced="true"]:not(.clickable-icon) {
+            pointer-events: none !important;
+        }
+        
+        /* PRESERVAR clicabilidade para ícones dentro de links */
+        a .substituted-icon,
+        a .iconeFerramentas,
+        a [data-eprobe-icon-replaced="true"],
+        .infraLegendObrigatorio .substituted-icon,
+        .infraLegendObrigatorio .iconeFerramentas,
+        .infraLegendObrigatorio [data-eprobe-icon-replaced="true"] {
+            pointer-events: auto !important;
+        }
+
+        /* Estilos para SVGs inline - permitir customização */
+        .eprobe-svg-icon {
+            pointer-events: none !important;
+            transition: all 0.2s ease;
+        }
+        
+        .eprobe-svg-icon:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+        
+        /* SVG específicos por tipo */
+        .eprobe-svg-bubble {
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+        }
+        
+        .eprobe-svg-config {
+            opacity: 0.8;
+        }
+        
+        .eprobe-svg-config:hover {
+            opacity: 1;
+            transform: rotate(15deg) scale(1.1);
+        }
     `;
     document.head.appendChild(extensionStyle);
 
-    // Adicionar Material Icons History e Chat Bubble
+    // Adicionar Material Icons History e Chat Bubble com PRELOAD para carregamento instantâneo
     if (!document.querySelector('link[href*="Material+Symbols+Outlined"]')) {
+        // Usar preload para carregamento mais rápido
         const materialIconsHistory = document.createElement("link");
-        materialIconsHistory.rel = "stylesheet";
+        materialIconsHistory.rel = "preload";
+        materialIconsHistory.as = "style";
         materialIconsHistory.href =
             "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=event_repeat,gavel";
+        materialIconsHistory.onload = function () {
+            this.onload = null;
+            this.rel = "stylesheet";
+        };
         document.head.appendChild(materialIconsHistory);
 
-        // Carregar CSS dos Material Symbols
+        // Carregar CSS dos Material Symbols com preload
         const materialIconsCSS = document.createElement("link");
-        materialIconsCSS.rel = "stylesheet";
+        materialIconsCSS.rel = "preload";
+        materialIconsCSS.as = "style";
         materialIconsCSS.href = chrome.runtime.getURL("src/material-icons.css");
+        materialIconsCSS.onload = function () {
+            this.onload = null;
+            this.rel = "stylesheet";
+        };
         document.head.appendChild(materialIconsCSS);
+
+        console.log(
+            "⚡ FONTS: Material Icons carregados com preload para velocidade máxima"
+        );
     }
 
     // ===== INÍCIO DO SISTEMA DE PROCESSAMENTO DE DOCUMENTOS =====
@@ -8562,23 +8783,15 @@ RESPOSTA (apenas JSON válido):`;
             }, 50);
 
             // Adicionar eventos para hover, focus e blur (otimizados para performance)
-            button.addEventListener(
-                "mouseenter",
-                () => {
-                    button.style.backgroundColor = "#0f3a66";
-                    button.style.borderColor = "#0f3a66";
-                },
-                { passive: true }
-            );
+            button.addEventListener("mouseenter", () => {
+                button.style.backgroundColor = "#0f3a66";
+                button.style.borderColor = "#0f3a66";
+            });
 
-            button.addEventListener(
-                "mouseleave",
-                () => {
-                    button.style.backgroundColor = "#134377";
-                    button.style.borderColor = "#134377";
-                },
-                { passive: true }
-            );
+            button.addEventListener("mouseleave", () => {
+                button.style.backgroundColor = "#134377";
+                button.style.borderColor = "#134377";
+            });
 
             button.addEventListener("focus", () => {
                 button.style.backgroundColor = "#0f3a66";
@@ -11978,6 +12191,86 @@ RESPOSTA (apenas JSON válido):`;
             "🚀 INICIALIZAÇÃO: Iniciando detecção automática de sessão..."
         );
 
+        // ===== APLICAÇÃO IMEDIATA DE ESTILOS E ELEMENTOS =====
+        console.log(
+            "⚡ INICIALIZAÇÃO: Aplicando estilos e elementos imediatamente..."
+        );
+
+        // 1. Aplicar tema instantaneamente
+        try {
+            const tema =
+                localStorage.getItem("eprobe_selected_theme") || "blue";
+            if (window.applyThemeStyles) {
+                window.applyThemeStyles(tema);
+                console.log(
+                    `✅ INICIALIZAÇÃO: Tema ${tema} aplicado imediatamente`
+                );
+            }
+        } catch (error) {
+            console.warn("⚠️ INICIALIZAÇÃO: Erro ao aplicar tema:", error);
+        }
+
+        // 2. Executar aplicação de estilos e elementos imediatamente
+        try {
+            // Força aplicação imediata dos estilos CSS críticos
+            const head =
+                document.head || document.getElementsByTagName("head")[0];
+            if (
+                head &&
+                !document.getElementById("eprobe-instant-performance")
+            ) {
+                const performanceStyles = document.createElement("style");
+                performanceStyles.id = "eprobe-instant-performance";
+                performanceStyles.textContent = `
+                    /* Performance instantânea para elementos eProbe */
+                    body { opacity: 1 !important; }
+                    .navbar { opacity: 1 !important; }
+                    
+                    /* Garantir que elementos críticos apareçam imediatamente */
+                    #navbar.navbar.bg-instancia,
+                    .navbar.bg-instancia {
+                        opacity: 1 !important;
+                        transition: all 0.3s ease !important;
+                    }
+                    
+                    /* Aplicar estilos SVG Figma instantaneamente */
+                    .eprobe-figma-card-svg {
+                        display: inline-block !important;
+                        margin: 8px 0 !important;
+                        position: relative !important;
+                    }
+                `;
+                head.appendChild(performanceStyles);
+                console.log(
+                    "✅ INICIALIZAÇÃO: Estilos de performance aplicados"
+                );
+            }
+
+            // Executar gerenciamento da navbar imediatamente
+            if (typeof window.gerenciarNavbarEprobe === "function") {
+                window.gerenciarNavbarEprobe();
+                console.log(
+                    "✅ INICIALIZAÇÃO: Navbar gerenciada imediatamente"
+                );
+            }
+
+            // Detectar e aplicar card de sessão imediatamente se possível
+            debounceGlobal(
+                () => {
+                    if (typeof detectarCardSessaoSimplificado === "function") {
+                        detectarCardSessaoSimplificado();
+                        console.log(
+                            "✅ INICIALIZAÇÃO: Detecção de card de sessão iniciada"
+                        );
+                    }
+                },
+                "deteccao-card-instantanea",
+                50
+            );
+        } catch (error) {
+            console.warn("⚠️ INICIALIZAÇÃO: Erro ao aplicar estilos:", error);
+        }
+
         // Execução imediata sem delay desnecessário
         try {
             // 1. Detectar data da sessão de forma não-bloqueante
@@ -12368,15 +12661,24 @@ RESPOSTA (apenas JSON válido):`;
         console.log("📨 HANDLER: Listener de mensagens do popup registrado");
     }
 
-    // Executar inicialização automática quando a página carregar
+    // ===== EXECUÇÃO IMEDIATA - ELIMINAR FLASH =====
+    // Executar inicialização IMEDIATAMENTE sem aguardar DOM
+    console.log("⚡ INSTANT: Executando inicialização imediata...");
+
+    // Executar inicialização IMEDIATAMENTE
+    inicializarAutomaticamente();
+
+    // Backup: Executar novamente quando DOM estiver pronto (para reaplicar estilos se necessário)
     if (document.readyState === "loading") {
-        document.addEventListener(
-            "DOMContentLoaded",
-            inicializarAutomaticamente
-        );
-    } else {
-        // Se a página já carregou, executar imediatamente
-        inicializarAutomaticamente();
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🔄 BACKUP: Reaplicando estilos após DOMContentLoaded");
+            // Reaplicar apenas estilos, não toda a inicialização
+            if (window.applyThemeStyles) {
+                const tema =
+                    localStorage.getItem("eprobe_selected_theme") || "blue";
+                window.applyThemeStyles(tema);
+            }
+        });
     }
 
     // ##### VERIFICAÇÃO E CORREÇÃO DE ESCOPO DAS FUNÇÕES PRINCIPAIS #####
@@ -13070,7 +13372,7 @@ RESPOSTA (apenas JSON válido):`;
             statusLower.includes("julgado") ||
             statusLower.includes("decidido")
         ) {
-            return '<span class="material-icons">gavel</span>';
+            return '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M6 3v12"/><circle cx="6" cy="3" r="3"/><path d="M6 21v-6"/><path d="M15 6a9 9 0 1 0 6 5.3c0.7-1.3 1-2.8 1-4.3 0-1.4-0.3-2.7-0.8-4z"/></svg>';
         } else if (
             statusLower.includes("retirado") ||
             statusLower.includes("suspenso")
@@ -16022,10 +16324,22 @@ RESPOSTA (apenas JSON válido):`;
         }
     };
 
-    // 🚀 EXECUÇÃO SIMPLIFICADA - Executar apenas uma vez quando necessário
-    setTimeout(() => {
+    // 🚀 EXECUÇÃO IMEDIATA DA NAVBAR - ELIMINAR DELAY
+    // Executar gerenciamento da navbar IMEDIATAMENTE (sem timeout)
+    if (window.gerenciarNavbarEprobe) {
+        console.log("⚡ NAVBAR: Executando gerenciamento imediato da navbar");
         window.gerenciarNavbarEprobe();
-    }, 500);
+    } else {
+        // Se a função ainda não estiver disponível, aguardar pouco e tentar novamente
+        setTimeout(() => {
+            if (window.gerenciarNavbarEprobe) {
+                console.log(
+                    "⚡ NAVBAR: Executando gerenciamento da navbar (tentativa 2)"
+                );
+                window.gerenciarNavbarEprobe();
+            }
+        }, 50);
+    }
 
     // ============================================
     // PERSONALIZAÇÃO DO CAMPO DE PESQUISA DA NAVBAR
@@ -16221,7 +16535,7 @@ RESPOSTA (apenas JSON válido):`;
         },
         // Ações Preferenciais
         "acoes preferenciais": {
-            newSvg: '<span class="material-symbols-outlined gray">build</span>',
+            newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
             selector: 'img[alt="acoes preferenciais"]',
         },
         // Atualizar/Refresh
@@ -16231,7 +16545,7 @@ RESPOSTA (apenas JSON válido):`;
         },
         // Histórico/Lista
         historico: {
-            newSvg: '<span class="material-symbols-outlined jordy.blue">list_alt</span>',
+            newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
             selector: 'img[src*="valores.gif"]',
         },
         // Nova Minuta
@@ -16779,7 +17093,7 @@ RESPOSTA (apenas JSON válido):`;
             },
             {
                 selector: 'img[src*="configuracao.gif"]',
-                newSvg: '<span class="material-symbols-outlined gray">build</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eprobe-svg-icon eprobe-svg-config" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
             },
             {
                 selector: 'img[src*="refresh.gif"]',
@@ -16787,11 +17101,11 @@ RESPOSTA (apenas JSON válido):`;
             },
             {
                 selector: 'img[src*="valores.gif"]',
-                newSvg: '<span class="material-symbols-outlined jordy.blue">list_alt</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
             },
             {
                 selector: 'img[src*="minuta_historico.gif"]',
-                newSvg: '<span class="material-symbols-outlined jordy.blue">list_alt</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
             },
             {
                 selector: 'img[src*="novo.gif"]',
@@ -16807,19 +17121,19 @@ RESPOSTA (apenas JSON válido):`;
             },
             {
                 selector: 'img[src*="alterar.gif"]',
-                newSvg: '<span class="material-symbols-outlined orange">edit_document</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
             },
             {
                 selector: 'img[src*="balao.gif"]',
-                newSvg: '<span class="material-symbols-outlined cream">chat_bubble</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="eprobe-svg-icon eprobe-svg-bubble" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
             },
             {
                 selector: 'img[src*="linkeditor.png"]',
-                newSvg: '<span class="material-symbols-outlined light-gray">link</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
             },
             {
                 selector: 'img[src*="html.gif"]',
-                newSvg: '<span class="material-symbols-outlined blue">document_scanner</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
             },
             {
                 selector: 'img[src*="tooltip.gif"]',
@@ -17102,7 +17416,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[title*="Ações Preferenciais"]',
                     'img[alt*="Ações Preferenciais"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined gray">build</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
                 name: "Configuração",
             },
             {
@@ -17123,7 +17437,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[alt*="Histórico"]',
                     'img[title*="Histórico"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined jordy.blue">list_alt</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
                 name: "Histórico",
             },
             {
@@ -17163,7 +17477,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[title*="Alterar"]',
                     'img[alt*="Alterar"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined orange">edit_document</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
                 name: "Editar",
             },
             {
@@ -17173,7 +17487,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[alt*="Incluir Memo"]',
                     'img[title*="Memo"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined cream">chat_bubble</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
                 name: "Memo Balão",
             },
             {
@@ -17183,7 +17497,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[alt*="Link"]',
                     'img[title*="Link"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined light-gray">link</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
                 name: "Link",
             },
             {
@@ -17193,7 +17507,7 @@ RESPOSTA (apenas JSON válido):`;
                     'img[title*="Visualizar Documento"]',
                     'img[alt*="Visualizar"]',
                 ],
-                newSvg: '<span class="material-symbols-outlined blue">document_scanner</span>',
+                newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
                 name: "Visualizar HTML",
             },
             {
@@ -17577,7 +17891,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[title*="Ações Preferenciais"]',
                         'img[alt*="Ações Preferenciais"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined gray">build</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
                 },
                 // Ícones de refresh/atualização
                 Refresh: {
@@ -17596,7 +17910,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[alt*="Histórico"]',
                         'img[title*="Histórico"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined jordy.blue">list_alt</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
                 },
                 // Ícones de nova minuta/novo documento
                 "Nova Minuta": {
@@ -17632,7 +17946,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[title*="Alterar"]',
                         'img[alt*="Alterar"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined orange">edit_document</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`,
                 },
                 // Ícones de balão/memo
                 "Memo Balão": {
@@ -17641,7 +17955,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[alt*="Incluir Memo"]',
                         'img[title*="Memo"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined cream">chat_bubble</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
                 },
                 // Ícones de link
                 Link: {
@@ -17650,7 +17964,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[alt*="Link"]',
                         'img[title*="Link"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined light-gray">link</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
                 },
                 // Ícones de visualizar documento HTML
                 "Visualizar HTML": {
@@ -17659,7 +17973,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[title*="Visualizar Documento"]',
                         'img[alt*="Visualizar"]',
                     ],
-                    newSvg: `<span class="material-symbols-outlined blue">document_scanner</span>`,
+                    newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`,
                 },
                 // Ícones de PDF
                 PDF: {
@@ -17762,6 +18076,33 @@ RESPOSTA (apenas JSON válido):`;
                                 return;
                             }
 
+                            // VERIFICAR SE O ELEMENTO PAI É UM LINK CLICÁVEL OU SE O PRÓPRIO ELEMENTO É CLICÁVEL
+                            const parentElement = img.parentNode;
+                            const hasOnclickEvent =
+                                img.onclick || img.getAttribute("onclick");
+                            const isInsideClickableLink =
+                                parentElement &&
+                                (parentElement.tagName === "A" ||
+                                    parentElement.classList.contains(
+                                        "infraLegendObrigatorio"
+                                    ) ||
+                                    parentElement.closest(
+                                        "a.infraLegendObrigatorio"
+                                    ));
+
+                            // Elemento é considerado clicável se tem onclick OU está em link
+                            const isClickableElement =
+                                isInsideClickableLink || hasOnclickEvent;
+
+                            // Log detalhado da detecção de contexto
+                            console.log(
+                                `🔍 CONTEXT: "${nome}" - Parent: ${
+                                    parentElement?.tagName
+                                }, Classes: ${
+                                    parentElement?.className
+                                }, IsInLink: ${isInsideClickableLink}, HasOnclick: ${!!hasOnclickEvent}, IsClickable: ${isClickableElement}`
+                            );
+
                             // Preservar dimensões originais
                             const originalWidth =
                                 img.style.width ||
@@ -17780,12 +18121,47 @@ RESPOSTA (apenas JSON válido):`;
                             container.style.alignItems = "center";
                             container.style.marginRight = "4px";
 
+                            // Aplicar pointer-events baseado no contexto
+                            if (!isClickableElement) {
+                                container.style.pointerEvents = "none"; // CRÍTICO: Permitir cliques através do container
+                                container.style.setProperty(
+                                    "pointer-events",
+                                    "none",
+                                    "important"
+                                ); // FORÇA aplicação
+                                container.classList.add(
+                                    "eprobe-icon-container"
+                                ); // Classe para CSS fallback
+                            } else {
+                                container.classList.add(
+                                    "eprobe-icon-container",
+                                    "clickable-container"
+                                ); // Classes para CSS
+                            }
+
                             const svg = container.firstElementChild;
                             if (svg) {
                                 // Preservar dimensões e estilos originais
                                 svg.style.width = originalWidth;
                                 svg.style.height = originalHeight;
                                 svg.style.opacity = originalOpacity;
+
+                                // CRÍTICO: Aplicar pointer-events baseado no contexto
+                                if (isClickableElement) {
+                                    // Se é um elemento clicável, NÃO aplicar pointer-events: none
+                                    // Manter o SVG interativo para não quebrar a funcionalidade
+                                    console.log(
+                                        `🔗 CLICKABLE: Preservando clicabilidade para "${nome}" (tem onclick ou está em link)`
+                                    );
+                                } else {
+                                    // Se não está em link, aplicar pointer-events: none normalmente
+                                    svg.style.pointerEvents = "none";
+                                    svg.style.setProperty(
+                                        "pointer-events",
+                                        "none",
+                                        "important"
+                                    );
+                                }
 
                                 // Preservar propriedades CSS específicas
                                 if (img.style.borderWidth) {
@@ -17802,6 +18178,15 @@ RESPOSTA (apenas JSON válido):`;
                                     "iconeFerramentas",
                                     "substituted-icon"
                                 );
+
+                                // Adicionar classe específica baseada no contexto
+                                if (isClickableElement) {
+                                    svg.classList.add("clickable-icon");
+                                    container.classList.add(
+                                        "clickable-container"
+                                    );
+                                }
+
                                 if (img.classList.contains("infraImg")) {
                                     svg.classList.add("infraImg");
                                 }
@@ -17816,29 +18201,116 @@ RESPOSTA (apenas JSON válido):`;
                                     selector
                                 );
 
-                                // Preservar atributos de acessibilidade
-                                if (img.getAttribute("aria-hidden")) {
-                                    svg.setAttribute(
-                                        "aria-hidden",
-                                        img.getAttribute("aria-hidden")
-                                    );
-                                }
-                                if (img.getAttribute("title")) {
-                                    svg.setAttribute(
-                                        "title",
-                                        img.getAttribute("title")
-                                    );
-                                }
-                                if (img.getAttribute("alt")) {
-                                    svg.setAttribute(
-                                        "alt",
-                                        img.getAttribute("alt")
+                                // Preservar atributos de acessibilidade e eventos
+                                const attributesToCopy = [
+                                    "aria-hidden",
+                                    "title",
+                                    "alt",
+                                    "onclick",
+                                    "onmouseover",
+                                    "onmouseout",
+                                    "class",
+                                    "id",
+                                ];
+                                attributesToCopy.forEach((attr) => {
+                                    const value = img.getAttribute(attr);
+                                    if (
+                                        value &&
+                                        attr !== "class" &&
+                                        attr !== "id"
+                                    ) {
+                                        svg.setAttribute(attr, value);
+                                        if (attr === "onclick") {
+                                            console.log(
+                                                `🔄 COPY: Copiando ${attr}="${value.substring(
+                                                    0,
+                                                    50
+                                                )}..." para "${nome}"`
+                                            );
+                                        }
+                                    }
+                                });
+
+                                // Preservar classes específicas da imagem original
+                                if (img.className) {
+                                    const originalClasses = img.className
+                                        .split(" ")
+                                        .filter(
+                                            (cls) =>
+                                                ![
+                                                    "substituted-icon",
+                                                    "iconeFerramentas",
+                                                ].includes(cls)
+                                        );
+                                    originalClasses.forEach((cls) =>
+                                        svg.classList.add(cls)
                                     );
                                 }
 
-                                // Preservar eventos se existirem
+                                // Preservar ID se existir
+                                if (img.id) {
+                                    svg.id = img.id;
+                                }
+
+                                // Preservar eventos se existirem - MELHORADO
                                 if (img.onclick) {
                                     svg.onclick = img.onclick;
+                                    console.log(
+                                        `🔄 EVENT: Transferindo onclick para "${nome}"`
+                                    );
+                                }
+
+                                // Preservar evento onclick através do atributo HTML também
+                                const onclickAttr = img.getAttribute("onclick");
+                                if (onclickAttr) {
+                                    svg.setAttribute("onclick", onclickAttr);
+                                    console.log(
+                                        `🔄 ATTR: Transferindo onclick attribute para "${nome}": ${onclickAttr.substring(
+                                            0,
+                                            50
+                                        )}...`
+                                    );
+                                }
+
+                                // Se é elemento clicável, garantir que os eventos funcionem
+                                if (isClickableElement) {
+                                    svg.style.cursor = "pointer";
+                                    container.style.cursor = "pointer";
+                                }
+
+                                // APLICAÇÃO FINAL: Condicional baseada no contexto
+                                if (!isClickableElement) {
+                                    // Só aplicar pointer-events: none se NÃO for elemento clicável
+                                    svg.style.pointerEvents = "none";
+                                    svg.style.setProperty(
+                                        "pointer-events",
+                                        "none",
+                                        "important"
+                                    );
+                                    container.style.pointerEvents = "none";
+                                    container.style.setProperty(
+                                        "pointer-events",
+                                        "none",
+                                        "important"
+                                    );
+                                } else {
+                                    // Para links, garantir que container e SVG sejam clicáveis
+                                    container.style.pointerEvents = "auto";
+                                    container.style.setProperty(
+                                        "pointer-events",
+                                        "auto",
+                                        "important"
+                                    );
+                                    svg.style.pointerEvents = "auto";
+                                    svg.style.setProperty(
+                                        "pointer-events",
+                                        "auto",
+                                        "important"
+                                    );
+
+                                    console.log(
+                                        `🔗 CLICKABLE: Aplicando pointer-events: auto para "${nome}" em link`
+                                    );
                                 }
 
                                 // Realizar substituição
@@ -21989,7 +22461,7 @@ RESPOSTA (apenas JSON válido):`;
 
             tooltip.innerHTML = `
             <div style="padding: 16px 16px 12px 16px; display: flex; align-items: flex-start; gap: 12px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9;">
-                <span class="material-symbols-outlined dark-text">history</span>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1B1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
                 <div style="flex: 1;">
                     <div style="font-size: 14px; font-weight: 500; color: #1C1B1F; line-height: 20px; margin-bottom: 2px;">
                         Histórico de Sessões
