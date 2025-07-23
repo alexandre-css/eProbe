@@ -1146,17 +1146,23 @@ RESPOSTA (apenas JSON válido):`;
 
         // 🧪 TESTE CRÍTICO PARA DETECÇÃO DINÂMICA DE FIELDSET
         function testarDeteccaoDinamicaFieldset() {
-            logCritical("🧪 TESTE CRÍTICO: Iniciando teste de detecção dinâmica de fieldset...");
-            
+            logCritical(
+                "🧪 TESTE CRÍTICO: Iniciando teste de detecção dinâmica de fieldset..."
+            );
+
             // Testar detecção em detectarCardSessaoSimplificado
             try {
                 logCritical("🔍 TESTANDO: detectarCardSessaoSimplificado...");
                 const resultado1 = detectarCardSessaoSimplificado();
-                logCritical(`📊 RESULTADO Card Sessão: ${JSON.stringify(resultado1)}`);
+                logCritical(
+                    `📊 RESULTADO Card Sessão: ${JSON.stringify(resultado1)}`
+                );
             } catch (error) {
-                logCritical(`❌ ERRO em detectarCardSessaoSimplificado: ${error.message}`);
+                logCritical(
+                    `❌ ERRO em detectarCardSessaoSimplificado: ${error.message}`
+                );
             }
-            
+
             // Testar detecção em extrairLinkSessao
             try {
                 logCritical("🔍 TESTANDO: extrairLinkSessao...");
@@ -1165,17 +1171,23 @@ RESPOSTA (apenas JSON válido):`;
             } catch (error) {
                 logCritical(`❌ ERRO em extrairLinkSessao: ${error.message}`);
             }
-            
+
             // Testar detecção em buscarDadosReaisSessoes
             try {
                 logCritical("🔍 TESTANDO: buscarDadosReaisSessoes...");
                 const resultado3 = buscarDadosReaisSessoes();
-                logCritical(`📊 RESULTADO Dados Reais: ${JSON.stringify(resultado3)}`);
+                logCritical(
+                    `📊 RESULTADO Dados Reais: ${JSON.stringify(resultado3)}`
+                );
             } catch (error) {
-                logCritical(`❌ ERRO em buscarDadosReaisSessoes: ${error.message}`);
+                logCritical(
+                    `❌ ERRO em buscarDadosReaisSessoes: ${error.message}`
+                );
             }
-            
-            logCritical("✅ TESTE CRÍTICO: Detecção dinâmica de fieldset concluída!");
+
+            logCritical(
+                "✅ TESTE CRÍTICO: Detecção dinâmica de fieldset concluída!"
+            );
         }
 
         // 🎨 FUNÇÃO PARA CRIAR CARD MATERIAL DE SESSÃO - DESIGN FIGMA
@@ -1625,9 +1637,11 @@ RESPOSTA (apenas JSON válido):`;
                 log(`🔗 LINK: Extraindo link para sessão ${indiceSessao}`);
 
                 // ETAPA 0: Detectar qual fieldset contém as sessões
-                logCritical("🔍 LINK: Detectando fieldset correto para extração...");
+                logCritical(
+                    "🔍 LINK: Detectando fieldset correto para extração..."
+                );
                 let fieldsetCorreto = null;
-                
+
                 for (const fieldsetNum of [6, 7]) {
                     const xpathTeste = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]/div/div[2]/fieldset/legend/span[1]/button`;
                     const elementoTeste = document.evaluate(
@@ -1637,16 +1651,20 @@ RESPOSTA (apenas JSON válido):`;
                         XPathResult.FIRST_ORDERED_NODE_TYPE,
                         null
                     ).singleNodeValue;
-                    
+
                     if (elementoTeste) {
                         fieldsetCorreto = fieldsetNum;
-                        logCritical(`✅ LINK: Fieldset[${fieldsetNum}] detectado como container das sessões`);
+                        logCritical(
+                            `✅ LINK: Fieldset[${fieldsetNum}] detectado como container das sessões`
+                        );
                         break;
                     }
                 }
-                
+
                 if (!fieldsetCorreto) {
-                    logCritical("❌ LINK: Nenhum fieldset com sessões encontrado");
+                    logCritical(
+                        "❌ LINK: Nenhum fieldset com sessões encontrado"
+                    );
                     return null;
                 }
 
@@ -1941,12 +1959,14 @@ RESPOSTA (apenas JSON válido):`;
                 );
 
                 // Verificar múltiplos fieldsets possíveis (6 e 7)
-                logCritical("🔍 VERIFICANDO: Containers fieldset[6] e fieldset[7]...");
-                
+                logCritical(
+                    "🔍 VERIFICANDO: Containers fieldset[6] e fieldset[7]..."
+                );
+
                 const fieldsetsParaVerificar = [6, 7];
                 let containerFieldset = null;
                 let fieldsetEncontrado = null;
-                
+
                 // Buscar fieldset[6] ou fieldset[7] que contenha sessões
                 for (const fieldsetNum of fieldsetsParaVerificar) {
                     const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
@@ -1957,30 +1977,40 @@ RESPOSTA (apenas JSON válido):`;
                         XPathResult.FIRST_ORDERED_NODE_TYPE,
                         null
                     ).singleNodeValue;
-                    
+
                     if (fieldsetCandidate) {
-                        logCritical(`✅ ENCONTRADO: fieldset[${fieldsetNum}] existe`);
-                        
+                        logCritical(
+                            `✅ ENCONTRADO: fieldset[${fieldsetNum}] existe`
+                        );
+
                         // Verificar se este fieldset tem sessões (tentando encontrar pelo menos uma)
                         const xpathTeste = `${xpath}/div/div[2]/fieldset/legend/span[1]/button/text()`;
-                        const textoTeste = document.evaluate(
-                            xpathTeste,
-                            document,
-                            null,
-                            XPathResult.STRING_TYPE,
-                            null
-                        ).stringValue?.trim();
-                        
+                        const textoTeste = document
+                            .evaluate(
+                                xpathTeste,
+                                document,
+                                null,
+                                XPathResult.STRING_TYPE,
+                                null
+                            )
+                            .stringValue?.trim();
+
                         if (textoTeste) {
-                            logCritical(`🎯 SESSÃO ENCONTRADA em fieldset[${fieldsetNum}]: "${textoTeste}"`);
+                            logCritical(
+                                `🎯 SESSÃO ENCONTRADA em fieldset[${fieldsetNum}]: "${textoTeste}"`
+                            );
                             containerFieldset = fieldsetCandidate;
                             fieldsetEncontrado = fieldsetNum;
                             break;
                         } else {
-                            logCritical(`⚠️ fieldset[${fieldsetNum}] existe mas não tem sessões detectáveis`);
+                            logCritical(
+                                `⚠️ fieldset[${fieldsetNum}] existe mas não tem sessões detectáveis`
+                            );
                         }
                     } else {
-                        logCritical(`❌ fieldset[${fieldsetNum}] não encontrado`);
+                        logCritical(
+                            `❌ fieldset[${fieldsetNum}] não encontrado`
+                        );
                     }
                 }
 
@@ -2025,13 +2055,17 @@ RESPOSTA (apenas JSON válido):`;
                     return null;
                 }
 
-                logCritical(`✅ SUCESSO: Container fieldset[${fieldsetEncontrado}] encontrado e ativo!`);
+                logCritical(
+                    `✅ SUCESSO: Container fieldset[${fieldsetEncontrado}] encontrado e ativo!`
+                );
 
                 const sessoes = [];
                 let contador = 1;
 
                 // Buscar até 10 divs de sessão no fieldset encontrado
-                logCritical(`🔍 BUSCANDO SESSÕES: Processando fieldset[${fieldsetEncontrado}]...`);
+                logCritical(
+                    `🔍 BUSCANDO SESSÕES: Processando fieldset[${fieldsetEncontrado}]...`
+                );
                 while (contador <= 10) {
                     const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetEncontrado}]/div/div[${contador}]/fieldset/legend/span[1]/button/text()`;
 
@@ -18672,7 +18706,7 @@ RESPOSTA (apenas JSON válido):`;
             // Detectar qual fieldset usar (6 ou 7)
             let basePath = null;
             let fieldsetEncontrado = null;
-            
+
             for (const fieldsetNum of [6, 7]) {
                 const testePath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]/div`;
                 const teste = document.evaluate(
@@ -18682,7 +18716,7 @@ RESPOSTA (apenas JSON válido):`;
                     XPathResult.FIRST_ORDERED_NODE_TYPE,
                     null
                 ).singleNodeValue;
-                
+
                 if (teste) {
                     basePath = testePath;
                     fieldsetEncontrado = fieldsetNum;
@@ -18690,7 +18724,7 @@ RESPOSTA (apenas JSON válido):`;
                     break;
                 }
             }
-            
+
             if (!basePath) {
                 log("❌ BUSCAR SESSÕES: Nenhum fieldset de sessão encontrado");
                 return [];
@@ -19519,7 +19553,7 @@ RESPOSTA (apenas JSON válido):`;
             forcarStatusSessao: allMissingFunctions.forcarStatusSessao,
             encontrarTextoRetirado: allMissingFunctions.encontrarTextoRetirado,
             forcarDeteccaoCompleta: allMissingFunctions.forcarDeteccaoCompleta,
-            
+
             // 🧪 TESTE CRÍTICO PARA DETECÇÃO DINÂMICA DE FIELDSET
             testarDeteccaoDinamicaFieldset: testarDeteccaoDinamicaFieldset,
 
@@ -19909,11 +19943,11 @@ RESPOSTA (apenas JSON válido):`;
                 try {
                     // 1. Verificar página atual
                     log("🔍 PASSO 0: Verificando página atual...");
-                    
+
                     // Verificar qual fieldset existe (6 ou 7)
                     let fieldsetExiste = false;
                     let fieldsetNumero = null;
-                    
+
                     for (const num of [6, 7]) {
                         const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${num}]`;
                         const elemento = document.evaluate(
@@ -19923,14 +19957,14 @@ RESPOSTA (apenas JSON válido):`;
                             XPathResult.FIRST_ORDERED_NODE_TYPE,
                             null
                         ).singleNodeValue;
-                        
+
                         if (elemento) {
                             fieldsetExiste = true;
                             fieldsetNumero = num;
                             break;
                         }
                     }
-                    
+
                     const paginaInfo = {
                         url: window.location.href,
                         processo: this.obterNumeroProcesso(),
@@ -20886,7 +20920,7 @@ RESPOSTA (apenas JSON válido):`;
                     // 1. DETECÇÃO DINÂMICA EM FIELDSET[6] OU FIELDSET[7]
                     let fieldsetElement = null;
                     let fieldsetEncontrado = null;
-                    
+
                     for (const fieldsetNum of [6, 7]) {
                         const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
                         const resultado = document.evaluate(
@@ -20900,13 +20934,17 @@ RESPOSTA (apenas JSON válido):`;
                         if (resultado.singleNodeValue) {
                             fieldsetElement = resultado.singleNodeValue;
                             fieldsetEncontrado = fieldsetNum;
-                            log(`✅ TOOLTIP: Fieldset[${fieldsetNum}] localizado com sucesso`);
+                            log(
+                                `✅ TOOLTIP: Fieldset[${fieldsetNum}] localizado com sucesso`
+                            );
                             break;
                         }
                     }
 
                     if (!fieldsetElement) {
-                        log("ℹ️ TOOLTIP: Nenhum fieldset de sessão encontrado (testados: 6 e 7)");
+                        log(
+                            "ℹ️ TOOLTIP: Nenhum fieldset de sessão encontrado (testados: 6 e 7)"
+                        );
                         return null;
                     }
 
