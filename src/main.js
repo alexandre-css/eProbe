@@ -1144,9 +1144,53 @@ RESPOSTA (apenas JSON válido):`;
             }
         };
 
+        // 🧪 TESTE CRÍTICO PARA DETECÇÃO DINÂMICA DE FIELDSET
+        function testarDeteccaoDinamicaFieldset() {
+            logCritical("🧪 TESTE CRÍTICO: Iniciando teste de detecção dinâmica de fieldset...");
+            
+            // Testar detecção em detectarCardSessaoSimplificado
+            try {
+                logCritical("🔍 TESTANDO: detectarCardSessaoSimplificado...");
+                const resultado1 = detectarCardSessaoSimplificado();
+                logCritical(`📊 RESULTADO Card Sessão: ${JSON.stringify(resultado1)}`);
+            } catch (error) {
+                logCritical(`❌ ERRO em detectarCardSessaoSimplificado: ${error.message}`);
+            }
+            
+            // Testar detecção em extrairLinkSessao
+            try {
+                logCritical("🔍 TESTANDO: extrairLinkSessao...");
+                const resultado2 = extrairLinkSessao(1);
+                logCritical(`📊 RESULTADO Link Sessão: ${resultado2}`);
+            } catch (error) {
+                logCritical(`❌ ERRO em extrairLinkSessao: ${error.message}`);
+            }
+            
+            // Testar detecção em buscarDadosReaisSessoes
+            try {
+                logCritical("🔍 TESTANDO: buscarDadosReaisSessoes...");
+                const resultado3 = buscarDadosReaisSessoes();
+                logCritical(`📊 RESULTADO Dados Reais: ${JSON.stringify(resultado3)}`);
+            } catch (error) {
+                logCritical(`❌ ERRO em buscarDadosReaisSessoes: ${error.message}`);
+            }
+            
+            logCritical("✅ TESTE CRÍTICO: Detecção dinâmica de fieldset concluída!");
+        }
+
         // 🎨 FUNÇÃO PARA CRIAR CARD MATERIAL DE SESSÃO - DESIGN FIGMA
         function criarCardSessaoMaterial(cardInfo) {
             try {
+                // 🚨 LOG CRÍTICO: Início da criação do card
+                logCritical(
+                    "🚨 CARD MATERIAL: Iniciando criarCardSessaoMaterial()"
+                );
+                logCritical(
+                    `🕐 TIMESTAMP: ${new Date().toLocaleString("pt-BR")}`
+                );
+                logCritical("📊 DADOS RECEBIDOS:", cardInfo);
+                logCritical(`🔍 PROCESSO: ${obterNumeroProcesso() || "N/A"}`);
+
                 log("🎨 CRIANDO CARD MATERIAL FIGMA:", cardInfo);
 
                 // Verificar se já existe um card
@@ -1462,11 +1506,21 @@ RESPOSTA (apenas JSON válido):`;
                 };
 
                 // Inserir card usando a função de interface específica
+                logCritical(
+                    "🎯 INSERÇÃO: Tentando inserir card na interface..."
+                );
                 const inserido = inserirCardNaInterface(card);
                 if (!inserido) {
                     // Fallback: inserir no body se não conseguir inserir na interface
+                    logCritical(
+                        "⚠️ FALLBACK: Inserindo card no body como fallback"
+                    );
                     document.body.appendChild(card);
                     logError("⚠️ CARD FIGMA: Inserido como fallback no body");
+                } else {
+                    logCritical(
+                        "✅ SUCESSO: Card inserido na interface com sucesso!"
+                    );
                 }
 
                 log("✅ CARD FIGMA: Criado com design Material Light pequeno!");
@@ -1570,8 +1624,34 @@ RESPOSTA (apenas JSON válido):`;
             try {
                 log(`🔗 LINK: Extraindo link para sessão ${indiceSessao}`);
 
+                // ETAPA 0: Detectar qual fieldset contém as sessões
+                logCritical("🔍 LINK: Detectando fieldset correto para extração...");
+                let fieldsetCorreto = null;
+                
+                for (const fieldsetNum of [6, 7]) {
+                    const xpathTeste = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]/div/div[2]/fieldset/legend/span[1]/button`;
+                    const elementoTeste = document.evaluate(
+                        xpathTeste,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue;
+                    
+                    if (elementoTeste) {
+                        fieldsetCorreto = fieldsetNum;
+                        logCritical(`✅ LINK: Fieldset[${fieldsetNum}] detectado como container das sessões`);
+                        break;
+                    }
+                }
+                
+                if (!fieldsetCorreto) {
+                    logCritical("❌ LINK: Nenhum fieldset com sessões encontrado");
+                    return null;
+                }
+
                 // ETAPA 1: Primeiro precisamos abrir o modal clicando no SVG
-                const xpathTriggerModal = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${
+                const xpathTriggerModal = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetCorreto}]/div/div[${
                     indiceSessao + 1
                 }]/fieldset/legend/span[3]/svg`;
 
@@ -1585,7 +1665,7 @@ RESPOSTA (apenas JSON válido):`;
 
                 if (!triggerElement) {
                     logCritical(
-                        `❌ LINK: Elemento trigger do modal não encontrado para sessão ${indiceSessao} - XPath: ${xpathTriggerModal}`
+                        `❌ LINK: Elemento trigger do modal não encontrado para sessão ${indiceSessao} em fieldset[${fieldsetCorreto}] - XPath: ${xpathTriggerModal}`
                     );
                     return null;
                 }
@@ -1783,8 +1863,10 @@ RESPOSTA (apenas JSON válido):`;
                         urlFinal = linkReal;
                     } else if (linkReal.startsWith("controlador.php")) {
                         urlFinal = `${baseUrl}/eproc/${linkReal}`;
-                    } else {
+                    } else if (linkReal.startsWith("/")) {
                         urlFinal = `${baseUrl}${linkReal}`;
+                    } else {
+                        urlFinal = `${baseUrl}/eproc/${linkReal}`;
                     }
 
                     logCritical(
@@ -1798,17 +1880,11 @@ RESPOSTA (apenas JSON válido):`;
                     "❌ URL: extrairLinkSessao retornou null - não foi possível encontrar link real no modal"
                 );
 
-                // Fallback: construir URL baseada nos dados da sessão (pode não funcionar sem parâmetros específicos)
+                // URL básica como fallback - mas agora com mais parâmetros se disponíveis
                 const baseUrl = window.location.origin;
-                const numeroProcesso = obterNumeroProcesso();
-
-                logCritical(
-                    "⚠️ URL: Link real não encontrado, usando construção manual (pode não funcionar)"
-                );
-
-                // URL básica - requer parâmetros específicos que não temos
                 const urlBasica = `${baseUrl}/eproc/controlador.php?acao=sessao_julgamento_exibir_painel`;
 
+                const numeroProcesso = obterNumeroProcesso();
                 if (numeroProcesso) {
                     return `${urlBasica}&txtNumProcesso=${numeroProcesso}`;
                 }
@@ -1834,42 +1910,130 @@ RESPOSTA (apenas JSON válido):`;
          */
         function detectarCardSessaoSimplificado() {
             try {
+                // 🚨 LOG CRÍTICO: Início da detecção
+                logCritical(
+                    "🚨 CARD SESSÃO: Iniciando detectarCardSessaoSimplificado()"
+                );
+                logCritical(
+                    `🕐 TIMESTAMP: ${new Date().toLocaleString("pt-BR")}`
+                );
+                logCritical(`📍 URL ATUAL: ${window.location.href}`);
+                logCritical(`🔄 PROCESSO: ${obterNumeroProcesso() || "N/A"}`);
+
                 // Verificar cooldown para evitar execuções duplicadas
                 const now = Date.now();
                 if (now - lastDetectionTime < DETECTION_COOLDOWN) {
-                    log(
+                    logCritical(
                         "⏰ DETECÇÃO: Aguardando cooldown, retornando resultado anterior"
+                    );
+                    logCritical(
+                        `⏱️ TEMPO RESTANTE: ${
+                            DETECTION_COOLDOWN - (now - lastDetectionTime)
+                        }ms`
                     );
                     return lastDetectionResult;
                 }
 
                 lastDetectionTime = now;
 
-                log("🎯 DETECÇÃO: Iniciando busca XPath por sessões...");
+                logCritical(
+                    "🎯 DETECÇÃO: Iniciando busca XPath por sessões..."
+                );
 
-                // Verificar se o container fieldset[6] existe
-                const containerFieldset = document.evaluate(
-                    "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]",
-                    document,
-                    null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
-                    null
-                ).singleNodeValue;
+                // Verificar múltiplos fieldsets possíveis (6 e 7)
+                logCritical("🔍 VERIFICANDO: Containers fieldset[6] e fieldset[7]...");
+                
+                const fieldsetsParaVerificar = [6, 7];
+                let containerFieldset = null;
+                let fieldsetEncontrado = null;
+                
+                // Buscar fieldset[6] ou fieldset[7] que contenha sessões
+                for (const fieldsetNum of fieldsetsParaVerificar) {
+                    const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
+                    const fieldsetCandidate = document.evaluate(
+                        xpath,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue;
+                    
+                    if (fieldsetCandidate) {
+                        logCritical(`✅ ENCONTRADO: fieldset[${fieldsetNum}] existe`);
+                        
+                        // Verificar se este fieldset tem sessões (tentando encontrar pelo menos uma)
+                        const xpathTeste = `${xpath}/div/div[2]/fieldset/legend/span[1]/button/text()`;
+                        const textoTeste = document.evaluate(
+                            xpathTeste,
+                            document,
+                            null,
+                            XPathResult.STRING_TYPE,
+                            null
+                        ).stringValue?.trim();
+                        
+                        if (textoTeste) {
+                            logCritical(`🎯 SESSÃO ENCONTRADA em fieldset[${fieldsetNum}]: "${textoTeste}"`);
+                            containerFieldset = fieldsetCandidate;
+                            fieldsetEncontrado = fieldsetNum;
+                            break;
+                        } else {
+                            logCritical(`⚠️ fieldset[${fieldsetNum}] existe mas não tem sessões detectáveis`);
+                        }
+                    } else {
+                        logCritical(`❌ fieldset[${fieldsetNum}] não encontrado`);
+                    }
+                }
 
                 if (!containerFieldset) {
-                    log("❌ DETECÇÃO: Container fieldset[6] não encontrado");
+                    logCritical(
+                        "❌ CRÍTICO: NENHUM Container fieldset com sessões encontrado!"
+                    );
+                    logCritical(
+                        "🔍 DIAGNÓSTICO: Verificando estrutura da página..."
+                    );
+
+                    // Diagnóstico da estrutura DOM
+                    const body = document.body;
+                    const divPrincipal = document.querySelector(
+                        "body > div:nth-child(2)"
+                    );
+                    const formProcesso =
+                        document.querySelector("#frmProcessoLista");
+
+                    logCritical(`📊 BODY existe: ${!!body}`);
+                    logCritical(`📊 Div principal existe: ${!!divPrincipal}`);
+                    logCritical(`📊 Form processo existe: ${!!formProcesso}`);
+
+                    if (formProcesso) {
+                        const fieldsets =
+                            formProcesso.querySelectorAll("fieldset");
+                        logCritical(
+                            `📊 FIELDSETS encontrados: ${fieldsets.length}`
+                        );
+                        fieldsets.forEach((fs, i) => {
+                            logCritical(
+                                `   - Fieldset ${i + 1}: ${
+                                    fs
+                                        .querySelector("legend")
+                                        ?.textContent?.trim() || "Sem legend"
+                                }`
+                            );
+                        });
+                    }
+
                     lastDetectionResult = null;
                     return null;
                 }
 
-                log("✅ DETECÇÃO: Container fieldset[6] encontrado");
+                logCritical(`✅ SUCESSO: Container fieldset[${fieldsetEncontrado}] encontrado e ativo!`);
 
                 const sessoes = [];
                 let contador = 1;
 
-                // Buscar até 10 divs de sessão
+                // Buscar até 10 divs de sessão no fieldset encontrado
+                logCritical(`🔍 BUSCANDO SESSÕES: Processando fieldset[${fieldsetEncontrado}]...`);
                 while (contador <= 10) {
-                    const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${contador}]/fieldset/legend/span[1]/button/text()`;
+                    const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetEncontrado}]/div/div[${contador}]/fieldset/legend/span[1]/button/text()`;
 
                     const resultado = document.evaluate(
                         xpath,
@@ -1883,7 +2047,7 @@ RESPOSTA (apenas JSON válido):`;
 
                     // Se não encontrou no XPath padrão, tentar alternativa
                     if (!textoButton) {
-                        const xpathDiv = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div/div[${contador}]`;
+                        const xpathDiv = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetEncontrado}]/div/div[${contador}]`;
                         const divElement = document.evaluate(
                             xpathDiv,
                             document,
@@ -1894,7 +2058,7 @@ RESPOSTA (apenas JSON válido):`;
 
                         if (!divElement) {
                             log(
-                                `🔍 DETECÇÃO: Div[${contador}] não existe - finalizando`
+                                `🔍 DETECÇÃO: Div[${contador}] não existe no fieldset[${fieldsetEncontrado}] - finalizando`
                             );
                             break;
                         }
@@ -1963,6 +2127,12 @@ RESPOSTA (apenas JSON válido):`;
                 );
 
                 if (sessoes.length === 0) {
+                    logCritical("❌ CRÍTICO: NENHUMA SESSÃO ENCONTRADA!");
+                    logCritical("🔍 POSSÍVEIS CAUSAS:");
+                    logCritical("   - Estrutura DOM diferente do esperado");
+                    logCritical("   - Processo não tem sessões pautadas");
+                    logCritical("   - XPath não localiza botões corretamente");
+                    logCritical("   - Regex não faz match com o texto");
                     lastDetectionResult = null;
                     return null;
                 }
@@ -1978,10 +2148,10 @@ RESPOSTA (apenas JSON válido):`;
                     return dataB - dataA;
                 });
 
-                log(
-                    `✅ DETECÇÃO: ${sessoes.length} sessões encontradas e ordenadas`
+                logCritical(
+                    `✅ CRÍTICO: ${sessoes.length} sessões encontradas e ordenadas`
                 );
-                log("📊 SESSÃO MAIS RECENTE:", sessoes[0]);
+                logCritical("📊 SESSÃO MAIS RECENTE:", sessoes[0]);
 
                 // Armazenar dados da sessão mais recente
                 const sessaoMaisRecente = sessoes[0];
@@ -1994,8 +2164,12 @@ RESPOSTA (apenas JSON válido):`;
                     // Adicionar dados completos
                     window.dadosCompletosMinutas = sessaoMaisRecente;
 
-                    log(
-                        `✅ DADOS ARMAZENADOS: dataSessaoPautado="${dataSessaoPautado}" | processo="${processo}"`
+                    logCritical(
+                        `✅ CRÍTICO: DADOS ARMAZENADOS - dataSessaoPautado="${dataSessaoPautado}" | processo="${processo}"`
+                    );
+                } else {
+                    logCritical(
+                        "⚠️ CRÍTICO: Processo não identificado - dados não salvos!"
                     );
                 }
 
@@ -2011,10 +2185,25 @@ RESPOSTA (apenas JSON válido):`;
                     sessoes: sessoes,
                 };
 
+                logCritical(
+                    "🎨 CRÍTICO: Chamando criarCardSessaoMaterial com dados:",
+                    cardInfo
+                );
                 criarCardSessaoMaterial(cardInfo);
                 lastDetectionResult = cardInfo;
+
+                logCritical(
+                    "✅ CRÍTICO: detectarCardSessaoSimplificado FINALIZADO COM SUCESSO!"
+                );
                 return cardInfo;
             } catch (error) {
+                logCritical(
+                    "💥 CRÍTICO: ERRO FATAL em detectarCardSessaoSimplificado!"
+                );
+                logCritical("🚨 DETALHES DO ERRO:", error);
+                logCritical("📍 STACK:", error.stack);
+                logCritical("🔍 URL:", window.location.href);
+                logCritical("🔍 PROCESSO:", obterNumeroProcesso() || "N/A");
                 console.error("❌ DETECÇÃO: Erro na detecção XPath:", error);
                 lastDetectionResult = null;
                 return null;
@@ -16996,7 +17185,7 @@ RESPOSTA (apenas JSON válido):`;
                 },
                 {
                     selector: 'img[src*="minuta_assinar2.gif"]',
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
                 },
                 {
                     selector: 'img[src*="alterar.gif"]',
@@ -17248,7 +17437,7 @@ RESPOSTA (apenas JSON válido):`;
                         'img[title*="Assinar Minuta"]',
                         'img[alt*="Assinar Minuta"]',
                     ],
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
                     name: "Assinar Minuta",
                 },
                 {
@@ -17720,7 +17909,7 @@ RESPOSTA (apenas JSON válido):`;
                             'img[title*="Assinar Minuta"]',
                             'img[alt*="Assinar Minuta"]',
                         ],
-                        newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pen-line-icon lucide-pen-line"><path d="M12 20h9"/><path d="M16.376 3.622a1 1 0 0 1 3.002 3.002L7.368 18.635a2 2 0 0 1-.855.506l-2.872.838a.5.5 0 0 1-.62-.62l.838-2.872a2 2 0 0 1 .506-.854z"/></svg>`,
+                        newSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>`,
                     },
                     // Ícones de editar genérico
                     Editar: {
@@ -18480,8 +18669,33 @@ RESPOSTA (apenas JSON válido):`;
         function buscarDadosReaisSessoes() {
             log("🔍 BUSCAR SESSÕES: Iniciando busca por dados reais...");
 
-            const basePath =
-                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]/div";
+            // Detectar qual fieldset usar (6 ou 7)
+            let basePath = null;
+            let fieldsetEncontrado = null;
+            
+            for (const fieldsetNum of [6, 7]) {
+                const testePath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]/div`;
+                const teste = document.evaluate(
+                    testePath,
+                    document,
+                    null,
+                    XPathResult.FIRST_ORDERED_NODE_TYPE,
+                    null
+                ).singleNodeValue;
+                
+                if (teste) {
+                    basePath = testePath;
+                    fieldsetEncontrado = fieldsetNum;
+                    log(`✅ BUSCAR SESSÕES: Usando fieldset[${fieldsetNum}]`);
+                    break;
+                }
+            }
+            
+            if (!basePath) {
+                log("❌ BUSCAR SESSÕES: Nenhum fieldset de sessão encontrado");
+                return [];
+            }
+
             const sessoes = [];
 
             // Buscar dados da câmara no XPath especificado
@@ -19305,6 +19519,9 @@ RESPOSTA (apenas JSON válido):`;
             forcarStatusSessao: allMissingFunctions.forcarStatusSessao,
             encontrarTextoRetirado: allMissingFunctions.encontrarTextoRetirado,
             forcarDeteccaoCompleta: allMissingFunctions.forcarDeteccaoCompleta,
+            
+            // 🧪 TESTE CRÍTICO PARA DETECÇÃO DINÂMICA DE FIELDSET
+            testarDeteccaoDinamicaFieldset: testarDeteccaoDinamicaFieldset,
 
             // 🔧 FUNÇÕES AUXILIARES - Extração e normalização de dados
             getData: getData,
@@ -19692,16 +19909,33 @@ RESPOSTA (apenas JSON válido):`;
                 try {
                     // 1. Verificar página atual
                     log("🔍 PASSO 0: Verificando página atual...");
-                    const paginaInfo = {
-                        url: window.location.href,
-                        processo: this.obterNumeroProcesso(),
-                        fieldsetExiste: !!document.evaluate(
-                            "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]",
+                    
+                    // Verificar qual fieldset existe (6 ou 7)
+                    let fieldsetExiste = false;
+                    let fieldsetNumero = null;
+                    
+                    for (const num of [6, 7]) {
+                        const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${num}]`;
+                        const elemento = document.evaluate(
+                            xpath,
                             document,
                             null,
                             XPathResult.FIRST_ORDERED_NODE_TYPE,
                             null
-                        ).singleNodeValue,
+                        ).singleNodeValue;
+                        
+                        if (elemento) {
+                            fieldsetExiste = true;
+                            fieldsetNumero = num;
+                            break;
+                        }
+                    }
+                    
+                    const paginaInfo = {
+                        url: window.location.href,
+                        processo: this.obterNumeroProcesso(),
+                        fieldsetExiste,
+                        fieldsetNumero,
                     };
                     log("📊 Info da página:", paginaInfo);
 
@@ -19960,14 +20194,6 @@ RESPOSTA (apenas JSON válido):`;
 
             // 🔧 FUNÇÕES DE SISTEMA E TESTES
             testarSistemaCompleto, // Usar implementação real da linha 12371
-
-            // 🔗 FUNÇÕES DE NAVEGAÇÃO PARA SESSÃO
-            extrairLinkSessao: function (indiceSessao = 1) {
-                return extrairLinkSessao(indiceSessao);
-            },
-            construirUrlSessao: async function (dadosSessao) {
-                return await construirUrlSessao(dadosSessao);
-            },
 
             // 🧪 TESTE ESPECÍFICO PARA LINKS DE SESSÃO
             testarExtracacaoLink: async function (indiceSessao = 1) {
@@ -20657,24 +20883,32 @@ RESPOSTA (apenas JSON válido):`;
                 try {
                     log("🔍 TOOLTIP UNIFICADO: Iniciando detecção...");
 
-                    // 1. DETECÇÃO EM TODO O FIELDSET[6] (XPath mais seguro)
-                    const xpath =
-                        "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[6]";
-                    const resultado = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    );
+                    // 1. DETECÇÃO DINÂMICA EM FIELDSET[6] OU FIELDSET[7]
+                    let fieldsetElement = null;
+                    let fieldsetEncontrado = null;
+                    
+                    for (const fieldsetNum of [6, 7]) {
+                        const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
+                        const resultado = document.evaluate(
+                            xpath,
+                            document,
+                            null,
+                            XPathResult.FIRST_ORDERED_NODE_TYPE,
+                            null
+                        );
 
-                    if (!resultado.singleNodeValue) {
-                        log("ℹ️ TOOLTIP: Fieldset[6] não encontrado via XPath");
-                        return null;
+                        if (resultado.singleNodeValue) {
+                            fieldsetElement = resultado.singleNodeValue;
+                            fieldsetEncontrado = fieldsetNum;
+                            log(`✅ TOOLTIP: Fieldset[${fieldsetNum}] localizado com sucesso`);
+                            break;
+                        }
                     }
 
-                    const fieldsetElement = resultado.singleNodeValue;
-                    log("✅ TOOLTIP: Fieldset[6] localizado com sucesso");
+                    if (!fieldsetElement) {
+                        log("ℹ️ TOOLTIP: Nenhum fieldset de sessão encontrado (testados: 6 e 7)");
+                        return null;
+                    }
 
                     // 2. USAR A FUNÇÃO AUXILIAR PARA PROCESSAMENTO COMPLETO
                     const resultadoProcessamento =
