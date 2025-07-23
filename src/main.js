@@ -2191,6 +2191,64 @@ RESPOSTA (apenas JSON válido):`;
             opacity: 1;
             transform: rotate(15deg) scale(1.1);
         }
+        
+        /* ⚡ OTIMIZAÇÃO PERFORMANCE: CSS hover substitui event listeners */
+        .eprobe-button-hover:hover {
+            background-color: #0f3a66 !important;
+            border-color: #0f3a66 !important;
+            transform: translateY(-1px) !important;
+        }
+        
+        .eprobe-button-hover:focus {
+            background-color: #0f3a66 !important;
+            border-color: #0f3a66 !important;
+            outline: 2px solid #4FC3F7 !important;
+        }
+        
+        .eprobe-button-hover:active {
+            background-color: #0a2d4f !important;
+            transform: translateY(0) !important;
+        }
+        
+        /* Botões de cancelar otimizados */
+        .eprobe-cancel-button:hover {
+            background-color: #4b5563 !important;
+        }
+        
+        .eprobe-process-button:hover {
+            background-color: #059669 !important;
+        }
+        
+        /* Botões PDF otimizados */
+        .eprobe-pdf-cancel-button:hover {
+            background-color: #91433d !important;
+            border-color: #91433d !important;
+        }
+        
+        /* Botões de abertura otimizados */
+        .eprobe-open-button:hover {
+            background-color: rgba(148, 163, 184, 0.1) !important;
+        }
+        
+        /* Container e botão de remoção otimizados */
+        .eprobe-container-hover .eprobe-remove-button {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .eprobe-container-hover:hover .eprobe-remove-button {
+            opacity: 1 !important;
+        }
+        
+        /* Opções de menu otimizadas */
+        .eprobe-menu-option {
+            background-color: transparent !important;
+            transition: background-color 0.2s ease;
+        }
+        
+        .eprobe-menu-option:hover {
+            background-color: #f8f9fa !important;
+        }
     `;
     document.head.appendChild(extensionStyle);
 
@@ -2847,14 +2905,9 @@ RESPOSTA (apenas JSON válido):`;
         `;
             botaoRemover.title = "Remover divisor";
 
-            // Mostrar botão X apenas no hover do container
-            containerTitulo.addEventListener("mouseenter", function () {
-                botaoRemover.style.opacity = "1";
-            });
-
-            containerTitulo.addEventListener("mouseleave", function () {
-                botaoRemover.style.opacity = "0";
-            });
+            // ⚡ OTIMIZAÇÃO: CSS hover em vez de event listeners
+            containerTitulo.classList.add("eprobe-container-hover");
+            botaoRemover.classList.add("eprobe-remove-button");
 
             // Evento para remover divisor
             botaoRemover.addEventListener("click", function (e) {
@@ -3182,14 +3235,8 @@ RESPOSTA (apenas JSON válido):`;
                 menu.remove();
             });
 
-            // Adicionar hover
-            opcaoSeparador.addEventListener("mouseenter", function () {
-                this.style.backgroundColor = "#f8f9fa";
-            });
-
-            opcaoSeparador.addEventListener("mouseleave", function () {
-                this.style.backgroundColor = "transparent";
-            });
+            // ⚡ OTIMIZAÇÃO: CSS hover em vez de event listeners
+            opcaoSeparador.classList.add("eprobe-menu-option");
 
             // Adicionar opção ao menu
             menu.appendChild(opcaoSeparador);
@@ -4660,16 +4707,7 @@ RESPOSTA (apenas JSON válido):`;
                             overlay.querySelector("#pdf-cancel-btn");
 
                         // Adicionar hover vermelho no botão cancelar PDF
-                        pdfCancelBtn.addEventListener("mouseenter", () => {
-                            pdfCancelBtn.style.backgroundColor = "#91433d";
-                            pdfCancelBtn.style.borderColor = "#91433d";
-                        });
-
-                        pdfCancelBtn.addEventListener("mouseleave", () => {
-                            pdfCancelBtn.style.backgroundColor = "";
-                            pdfCancelBtn.style.borderColor = "";
-                        });
-
+                        pdfCancelBtn.classList.add("eprobe-pdf-cancel-button");
                         pdfCancelBtn.onclick = () => close(false);
 
                         overlay.addEventListener("click", (e) => {
@@ -5546,13 +5584,7 @@ RESPOSTA (apenas JSON válido):`;
 
                 const openBtn = menu.querySelector("#open-documento-btn");
                 if (documentCount > 0) {
-                    openBtn.addEventListener("mouseenter", () => {
-                        openBtn.style.backgroundColor =
-                            "rgba(148, 163, 184, 0.1)";
-                    });
-                    openBtn.addEventListener("mouseleave", () => {
-                        openBtn.style.backgroundColor = "transparent";
-                    });
+                    openBtn.classList.add("eprobe-open-button");
                     openBtn.addEventListener("click", () => {
                         menu.remove();
                         if (documentCount > 1) {
@@ -6026,12 +6058,7 @@ RESPOSTA (apenas JSON válido):`;
             transition: background 0.2s ease;
         `;
             cancelBtn.textContent = "Cancelar";
-            cancelBtn.addEventListener("mouseenter", () => {
-                cancelBtn.style.backgroundColor = "#4b5563";
-            });
-            cancelBtn.addEventListener("mouseleave", () => {
-                cancelBtn.style.backgroundColor = "#6b7280";
-            });
+            cancelBtn.classList.add("eprobe-cancel-button");
             cancelBtn.addEventListener("click", () => {
                 overlay.remove();
             });
@@ -6049,12 +6076,7 @@ RESPOSTA (apenas JSON válido):`;
             transition: background 0.2s ease;
         `;
             processAllBtn.textContent = "Processar Primeiro";
-            processAllBtn.addEventListener("mouseenter", () => {
-                processAllBtn.style.backgroundColor = "#047857";
-            });
-            processAllBtn.addEventListener("mouseleave", () => {
-                processAllBtn.style.backgroundColor = "#059669";
-            });
+            processAllBtn.classList.add("eprobe-process-button");
             processAllBtn.addEventListener("click", () => {
                 overlay.remove();
                 autoOpenSpecificDocument(documentosRelevantes[0]);
@@ -6985,21 +7007,11 @@ RESPOSTA (apenas JSON válido):`;
  transition: background-color 0.2s ease;
  `;
 
-            // Adicionar eventos para hover e focus
-            button.addEventListener("mouseenter", () => {
-                button.style.backgroundColor = "#0f3a66";
-                button.style.borderColor = "#0f3a66";
-            });
-
-            button.addEventListener("mouseleave", () => {
-                button.style.backgroundColor = "#134377";
-                button.style.borderColor = "#134377";
-            });
-
-            button.addEventListener("focus", () => {
-                button.style.backgroundColor = "#0f3a66";
-                button.style.borderColor = "#0f3a66";
-            });
+            // ⚡ OTIMIZAÇÃO PERFORMANCE: CSS hover em vez de event listeners
+            button.style.cssText += `
+                transition: background-color 0.2s ease;
+            `;
+            button.classList.add("eprobe-button-hover");
 
             button.addEventListener("blur", () => {
                 button.style.backgroundColor = "#134377";
@@ -18076,31 +18088,12 @@ RESPOSTA (apenas JSON válido):`;
                                 return;
                             }
 
-                            // VERIFICAR SE O ELEMENTO PAI É UM LINK CLICÁVEL OU SE O PRÓPRIO ELEMENTO É CLICÁVEL
+                            // ⚡ OTIMIZAÇÃO PERFORMANCE: Detecção simples de clicabilidade
                             const parentElement = img.parentNode;
-                            const hasOnclickEvent =
-                                img.onclick || img.getAttribute("onclick");
-                            const isInsideClickableLink =
-                                parentElement &&
-                                (parentElement.tagName === "A" ||
-                                    parentElement.classList.contains(
-                                        "infraLegendObrigatorio"
-                                    ) ||
-                                    parentElement.closest(
-                                        "a.infraLegendObrigatorio"
-                                    ));
-
-                            // Elemento é considerado clicável se tem onclick OU está em link
-                            const isClickableElement =
-                                isInsideClickableLink || hasOnclickEvent;
-
-                            // Log detalhado da detecção de contexto
-                            console.log(
-                                `🔍 CONTEXT: "${nome}" - Parent: ${
-                                    parentElement?.tagName
-                                }, Classes: ${
-                                    parentElement?.className
-                                }, IsInLink: ${isInsideClickableLink}, HasOnclick: ${!!hasOnclickEvent}, IsClickable: ${isClickableElement}`
+                            const isClickableElement = !!(
+                                img.onclick ||
+                                img.getAttribute("onclick") ||
+                                (parentElement && parentElement.tagName === "A")
                             );
 
                             // Preservar dimensões originais
@@ -18121,208 +18114,102 @@ RESPOSTA (apenas JSON válido):`;
                             container.style.alignItems = "center";
                             container.style.marginRight = "4px";
 
-                            // Aplicar pointer-events baseado no contexto
-                            if (!isClickableElement) {
-                                container.style.pointerEvents = "none"; // CRÍTICO: Permitir cliques através do container
-                                container.style.setProperty(
-                                    "pointer-events",
-                                    "none",
-                                    "important"
-                                ); // FORÇA aplicação
-                                container.classList.add(
-                                    "eprobe-icon-container"
-                                ); // Classe para CSS fallback
+                            // ⚡ OTIMIZAÇÃO PERFORMANCE: Aplicar pointer-events de forma eficiente
+                            if (isClickableElement) {
+                                // Elemento clicável: permitir eventos
+                                container.style.pointerEvents = "auto";
                             } else {
-                                container.classList.add(
-                                    "eprobe-icon-container",
-                                    "clickable-container"
-                                ); // Classes para CSS
+                                // Elemento não-clicável: bloquear eventos para performance
+                                container.style.pointerEvents = "none";
                             }
 
                             const svg = container.firstElementChild;
                             if (svg) {
-                                // Preservar dimensões e estilos originais
+                                // ⚡ OTIMIZAÇÃO PERFORMANCE: Configuração básica do SVG
                                 svg.style.width = originalWidth;
                                 svg.style.height = originalHeight;
                                 svg.style.opacity = originalOpacity;
+                                svg.style.pointerEvents = isClickableElement
+                                    ? "auto"
+                                    : "none";
 
-                                // CRÍTICO: Aplicar pointer-events baseado no contexto
+                                // ⚡ OTIMIZAÇÃO: Copiar apenas eventos essenciais
                                 if (isClickableElement) {
-                                    // Se é um elemento clicável, NÃO aplicar pointer-events: none
-                                    // Manter o SVG interativo para não quebrar a funcionalidade
-                                    console.log(
-                                        `🔗 CLICKABLE: Preservando clicabilidade para "${nome}" (tem onclick ou está em link)`
-                                    );
-                                } else {
-                                    // Se não está em link, aplicar pointer-events: none normalmente
-                                    svg.style.pointerEvents = "none";
-                                    svg.style.setProperty(
-                                        "pointer-events",
-                                        "none",
-                                        "important"
-                                    );
+                                    if (img.onclick) svg.onclick = img.onclick;
+                                    const onclickAttr =
+                                        img.getAttribute("onclick");
+                                    if (onclickAttr)
+                                        svg.setAttribute(
+                                            "onclick",
+                                            onclickAttr
+                                        );
+                                    svg.style.cursor = "pointer";
+
+                                    // ⚡ CORREÇÃO CRÍTICA: Adicionar classe clickable-icon para escapar do CSS pointer-events: none
+                                    try {
+                                        svg.classList.add("clickable-icon");
+                                    } catch (e) {
+                                        // Fallback para SVGs que não suportam classList
+                                        const currentClass =
+                                            svg.getAttribute("class") || "";
+                                        svg.setAttribute(
+                                            "class",
+                                            currentClass + " clickable-icon"
+                                        );
+                                    }
                                 }
 
-                                // Preservar propriedades CSS específicas
-                                if (img.style.borderWidth) {
-                                    svg.style.borderWidth =
-                                        img.style.borderWidth;
-                                }
-                                if (img.style.paddingRight) {
-                                    svg.style.paddingRight =
-                                        img.style.paddingRight;
-                                }
-
-                                // Adicionar classes e atributos de controle
-                                svg.classList.add(
-                                    "iconeFerramentas",
-                                    "substituted-icon"
-                                );
-
-                                // Adicionar classe específica baseada no contexto
-                                if (isClickableElement) {
-                                    svg.classList.add("clickable-icon");
-                                    container.classList.add(
-                                        "clickable-container"
-                                    );
-                                }
-
-                                if (img.classList.contains("infraImg")) {
-                                    svg.classList.add("infraImg");
-                                }
-
+                                // ⚡ OTIMIZAÇÃO: Marcar substituição sem processamento excessivo
                                 svg.setAttribute(
                                     "data-eprobe-icon-replaced",
                                     "true"
                                 );
-                                svg.setAttribute("data-original-name", nome);
-                                svg.setAttribute(
-                                    "data-original-selector",
-                                    selector
-                                );
 
-                                // Preservar atributos de acessibilidade e eventos
-                                const attributesToCopy = [
-                                    "aria-hidden",
-                                    "title",
-                                    "alt",
-                                    "onclick",
-                                    "onmouseover",
-                                    "onmouseout",
-                                    "class",
-                                    "id",
-                                ];
-                                attributesToCopy.forEach((attr) => {
-                                    const value = img.getAttribute(attr);
-                                    if (
-                                        value &&
-                                        attr !== "class" &&
-                                        attr !== "id"
-                                    ) {
-                                        svg.setAttribute(attr, value);
-                                        if (attr === "onclick") {
-                                            console.log(
-                                                `🔄 COPY: Copiando ${attr}="${value.substring(
-                                                    0,
-                                                    50
-                                                )}..." para "${nome}"`
+                                // ⚡ CORREÇÃO: SVG não pode ter className - usar classList.add
+                                if (img.className) {
+                                    const classes = img.className
+                                        .split(" ")
+                                        .filter((cls) => cls.trim());
+                                    classes.forEach((cls) => {
+                                        try {
+                                            svg.classList.add(cls);
+                                        } catch (e) {
+                                            // Fallback para SVGs que não suportam classList
+                                            const currentClass =
+                                                svg.getAttribute("class") || "";
+                                            svg.setAttribute(
+                                                "class",
+                                                currentClass + " " + cls
                                             );
                                         }
-                                    }
-                                });
+                                    });
+                                }
 
-                                // Preservar classes específicas da imagem original
-                                if (img.className) {
-                                    const originalClasses = img.className
-                                        .split(" ")
-                                        .filter(
-                                            (cls) =>
-                                                ![
-                                                    "substituted-icon",
-                                                    "iconeFerramentas",
-                                                ].includes(cls)
-                                        );
-                                    originalClasses.forEach((cls) =>
-                                        svg.classList.add(cls)
+                                try {
+                                    svg.classList.add("substituted-icon");
+                                } catch (e) {
+                                    // Fallback para SVGs que não suportam classList
+                                    const currentClass =
+                                        svg.getAttribute("class") || "";
+                                    svg.setAttribute(
+                                        "class",
+                                        currentClass + " substituted-icon"
                                     );
                                 }
 
-                                // Preservar ID se existir
+                                // ⚡ CORREÇÃO: Definir ID de forma segura para SVG
                                 if (img.id) {
-                                    svg.id = img.id;
+                                    try {
+                                        svg.id = img.id;
+                                    } catch (e) {
+                                        // Fallback para SVGs que não aceitam ID direto
+                                        svg.setAttribute("id", img.id);
+                                    }
                                 }
 
-                                // Preservar eventos se existirem - MELHORADO
-                                if (img.onclick) {
-                                    svg.onclick = img.onclick;
-                                    console.log(
-                                        `🔄 EVENT: Transferindo onclick para "${nome}"`
-                                    );
-                                }
-
-                                // Preservar evento onclick através do atributo HTML também
-                                const onclickAttr = img.getAttribute("onclick");
-                                if (onclickAttr) {
-                                    svg.setAttribute("onclick", onclickAttr);
-                                    console.log(
-                                        `🔄 ATTR: Transferindo onclick attribute para "${nome}": ${onclickAttr.substring(
-                                            0,
-                                            50
-                                        )}...`
-                                    );
-                                }
-
-                                // Se é elemento clicável, garantir que os eventos funcionem
-                                if (isClickableElement) {
-                                    svg.style.cursor = "pointer";
-                                    container.style.cursor = "pointer";
-                                }
-
-                                // APLICAÇÃO FINAL: Condicional baseada no contexto
-                                if (!isClickableElement) {
-                                    // Só aplicar pointer-events: none se NÃO for elemento clicável
-                                    svg.style.pointerEvents = "none";
-                                    svg.style.setProperty(
-                                        "pointer-events",
-                                        "none",
-                                        "important"
-                                    );
-                                    container.style.pointerEvents = "none";
-                                    container.style.setProperty(
-                                        "pointer-events",
-                                        "none",
-                                        "important"
-                                    );
-                                } else {
-                                    // Para links, garantir que container e SVG sejam clicáveis
-                                    container.style.pointerEvents = "auto";
-                                    container.style.setProperty(
-                                        "pointer-events",
-                                        "auto",
-                                        "important"
-                                    );
-                                    svg.style.pointerEvents = "auto";
-                                    svg.style.setProperty(
-                                        "pointer-events",
-                                        "auto",
-                                        "important"
-                                    );
-
-                                    console.log(
-                                        `🔗 CLICKABLE: Aplicando pointer-events: auto para "${nome}" em link`
-                                    );
-                                }
-
-                                // Realizar substituição
+                                // ⚡ OTIMIZAÇÃO: Substituição eficiente
                                 img.parentNode.replaceChild(container, img);
                                 substituicoesRealizadas++;
-
-                                // Log compacto: só contar, detalhes no final
-                                if (substituicoesRealizadas <= 5) {
-                                    console.log(
-                                        `✅ ÍCONES: Substituído "${nome}" (${substituicoesRealizadas})`
-                                    );
-                                }
                             }
                         });
                     });
