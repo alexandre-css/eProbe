@@ -14801,11 +14801,21 @@ ${texto}`;
                 elemento.style.background =
                     "linear-gradient( #F9EFAF, #F7E98D)";
 
-                // Aplicar estilos aprimorados
-                elemento.style.padding = "20px";
+                // Aplicar estilos aprimorados - GARANTINDO MESMO TAMANHO
+                elemento.style.padding = "20px !important";
                 elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 elemento.style.transition = "box-shadow 0.5s ease";
                 elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
+                elemento.style.minHeight = "auto";
+                elemento.style.fontSize = "1rem";
+                elemento.style.lineHeight = "1.5";
+                elemento.style.margin = "0";
+                elemento.style.border = "none";
+
+                // Marcar como processado para consistência
+                elemento.classList.add("eprobe-lembrete-processado");
 
                 // Adicionar eventos de hover e focus
                 elemento.addEventListener(
@@ -14895,16 +14905,26 @@ ${texto}`;
                 return false;
             }
 
-            elementos.forEach((elemento, index) => {
+            elementosEncontrados.forEach((elemento, index) => {
                 // Aplicar gradiente vermelho
                 elemento.style.background =
                     "linear-gradient( #FAAFAF, #F78D8D)";
 
-                // Aplicar estilos aprimorados
-                elemento.style.padding = "20px";
+                // Aplicar estilos aprimorados - GARANTINDO MESMO TAMANHO
+                elemento.style.padding = "20px !important";
                 elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 elemento.style.transition = "box-shadow 0.5s ease";
                 elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
+                elemento.style.minHeight = "auto";
+                elemento.style.fontSize = "1rem";
+                elemento.style.lineHeight = "1.5";
+                elemento.style.margin = "0";
+                elemento.style.border = "none";
+
+                // Marcar como processado para consistência
+                elemento.classList.add("eprobe-lembrete-processado");
 
                 // Adicionar eventos de hover e focus
                 elemento.addEventListener(
@@ -14946,9 +14966,9 @@ ${texto}`;
                 );
             });
             log(
-                `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete vermelhos com gradiente`
+                `🎨 CONCLUÍDO: ${elementosEncontrados.length} elementos divLembrete vermelhos com gradiente`
             );
-            return true;
+            return elementosEncontrados.length;
         }
 
         /**
@@ -14993,11 +15013,21 @@ ${texto}`;
                 elemento.style.background =
                     "linear-gradient( #AFCFFA, #8DC0F7)";
 
-                // Aplicar estilos aprimorados
-                elemento.style.padding = "20px";
+                // Aplicar estilos aprimorados - GARANTINDO MESMO TAMANHO
+                elemento.style.padding = "20px !important";
                 elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 elemento.style.transition = "box-shadow 0.5s ease";
                 elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
+                elemento.style.minHeight = "auto";
+                elemento.style.fontSize = "1rem";
+                elemento.style.lineHeight = "1.5";
+                elemento.style.margin = "0";
+                elemento.style.border = "none";
+
+                // Marcar como processado para consistência
+                elemento.classList.add("eprobe-lembrete-processado");
 
                 // Adicionar eventos de hover e focus
                 elemento.addEventListener(
@@ -15085,11 +15115,21 @@ ${texto}`;
                 elemento.style.background =
                     "linear-gradient( #AFFAB6, #8DF792)";
 
-                // Aplicar estilos aprimorados
-                elemento.style.padding = "20px";
+                // Aplicar estilos aprimorados - GARANTINDO MESMO TAMANHO
+                elemento.style.padding = "20px !important";
                 elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 elemento.style.transition = "box-shadow 0.5s ease";
                 elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
+                elemento.style.minHeight = "auto";
+                elemento.style.fontSize = "1rem";
+                elemento.style.lineHeight = "1.5";
+                elemento.style.margin = "0";
+                elemento.style.border = "none";
+
+                // Marcar como processado para consistência
+                elemento.classList.add("eprobe-lembrete-processado");
 
                 // Adicionar eventos de hover e focus
                 elemento.addEventListener(
@@ -15179,11 +15219,21 @@ ${texto}`;
                 elemento.style.background =
                     "linear-gradient( #FAD3AF, #F7C68D)";
 
-                // Aplicar estilos aprimorados
-                elemento.style.padding = "20px";
+                // Aplicar estilos aprimorados - GARANTINDO MESMO TAMANHO DOS OUTROS
+                elemento.style.padding = "20px !important";
                 elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
                 elemento.style.transition = "box-shadow 0.5s ease";
                 elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // CORREÇÃO CRÍTICA: Garantir mesmo tamanho visual dos outros lembretes
+                elemento.style.minHeight = "auto";
+                elemento.style.fontSize = "1rem";
+                elemento.style.lineHeight = "1.5";
+                elemento.style.margin = "0";
+                elemento.style.border = "none";
+
+                // Marcar como processado para consistência
+                elemento.classList.add("eprobe-lembrete-processado");
 
                 // Adicionar eventos de hover e focus
                 elemento.addEventListener(
