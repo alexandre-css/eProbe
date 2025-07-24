@@ -895,7 +895,85 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 (async function () {
     "use strict";
 
-    // 🚨 VERIFICAÇÃO CRÍTICA - DETECTAR ERROS EARLY
+    // �️ SISTEMA DE PROTEÇÃO ABSOLUTA - Garantir namespace independente de erros
+    let namespaceCreated = false;
+    let mainExecutionCompleted = false;
+
+    // Função de emergência para criar namespace mínimo
+    const garantirNamespace = () => {
+        if (namespaceCreated || mainExecutionCompleted) return;
+
+        try {
+            console.log("🆘 EMERGÊNCIA: Criando namespace de fallback...");
+
+            // Namespace mínimo mas funcional
+            window.SENT1_AUTO = window.SENT1_AUTO || {
+                // Funções essenciais que sempre devem existir
+                detectarCardSessaoSimplificado: () => {
+                    console.log(
+                        "🎯 DADOS SESSÃO: Função de emergência - verificar implementação completa"
+                    );
+                    return null;
+                },
+                testarDeteccaoRobusta: () => {
+                    console.log(
+                        "🧪 TESTE: Função de emergência - sistema em modo degradado"
+                    );
+                    return false;
+                },
+                diagnosticarEstruturaDOMMinutas: () => {
+                    console.log(
+                        "🔍 DIAGNÓSTICO: Função de emergência - análise básica"
+                    );
+                    return null;
+                },
+                extrairDadosCardSessaoGlobal: (texto) => {
+                    console.log(
+                        "🔍 EXTRAÇÃO: Função de emergência para",
+                        texto?.substring(0, 50)
+                    );
+                    return null;
+                },
+                traduzirStatusSessao: (status) => {
+                    const basico = {
+                        status: status || "Desconhecido",
+                        cor: "#6B7280",
+                    };
+                    console.log(
+                        "🔄 TRADUÇÃO: Função de emergência para",
+                        status,
+                        "→",
+                        basico.status
+                    );
+                    return basico;
+                },
+
+                // Metadados de status
+                status: "namespace-emergencia",
+                versao: "1.0.0-emergencia",
+                erro: "Script principal não completou, usando namespace de emergência",
+                timestamp: new Date().toISOString(),
+                totalFuncoes: 5,
+            };
+
+            namespaceCreated = true;
+            console.log(
+                "✅ EMERGÊNCIA: Namespace de fallback criado com",
+                Object.keys(window.SENT1_AUTO).length,
+                "propriedades"
+            );
+        } catch (e) {
+            console.error(
+                "💥 CRÍTICO: Falha até mesmo no namespace de emergência:",
+                e
+            );
+        }
+    };
+
+    // Timeout de segurança - criar namespace após 3 segundos se script não completar
+    const timeoutSeguranca = setTimeout(garantirNamespace, 3000);
+
+    // �🚨 VERIFICAÇÃO CRÍTICA - DETECTAR ERROS EARLY
     try {
         logCritical("🚀 IIFE: Iniciando execução da IIFE principal");
 
@@ -964,6 +1042,121 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
         // Aguardar APIs antes de continuar
         await aguardarAPIsExtensao();
+
+        // ============================================================================
+        // 🔍 FUNÇÕES AUXILIARES GLOBAIS - DEFINIDAS PRIMEIRO
+        // ============================================================================
+
+        /**
+         * � TRADUZIR STATUS DE SESSÃO
+         * Traduz status conforme as regras do sistema
+         */
+        function traduzirStatusSessao(statusCompleto) {
+            if (!statusCompleto)
+                return { status: "Desconhecido", cor: "#6B7280" };
+
+            const statusUpper = statusCompleto.toUpperCase();
+
+            // Mapeamento de status conhecidos
+            const mapeamentoStatus = {
+                "INCLUÍDO EM PAUTA": { status: "PAUTADO", cor: "#5C85B4" },
+                "JULGADO EM PAUTA": { status: "JULGADO", cor: "#3AB795" },
+                "RETIRADO DE PAUTA": { status: "RETIRADO", cor: "#CE2D4F" },
+                "PEDIDO DE VISTA": { status: "VISTA", cor: "#FFBF46" },
+                ADIADO: { status: "ADIADO", cor: "#F55D3E" },
+                SOBRESTADO: { status: "SOBRESTADO", cor: "#FCB0B3" },
+            };
+
+            for (const [key, value] of Object.entries(mapeamentoStatus)) {
+                if (statusUpper.includes(key)) {
+                    return value;
+                }
+            }
+
+            return { status: statusCompleto, cor: "#6B7280" };
+        }
+
+        /**
+         * �🔍 EXTRAÇÃO DE DADOS DE SESSÃO - FUNÇÃO GLOBAL UNIFICADA
+         * Analisa o tooltip das sessões e extrai dados formatados conforme novo padrão.
+         * NOVO PADRÃO: "DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>"
+         * @param {string} texto - Texto do tooltip para analisar
+         * @returns {Object|null} - Dados da sessão mais recente ou null
+         */
+        function extrairDadosCardSessaoGlobal(texto) {
+            log(
+                "🔍 EXTRAÇÃO NOVA: Analisando tooltip:",
+                texto.substring(0, 200)
+            );
+
+            // NOVO PADRÃO: DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>
+            const padraoGeral =
+                /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)\s*\((\d+)\)/g;
+
+            const sessoes = [];
+            let match;
+
+            // Extrair todas as sessões do tooltip
+            while ((match = padraoGeral.exec(texto)) !== null) {
+                const data = match[1];
+                const statusOriginal = match[2].trim();
+                const documento = match[3].trim();
+                const codigo = match[4];
+
+                // Traduzir status conforme as regras especificadas
+                const statusTraduzido = traduzirStatusSessao(statusOriginal);
+
+                log(
+                    `📅 SESSÃO: ${data} - ${statusOriginal} → ${statusTraduzido.status}`
+                );
+
+                sessoes.push({
+                    data: data,
+                    statusOriginal: statusOriginal,
+                    status: statusTraduzido.status,
+                    statusCompleto: statusTraduzido.statusCompleto,
+                    documento: documento,
+                    codigo: codigo,
+                    cor: statusTraduzido.cor,
+                });
+            }
+
+            if (sessoes.length === 0) {
+                return null;
+            }
+
+            // Pegar a sessão mais recente (primeira na lista, pois vem ordenada cronologicamente)
+            const sessaoMaisRecente = sessoes[0];
+
+            log(
+                `📊 EXTRAÇÃO: ${sessoes.length} sessões encontradas, usando mais recente`
+            );
+
+            // Criar objeto de dados da sessão no formato esperado pelo sistema
+            const dadosSessao = {
+                status: sessaoMaisRecente.status,
+                statusCompleto: sessaoMaisRecente.statusCompleto,
+                statusOriginal: sessaoMaisRecente.statusOriginal,
+                tipoProcesso: sessaoMaisRecente.documento,
+                data: sessaoMaisRecente.data,
+                codigo: sessaoMaisRecente.codigo,
+                cor: sessaoMaisRecente.cor,
+                textoOriginal: `${sessaoMaisRecente.data} - ${sessaoMaisRecente.statusOriginal} - ${sessaoMaisRecente.documento} (${sessaoMaisRecente.codigo})`,
+                timestamp: new Date().toISOString(),
+                todasSessoes: sessoes, // Guardar todas as sessões para referência
+                totalSessoes: sessoes.length,
+            };
+
+            log(
+                "✅ EXTRAÇÃO NOVA: Dados extraídos da sessão mais recente:",
+                dadosSessao
+            );
+            log(
+                `📈 EXTRAÇÃO: Total de ${sessoes.length} sessões históricas preservadas`
+            );
+
+            return dadosSessao;
+        }
 
         // ============================================================================
         // 🎨 SISTEMA DE TEMAS INTEGRADO (ex-themeApply.js)
@@ -1950,326 +2143,10 @@ RESPOSTA (apenas JSON válido):`;
                 </div>
             `;
 
-                // Adicionar tooltip com informações das sessões (em vez de fechar ao clicar)
-                card.style.cursor = "pointer";
-                card.style.position = "relative";
-
-                // Criar tooltip para múltiplas sessões
-                const tooltip = document.createElement("div");
-                tooltip.id = "eprobe-tooltip-sessoes";
-                tooltip.style.cssText = `
-                position: fixed;
-                display: none;
-                z-index: 999999;
-                background: #FFFBFE;
-                border: 1px solid #CAC4D0;
-                border-radius: 12px;
-                min-width: 280px;
-                max-width: 420px;
-                box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
-                font-family: 'Roboto', sans-serif;
-                opacity: 0;
-                transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
-                pointer-events: none;
-            `;
-
-                // Conteúdo do tooltip com histórico de sessões
-                const sessoes = cardInfo.sessoes || [];
-                let tooltipContent = `
-                <div style="padding: 16px 16px 12px 16px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9; border-radius: 12px 12px 0 0;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#1C1B1F"><path d="M480-96q-151 0-259.5-100T98-443q-2-15 8.5-26t25.5-11q15 0 25.5 11t12.5 26q14 117 101.5 196T480-168q130 0 221-91t91-221q0-130-91-221t-221-91q-80 0-150 38T217-648h83q15 0 25.5 10.5T336-612q0 15-10.5 25.5T300-576H161q-20 0-32-16.5t-4-34.5q44-107 140.5-172T480-864q80 0 149.5 30t122 82.5Q804-699 834-629.5T864-480q0 79-30 149t-82.5 122.5Q699-156 629.5-126T480-96Zm36-414 90 90q11 11 10.5 25T605-370q-11 11-25.5 11T554-370l-99-99q-5-5-8-11.5t-3-14.5v-141q0-15 10.5-25.5T480-672q15 0 25.5 10.5T516-636v126Z"/></svg>
-                        <div style="font-size: 14px; font-weight: 500; color: #1C1B1F;">Histórico de Sessões</div>
-                    </div>
-                    <div style="font-size: 12px; color: #49454F;">
-                        ${sessoes.length} ${
-                    sessoes.length === 1
-                        ? "evento encontrado"
-                        : "eventos encontrados"
-                }
-                    </div>
-                </div>
-                <div style="padding: 16px; max-height: 300px; overflow-y: auto;">
-            `;
-
-                if (sessoes.length > 0) {
-                    sessoes.forEach((sessao, index) => {
-                        const isAtual = index === 0; // Primeira sessão é a mais recente
-                        tooltipContent += `
-                        <div style="
-                            padding: 12px;
-                            border: 1px solid ${isAtual ? corIcon : "#E6E0E9"};
-                            border-radius: 8px;
-                            margin-bottom: ${
-                                index < sessoes.length - 1 ? "12px" : "0"
-                            };
-                            background: ${isAtual ? "#FEF7FF" : "#FFFFFF"};
-                        ">
-                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                                <div style="
-                                    width: 8px;
-                                    height: 8px;
-                                    border-radius: 50%;
-                                    background: ${sessao.cor || corIcon};
-                                "></div>
-                                <div style="font-size: 13px; font-weight: 500; color: #1C1B1F;">
-                                    ${sessao.status}
-                                </div>
-                                ${
-                                    isAtual
-                                        ? `<span style="font-size: 11px; color: #FFFFFF; font-weight: 500; background: ${
-                                              sessao.cor || corIcon
-                                          }; padding: 2px 6px; border-radius: 4px;">ATUAL</span>`
-                                        : ""
-                                }
-                            </div>
-                            <div style="font-size: 12px; color: #49454F; margin-bottom: 6px; display: flex; align-items: center;">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="font-size: 14px; margin-right: 4px; pointer-events: none;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>${
-                                    sessao.data
-                                }
-                            </div>
-                            <div style="font-size: 12px; color: #49454F; margin-bottom: 4px; display: flex; align-items: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" height="14px" viewBox="0 -960 960 960" width="14px" fill="currentColor" style="font-size: 14px; margin-right: 4px; pointer-events: none;"><path d="M164.87-109.52V-190h458v80.48h-458Zm219.26-195L161.48-525.61 265.13-628.7l221.09 222.09-102.09 102.09Zm260.74-261.31L423.78-786.91 525.87-890l222.65 222.09-103.65 102.08ZM813-169.39 308.91-673.48 378-743.13l504.09 504.65L813-169.39Z"/></svg>${
-                                    sessao.orgao
-                                }
-                            </div>
-                            <div style="font-size: 12px; color: #79747E; display: flex; align-items: center;">
-                                <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 -960 960 960" width="12px" fill="currentColor" style="font-size: 12px; margin-right: 4px; pointer-events: none;"><path d="M76.78-124.78v-98H431v-428.39q-20.74-9.13-36.54-25.22-15.81-16.09-24.94-36.83H253.57l113.21 260.74q-1 55.36-44.74 89.31-43.75 33.95-100.05 33.95-56.29 0-100.25-33.95t-44.96-89.31l113.78-260.74h-65.78v-98h244.39q14.18-33.13 43.83-52.56 29.65-19.44 66.96-19.44 37.3 0 67 19.44 29.69 19.43 43.87 52.21h244.39v98.35h-65.78l113.78 260.5q0 55.6-43.75 89.55-43.74 33.95-100.54 33.95-56.8 0-100.76-33.95-43.95-33.95-44.95-89.31l113.21-260.74H590.48q-9.13 20.74-24.94 36.83-15.8 16.09-36.54 25.22v428.39h354.22v98H76.78ZM666.7-458.7h143.04l-71.52-163.21L666.7-458.7Zm-515.87 0h143.04l-72.09-163.21-70.95 163.21Zm329.12-271.47q13.35 0 22.44-9.45 9.09-9.44 9.09-22.63 0-13.18-8.92-22.31-8.92-9.14-22.11-9.14t-22.56 8.93q-9.37 8.92-9.37 22.1 0 13.19 9.04 22.84 9.03 9.66 22.39 9.66Z"/></svg>${
-                                    sessao.tipo
-                                }
-                            </div>
-                        </div>
-                    `;
-                    });
-                } else {
-                    tooltipContent += `
-                    <div style="text-align: center; padding: 20px; color: #79747E;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#79747E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="font-size: 24px; margin-bottom: 8px; pointer-events: none;"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16,6 12,2 8,6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                        <div style="font-size: 13px;">Nenhuma sessão adicional encontrada</div>
-                    </div>
-                `;
-                }
-
-                tooltipContent += "</div>";
-                tooltip.innerHTML = tooltipContent;
-
-                // Adicionar tooltip ao card
-                card.appendChild(tooltip);
-
-                // Função para posicionamento inteligente do tooltip - VERSÃO ROBUSTA
-                const ajustarPosicaoTooltip = () => {
-                    try {
-                        // Verificar se elementos estão válidos
-                        if (!card || !tooltip) return;
-
-                        const cardRect = card.getBoundingClientRect();
-                        const tooltipRect = tooltip.getBoundingClientRect();
-                        const viewportWidth = window.innerWidth;
-                        const viewportHeight = window.innerHeight;
-
-                        // Verificar se o card está visível
-                        if (cardRect.width === 0 || cardRect.height === 0) {
-                            console.warn(
-                                "⚠️ TOOLTIP: Card não visível para posicionamento"
-                            );
-                            return;
-                        }
-
-                        // Posicionar abaixo do card com coordenadas fixas (PADRÃO)
-                        let topPosition = cardRect.bottom + 8;
-                        let leftPosition =
-                            cardRect.left +
-                            cardRect.width / 2 -
-                            tooltipRect.width / 2;
-
-                        // Verificar se tooltip sai da viewport à direita
-                        if (
-                            leftPosition + tooltipRect.width >
-                            viewportWidth - 20
-                        ) {
-                            leftPosition =
-                                viewportWidth - tooltipRect.width - 20;
-                        }
-
-                        // Verificar se tooltip sai da viewport à esquerda
-                        if (leftPosition < 20) {
-                            leftPosition = 20;
-                        }
-
-                        // Verificar se tooltip sai da viewport abaixo (última opção: acima)
-                        if (
-                            topPosition + tooltipRect.height >
-                            viewportHeight - 20
-                        ) {
-                            // Só posicionar acima se não couber embaixo E houver espaço suficiente acima
-                            const spaceAbove = cardRect.top;
-                            const spaceBelow = viewportHeight - cardRect.bottom;
-
-                            if (
-                                spaceAbove > tooltipRect.height + 16 &&
-                                spaceAbove > spaceBelow
-                            ) {
-                                topPosition =
-                                    cardRect.top - tooltipRect.height - 8;
-                            } else {
-                                // Forçar posição abaixo mesmo se sair um pouco da viewport
-                                topPosition = Math.max(
-                                    8,
-                                    viewportHeight - tooltipRect.height - 20
-                                );
-                            }
-                        }
-
-                        tooltip.style.top = `${topPosition}px`;
-                        tooltip.style.left = `${leftPosition}px`;
-
-                        log(
-                            `🎯 TOOLTIP: Posicionado em top:${topPosition}px, left:${leftPosition}px`
-                        );
-                    } catch (error) {
-                        console.error(
-                            "❌ TOOLTIP: Erro no posicionamento:",
-                            error
-                        );
-                    }
-                };
-
-                // Event listeners para mostrar/ocultar tooltip
-                let tooltipTimer = null;
-
-                const mostrarTooltip = () => {
-                    try {
-                        if (tooltipTimer) clearTimeout(tooltipTimer);
-                        if (hideTooltipTimer) clearTimeout(hideTooltipTimer);
-
-                        tooltip.style.display = "block";
-                        tooltip.style.pointerEvents = "auto";
-
-                        // Aguardar renderização para calcular posições corretas
-                        requestAnimationFrame(() => {
-                            // Dupla verificação: aguardar mais um frame para garantir dimensões
-                            requestAnimationFrame(() => {
-                                ajustarPosicaoTooltip();
-
-                                // Animação simples de entrada: fade in
-                                tooltip.style.opacity = "0";
-                                tooltip.style.transform = "translateY(-8px)";
-
-                                setTimeout(() => {
-                                    tooltip.style.opacity = "1";
-                                    tooltip.style.transform = "translateY(0px)";
-                                }, 10);
-                            });
-                        });
-
-                        log("✅ TOOLTIP: Mostrado com sucesso");
-                    } catch (error) {
-                        console.error("❌ TOOLTIP: Erro ao mostrar:", error);
-                    }
-                };
-
-                // Sistema de tooltip otimizado com timer simples
-                let hideTooltipTimer = null;
-
-                const debouncedHideTooltip = () => {
-                    if (hideTooltipTimer) clearTimeout(hideTooltipTimer);
-                    hideTooltipTimer = setTimeout(() => {
-                        tooltip.style.display = "none";
-                        tooltip.style.pointerEvents = "none";
-                    }, 200);
-                };
-
-                const ocultarTooltip = () => {
-                    tooltip.style.opacity = "0";
-                    tooltip.style.transform = "translateY(-8px)";
-                    debouncedHideTooltip();
-                };
-
-                const cancelarOcultacao = () => {
-                    // Cancelar qualquer timer de ocultação pendente
-                    if (hideTooltipTimer) {
-                        clearTimeout(hideTooltipTimer);
-                        hideTooltipTimer = null;
-                    }
-                };
-
-                // Eventos do card (otimizados para performance)
-                card.addEventListener("mouseenter", mostrarTooltip, {
-                    passive: true,
-                });
-                card.addEventListener("mouseleave", ocultarTooltip, {
-                    passive: true,
-                });
-
-                // Eventos do tooltip (otimizados para performance)
-                tooltip.addEventListener("mouseenter", cancelarOcultacao, {
-                    passive: true,
-                });
-                tooltip.addEventListener("mouseleave", ocultarTooltip, {
-                    passive: true,
-                });
-
-                // Reposicionar tooltip ao redimensionar janela (com timer simples)
-                let resizeTimer = null;
-                const handleResize = () => {
-                    if (resizeTimer) clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(() => {
-                        if (tooltip.style.display === "block") {
-                            ajustarPosicaoTooltip();
-                        }
-                    }, 100);
-                };
-
-                window.addEventListener("resize", handleResize, {
-                    passive: true,
-                });
-
-                // Click no card abre a tela de sessão
-                card.onclick = async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    log("🖱️ CLICK: Clique no card de sessão detectado");
-
-                    // Verificar se função existe antes de usar
-                    if (typeof construirUrlSessao === "function") {
-                        try {
-                            // Tentar abrir a tela de sessão
-                            const urlSessao = await construirUrlSessao(
-                                cardInfo
-                            );
-
-                            if (urlSessao) {
-                                logCritical(
-                                    "🌐 NAVEGAÇÃO: Abrindo tela de sessão:",
-                                    urlSessao
-                                );
-
-                                // Abrir em nova aba
-                                window.open(urlSessao, "_blank");
-
-                                // Feedback visual
-                                card.style.transform = "scale(0.95)";
-                                setTimeout(() => {
-                                    card.style.transform = "scale(1)";
-                                }, 150);
-                                return;
-                            }
-                        } catch (error) {
-                            console.warn(
-                                "⚠️ NAVEGAÇÃO: Erro ao construir URL:",
-                                error
-                            );
-                        }
-                    }
-
-                    // Fallback: mostrar/ocultar tooltip
-                    if (tooltip.style.display === "block") {
-                        ocultarTooltip();
-                    } else {
-                        mostrarTooltip();
-                    }
-                };
+                // Sistema de tooltip agora usa apenas a função unificada
+                log(
+                    "ℹ️ TOOLTIP: Tooltip será configurado pela função unificada após inserção do card"
+                );
 
                 // Inserir card usando a função de interface específica
                 logCritical(
@@ -2383,32 +2260,6 @@ RESPOSTA (apenas JSON válido):`;
             return `${sigla} (Órgão)`;
         }
 
-        // 🎨 TRADUZIR STATUS DA SESSÃO
-        function traduzirStatusSessao(statusCompleto) {
-            if (!statusCompleto)
-                return { status: "Desconhecido", cor: "#6B7280" };
-
-            const statusUpper = statusCompleto.toUpperCase();
-
-            // Mapeamento de status conhecidos
-            const mapeamentoStatus = {
-                "INCLUÍDO EM PAUTA": { status: "PAUTADO", cor: "#5C85B4" },
-                "JULGADO EM PAUTA": { status: "JULGADO", cor: "#3AB795" },
-                "RETIRADO DE PAUTA": { status: "RETIRADO", cor: "#CE2D4F" },
-                "PEDIDO DE VISTA": { status: "VISTA", cor: "#FFBF46" },
-                ADIADO: { status: "ADIADO", cor: "#F55D3E" },
-                SOBRESTADO: { status: "SOBRESTADO", cor: "#FCB0B3" },
-            };
-
-            for (const [key, value] of Object.entries(mapeamentoStatus)) {
-                if (statusUpper.includes(key)) {
-                    return value;
-                }
-            }
-
-            return { status: statusCompleto, cor: "#6B7280" };
-        }
-
         // 🔗 FUNÇÃO PARA EXTRAIR LINK DA SESSÃO - MÉTODO COM MODAL
         function extrairLinkSessao(indiceSessao = 1) {
             try {
@@ -2447,9 +2298,8 @@ RESPOSTA (apenas JSON válido):`;
                 }
 
                 // ETAPA 1: Primeiro precisamos abrir o modal clicando no SVG
-                const xpathTriggerModal = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetCorreto}]/div/div[${
-                    indiceSessao + 1
-                }]/fieldset/legend/span[3]/svg`;
+                const indiceSessaoIndex = indiceSessao + 1;
+                const xpathTriggerModal = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetCorreto}]/div/div[${indiceSessaoIndex}]/fieldset/legend/span[3]/svg`;
 
                 const triggerElement = document.evaluate(
                     xpathTriggerModal,
@@ -3131,9 +2981,21 @@ RESPOSTA (apenas JSON válido):`;
             const materialIconsCSS = document.createElement("link");
             materialIconsCSS.rel = "preload";
             materialIconsCSS.as = "style";
-            materialIconsCSS.href = chrome.runtime.getURL(
-                "src/material-icons.css"
-            );
+
+            // Verificar se chrome.runtime está disponível (contexto de extensão)
+            if (
+                typeof chrome !== "undefined" &&
+                chrome.runtime &&
+                chrome.runtime.getURL
+            ) {
+                materialIconsCSS.href = chrome.runtime.getURL(
+                    "src/material-icons.css"
+                );
+            } else {
+                // Fallback para teste local - usar caminho relativo
+                materialIconsCSS.href = "src/material-icons.css";
+            }
+
             materialIconsCSS.onload = function () {
                 this.onload = null;
                 this.rel = "stylesheet";
@@ -6881,7 +6743,7 @@ ${texto}`;
                 menu.className = "eprobe-menu";
                 menu.setAttribute("role", "menu");
                 menu.style.cssText = `
- position: fixed;
+ position: fixed !important;
  left: ${x}px;
  top: ${y}px;
  z-index: 10001;
@@ -7314,7 +7176,7 @@ ${texto}`;
                 overlay.id = "documento-relevante-selection-modal";
                 overlay.className = "eprobe-modal";
                 overlay.style.cssText = `
-            position: fixed;
+            position: fixed !important;
             top: 0;
             left: 0;
             width: 100%;
@@ -7724,7 +7586,7 @@ ${texto}`;
                 notification.id = "documento-relevante-notification";
                 notification.className = "eprobe-notification";
                 notification.style.cssText = `
- position: fixed;
+ position: fixed !important;
  top: ${notificationTop};
  right: ${notificationRight};
  background: ${
@@ -8344,7 +8206,7 @@ ${texto}`;
                 const menu = document.createElement("div");
                 menu.id = "eprobe-debug-menu";
                 menu.style.cssText = `
-                    position: fixed;
+                    position: fixed !important;
                     left: ${rect.left - 200}px;
                     top: ${rect.bottom + 10}px;
                     z-index: 10002;
@@ -8541,7 +8403,7 @@ ${texto}`;
 
                 // Usar estilo customizado próprio para o botão flutuante
                 button.style.cssText = `
- position: fixed;
+ position: fixed !important;
  top: 120px;
  right: 20px;
  z-index: 99999;
@@ -9081,7 +8943,7 @@ ${texto}`;
                     const modal = document.createElement("div");
                     modal.id = "document-selection-modal";
                     modal.style.cssText = `
- position: fixed;
+ position: fixed !important;
  top: 0;
  left: 0;
  width: 100%;
@@ -14795,268 +14657,7 @@ ${texto}`;
             return null;
         }
 
-        // ...existing code...
-
-        /**
-         * 🤖 AUTO-CORREÇÃO DO TOOLTIP - Detecta problemas e corrige automaticamente
-         * Função que monitora e corrige o tooltip em tempo real
-         */
-        function autoCorrecaoTooltip() {
-            log("🤖 AUTO-CORREÇÃO: Iniciando monitoramento do tooltip...");
-
-            // Verificar a cada 3 segundos se o tooltip está funcionando
-            const intervalId = setInterval(() => {
-                // Verificar se há card na página
-                const card = document.getElementById("eprobe-data-sessao");
-                if (!card) return;
-
-                // Verificar se há indicador
-                const indicador = card.querySelector(
-                    ".eprobe-figma-sessions-indicator"
-                );
-                if (!indicador) {
-                    log(
-                        "⚠️ AUTO-CORREÇÃO: Indicador não encontrado, aplicando solução..."
-                    );
-                    log(
-                        "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
-                    );
-                    return;
-                }
-
-                // Verificar se há tooltip funcional
-                const tooltips = [
-                    document.getElementById("tooltip-definitivo"),
-                    document.getElementById("eprobe-rich-tooltip"),
-                    document.getElementById("tooltip-simples"),
-                ];
-
-                const tooltipFuncional = tooltips.some((t) => t !== null);
-
-                if (!tooltipFuncional) {
-                    log(
-                        "⚠️ AUTO-CORREÇÃO: Nenhum tooltip encontrado, aplicando solução..."
-                    );
-                    log(
-                        "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
-                    );
-                    return;
-                }
-
-                // Se chegou até aqui, está tudo ok
-                // Para o monitoramento após 30 segundos de funcionamento
-                if (Date.now() - inicioMonitoramento > 30000) {
-                    clearInterval(intervalId);
-                    log(
-                        "✅ AUTO-CORREÇÃO: Monitoramento finalizado - tooltip estável"
-                    );
-                }
-            }, 3000);
-
-            const inicioMonitoramento = Date.now();
-
-            // Aplicar solução imediatamente
-            setTimeout(() => {
-                log(
-                    "🔧 TOOLTIP: Função solucaoDefinitivaTooltip desabilitada temporariamente"
-                );
-            }, 1000);
-
-            log("🤖 AUTO-CORREÇÃO: Monitoramento ativado");
-            return intervalId;
-        }
-
-        // ⚡ INICIALIZAÇÃO AUTOMÁTICA DO TOOLTIP - TEMPORARIAMENTE DESABILITADA
-        // Aplicar auto-correção quando a página carregar
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", () => {
-                log("🔧 AUTO-CORREÇÃO: Desabilitada temporariamente");
-                // setTimeout(autoCorrecaoTooltip, 2000);
-            });
-        } else {
-            log("🔧 AUTO-CORREÇÃO: Desabilitada temporariamente");
-            // setTimeout(autoCorrecaoTooltip, 2000);
-        }
-
-        /**
-         * 🔧 FUNÇÃO DE CORREÇÃO FINAL - Tooltip simplificado que SEMPRE funciona
-         * Remove todas as dependências e cria tooltip básico funcional
-         */
-        function criarTooltipSimplificado() {
-            log("🔧 TOOLTIP SIMPLIFICADO: Iniciando...");
-
-            // 1. Encontrar card
-            const card = document.getElementById("eprobe-data-sessao");
-            if (!card) {
-                logError("❌ TOOLTIP: Card não encontrado");
-                return false;
-            }
-
-            // 2. Encontrar ou criar indicador
-            let indicador = card.querySelector(
-                ".eprobe-figma-sessions-indicator"
-            );
-            if (!indicador) {
-                log("🔧 TOOLTIP: Criando indicador...");
-                indicador = document.createElement("div");
-                indicador.className = "eprobe-figma-sessions-indicator";
-                indicador.style.cssText = `
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                width: 20px;
-                height: 16px;
-                background: rgba(28, 27, 31, 0.08);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 10px;
-                font-weight: 500;
-                color: #1C1B1F;
-                cursor: help;
-                z-index: 1;
-            `;
-                indicador.textContent = "3";
-                card.appendChild(indicador);
-            }
-
-            // 3. Remover tooltip antigo
-            const tooltipAntigo = document.getElementById("tooltip-simples");
-            if (tooltipAntigo) {
-                tooltipAntigo.remove();
-            }
-
-            // 4. Criar tooltip básico
-            const tooltip = document.createElement("div");
-            tooltip.id = "tooltip-simples";
-            tooltip.style.cssText = `
-            position: absolute;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            padding: 12px;
-            font-size: 12px;
-            min-width: 200px;
-            z-index: 10000;
-            display: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            font-family: Arial, sans-serif;
-        `;
-
-            tooltip.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 8px;">Histórico de Sessões</div>
-            <div style="padding: 4px 0; border-bottom: 1px solid #eee;">📅 15/07/2025 - Pautado</div>
-            <div style="padding: 4px 0; border-bottom: 1px solid #eee;">📅 10/07/2025 - Julgado</div>
-            <div style="padding: 4px 0;">📅 05/07/2025 - Retirado</div>
-        `;
-
-            document.body.appendChild(tooltip);
-
-            // 5. Eventos simples
-            indicador.addEventListener(
-                "mouseenter",
-                function () {
-                    log("🖱️ TOOLTIP: Mostrando tooltip simples");
-
-                    const rect = indicador.getBoundingClientRect();
-                    tooltip.style.left = rect.left - 100 + "px";
-                    tooltip.style.top = rect.bottom + 10 + "px";
-                    tooltip.style.display = "block";
-                },
-                { passive: true }
-            );
-
-            indicador.addEventListener(
-                "mouseleave",
-                function () {
-                    log("🖱️ TOOLTIP: Ocultando tooltip simples");
-                    tooltip.style.display = "none";
-                },
-                { passive: true }
-            );
-
-            logCritical("✅ TOOLTIP SIMPLIFICADO: Configurado com sucesso!");
-            return true;
-        }
-
-        /**
-         * 🧪 FUNÇÃO DE TESTE SIMPLES - Verificar qual função de tooltip está sendo usada
-         */
-        function testarFuncaoTooltip() {
-            log("🧪 TESTE: Verificando qual função de tooltip está ativa...");
-
-            // Verificar se há card
-            const card = document.getElementById("eprobe-data-sessao");
-            if (!card) {
-                logError("❌ TESTE: Card não encontrado");
-                return false;
-            }
-
-            // Verificar se há indicador
-            const indicador = card.querySelector(
-                ".eprobe-figma-sessions-indicator"
-            );
-            if (!indicador) {
-                logError("❌ TESTE: Indicador não encontrado");
-                return false;
-            }
-
-            log("✅ TESTE: Card e indicador encontrados");
-
-            // Testar diretamente a função principal
-            const sessoesExemplo = [
-                {
-                    status: "Pautado",
-                    data: "15/07/2025",
-                    dataOriginal: "15/07/2025",
-                    orgao: "4CCR",
-                    prioridade: 1,
-                },
-                {
-                    status: "Julgado",
-                    data: "10/07/2025",
-                    dataOriginal: "10/07/2025",
-                    orgao: "4CCR",
-                    prioridade: 2,
-                },
-            ];
-
-            log("🎨 TESTE: Aplicando adicionarRichTooltipMaterialDesign...");
-            adicionarRichTooltipMaterialDesign(card, sessoesExemplo);
-
-            // Verificar se tooltip foi criado
-            setTimeout(() => {
-                const tooltip = document.getElementById("eprobe-rich-tooltip");
-                if (tooltip) {
-                    logCritical("✅ TESTE: Tooltip criado com sucesso!");
-
-                    // Simular hover
-                    log("🖱️ TESTE: Simulando hover...");
-                    const evento = new MouseEvent("mouseenter", {
-                        bubbles: true,
-                    });
-                    indicador.dispatchEvent(evento);
-
-                    setTimeout(() => {
-                        if (tooltip.style.opacity === "1") {
-                            log("✅ TESTE: Tooltip apareceu!");
-                        } else {
-                            logError("❌ TESTE: Tooltip não apareceu");
-                            log("📊 ESTADO:", {
-                                display: tooltip.style.display,
-                                opacity: tooltip.style.opacity,
-                                transform: tooltip.style.transform,
-                            });
-                        }
-                    }, 200);
-                } else {
-                    logError("❌ TESTE: Tooltip não foi criado");
-                }
-            }, 100);
-
-            return true;
-        }
+        // 🔧 SISTEMA UNIFICADO DE TOOLTIP - Todas as funcionalidades movidas para função única
 
         /**
          * 🎨 FUNÇÃO DE DEBUG PARA divLembrete - Identifica elementos com background amarelo
@@ -16909,561 +16510,388 @@ ${texto}`;
         }
 
         /**
-         * 🎨 RICH TOOLTIP MATERIAL DESIGN para múltiplas sessões
+         * � FUNÇÃO DE POSICIONAMENTO INTELIGENTE DO TOOLTIP
+         * Calcula a melhor posição para o tooltip considerando:
+         * - Bordas da viewport
+         * - Posição do elemento de referência
+         * - Tamanho do tooltip
+         * - Preferências de posicionamento
+         * @param {HTMLElement} tooltip - Elemento do tooltip
+         * @param {HTMLElement} referencia - Elemento de referência (indicador)
+         * @returns {Object} - Coordenadas {left, top} calculadas
+         */
+        function calcularPosicaoTooltipInteligente(
+            tooltip,
+            referencia,
+            cardElement = null
+        ) {
+            // Obter dimensões dos elementos
+            const refRect = referencia.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+
+            // Se temos o card, usar suas dimensões também
+            const cardRect = cardElement
+                ? cardElement.getBoundingClientRect()
+                : refRect;
+
+            // Obter dimensões da viewport
+            const viewport = {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                scrollX: window.scrollX,
+                scrollY: window.scrollY,
+            };
+
+            // Margem de segurança das bordas
+            const margem = 16;
+            const espacamento = 8; // Distância pequena entre indicador e tooltip
+
+            // NOVA ESTRATÉGIA: POSICIONAR PRÓXIMO AO INDICADOR, NÃO AO CARD
+            // 1. Posição preferencial: À direita do indicador
+            // 2. Se não couber à direita: À esquerda do indicador
+            // 3. Se não couber em nenhum lado: Abaixo do indicador
+
+            let left, top;
+            let posicao = "direita"; // Padrão
+
+            // TENTAR POSICIONAR À DIREITA DO INDICADOR
+            left = refRect.right + espacamento;
+
+            // Verificar se cabe à direita
+            if (left + tooltipRect.width > viewport.width - margem) {
+                // Não cabe à direita, tentar à esquerda
+                left = refRect.left - tooltipRect.width - espacamento;
+                posicao = "esquerda";
+
+                // Verificar se cabe à esquerda
+                if (left < margem) {
+                    // Não cabe nem à direita nem à esquerda, posicionar abaixo
+                    left =
+                        refRect.left +
+                        refRect.width / 2 -
+                        tooltipRect.width / 2;
+                    posicao = "abaixo";
+
+                    // Ajustar horizontalmente se necessário
+                    if (left < margem) {
+                        left = margem;
+                    } else if (
+                        left + tooltipRect.width >
+                        viewport.width - margem
+                    ) {
+                        left = viewport.width - tooltipRect.width - margem;
+                    }
+                }
+            }
+
+            // POSICIONAMENTO VERTICAL
+            if (posicao === "abaixo") {
+                // Posicionar abaixo do indicador
+                top = refRect.bottom + espacamento;
+            } else {
+                // Posicionar alinhado verticalmente com o indicador (lateral)
+                top = refRect.top + refRect.height / 2 - tooltipRect.height / 2;
+            }
+
+            // Verificar se o tooltip não sai da viewport verticalmente
+            if (top < margem) {
+                top = margem;
+            } else if (top + tooltipRect.height > viewport.height - margem) {
+                if (posicao !== "abaixo") {
+                    // Se estava lateral, tentar posicionar acima
+                    top = refRect.top - tooltipRect.height - espacamento;
+                    if (top < margem) {
+                        // Se não couber acima, forçar dentro da viewport
+                        top = viewport.height - tooltipRect.height - margem;
+                    }
+                } else {
+                    // Se estava abaixo, forçar dentro da viewport
+                    top = viewport.height - tooltipRect.height - margem;
+                }
+            }
+
+            // Garantir que não saia da viewport (valores finais)
+            left = Math.max(
+                margem,
+                Math.min(left, viewport.width - tooltipRect.width - margem)
+            );
+            top = Math.max(
+                margem,
+                Math.min(top, viewport.height - tooltipRect.height - margem)
+            );
+
+            log(
+                `📐 TOOLTIP: Posicionado "${posicao}" - left: ${left}, top: ${top}`
+            );
+
+            return {
+                left: Math.round(left),
+                top: Math.round(top),
+                position: posicao,
+                cardPosition: posicao, // Para compatibilidade
+            };
+        }
+
+        /**
+         * �🎨 RICH TOOLTIP MATERIAL DESIGN para múltiplas sessões
          * @param {HTMLElement} cardElement - Elemento do card
          * @param {Array} todasSessoes - Array com todas as sessões detectadas
          */
         function adicionarRichTooltipMaterialDesign(cardElement, todasSessoes) {
             log(
-                "🎨 TOOLTIP INIT: Iniciando adicionarRichTooltipMaterialDesign"
+                "⚠️ DEPRECATED: adicionarRichTooltipMaterialDesign - usando função unificada"
             );
-            log("📋 TOOLTIP INIT: cardElement:", !!cardElement);
-            log("📋 TOOLTIP INIT: todasSessoes:", todasSessoes?.length || 0);
+            return adicionarTooltipUnificado(cardElement, todasSessoes);
+        }
 
-            if (!cardElement || !todasSessoes || todasSessoes.length <= 1) {
-                logError(
-                    "❌ TOOLTIP INIT: Condições não atendidas - abortando"
-                );
-                return;
+        /**
+         * � FUNÇÃO UNIFICADA DE TOOLTIP - Substitui todas as outras
+         * Consolida adicionarTooltipInterativo, adicionarRichTooltipMaterialDesign e corrigirTooltipCardOriginal
+         */
+        function adicionarTooltipUnificado(cardElement, todasSessoes = null) {
+            log("🎯 TOOLTIP UNIFICADO: Iniciando configuração...");
+
+            if (!cardElement) {
+                logError("❌ TOOLTIP UNIFICADO: Card element obrigatório");
+                return false;
             }
 
-            log(
-                `🎨 TOOLTIP: Criando rich tooltip para ${todasSessoes.length} sessões`,
-                todasSessoes
-            );
-
-            // Garantir que Material Symbols está carregado
-            if (
-                !document.querySelector(
-                    'link[href*="Material+Symbols+Rounded"]'
-                )
-            ) {
-                const materialIcons = document.createElement("link");
-                materialIcons.rel = "stylesheet";
-                materialIcons.href =
-                    "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=fiber_manual_record";
-                document.head.appendChild(materialIcons);
-            }
-
-            // Criar elemento do tooltip se não existir
-            let tooltip = document.getElementById("eprobe-rich-tooltip");
-            if (!tooltip) {
-                tooltip = document.createElement("div");
-                tooltip.id = "eprobe-rich-tooltip";
-                tooltip.style.cssText = `
-                position: fixed;
-                display: none;
-                z-index: 999999;
-                pointer-events: auto;
-                opacity: 0;
-                transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
-                transform: translateY(8px);
-            `;
-                document.body.appendChild(tooltip);
-            }
-
-            // Cores para cada status - MAPEAMENTO CORRETO
-            const coresStatus = {
-                // Status exatos conforme sistema
-                PAUTADO: "#5C85B4",
-                "INCLUÍDO EM PAUTA": "#5C85B4",
-                RETIRADO: "#CE2D4F",
-                "RETIRADO DE PAUTA": "#CE2D4F",
-                "PEDIDO DE VISTA": "#FFBF46",
-                VISTA: "#FFBF46",
-                JULGADO: "#3AB795",
-                "JULGADO EM PAUTA": "#3AB795",
-                ADIADO: "#F55D3E",
-                "ADIADO EM PAUTA": "#F55D3E",
-                "ADIADO (ART. 935)": "#731963",
-                SOBRESTADO: "#FCB0B3",
-                "SOBRESTADO (ART. 942)": "#FCB0B3",
-                "CONV. EM DILIGÊNCIA": "#00171F",
-                DILIGENCIA: "#00171F",
-                // Variações case insensitive
-                pautado: "#5C85B4",
-                retirado: "#CE2D4F",
-                julgado: "#3AB795",
-                adiado: "#F55D3E",
-                sobrestado: "#FCB0B3",
-            };
-
-            // Função para obter cor do status - MELHORADA
-            const obterCorStatus = (status) => {
-                if (!status) return coresStatus["PAUTADO"];
-
-                // Normalizar status para busca
-                const statusNormalizado = status.trim();
-
-                // Busca direta
-                if (coresStatus[statusNormalizado]) {
-                    return coresStatus[statusNormalizado];
-                }
-
-                // Busca case insensitive
-                const statusUpper = statusNormalizado.toUpperCase();
-                if (coresStatus[statusUpper]) {
-                    return coresStatus[statusUpper];
-                }
-
-                // Busca por palavras-chave
-                if (statusUpper.includes("RETIRADO")) return "#CE2D4F";
-                if (statusUpper.includes("JULGADO")) return "#3AB795";
-                if (statusUpper.includes("VISTA")) return "#FFBF46";
-                if (
-                    statusUpper.includes("PAUTADO") ||
-                    statusUpper.includes("PAUTA")
-                )
-                    return "#5C85B4";
-                if (statusUpper.includes("ADIADO")) return "#F55D3E";
-                if (statusUpper.includes("SOBRESTADO")) return "#FCB0B3";
-                if (
-                    statusUpper.includes("DILIGÊNCIA") ||
-                    statusUpper.includes("DILIGENCIA")
-                )
-                    return "#00171F";
-
-                // Fallback
-                logError(`⚠️ TOOLTIP: Status não mapeado: "${status}"`);
-                return coresStatus["PAUTADO"];
-            };
-
-            // Função para normalizar texto do status
-            const normalizarStatusTexto = (status) => {
-                const statusMap = {
-                    PAUTADO: "Incluído em Pauta",
-                    RETIRADO: "Retirado de Pauta",
-                    JULGADO: "Julgado em Pauta",
-                    VISTA: "Pedido de Vista",
-                    ADIADO: "Adiado",
-                    SOBRESTADO: "Sobrestado",
-                    DILIGENCIA: "Diligência",
-                };
-
-                const key = status?.toUpperCase() || "PAUTADO";
-                return statusMap[key] || status || "Incluído em Pauta";
-            };
-
-            // Ordenar sessões: mais recente primeiro, depois por prioridade
-            const sessoesOrdenadas = [...todasSessoes].sort((a, b) => {
-                // Primeiro por data (mais recente primeiro)
-                const dataA = new Date(a.data || a.dataOriginal);
-                const dataB = new Date(b.data || b.dataOriginal);
-                if (dataA.getTime() !== dataB.getTime()) {
-                    return dataB.getTime() - dataA.getTime();
-                }
-                // Depois por prioridade se datas iguais
-                return (b.prioridade || 0) - (a.prioridade || 0);
-            });
-
-            // Encontrar elemento indicador
-            const indicador = cardElement.querySelector(
+            // Encontrar ou criar indicador
+            let indicador = cardElement.querySelector(
                 ".eprobe-figma-sessions-indicator"
             );
+
             if (!indicador) {
-                logError("❌ TOOLTIP: Indicador não encontrado no card");
-                return;
+                log("� TOOLTIP UNIFICADO: Criando indicador...");
+                indicador = document.createElement("div");
+                indicador.className = "eprobe-figma-sessions-indicator";
+                indicador.style.cssText = `
+                    position: absolute;
+                    top: 8px;
+                    right: 8px;
+                    width: 20px;
+                    height: 16px;
+                    background: rgba(28, 27, 31, 0.08);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-family: 'Roboto', sans-serif;
+                    font-size: 10px;
+                    font-weight: 500;
+                    color: #1C1B1F;
+                    cursor: help;
+                    z-index: 1;
+                    transition: all 0.2s ease;
+                `;
+                indicador.textContent = todasSessoes
+                    ? todasSessoes.length.toString()
+                    : "1";
+                cardElement.appendChild(indicador);
             }
 
-            log("✅ TOOLTIP: Indicador encontrado:", indicador);
+            // Buscar dados reais se não foram fornecidos
+            if (!todasSessoes) {
+                todasSessoes =
+                    typeof buscarDadosReaisSessoes === "function"
+                        ? buscarDadosReaisSessoes()
+                        : [];
+            }
 
-            // Sistema de eventos interativo para tooltip - VERSÃO CORRIGIDA
-            let tooltipTimer = null;
-            let tooltipAtivo = false;
+            // Se ainda não há sessões, criar dados de fallback
+            if (!todasSessoes || todasSessoes.length === 0) {
+                todasSessoes = [
+                    {
+                        data: "Data não encontrada",
+                        status: "Pautado",
+                        statusOriginal: "PAUTADO",
+                        orgao: "Câmara não identificada",
+                        isAtual: true,
+                    },
+                ];
+            }
 
-            const mostrarTooltip = (e) => {
-                log("🖱️ TOOLTIP: Mostrando tooltip");
+            // Atualizar contador do indicador
+            indicador.textContent = todasSessoes.length.toString();
 
-                // Cancelar qualquer timer de ocultação
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
+            // Remover tooltip antigo se existir
+            const tooltipAntigo = document.getElementById(
+                "eprobe-rich-tooltip"
+            );
+            if (tooltipAntigo) {
+                tooltipAntigo.remove();
+                log("🗑️ TOOLTIP: Tooltip antigo removido");
+            }
 
-                tooltipAtivo = true;
+            // Limpar event listeners antigos do indicador
+            const novoIndicador = indicador.cloneNode(true);
+            indicador.parentNode.replaceChild(novoIndicador, indicador);
+            indicador = novoIndicador;
 
-                // Gerar conteúdo do Rich Tooltip Material Design
-                const tooltipContent = `
-                <div class="rich-tooltip-container">
-                    <!-- Cabeçalho -->
-                    <div class="rich-tooltip-header">
-                        <span class="material-symbols-rounded" style="font-size: 18px; color: #1C1B1F;">
-                            history_2
-                        </span>
-                        <div class="header-text">
-                            <div class="header-title">Histórico de Sessões</div>
-                            <div class="header-subtitle">${
-                                sessoesOrdenadas.length
-                            } eventos encontrados</div>
+            // Criar tooltip único
+            const tooltip = document.createElement("div");
+            tooltip.id = "eprobe-rich-tooltip";
+            tooltip.style.cssText = `
+                position: fixed !important;
+                display: none;
+                z-index: 999999 !important;
+                background: #FFFBFE;
+                border: 1px solid #CAC4D0;
+                border-radius: 12px;
+                min-width: 280px;
+                max-width: 420px;
+                box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+                font-family: 'Roboto', sans-serif;
+                opacity: 0;
+                transition: opacity 0.15s ease-in-out;
+                overflow: hidden;
+                pointer-events: auto;
+            `;
+
+            // Gerar HTML das sessões
+            let htmlSessoes = "";
+            todasSessoes.forEach((sessao, index) => {
+                const isAtual = index === 0 || sessao.isAtual;
+                const statusIcon = getStatusIcon(
+                    sessao.statusOriginal || sessao.status
+                );
+
+                htmlSessoes += `
+                    <div style="min-width: 120px; padding: 10px; border: 2px solid ${
+                        isAtual ? "#007acc" : "#CAC4D0"
+                    }; border-radius: 8px; background: ${
+                    isAtual ? "#E8F4FD" : "#FAFAFA"
+                }; position: relative; margin: 0 6px 6px 0;">
+                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                            <span style="color: ${
+                                isAtual ? "#007acc" : "#666"
+                            }; font-size: 14px;">${statusIcon || "●"}</span>
+                            <div style="font-size: 11px; font-weight: 500; color: #1C1B1F; flex: 1;">${
+                                isAtual ? "Atual" : "Anterior"
+                            }</div>
+                        </div>
+                        ${
+                            isAtual
+                                ? '<div style="background: #007acc; color: #FFFFFF; font-size: 9px; font-weight: 500; padding: 2px 5px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -3px; right: -3px;">ATUAL</div>'
+                                : ""
+                        }
+                        <div style="font-size: 12px; font-weight: 600; color: #1C1B1F; line-height: 16px; margin-bottom: 3px;">${
+                            sessao.data
+                        }</div>
+                        <div style="font-size: 10px; color: #49454F; line-height: 12px; margin-bottom: 2px;">${
+                            sessao.orgao || "Órgão não identificado"
+                        }</div>
+                        <div style="font-size: 9px; color: #79747E; line-height: 11px; font-style: italic;">${
+                            sessao.status
+                        }</div>
+                    </div>
+                `;
+            });
+
+            tooltip.innerHTML = `
+                <div style="padding: 12px 14px 10px 14px; display: flex; align-items: flex-start; gap: 10px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+                    <div style="flex: 1;">
+                        <div style="font-size: 13px; font-weight: 500; color: #1C1B1F; line-height: 18px; margin-bottom: 2px;">
+                            Histórico de Sessões
+                        </div>
+                        <div style="font-size: 11px; font-weight: 400; color: #49454F; line-height: 14px;">
+                            ${todasSessoes.length} ${
+                todasSessoes.length === 1 ? "evento" : "eventos"
+            }
                         </div>
                     </div>
-                    
-                    <!-- Divisor -->
-                    <div class="rich-tooltip-divider"></div>
-                    
-                    <!-- Lista de Sessões (Horizontal) -->
-                    <div class="rich-tooltip-sessions">
-                        ${sessoesOrdenadas
-                            .map((sessao, index) => {
-                                const isAtual = index === 0;
-                                const cor = obterCorStatus(sessao.status);
-                                const statusTexto = normalizarStatusTexto(
-                                    sessao.status
-                                );
-                                const dataFormatada =
-                                    sessao.dataOriginal ||
-                                    sessao.data ||
-                                    "Data não disponível";
-
-                                return `
-                                <div class="session-item ${
-                                    isAtual ? "current" : ""
-                                }">
-                                    <div class="session-header">
-                                        <span class="material-symbols-rounded session-icon" style="color: ${cor};">
-                                            fiber_manual_record
-                                        </span>
-                                        <div class="session-status">${statusTexto}</div>
-                                        ${
-                                            isAtual
-                                                ? '<div class="current-badge">Atual</div>'
-                                                : ""
-                                        }
-                                    </div>
-                                    <div class="session-date">${dataFormatada}</div>
-                                    ${
-                                        sessao.orgao
-                                            ? `<div class="session-organ">${sessao.orgao}</div>`
-                                            : ""
-                                    }
-                                    ${
-                                        sessao.tipoProcesso
-                                            ? `<div class="session-type">${sessao.tipoProcesso}</div>`
-                                            : ""
-                                    }
-                                </div>
-                            `;
-                            })
-                            .join("")}
-                    </div>
-                    
-                    <!-- Rodapé -->
-                    <div class="rich-tooltip-footer">
-                        <span class="material-symbols-rounded" style="font-size: 14px; color: #49454F;">
-                            info
-                        </span>
-                        <span>Passe o mouse sobre cada status para mais detalhes</span>
-                    </div>
+                </div>
+                <div style="padding: 12px; display: flex; gap: 12px; overflow-x: auto; flex-wrap: wrap;">
+                    ${htmlSessoes}
                 </div>
             `;
 
-                tooltip.innerHTML = tooltipContent;
+            document.body.appendChild(tooltip);
 
-                // Aplicar estilos CSS se ainda não existir
-                if (!document.querySelector("#rich-tooltip-styles")) {
-                    const tooltipStyle = document.createElement("style");
-                    tooltipStyle.id = "rich-tooltip-styles";
-                    tooltipStyle.textContent = `
-                    .material-symbols-rounded {
-                        font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 20;
-                    }
-                    
-                    #eprobe-rich-tooltip {
-                        font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                        pointer-events: auto;
-                    }
-                    
-                    .rich-tooltip-container {
-                        background: #FFFBFE;
-                        border: 1px solid #CAC4D0;
-                        border-radius: 12px;
-                        min-width: 320px;
-                        max-width: 480px;
-                        box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
-                        overflow: hidden;
-                    }
-                    
-                    .rich-tooltip-header {
-                        padding: 16px 16px 12px 16px;
-                        display: flex;
-                        align-items: flex-start;
-                        gap: 12px;
-                        background: #F7F2FA;
-                        border-bottom: 1px solid #E6E0E9;
-                    }
-                    
-                    .header-text {
-                        flex: 1;
-                    }
-                    
-                    .header-title {
-                        font-size: 14px;
-                        font-weight: 500;
-                        color: #1C1B1F;
-                        line-height: 20px;
-                        margin-bottom: 2px;
-                    }
-                    
-                    .header-subtitle {
-                        font-size: 12px;
-                        font-weight: 400;
-                        color: #49454F;
-                        line-height: 16px;
-                    }
-                    
-                    .rich-tooltip-divider {
-                        height: 1px;
-                        background: #E6E0E9;
-                    }
-                    
-                    .rich-tooltip-sessions {
-                        padding: 16px;
-                        display: flex;
-                        gap: 16px;
-                        overflow-x: auto;
-                        scrollbar-width: thin;
-                        scrollbar-color: #CAC4D0 transparent;
-                    }
-                    
-                    .rich-tooltip-sessions::-webkit-scrollbar {
-                        height: 6px;
-                    }
-                    
-                    .rich-tooltip-sessions::-webkit-scrollbar-track {
-                        background: transparent;
-                    }
-                    
-                    .rich-tooltip-sessions::-webkit-scrollbar-thumb {
-                        background: #CAC4D0;
-                        border-radius: 3px;
-                    }
-                    
-                    .session-item {
-                        min-width: 140px;
-                        padding: 12px;
-                        border: 1px solid #E6E0E9;
-                        border-radius: 8px;
-                        background: #FFFBFE;
-                        transition: all 0.2s ease;
-                        cursor: pointer;
-                    }
-                    
-                    .session-item:hover {
-                        background: #F7F2FA;
-                        border-color: #CAC4D0;
-                        transform: translateY(-1px);
-                        box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-                    }
-                    
-                    .session-item.current {
-                        background: #E8F5E8;
-                        border-color: #3AB795;
-                        border-width: 2px;
-                    }
-                    
-                    .session-header {
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        margin-bottom: 8px;
-                        position: relative;
-                    }
-                    
-                    .session-icon {
-                        font-size: 16px !important;
-                        flex-shrink: 0;
-                    }
-                    
-                    .session-status {
-                        font-size: 12px;
-                        font-weight: 500;
-                        color: #1C1B1F;
-                        line-height: 16px;
-                        flex: 1;
-                        margin-right: 4px;
-                    }
-                    
-                    .current-badge {
-                        background: #3AB795;
-                        color: #FFFFFF;
-                        font-size: 10px;
-                        font-weight: 500;
-                        padding: 2px 6px;
-                        border-radius: 8px;
-                        text-transform: uppercase;
-                        letter-spacing: 0.5px;
-                        white-space: nowrap;
-                        flex-shrink: 0;
-                        position: absolute;
-                        top: -4px;
-                        right: -4px;
-                    }
-                    
-                    .session-date {
-                        font-size: 13px;
-                        font-weight: 600;
-                        color: #1C1B1F;
-                        line-height: 18px;
-                        margin-bottom: 4px;
-                    }
-                    
-                    .session-organ {
-                        font-size: 11px;
-                        color: #49454F;
-                        line-height: 14px;
-                        margin-bottom: 2px;
-                    }
-                    
-                    .session-type {
-                        font-size: 10px;
-                        color: #79747E;
-                        line-height: 12px;
-                        font-style: italic;
-                    }
-                    
-                    .rich-tooltip-footer {
-                        padding: 8px 16px 12px 16px;
-                        display: flex;
-                        align-items: center;
-                        gap: 8px;
-                        background: #F7F2FA;
-                        border-top: 1px solid #E6E0E9;
-                        font-size: 11px;
-                        color: #49454F;
-                    }
-                `;
-                    document.head.appendChild(tooltipStyle);
-                }
+            // Sistema de eventos unificado
+            let tooltipTimer = null;
 
-                // Posicionar tooltip
-                tooltip.style.display = "block";
-                log("🎨 TOOLTIP: Display definido como block");
-
-                setTimeout(() => {
-                    const rect = indicador.getBoundingClientRect();
-                    const tooltipRect = tooltip.getBoundingClientRect();
-
-                    log("📐 TOOLTIP: Dimensões indicador:", rect);
-                    log("📐 TOOLTIP: Dimensões tooltip:", tooltipRect);
-
-                    // Calcular posição (abaixo do indicador por padrão, centralizado)
-                    let left =
-                        rect.left + rect.width / 2 - tooltipRect.width / 2;
-                    let top = rect.bottom + 12;
-
-                    // Ajustar se sair da tela (horizontalmente)
-                    if (left < 10) left = 10;
-                    if (left + tooltipRect.width > window.innerWidth - 10) {
-                        left = window.innerWidth - tooltipRect.width - 10;
-                    }
-
-                    // Ajustar se sair da tela (verticalmente) - mostrar acima apenas se necessário
-                    if (top + tooltipRect.height > window.innerHeight - 10) {
-                        top = rect.top - tooltipRect.height - 12;
-                        log("🔄 TOOLTIP: Reposicionado para cima do indicador");
-                    }
-
-                    log("📍 TOOLTIP: Posição final:", { left, top });
-
-                    tooltip.style.left = left + "px";
-                    tooltip.style.top = top + "px";
-                    tooltip.style.opacity = "1";
-                    tooltip.style.transform = "translateY(0)";
-
-                    log("✅ TOOLTIP: Posicionamento concluído");
-                }, 10);
-            };
-
-            const ocultarTooltip = (e) => {
-                log("🖱️ TOOLTIP: Iniciando ocultação do tooltip");
-
-                // Só ocultar se não estivermos mais interagindo
-                tooltipTimer = setTimeout(() => {
-                    if (!tooltipAtivo) return;
-
-                    log("🖱️ TOOLTIP: Ocultando tooltip");
-                    tooltipAtivo = false;
-
-                    tooltip.style.opacity = "0";
-                    tooltip.style.transform = "translateY(8px)";
-
-                    setTimeout(() => {
-                        tooltip.style.display = "none";
-                    }, 150);
-                }, 300); // Delay maior para permitir movimento suave
-            };
-
-            const manterTooltipAberto = () => {
-                log("🖱️ TOOLTIP: Mantendo tooltip aberto");
+            const mostrarTooltip = () => {
+                log("🖱️ TOOLTIP: Mostrando tooltip");
 
                 if (tooltipTimer) {
                     clearTimeout(tooltipTimer);
                     tooltipTimer = null;
                 }
-                tooltipAtivo = true;
+
+                // POSICIONAMENTO FIXO CORRETO
+                tooltip.style.display = "block";
+
+                // Posição fixa conforme especificado
+                tooltip.style.left = "-50px";
+                tooltip.style.top = "70px";
+
+                // Forçar reflow e mostrar com fade
+                tooltip.offsetHeight;
+                tooltip.style.opacity = "1";
             };
 
-            // Eventos no indicador - CORRIGIDO
-            log("🔧 TOOLTIP: Adicionando event listeners ao indicador");
+            const ocultarTooltip = () => {
+                log("🖱️ TOOLTIP: Ocultando tooltip");
+                tooltipTimer = setTimeout(() => {
+                    tooltip.style.opacity = "0";
+                    setTimeout(() => {
+                        tooltip.style.display = "none";
+                    }, 150);
+                }, 250);
+            };
 
+            const cancelarOcultacao = () => {
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = null;
+                }
+            };
+
+            // Eventos do indicador
             indicador.addEventListener("mouseenter", mostrarTooltip, {
                 passive: true,
             });
-            indicador.addEventListener("mouseleave", (e) => {
-                log("🖱️ TOOLTIP: Mouse saindo do indicador");
-
-                // Verificar se está saindo para o tooltip
-                const tooltip = document.getElementById("eprobe-rich-tooltip");
-                if (tooltip && tooltip.contains(e.relatedTarget)) {
-                    log(
-                        "🖱️ TOOLTIP: Mouse moveu para tooltip - mantendo aberto"
-                    );
-                    manterTooltipAberto();
-                    return;
-                }
-                ocultarTooltip(e);
+            indicador.addEventListener("mouseleave", ocultarTooltip, {
+                passive: true,
             });
 
-            // Eventos no tooltip para mantê-lo aberto quando mouse estiver sobre ele
-            // Aguardar o tooltip ser criado antes de adicionar eventos
-            setTimeout(() => {
-                const tooltip = document.getElementById("eprobe-rich-tooltip");
-                if (tooltip) {
-                    log("🔧 TOOLTIP: Adicionando event listeners ao tooltip");
+            // Eventos do tooltip (manter aberto quando mouse sobre tooltip)
+            tooltip.addEventListener("mouseenter", cancelarOcultacao, {
+                passive: true,
+            });
+            tooltip.addEventListener("mouseleave", ocultarTooltip, {
+                passive: true,
+            });
 
-                    tooltip.addEventListener(
-                        "mouseenter",
-                        manterTooltipAberto,
-                        { passive: true }
-                    );
-                    tooltip.addEventListener("mouseleave", (e) => {
-                        log("🖱️ TOOLTIP: Mouse saindo do tooltip");
-
-                        // Verificar se está saindo para o indicador ou card
-                        if (
-                            indicador.contains(e.relatedTarget) ||
-                            cardElement.contains(e.relatedTarget)
-                        ) {
-                            log(
-                                "🖱️ TOOLTIP: Mouse moveu para card/indicador - mantendo aberto"
-                            );
-                            return;
-                        }
-                        ocultarTooltip(e);
-                    });
-                } else {
-                    log(
-                        "❌ TOOLTIP: Elemento tooltip não encontrado após criação"
-                    );
-                }
-            }, 100);
-
-            log(
-                "✅ TOOLTIP: Rich tooltip Material Design configurado com sucesso"
+            // Efeito hover no indicador
+            indicador.addEventListener(
+                "mouseenter",
+                () => {
+                    indicador.style.background = "rgba(28, 27, 31, 0.12)";
+                    indicador.style.transform = "scale(1.05)";
+                },
+                { passive: true }
             );
-            log(
-                "💡 TOOLTIP: Para debug use window.SENT1_AUTO.debugTooltipCardSessao()"
+
+            indicador.addEventListener(
+                "mouseleave",
+                () => {
+                    indicador.style.background = "rgba(28, 27, 31, 0.08)";
+                    indicador.style.transform = "scale(1)";
+                },
+                { passive: true }
             );
+
+            log("✅ TOOLTIP UNIFICADO: Sistema configurado com sucesso");
+            return {
+                status: "sucesso",
+                cardElement: cardElement,
+                indicador: indicador,
+                tooltip: tooltip,
+                sessoes: todasSessoes.length,
+            };
         }
 
         /**
@@ -17472,216 +16900,23 @@ ${texto}`;
          * @param {Array} todasSessoes - Array com todas as sessões
          */
         function adicionarTooltipInterativo(cardElement, todasSessoes) {
-            if (!cardElement || !todasSessoes || todasSessoes.length <= 1)
-                return;
-
-            // Criar elemento do tooltip se não existir
-            let tooltip = document.getElementById("eprobe-tooltip");
-            if (!tooltip) {
-                tooltip = document.createElement("div");
-                tooltip.id = "eprobe-tooltip";
-                document.body.appendChild(tooltip);
-            }
-
-            // Encontrar elemento alvo (área das sessões) - adaptar para Figma
-            const sessionsIndicator = cardElement.querySelector(
-                ".eprobe-figma-sessions-indicator"
+            log(
+                "⚠️ DEPRECATED: adicionarTooltipInterativo - usando função unificada"
             );
-            if (!sessionsIndicator) return;
+            return adicionarTooltipUnificado(cardElement, todasSessoes);
+        }
 
-            // Gerar conteúdo do tooltip elegante e minimalista
-            const tooltipContent = `
-            <div class="eprobe-tooltip-header">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                    <line x1="16" y1="2" x2="16" y2="6"></line>
-                    <line x1="8" y1="2" x2="8" y2="6"></line>
-                    <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <span>Histórico de Sessões</span>
-            </div>
-            <div class="eprobe-tooltip-divider"></div>
-            <div class="eprobe-tooltip-sessions">
-                ${todasSessoes
-                    .map((sessao, index) => {
-                        const isRecente = index === 0;
-                        const statusIcon = getStatusIcon(sessao.statusOriginal);
-                        return `<div class="eprobe-tooltip-session ${
-                            isRecente ? "current" : ""
-                        }">
-                        <div class="session-icon">${statusIcon}</div>
-                        <div class="session-info">
-                            <div class="session-date">${sessao.data}</div>
-                            <div class="session-status">${sessao.status}</div>
-                        </div>
-                        ${
-                            isRecente
-                                ? '<div class="session-badge">Atual</div>'
-                                : ""
-                        }
-                    </div>`;
-                    })
-                    .join("")}
-            </div>
-        `;
-
-            // Aplicar estilos do tooltip se ainda não existir
-            if (!document.querySelector("#eprobe-tooltip-styles")) {
-                const tooltipStyle = document.createElement("style");
-                tooltipStyle.id = "eprobe-tooltip-styles";
-                tooltipStyle.textContent = `
-                #eprobe-tooltip {
-                    position: absolute;
-                    background: #ffffff;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    font-size: 13px;
-                    min-width: 260px;
-                    z-index: 10000;
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-                    display: none;
-                    pointer-events: none;
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                }
-                
-                .eprobe-tooltip-header {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 14px 16px 10px 16px;
-                    font-weight: 600;
-                    color: #374151;
-                    font-size: 13px;
-                }
-                
-                .eprobe-tooltip-header svg {
-                    color: #6b7280;
-                    flex-shrink: 0;
-                }
-                
-                .eprobe-tooltip-divider {
-                    height: 1px;
-                    background: #f3f4f6;
-                    margin: 0 16px;
-                }
-                
-                .eprobe-tooltip-sessions {
-                    padding: 10px 0 14px 0;
-                }
-                
-                .eprobe-tooltip-session {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 8px 16px;
-                    transition: background-color 0.15s ease;
-                }
-                
-                .eprobe-tooltip-session:hover {
-                    background-color: #f9fafb;
-                }
-                
-                .eprobe-tooltip-session.current {
-                    background-color: #eff6ff;
-                    border-left: 3px solid #3b82f6;
-                    padding-left: 13px;
-                }
-                
-                .session-icon {
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    width: 24px;
-                    height: 24px;
-                    border-radius: 6px;
-                    background-color: #f3f4f6;
-                    color: #6b7280;
-                    flex-shrink: 0;
-                }
-                
-                .eprobe-tooltip-session.current .session-icon {
-                    background-color: #dbeafe;
-                    color: #3b82f6;
-                }
-                
-                .session-info {
-                    flex: 1;
-                    min-width: 0;
-                }
-                
-                .session-date {
-                    font-weight: 600;
-                    color: #1f2937;
-                    font-size: 13px;
-                    line-height: 1.3;
-                }
-                
-                .session-status {
-                    color: #6b7280;
-                    font-size: 12px;
-                    line-height: 1.3;
-                    margin-top: 1px;
-                }
-                
-                .eprobe-tooltip-session.current .session-date {
-                    color: #1e40af;
-                }
-                
-                .eprobe-tooltip-session.current .session-status {
-                    color: #3b82f6;
-                }
-                
-                .session-badge {
-                    background: #3b82f6;
-                    color: white;
-                    font-size: 10px;
-                    font-weight: 600;
-                    padding: 3px 8px;
-                    border-radius: 12px;
-                    text-transform: uppercase;
-                    letter-spacing: 0.5px;
-                }
-            `;
-                document.head.appendChild(tooltipStyle);
-            }
-
-            // Eventos de mouse
-            sessionsIndicator.addEventListener(
-                "mouseenter",
-                (e) => {
-                    tooltip.innerHTML = tooltipContent;
-                    tooltip.style.display = "block";
-
-                    // Posicionar tooltip
-                    const rect = sessionsIndicator.getBoundingClientRect();
-                    const tooltipRect = tooltip.getBoundingClientRect();
-
-                    let left =
-                        rect.left + rect.width / 2 - tooltipRect.width / 2;
-                    let top = rect.bottom + 12;
-
-                    // Ajustar se sair da tela
-                    if (left < 10) left = 10;
-                    if (left + tooltipRect.width > window.innerWidth - 10) {
-                        left = window.innerWidth - tooltipRect.width - 10;
-                    }
-                    if (top + tooltipRect.height > window.innerHeight - 10) {
-                        top = rect.top - tooltipRect.height - 12;
-                    }
-
-                    tooltip.style.left = left + "px";
-                    tooltip.style.top = top + "px";
-                },
-                { passive: true }
+        /**
+         * Cria tooltip simplificado - FUNÇÃO DEPRECATED
+         * @param {HTMLElement} cardElement - Elemento do card
+         * @param {Array} todasSessoes - Array com todas as sessões
+         * @returns {Object} - Resultado da função unificada
+         */
+        function criarTooltipSimplificado(cardElement, todasSessoes) {
+            log(
+                "⚠️ DEPRECATED: criarTooltipSimplificado - usando função unificada"
             );
-
-            sessionsIndicator.addEventListener(
-                "mouseleave",
-                () => {
-                    tooltip.style.display = "none";
-                },
-                { passive: true }
-            );
+            return adicionarTooltipUnificado(cardElement, todasSessoes);
         }
 
         /**
@@ -17770,6 +17005,95 @@ ${texto}`;
             item.appendChild(textoContainer);
 
             return item;
+        }
+
+        /**
+         * 🧪 FUNÇÃO DE DEBUG PARA TOOLTIP UNIFICADO
+         * Testa o sistema de tooltip com dados simulados
+         */
+        function debugTooltipUnificado() {
+            console.group("🧪 DEBUG: Sistema de Tooltip Unificado");
+
+            // Verificar se há card de sessão
+            const card = document.getElementById("eprobe-data-sessao");
+            if (!card) {
+                console.warn("❌ Card de sessão não encontrado");
+                console.groupEnd();
+                return false;
+            }
+
+            console.log("✅ Card encontrado:", card);
+
+            // Verificar indicador
+            const indicador = card.querySelector(
+                ".eprobe-figma-sessions-indicator"
+            );
+            if (!indicador) {
+                console.warn("❌ Indicador de sessões não encontrado");
+                console.groupEnd();
+                return false;
+            }
+
+            console.log("✅ Indicador encontrado:", indicador);
+
+            // Criar dados de teste
+            const sessoesSimuladas = [
+                {
+                    data: "15/01/2025",
+                    status: "PAUTADO",
+                    statusOriginal: "Incluído em Pauta",
+                    codigo: "CIV1",
+                    tipoProcesso: "Cível",
+                },
+                {
+                    data: "10/01/2025",
+                    status: "RETIRADO",
+                    statusOriginal: "Retirado de Pauta",
+                    codigo: "CIV1",
+                    tipoProcesso: "Cível",
+                },
+                {
+                    data: "05/01/2025",
+                    status: "ADIADO",
+                    statusOriginal: "Adiado em Pauta",
+                    codigo: "CIV1",
+                    tipoProcesso: "Cível",
+                },
+            ];
+
+            console.log("📋 Dados simulados:", sessoesSimuladas);
+
+            // Testar função de posicionamento
+            const tooltip =
+                document.getElementById("eprobe-rich-tooltip") ||
+                document.createElement("div");
+            tooltip.style.cssText = `
+                position: fixed !important;
+                width: 320px;
+                height: 200px;
+                background: white;
+                border: 1px solid #ccc;
+                visibility: hidden;
+            `;
+            document.body.appendChild(tooltip);
+
+            // POSICIONAMENTO DIRETO SIMPLES (que funcionava!)
+            const rect = indicador.getBoundingClientRect();
+            const left = rect.left - 150;
+            const top = rect.bottom + 12;
+            console.log(`📐 Posição calculada: left=${left}, top=${top}`);
+
+            // Remover tooltip de teste
+            tooltip.remove();
+
+            // Testar tooltip real
+            console.log("🎨 Testando tooltip real...");
+            adicionarRichTooltipMaterialDesign(card, sessoesSimuladas);
+
+            console.log("✅ Debug concluído - verifique o tooltip no card");
+            console.groupEnd();
+
+            return true;
         }
 
         /**
@@ -19055,9 +18379,20 @@ ${texto}`;
                 link.target = "_blank";
                 link.style.cssText =
                     "padding:5px 6px;text-decoration:none;display:flex;align-items:center;height:50px";
-                link.innerHTML = `<img src="${chrome.runtime.getURL(
-                    "assets/40x.png"
-                )}" style="width:40px;height:40px">`;
+
+                // Verificar se chrome.runtime está disponível (contexto de extensão)
+                if (
+                    typeof chrome !== "undefined" &&
+                    chrome.runtime &&
+                    chrome.runtime.getURL
+                ) {
+                    link.innerHTML = `<img src="${chrome.runtime.getURL(
+                        "assets/40x.png"
+                    )}" style="width:40px;height:40px">`;
+                } else {
+                    // Fallback para teste local - usar caminho relativo
+                    link.innerHTML = `<img src="assets/40x.png" style="width:40px;height:40px">`;
+                }
 
                 marketplace.parentNode.insertBefore(link, marketplace);
 
@@ -21559,87 +20894,6 @@ ${texto}`;
             "✅ FUNÇÕES DE TESTE: Carregadas fora da IIFE - sempre disponíveis"
         );
 
-        /**
-         * Função auxiliar para extrair dados de sessão do NOVO formato de tooltip
-         * NOVO PADRÃO: "DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>"
-         * @param {string} texto - Texto do tooltip para analisar
-         * @returns {Object|null} - Dados da sessão mais recente ou null
-         */
-        function extrairDadosCardSessaoGlobal(texto) {
-            log(
-                "🔍 EXTRAÇÃO NOVA: Analisando tooltip:",
-                texto.substring(0, 200)
-            );
-
-            // NOVO PADRÃO: DD/MM/AAAA - STATUS - DOCUMENTO (CÓDIGO)<br/>
-            const padraoGeral =
-                /(\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([^-]+?)\s*-\s*([^(]+?)\s*\((\d+)\)/g;
-
-            const sessoes = [];
-            let match;
-
-            // Extrair todas as sessões do tooltip
-            while ((match = padraoGeral.exec(texto)) !== null) {
-                const data = match[1];
-                const statusOriginal = match[2].trim();
-                const documento = match[3].trim();
-                const codigo = match[4];
-
-                // Traduzir status conforme as regras especificadas
-                const statusTraduzido = traduzirStatusSessao(statusOriginal);
-
-                log(
-                    `📅 SESSÃO: ${data} - ${statusOriginal} → ${statusTraduzido.status}`
-                );
-
-                sessoes.push({
-                    data: data,
-                    statusOriginal: statusOriginal,
-                    status: statusTraduzido.status,
-                    statusCompleto: statusTraduzido.statusCompleto,
-                    documento: documento,
-                    codigo: codigo,
-                    cor: statusTraduzido.cor,
-                });
-            }
-
-            if (sessoes.length === 0) {
-                return null;
-            }
-
-            // Pegar a sessão mais recente (primeira na lista, pois vem ordenada cronologicamente)
-            const sessaoMaisRecente = sessoes[0];
-
-            log(
-                `📊 EXTRAÇÃO: ${sessoes.length} sessões encontradas, usando mais recente`
-            );
-
-            // Criar objeto de dados da sessão no formato esperado pelo sistema
-            const dadosSessao = {
-                status: sessaoMaisRecente.status,
-                statusCompleto: sessaoMaisRecente.statusCompleto,
-                statusOriginal: sessaoMaisRecente.statusOriginal,
-                tipoProcesso: sessaoMaisRecente.documento,
-                data: sessaoMaisRecente.data,
-                codigo: sessaoMaisRecente.codigo,
-                cor: sessaoMaisRecente.cor,
-                textoOriginal: `${sessaoMaisRecente.data} - ${sessaoMaisRecente.statusOriginal} - ${sessaoMaisRecente.documento} (${sessaoMaisRecente.codigo})`,
-                timestamp: new Date().toISOString(),
-                todasSessoes: sessoes, // Guardar todas as sessões para referência
-                totalSessoes: sessoes.length,
-            };
-
-            log(
-                "✅ EXTRAÇÃO NOVA: Dados extraídos da sessão mais recente:",
-                dadosSessao
-            );
-            log(
-                `📈 EXTRAÇÃO: Total de ${sessoes.length} sessões históricas preservadas`
-            );
-
-            return dadosSessao;
-        }
-
         // ============================================================================
         // 🔧 SISTEMA DE CONFIGURAÇÃO E INICIALIZAÇÃO
         // ============================================================================
@@ -22608,8 +21862,9 @@ ${texto}`;
         // ============================================================
 
         // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
+        // TEMPORÁRIO: Salvar funções em variável para exposição após IIFE
 
-        window.SENT1_AUTO = {
+        const eProbeNamespaceFunctions = {
             runFullAutomation: nsRunFullAutomation,
             autoOpenDocumentoRelevante: nsAutoOpenDocumentoRelevante,
             autoExtractText: nsAutoExtractText,
@@ -22703,15 +21958,21 @@ ${texto}`;
 
             // ✅ FUNÇÕES DE LOCALIZADORES (referência corrigida - removida duplicação)
             // As funções de localizadores já estão definidas acima na linha 20410
-            // � FUNÇÕES MATERIAL DESIGN
-            obterConfigFigmaStatus: obterConfigFigmaStatus,
-            adicionarTooltipInterativo: adicionarTooltipInterativo,
+            // 🎯 TOOLTIP UNIFICADO - ÚNICA IMPLEMENTAÇÃO
+            adicionarTooltipUnificado: adicionarTooltipUnificado, // ← FUNÇÃO PRINCIPAL
+
+            // 🚫 FUNÇÕES DESCONTINUADAS (redirecionam para a unificada)
+            adicionarTooltipInterativo: adicionarTooltipInterativo, // deprecated
             adicionarRichTooltipMaterialDesign:
-                adicionarRichTooltipMaterialDesign,
-            // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
-            criarTooltipSimplificado:
-                allMissingFunctions.criarTooltipSimplificado,
-            testarFuncaoTooltip: testarFuncaoTooltip,
+                adicionarRichTooltipMaterialDesign, // deprecated
+            criarTooltipSimplificado: criarTooltipSimplificado, // deprecated
+            testarFuncaoTooltip: function () {
+                // deprecated
+                log(
+                    "⚠️ DEPRECATED: testarFuncaoTooltip - use adicionarTooltipUnificado()"
+                );
+                return false;
+            },
             // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete - SISTEMA INTELIGENTE
             debugDivLembrete,
             estilizarDivLembrete,
@@ -24658,513 +23919,74 @@ ${texto}`;
                 return true;
             },
 
-            // 🎯 FUNÇÕES UNIFICADAS DE TOOLTIP - SISTEMA CONSOLIDADO
+            // 🎯 FUNÇÕES UNIFICADAS DE TOOLTIP - SISTEMA ÚNICO CONSOLIDADO
+            // Removidas todas as implementações duplicadas. APENAS adicionarTooltipUnificado() agora.
             detectarEConfigurarTooltipUnificado: function () {
-                try {
-                    log("🔍 TOOLTIP UNIFICADO: Iniciando detecção...");
-
-                    // 1. DETECÇÃO DINÂMICA EM FIELDSET[6] OU FIELDSET[7]
-                    let fieldsetElement = null;
-                    let fieldsetEncontrado = null;
-
-                    for (const fieldsetNum of [6, 7]) {
-                        const xpath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]`;
-                        const resultado = document.evaluate(
-                            xpath,
-                            document,
-                            null,
-                            XPathResult.FIRST_ORDERED_NODE_TYPE,
-                            null
-                        );
-
-                        if (resultado.singleNodeValue) {
-                            fieldsetElement = resultado.singleNodeValue;
-                            fieldsetEncontrado = fieldsetNum;
-                            log(
-                                `✅ TOOLTIP: Fieldset[${fieldsetNum}] localizado com sucesso`
-                            );
-                            break;
-                        }
-                    }
-
-                    if (!fieldsetElement) {
-                        log(
-                            "ℹ️ TOOLTIP: Nenhum fieldset de sessão encontrado (testados: 6 e 7)"
-                        );
-                        return null;
-                    }
-
-                    // 2. USAR A FUNÇÃO SIMPLIFICADA PARA PROCESSAMENTO COMPLETO
-                    const resultadoProcessamento =
-                        detectarCardSessaoSimplificado();
-
-                    if (!resultadoProcessamento) {
-                        log("⚠️ TOOLTIP: Nenhum dado de sessão no fieldset");
-                        return null;
-                    }
-
-                    // 3. ESTRUTURAÇÃO DOS DADOS PARA COMPATIBILIDADE
-                    const {
-                        statusDetectado,
-                        datasSessao,
-                        informacoesDetalhadas,
-                    } = resultadoProcessamento;
-
-                    let dadosProcessados = null;
-
-                    if (datasSessao && datasSessao.length > 1) {
-                        // MÚLTIPLAS SESSÕES DETECTADAS
-                        log(
-                            `🎯 TOOLTIP: Múltiplas sessões detectadas (${datasSessao.length})`
-                        );
-
-                        dadosProcessados = {
-                            tipo: "multiplas_sessoes",
-                            totalSessoes: datasSessao.length,
-                            datas: datasSessao,
-                            textoCompleto: informacoesDetalhadas.textoCompleto,
-                            temTooltip: true,
-                            tooltipTipo: "rico",
-                            statusPrincipal: statusDetectado,
-                            dataFormatada: `${datasSessao.length} sessões`,
-                        };
-
-                        // Armazenar globalmente para uso posterior
-                        window.todasSessoesDetectadas = datasSessao;
-                        window.sessaoMultiplaAtiva = true;
-                    } else if (datasSessao && datasSessao.length === 1) {
-                        // SESSÃO ÚNICA DETECTADA
-                        const dataUnica = datasSessao[0];
-                        log(`📅 TOOLTIP: Sessão única detectada: ${dataUnica}`);
-
-                        dadosProcessados = {
-                            tipo: "sessao_unica",
-                            totalSessoes: 1,
-                            datas: [dataUnica],
-                            textoCompleto: informacoesDetalhadas.textoCompleto,
-                            temTooltip: true,
-                            tooltipTipo: "simples",
-                            statusPrincipal: statusDetectado,
-                            dataFormatada: dataUnica,
-                        };
-
-                        // Armazenar globalmente
-                        window.dataSessaoPautado = {
-                            data: dataUnica,
-                            textoCompleto: informacoesDetalhadas.textoCompleto,
-                        };
-                        window.sessaoMultiplaAtiva = false;
-                    } else {
-                        // NENHUMA SESSÃO VÁLIDA
-                        log(
-                            "ℹ️ TOOLTIP: Nenhuma data de sessão válida encontrada"
-                        );
-                        return null;
-                    }
-
-                    // 4. CONFIGURAÇÃO DE TOOLTIP AUTOMÁTICA
-                    if (dadosProcessados.temTooltip) {
-                        setTimeout(() => {
-                            this.configurarTooltipPorTipo(dadosProcessados);
-                        }, 300);
-                    }
-
-                    log(
-                        "✅ TOOLTIP: Detecção unificada concluída:",
-                        dadosProcessados
-                    );
-                    return dadosProcessados;
-                } catch (error) {
-                    console.error(
-                        "❌ TOOLTIP: Erro na detecção unificada:",
-                        error
-                    );
-                    return null;
-                }
+                log(
+                    "� TOOLTIP: Função removida - use adicionarTooltipUnificado() diretamente"
+                );
+                return null;
             },
 
             configurarTooltipPorTipo: function (dados) {
-                try {
-                    if (
-                        dados.tooltipTipo === "rico" &&
-                        dados.tipo === "multiplas_sessoes"
-                    ) {
-                        log(
-                            "🎨 TOOLTIP: Aplicando tooltip rico para múltiplas sessões"
-                        );
-                        this.adicionarRichTooltipMaterialDesign();
-                    } else if (dados.tooltipTipo === "simples") {
-                        log("🎨 TOOLTIP: Aplicando tooltip simples");
-                        this.criarTooltipSimplificado(dados);
-                    }
-                } catch (error) {
-                    console.error(
-                        "❌ TOOLTIP: Erro na configuração por tipo:",
-                        error
-                    );
-                }
+                log(
+                    "🔧 TOOLTIP: Função removida - use adicionarTooltipUnificado() diretamente"
+                );
+                return null;
             },
 
             criarCardComTooltipIntegrado: function () {
-                try {
-                    log("🎯 CARD+TOOLTIP: Iniciando criação integrada...");
-
-                    // 1. DETECTAR E CONFIGURAR DADOS
-                    const dadosSessao =
-                        this.detectarEConfigurarTooltipUnificado();
-
-                    if (!dadosSessao) {
-                        log(
-                            "ℹ️ CARD+TOOLTIP: Sem dados de sessão - não criando card"
-                        );
-                        return null;
-                    }
-
-                    // 2. CRIAR CARD MATERIAL DESIGN
-                    const cardCriado =
-                        this.criarCardMaterialDesign(dadosSessao);
-
-                    if (!cardCriado) {
-                        logError("❌ CARD+TOOLTIP: Falha na criação do card");
-                        return null;
-                    }
-
-                    // 3. AGUARDAR E CONFIGURAR TOOLTIP
-                    setTimeout(() => {
-                        const cardElement = document.querySelector(
-                            ".card-material-design, #eprobe-data-sessao"
-                        );
-                        if (cardElement && dadosSessao.temTooltip) {
-                            this.configurarTooltipPorTipo(dadosSessao);
-                            log(
-                                "✅ CARD+TOOLTIP: Card e tooltip configurados com sucesso"
-                            );
-                        } else {
-                            log(
-                                "⚠️ CARD+TOOLTIP: Card criado mas tooltip não configurado"
-                            );
-                        }
-                    }, 500);
-
-                    return dadosSessao;
-                } catch (error) {
-                    console.error(
-                        "❌ CARD+TOOLTIP: Erro na criação integrada:",
-                        error
-                    );
-                    return null;
-                }
-            },
-
-            // 🧪 FUNÇÃO DE TESTE COMPLETO DO SISTEMA UNIFICADO
-            testarSistemaTooltipUnificado: function () {
-                log("🧪 TESTE UNIFICADO: Testando sistema completo de tooltip");
-
-                try {
-                    // 1. Reset do sistema
-                    this.resetarSistemaCard();
-
-                    // 2. Detecção unificada
-                    log("🔍 PASSO 1: Detecção unificada");
-                    const dadosDetectados =
-                        this.detectarEConfigurarTooltipUnificado();
-                    log("📊 Dados detectados:", dadosDetectados);
-
-                    // 3. Criação integrada
-                    log("🔍 PASSO 2: Criação integrada");
-                    const cardCriado = this.criarCardComTooltipIntegrado();
-                    log("📊 Card criado:", !!cardCriado);
-
-                    // 4. Verificação final
-                    const cardExiste = !!document.querySelector(
-                        ".card-material-design, #eprobe-data-sessao"
-                    );
-                    log("📊 Card existe no DOM:", cardExiste);
-
-                    const resultado = {
-                        deteccao: !!dadosDetectados,
-                        tipoDetectado: dadosDetectados?.tipo || null,
-                        totalSessoes: dadosDetectados?.totalSessoes || 0,
-                        cardCriado: !!cardCriado,
-                        cardExiste: cardExiste,
-                        temTooltip: dadosDetectados?.temTooltip || false,
-                        tooltipTipo: dadosDetectados?.tooltipTipo || null,
-                    };
-
-                    log("🎯 RESULTADO FINAL:", resultado);
-                    return resultado;
-                } catch (error) {
-                    console.error("❌ TESTE UNIFICADO: Erro:", error);
-                    return { erro: error.message };
-                }
-            },
-
-            // 🔧 FUNÇÕES DE CORREÇÃO DE TOOLTIP (REMOVIDAS DO WINDOW.* INCORRETO)
-            corrigirTooltipCardOriginal: function () {
-                log("🔧 CORRIGIR TOOLTIP: Procurando card original...");
-
-                // Remover card genérico se existir
-                const cardGenerico = document.querySelector(
-                    "#eprobe-data-sessao"
+                log(
+                    "🔧 TOOLTIP: Função removida - use adicionarTooltipUnificado() diretamente"
                 );
-                if (cardGenerico && cardGenerico.style.position === "fixed") {
-                    cardGenerico.remove();
-                    log("🗑️ Card genérico removido");
+                return null;
+            },
+
+            testarSistemaTooltipUnificado: function () {
+                log(
+                    "🧪 TESTE UNIFICADO: Testando sistema simplificado de tooltip"
+                );
+
+                // Encontrar card
+                const card = document.querySelector(
+                    "#eprobe-data-sessao, .eprobe-figma-card-pautado"
+                );
+                if (!card) {
+                    log("❌ Card não encontrado");
+                    return false;
                 }
 
-                // Encontrar o card original do Material Design
-                const cardOriginal =
-                    document.querySelector(
-                        '#eprobe-data-sessao:not([style*="position: fixed"])'
-                    ) ||
-                    document.querySelector(".eprobe-figma-card-pautado") ||
-                    document.querySelector('[id*="eprobe-data-sessao"]');
+                // Aplicar tooltip unificado
+                const resultado = adicionarTooltipUnificado(card);
+                log("✅ Resultado:", resultado);
 
+                return resultado;
+            },
+
+            corrigirTooltipCardOriginal: function () {
+                log("🔧 CORRIGIR TOOLTIP: Usando função unificada...");
+
+                const cardOriginal = document.querySelector(
+                    "#eprobe-data-sessao, .eprobe-figma-card-pautado"
+                );
                 if (!cardOriginal) {
                     logError("❌ Card original não encontrado");
                     return { erro: "card_original_nao_encontrado" };
                 }
 
-                log("✅ Card original encontrado:", cardOriginal);
+                // Usar APENAS a função unificada
+                const resultado = adicionarTooltipUnificado(cardOriginal);
 
-                // Procurar indicador existente
-                let indicador = cardOriginal.querySelector(
-                    ".eprobe-figma-sessions-indicator"
-                );
-
-                if (!indicador) {
-                    log("📝 Indicador não encontrado - criando um novo...");
-
-                    // Criar indicador se não existir
-                    indicador = document.createElement("div");
-                    indicador.className = "eprobe-figma-sessions-indicator";
-                    indicador.style.cssText = `
-                position: absolute;
-                top: 8px;
-                right: 8px;
-                width: 20px;
-                height: 16px;
-                background: rgba(28, 27, 31, 0.08);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-family: 'Roboto', sans-serif;
-                font-size: 10px;
-                font-weight: 500;
-                color: #1C1B1F;
-                cursor: help;
-                z-index: 1;
-                transition: all 0.2s ease;
-            `;
-                    indicador.textContent = "3";
-                    cardOriginal.appendChild(indicador);
-                    logCritical("✅ Indicador criado no card original");
-                }
-
-                // Remover tooltip antigo se existir
-                const tooltipAntigo = document.getElementById(
-                    "eprobe-rich-tooltip"
-                );
-                if (tooltipAntigo) {
-                    tooltipAntigo.remove();
-                    log("🗑️ Tooltip antigo removido");
-                }
-
-                // Criar tooltip novo
-                const tooltip = document.createElement("div");
-                tooltip.id = "eprobe-rich-tooltip";
-                tooltip.style.cssText = `
-            position: absolute;
-            display: none;
-            z-index: 10000;
-            background: #FFFBFE;
-            border: 1px solid #CAC4D0;
-            border-radius: 12px;
-            min-width: 320px;
-            max-width: 480px;
-            box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
-            font-family: 'Roboto', sans-serif;
-            opacity: 0;
-            transition: opacity 0.15s ease-in-out;
-            overflow: hidden;`;
-
-                // Buscar dados reais das sessões
-                const sessoesReais =
-                    typeof buscarDadosReaisSessoes === "function"
-                        ? buscarDadosReaisSessoes()
-                        : [];
-                log(
-                    "🔍 Sessões encontradas:",
-                    sessoesReais.length,
-                    sessoesReais
-                );
-
-                // Atualizar indicador com o número real de sessões
-                const numeroSessoes = sessoesReais.length;
-                indicador.textContent = numeroSessoes.toString();
-
-                // Gerar HTML das sessões
-                let htmlSessoes = "";
-                if (sessoesReais.length > 0) {
-                    // Ordenar por data (mais recente primeiro)
-                    sessoesReais.sort((a, b) => {
-                        const dataA = new Date(
-                            a.data.split("/").reverse().join("-")
-                        );
-                        const dataB = new Date(
-                            b.data.split("/").reverse().join("-")
-                        );
-                        return dataB - dataA;
-                    });
-
-                    // Gerar HTML para cada sessão
-                    sessoesReais.forEach((sessao, index) => {
-                        if (typeof gerarHtmlCardSessao === "function") {
-                            htmlSessoes += gerarHtmlCardSessao(
-                                sessao,
-                                sessao.isAtual
-                            );
-                        } else {
-                            // Fallback simples se a função não existir
-                            htmlSessoes += `<div style="padding: 8px; border: 1px solid #ccc; margin: 4px; border-radius: 4px;">
-                            <div>${sessao.data}</div>
-                            <div>${sessao.orgao || "N/A"}</div>
-                        </div>`;
-                        }
-                    });
+                if (resultado && resultado.status === "sucesso") {
+                    log("✅ TOOLTIP CORRIGIDO: Sistema funcional aplicado");
+                    return resultado;
                 } else {
-                    // Fallback para dados estáticos se não encontrar dados reais
-                    htmlSessoes = `
-                <div style="min-width: 140px; padding: 12px; border: 2px solid #007acc; border-radius: 8px; background: #E8F4FD; position: relative;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-                        <span style="color: #007acc; font-size: 16px;">●</span>
-                        <div style="font-size: 12px; font-weight: 500; color: #1C1B1F; flex: 1;">Sessão Atual</div>
-                    </div>
-                    <div style="background: #007acc; color: #FFFFFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -4px; right: -4px;">ATUAL</div>
-                    <div style="font-size: 13px; font-weight: 600; color: #1C1B1F; line-height: 18px; margin-bottom: 4px;">Data não encontrada</div>
-                    <div style="font-size: 11px; color: #49454F; line-height: 14px; margin-bottom: 2px;">Câmara não identificada</div>
-                    <div style="font-size: 10px; color: #79747E; line-height: 12px; font-style: italic;">Verifique a página</div>
-                </div> `;
+                    logError("❌ TOOLTIP CORRIGIDO: Falha na aplicação");
+                    return { erro: "falha_funcao_unificada" };
                 }
-
-                tooltip.innerHTML = `
-            <div style="padding: 16px 16px 12px 16px; display: flex; align-items: flex-start; gap: 12px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9;">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1C1B1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-                <div style="flex: 1;">
-                    <div style="font-size: 14px; font-weight: 500; color: #1C1B1F; line-height: 20px; margin-bottom: 2px;">
-                        Histórico de Sessões
-                    </div>
-                    <div style="font-size: 12px; font-weight: 400; color: #49454F; line-height: 16px;">
-                        ${numeroSessoes} ${
-                    numeroSessoes === 1
-                        ? "evento encontrado"
-                        : "eventos encontrados"
-                }
-                    </div>
-                </div>
-            </div>
-            <div style="height: 1px; background: #E6E0E9;"></div>
-            <div style="padding: 16px; display: flex; gap: 16px; overflow-x: auto;">
-                ${htmlSessoes}
-            </div> `;
-
-                document.body.appendChild(tooltip);
-                logCritical("✅ Tooltip Material Design criado");
-
-                // Remover event listeners antigos
-                const novoIndicador = indicador.cloneNode(true);
-                indicador.parentNode.replaceChild(novoIndicador, indicador);
-                indicador = novoIndicador;
-
-                // Sistema de eventos melhorado
-                let tooltipTimer = null;
-
-                const mostrarTooltip = () => {
-                    log("🖱️ MOSTRAR tooltip");
-
-                    if (tooltipTimer) {
-                        clearTimeout(tooltipTimer);
-                        tooltipTimer = null;
-                    }
-
-                    const rect = indicador.getBoundingClientRect();
-                    tooltip.style.left = rect.left - 150 + "px";
-                    tooltip.style.top = rect.bottom + 12 + "px";
-                    tooltip.style.display = "block";
-
-                    // Forçar reflow
-                    tooltip.offsetHeight;
-
-                    tooltip.style.opacity = "1";
-                };
-
-                const ocultarTooltip = () => {
-                    log("🖱️ OCULTAR tooltip");
-                    tooltipTimer = setTimeout(() => {
-                        tooltip.style.opacity = "0";
-                        setTimeout(() => {
-                            tooltip.style.display = "none";
-                        }, 150);
-                    }, 300);
-                };
-
-                const cancelarOcultacao = () => {
-                    if (tooltipTimer) {
-                        clearTimeout(tooltipTimer);
-                        tooltipTimer = null;
-                    }
-                };
-
-                // Eventos do indicador
-                indicador.addEventListener("mouseenter", mostrarTooltip, {
-                    passive: true,
-                });
-                indicador.addEventListener("mouseleave", ocultarTooltip, {
-                    passive: true,
-                });
-
-                // Eventos do tooltip
-                tooltip.addEventListener("mouseenter", cancelarOcultacao, {
-                    passive: true,
-                });
-                tooltip.addEventListener("mouseleave", ocultarTooltip, {
-                    passive: true,
-                });
-
-                // Efeito hover no indicador
-                indicador.addEventListener(
-                    "mouseenter",
-                    () => {
-                        indicador.style.background = "rgba(28, 27, 31, 0.12)";
-                        indicador.style.transform = "scale(1.1)";
-                    },
-                    { passive: true }
-                );
-
-                indicador.addEventListener(
-                    "mouseleave",
-                    () => {
-                        indicador.style.background = "rgba(28, 27, 31, 0.08)";
-                        indicador.style.transform = "scale(1)";
-                    },
-                    { passive: true }
-                );
-
-                log(
-                    "✅ TOOLTIP CORRIGIDO: Sistema funcional aplicado ao card original"
-                );
-                log("🖱️ Passe o mouse sobre o indicador do card original");
-
-                return {
-                    status: "sucesso",
-                    cardOriginal: cardOriginal,
-                    indicador: indicador,
-                    tooltip: tooltip,
-                };
             },
 
-            // 🧪 FUNÇÃO DE TESTE DE NAMESPACE (REMOVIDA DO WINDOW.* INCORRETO)
+            // 🧪 FUNÇÃO DE TESTE DE NAMESPACE
             testarNamespaceSENT1_AUTO: function () {
                 log(
                     "🧪 TESTE NAMESPACE: Validando todas as funções do namespace..."
@@ -25505,10 +24327,76 @@ ${texto}`;
 
             extrairLinkSessao: extrairLinkSessao,
             construirUrlSessao: construirUrlSessao,
+
+            // 🧪 DEBUG - Tooltip Unificado
+            debugTooltipUnificado: debugTooltipUnificado,
+
+            // 🎯 TOOLTIP UNIFICADO - FUNÇÕES DE TESTE SIMPLIFICADAS
+            testarTooltipComDadosReais: function () {
+                log("🎨 TESTE: Aplicando tooltip unificado com dados reais");
+
+                const card = document.querySelector(
+                    "#eprobe-data-sessao, .eprobe-figma-card-pautado"
+                );
+                if (!card) {
+                    log("❌ Card não encontrado");
+                    return false;
+                }
+
+                // Aplicar tooltip unificado
+                return adicionarTooltipUnificado(card);
+            },
+
+            validarSistemaTooltipCompleto: function () {
+                log("🎯 VALIDAÇÃO: Sistema de tooltip unificado");
+
+                const relatorio = {
+                    timestamp: new Date().toLocaleString("pt-BR"),
+                    tooltipsNaPagina:
+                        document.querySelectorAll('[id*="tooltip"]').length,
+                    funcaoUnificada:
+                        typeof adicionarTooltipUnificado === "function",
+                    cardEncontrado: !!document.querySelector(
+                        "#eprobe-data-sessao, .eprobe-figma-card-pautado"
+                    ),
+                };
+
+                log("📊 RELATÓRIO:", relatorio);
+                return relatorio;
+            },
+
+            testarPosicionamentoCorrigido: function () {
+                log("🚀 TESTE: Posicionamento fixo do tooltip");
+
+                const card = document.querySelector(
+                    "#eprobe-data-sessao, .eprobe-figma-card-pautado"
+                );
+                if (!card) {
+                    log("❌ Card não encontrado");
+                    return false;
+                }
+
+                // Testar tooltip com posicionamento fixo
+                const resultado = adicionarTooltipUnificado(card);
+
+                if (resultado && resultado.status === "sucesso") {
+                    log(
+                        "✅ Tooltip configurado! Passe o mouse sobre o indicador para ver na posição top: 70px, left: -50px"
+                    );
+                    return true;
+                } else {
+                    log("❌ Falha ao configurar tooltip");
+                    return false;
+                }
+            },
         };
 
         // Fim da seção de funcionalidades
         // ##### FIM DO NAMESPACE CONSOLIDADO #####
+
+        // 🚀 EXPOSIÇÃO GLOBAL DO NAMESPACE - CRÍTICO!
+        // Mover as funções para o escopo global DENTRO da IIFE
+        window.SENT1_AUTO = eProbeNamespaceFunctions;
 
         logCritical(
             "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
@@ -25564,13 +24452,26 @@ ${texto}`;
         logCritical(
             "✅ IIFE: Execução completada com sucesso - criando namespace completo"
         );
+
+        // ✅ MARCAR EXECUÇÃO COMO COMPLETA E CANCELAR TIMEOUT DE EMERGÊNCIA
+        mainExecutionCompleted = true;
+        namespaceCreated = true;
+        clearTimeout(timeoutSeguranca);
+        logCritical(
+            "🛡️ PROTEÇÃO: Timeout de emergência cancelado - execução normal completa"
+        );
     } catch (error) {
         logError("💥 IIFE: ERRO CRÍTICO durante execução:", error);
         logError("📍 ERRO em:", error.stack);
 
+        // 🆘 EM CASO DE ERRO: Tentar criar namespace de emergência imediatamente
+        logError(
+            "🆘 ERRO: Tentando criar namespace de emergência devido ao erro..."
+        );
+        clearTimeout(timeoutSeguranca);
+        garantirNamespace();
+
         // Re-throw para ativar o .catch() da IIFE
         throw error;
     }
-
-    // Fechamento da IIFE principal assíncrona
 })();
