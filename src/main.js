@@ -2267,15 +2267,15 @@ RESPOSTA (apenas JSON válido):`;
         
         /* ⚡ OTIMIZAÇÃO PERFORMANCE: CSS hover substitui event listeners */
         .eprobe-button-hover:hover {
-            background-color: #0f3a66 !important;
-            border-color: #0f3a66 !important;
+            background-color: rgb(19, 67, 119) !important;
+            border-color: rgb(19, 67, 119) !important;
             transform: translateY(-1px) !important;
         }
         
         .eprobe-button-hover:focus {
-            background-color: #0f3a66 !important;
-            border-color: #0f3a66 !important;
-            outline: 2px solid #4FC3F7 !important;
+            background-color: rgb(19, 67, 119) !important;
+            border-color: rgb(19, 67, 119) !important;
+            outline: 2px solid #ffffffff !important;
         }
         
         .eprobe-button-hover:active {
@@ -3340,7 +3340,7 @@ RESPOSTA (apenas JSON válido):`;
                 }, 100);
 
                 // Ajustar posição se sair da tela
-                const rect = window.getCachedBoundingRect(menu);
+                const rect = menu.getBoundingClientRect();
                 if (rect.right > window.innerWidth) {
                     menu.style.left = event.clientX - rect.width + "px";
                 }
@@ -5369,6 +5369,44 @@ RESPOSTA (apenas JSON válido):`;
                 }
             }
 
+            // Abrir Copilot com texto e prompt específico para análise judicial
+            async function openCopilotWithText(texto) {
+                try {
+                    log("🚀 Abrindo Copilot para análise manual...");
+
+                    // Preparar o prompt específico para análise judicial
+                    const prompt = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.
+
+Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido.
+
+DOCUMENTO:
+${texto}`;
+
+                    // Copiar para área de transferência
+                    await navigator.clipboard.writeText(prompt);
+
+                    log(
+                        `✅ Texto preparado para Copilot (${prompt.length} caracteres)`
+                    );
+
+                    // Abrir Copilot em nova aba
+                    const copilotUrl = "https://copilot.cloud.microsoft/";
+                    window.open(copilotUrl, "_blank");
+
+                    showNotification(
+                        "🤖 Copilot aberto!\n\nO prompt com o documento está na área de transferência.\nCole no Copilot (Ctrl+V) para análise.",
+                        "success"
+                    );
+
+                    log("✅ Copilot aberto com sucesso em nova aba");
+                    return true;
+                } catch (error) {
+                    log("❌ Erro ao abrir Copilot:", error);
+                    showNotification("❌ Erro ao abrir Copilot", "error");
+                    return false;
+                }
+            }
+
             // Enviar texto diretamente para Perplexity usando API - usando expressão de função
             const sendToPerplexity = async function (texto) {
                 const requestId = Date.now().toString();
@@ -5688,7 +5726,6 @@ RESPOSTA (apenas JSON válido):`;
  top: ${y}px;
  z-index: 10001;
  min-width: ${menuWidth}px;
- overflow: auto;
  border-radius: 8px;
  border: 1px solid rgb(19 67 119);
  background: #134377;
@@ -5778,7 +5815,7 @@ RESPOSTA (apenas JSON válido):`;
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
  <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
  </svg>
- API Perplexity
+ Resumir com Perplexity
  </li>
  <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -5853,28 +5890,34 @@ RESPOSTA (apenas JSON válido):`;
                             menu.remove();
                             const texto = await autoExtractText();
                             if (texto) {
-                                const usePreview =
-                                    await showPreviewOptionsModal();
-
-                                if (usePreview) {
-                                    log(" Usuário escolheu preview");
-                                    showTextPreview(texto);
-                                } else {
-                                    log("Usuário escolheu cópia direta");
+                                log(
+                                    "📋 Iniciando método manual com Copilot..."
+                                );
+                                const success = await openCopilotWithText(
+                                    texto
+                                );
+                                if (!success) {
+                                    log(
+                                        "❌ Falha ao abrir Copilot, usando fallback"
+                                    );
+                                    // Fallback: copiar com prefixo tradicional
                                     const copied =
                                         await copyToClipboardWithPrefix(texto);
                                     if (copied) {
-                                        log(" Texto copiado para uso em IA...");
                                         showNotification(
-                                            " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)",
+                                            "📋 Texto copiado! Cole em qualquer IA (Ctrl+V)",
                                             "success"
-                                        );
-                                    } else {
-                                        log(
-                                            " Falha ao copiar texto no método manual direto"
                                         );
                                     }
                                 }
+                            } else {
+                                log(
+                                    "❌ Não foi possível extrair texto do documento"
+                                );
+                                showNotification(
+                                    "❌ Erro ao extrair texto do documento",
+                                    "error"
+                                );
                             }
                         }
                     );
@@ -5938,7 +5981,7 @@ RESPOSTA (apenas JSON válido):`;
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
  <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
  </svg>
- API Perplexity
+ Resumo Perplexity
  </li>
  <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -6013,32 +6056,36 @@ RESPOSTA (apenas JSON válido):`;
                                 menu.remove();
                                 const texto = await autoExtractText();
                                 if (texto) {
-                                    const usePreview =
-                                        await showPreviewOptionsModal();
-
-                                    if (usePreview) {
-                                        log(" Usuário escolheu preview");
-                                        showTextPreview(texto);
-                                    } else {
-                                        log("Usuário escolheu cópia direta");
+                                    log(
+                                        "📋 Iniciando método manual com Copilot..."
+                                    );
+                                    const success = await openCopilotWithText(
+                                        texto
+                                    );
+                                    if (!success) {
+                                        log(
+                                            "❌ Falha ao abrir Copilot, usando fallback"
+                                        );
+                                        // Fallback: copiar com prefixo tradicional
                                         const copied =
                                             await copyToClipboardWithPrefix(
                                                 texto
                                             );
                                         if (copied) {
-                                            log(
-                                                " Texto copiado para uso em IA..."
-                                            );
                                             showNotification(
-                                                " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)",
+                                                "📋 Texto copiado! Cole em qualquer IA (Ctrl+V)",
                                                 "success"
-                                            );
-                                        } else {
-                                            log(
-                                                " Falha ao copiar texto no método manual direto"
                                             );
                                         }
                                     }
+                                } else {
+                                    log(
+                                        "❌ Não foi possível extrair texto do documento"
+                                    );
+                                    showNotification(
+                                        "❌ Erro ao extrair texto do documento",
+                                        "error"
+                                    );
                                 }
                             }
                         );
@@ -6431,10 +6478,9 @@ RESPOSTA (apenas JSON válido):`;
 
                 // Verificar sobreposição com notificação
                 if (notification) {
-                    const buttonRect =
-                        window.getCachedBoundingRect(floatingButton);
+                    const buttonRect = floatingButton.getBoundingClientRect();
                     const notificationRect =
-                        window.getCachedBoundingRect(notification);
+                        notification.getBoundingClientRect();
 
                     // Se há sobreposição, mover notificação
                     if (
@@ -6451,9 +6497,8 @@ RESPOSTA (apenas JSON válido):`;
 
                 // Verificar sobreposição com menu de opções
                 if (optionsMenu) {
-                    const buttonRect =
-                        window.getCachedBoundingRect(floatingButton);
-                    const menuRect = window.getCachedBoundingRect(optionsMenu);
+                    const buttonRect = floatingButton.getBoundingClientRect();
+                    const menuRect = optionsMenu.getBoundingClientRect();
 
                     // Se há sobreposição, mover menu
                     if (
@@ -6500,8 +6545,7 @@ RESPOSTA (apenas JSON válido):`;
 
                 if (isFloatingButtonVisible) {
                     // Se há botão flutuante, calcular posição para evitar sobreposição
-                    const buttonRect =
-                        window.getCachedBoundingRect(floatingButton);
+                    const buttonRect = floatingButton.getBoundingClientRect();
                     const windowWidth = window.innerWidth;
 
                     // Se há espaço à esquerda do botão, colocar a notificação lá
@@ -6668,7 +6712,7 @@ RESPOSTA (apenas JSON válido):`;
                         showNotification(" Abrindo documento...", "info");
                         await runFullAutomation();
                     } else if (pageType === "documento_especifico") {
-                        const rect = window.getCachedBoundingRect(button);
+                        const rect = button.getBoundingClientRect();
                         showOptionsMenu(rect.left, rect.bottom);
                     } else {
                         showNotification(" Página não reconhecida", "error");
@@ -7117,7 +7161,7 @@ RESPOSTA (apenas JSON válido):`;
                     const containers = document.querySelectorAll(selector);
                     for (const container of containers) {
                         // Verificar se o container está visível e tem tamanho adequado
-                        const rect = window.getCachedBoundingRect(container);
+                        const rect = container.getBoundingClientRect();
                         if (
                             rect.width > 200 &&
                             rect.height > 20 &&
@@ -7136,23 +7180,184 @@ RESPOSTA (apenas JSON válido):`;
                 return null;
             }
 
+            // Função para mostrar menu básico de debug quando a página não é reconhecida
+            function showBasicDebugMenu(button) {
+                log("🛠️ DEBUG MENU: Criando menu básico de debug");
+
+                const rect = button.getBoundingClientRect();
+                const menu = document.createElement("div");
+                menu.id = "eprobe-debug-menu";
+                menu.style.cssText = `
+                    position: fixed;
+                    left: ${rect.left - 200}px;
+                    top: ${rect.bottom + 10}px;
+                    z-index: 10002;
+                    background: rgb(19, 67, 119);
+                    border: 1px solid rgb(19, 67, 119);
+                    border-radius: 8px;
+                    padding: 12px;
+                    min-width: 250px;
+                    color: white;
+                    font-family: "Roboto", sans-serif;
+                    font-size: 14px;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                `;
+
+                const pageType = detectPageType();
+                const url = window.location.href;
+
+                menu.innerHTML = `
+                    <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid rgb(19, 67, 119); padding-bottom: 8px;">
+                        🛠️ eProbe Debug Menu
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 8px;">
+                        <strong>Página:</strong> ${
+                            pageType || "não reconhecida"
+                        }
+                    </div>
+                    <div style="font-size: 12px; margin-bottom: 12px; word-break: break-all;">
+                        <strong>URL:</strong> ${url.substring(0, 60)}...
+                    </div>
+                    <button id="debug-extract-text" style="width: 100%; margin-bottom: 6px; background: rgb(19, 67, 119); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">
+                        📄 Extrair Texto da Página
+                    </button>
+                    <button id="debug-show-api-config" style="width: 100%; margin-bottom: 6px; background: rgb(19, 67, 119); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">
+                        🔑 Configurar API Perplexity
+                    </button>
+                    <button id="debug-close" style="width: 100%; background: #6c757d; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer;">
+                        ❌ Fechar
+                    </button>
+                `;
+
+                document.body.appendChild(menu);
+
+                // Event listeners
+                menu.querySelector("#debug-extract-text").addEventListener(
+                    "click",
+                    async () => {
+                        menu.remove();
+                        try {
+                            const texto = await autoExtractText();
+                            if (texto) {
+                                await copyToClipboardWithPrefix(texto);
+                                showNotification(
+                                    "📄 Texto extraído e copiado! Cole no Perplexity (Ctrl+V)",
+                                    "success"
+                                );
+                            } else {
+                                showNotification(
+                                    "❌ Não foi possível extrair texto desta página",
+                                    "error"
+                                );
+                            }
+                        } catch (error) {
+                            console.error("Erro ao extrair texto:", error);
+                            showNotification(
+                                "❌ Erro ao extrair texto: " + error.message,
+                                "error"
+                            );
+                        }
+                    }
+                );
+
+                menu.querySelector("#debug-show-api-config").addEventListener(
+                    "click",
+                    () => {
+                        menu.remove();
+                        showApiKeyConfig();
+                    }
+                );
+
+                menu.querySelector("#debug-close").addEventListener(
+                    "click",
+                    () => {
+                        menu.remove();
+                    }
+                );
+
+                // Fechar ao clicar fora
+                setTimeout(() => {
+                    document.addEventListener(
+                        "click",
+                        function closeDebugMenu(e) {
+                            if (!menu.contains(e.target)) {
+                                menu.remove();
+                                document.removeEventListener(
+                                    "click",
+                                    closeDebugMenu
+                                );
+                            }
+                        }
+                    );
+                }, 100);
+
+                log("✅ DEBUG MENU: Menu de debug criado");
+            }
+
+            // Função auxiliar para getBoundingClientRect com fallback
+            window.getCachedBoundingRect = function (element) {
+                try {
+                    if (
+                        !element ||
+                        typeof element.getBoundingClientRect !== "function"
+                    ) {
+                        console.warn(
+                            "⚠️ getCachedBoundingRect: Elemento inválido",
+                            element
+                        );
+                        return {
+                            left: 0,
+                            top: 0,
+                            right: 0,
+                            bottom: 0,
+                            width: 0,
+                            height: 0,
+                        };
+                    }
+                    return element.getBoundingClientRect();
+                } catch (error) {
+                    console.error(
+                        "❌ getCachedBoundingRect: Erro ao obter coordenadas",
+                        error
+                    );
+                    return {
+                        left: 0,
+                        top: 0,
+                        right: 0,
+                        bottom: 0,
+                        width: 0,
+                        height: 0,
+                    };
+                }
+            };
+
             // Função de fallback para criar botão flutuante (caso container não seja encontrado)
             function createFloatingButton() {
+                log("🎯 FLOATING BUTTON: Iniciando criação do botão flutuante");
+
                 // Verificar se já existe um botão
                 if (document.getElementById("sent1-auto-button")) {
-                    log(" Botão flutuante já existe, cancelando criação");
-                    return;
-                }
-
-                // Verificar se a página é válida para mostrar o botão
-                if (!shouldShowFloatingButton()) {
                     log(
-                        " Página não atende critérios para o botão flutuante, cancelando criação"
+                        "⚠️ FLOATING BUTTON: Botão flutuante já existe, cancelando criação"
                     );
                     return;
                 }
 
-                log(" Criando botão flutuante como fallback...");
+                // Verificar se a página é válida para mostrar o botão
+                const shouldShow = shouldShowFloatingButton();
+                log("🔍 FLOATING BUTTON: Verificação de critérios:", {
+                    shouldShow: shouldShow,
+                    url: window.location.href,
+                });
+
+                if (!shouldShow) {
+                    log(
+                        "❌ FLOATING BUTTON: Página não atende critérios para o botão flutuante, cancelando criação"
+                    );
+                    return;
+                }
+
+                log("✅ FLOATING BUTTON: Criando botão flutuante...");
                 const button = document.createElement("button");
                 button.id = "sent1-auto-button";
                 button.className = "eprobe-button";
@@ -7167,6 +7372,15 @@ RESPOSTA (apenas JSON válido):`;
                 // FORÇAR aplicação do margin-right no SVG após criação
                 setTimeout(() => {
                     const svg = button.querySelector("svg");
+                    if (svg) {
+                        svg.style.marginRight = "4px";
+                        svg.style.setProperty(
+                            "margin-right",
+                            "4px",
+                            "important"
+                        );
+                        log("✅ FLOATING BUTTON: Margin-right aplicado ao SVG");
+                    }
                 }, 100);
 
                 // Usar estilo customizado próprio para o botão flutuante
@@ -7208,8 +7422,8 @@ RESPOSTA (apenas JSON válido):`;
                     e.preventDefault();
                     e.stopPropagation();
 
-                    log(" Botão flutuante clicado!");
-                    log(" Debug: Botão Resumir Documento clicado");
+                    log("🎯 FLOATING BUTTON: Botão flutuante clicado!");
+                    log("🔍 FLOATING BUTTON: Debug do click");
 
                     // Adicionar feedback visual
                     button.style.transform = "scale(0.95)";
@@ -7218,68 +7432,113 @@ RESPOSTA (apenas JSON válido):`;
                     }, 150);
 
                     const pageType = detectPageType();
-                    log(" Tipo de página detectado:", pageType);
+                    log(
+                        "📄 FLOATING BUTTON: Tipo de página detectado:",
+                        pageType
+                    );
 
-                    // Lógica específica para o botão flutuante
-                    // Como o botão flutuante só aparece quando há documentos específicos,
-                    // podemos assumir que estamos em uma página de documento
-                    if (pageType === "lista_documentos") {
-                        showNotification(" Abrindo documento...", "info");
-                        await runFullAutomation();
-                    } else if (
-                        pageType === "documento_especifico" ||
-                        pageType === "documento_html" ||
-                        pageType === "documento_pdf"
-                    ) {
-                        // Página de documento específico - mostrar menu de opções
-                        const rect = window.getCachedBoundingRect(button);
-                        showOptionsMenu(rect.left, rect.bottom);
-                    } else {
-                        // Para o botão flutuante, se chegou até aqui é porque deve haver um documento
-                        // Vamos verificar se há elementos que indicam documento na página
-                        const pageHTML = document.documentElement.outerHTML;
-                        const hasDocumentHtml = pageHTML.includes(
-                            "acessar_documento&id"
-                        );
-                        const hasDocumentPdf = pageHTML.includes(
-                            "acessar_documento&amp"
-                        );
+                    try {
+                        // Lógica específica para o botão flutuante
+                        if (pageType === "lista_documentos") {
+                            showNotification("🚀 Abrindo documento...", "info");
+                            await runFullAutomation();
+                        } else if (
+                            pageType === "documento_especifico" ||
+                            pageType === "documento_html" ||
+                            pageType === "documento_pdf"
+                        ) {
+                            // Página de documento específico - mostrar menu de opções
+                            log("📋 FLOATING BUTTON: Mostrando menu de opções");
 
-                        log(
-                            " Debug: Verificação de documento na página não reconhecida:",
-                            {
-                                hasDocumentHtml: hasDocumentHtml,
-                                hasDocumentPdf: hasDocumentPdf,
-                                url: window.location.href,
-                            }
-                        );
+                            // Usar getBoundingClientRect diretamente em vez de getCachedBoundingRect
+                            const rect = button.getBoundingClientRect();
+                            log("📐 FLOATING BUTTON: Coordenadas do botão:", {
+                                left: rect.left,
+                                bottom: rect.bottom,
+                                top: rect.top,
+                                right: rect.right,
+                            });
 
-                        if (hasDocumentHtml || hasDocumentPdf) {
-                            // Há documento, mas a página não foi reconhecida - tratar como documento específico
-                            log(
-                                " Página contém documento mas não foi reconhecida - tratando como documento específico"
-                            );
-                            const rect = window.getCachedBoundingRect(button);
-                            log(
-                                " Debug: Chamando showOptionsMenu com coordenadas:",
-                                {
-                                    x: rect.left,
-                                    y: rect.bottom,
-                                }
-                            );
                             showOptionsMenu(rect.left, rect.bottom);
                         } else {
-                            // Realmente não há documento reconhecível
-                            showNotification(
-                                " Página não reconhecida ou sem documento válido",
-                                "error"
+                            // Para o botão flutuante, verificar se há documento na página
+                            const pageHTML = document.documentElement.outerHTML;
+                            const hasDocumentHtml = pageHTML.includes(
+                                "acessar_documento&id"
                             );
+                            const hasDocumentPdf = pageHTML.includes(
+                                "acessar_documento&amp"
+                            );
+
+                            log(
+                                "🔍 FLOATING BUTTON: Verificação de documento:",
+                                {
+                                    hasDocumentHtml: hasDocumentHtml,
+                                    hasDocumentPdf: hasDocumentPdf,
+                                    url: window.location.href,
+                                }
+                            );
+
+                            if (hasDocumentHtml || hasDocumentPdf) {
+                                // Há documento, mas a página não foi reconhecida - tratar como documento específico
+                                log(
+                                    "📄 FLOATING BUTTON: Documento encontrado - mostrando menu"
+                                );
+
+                                const rect = button.getBoundingClientRect();
+                                showOptionsMenu(rect.left, rect.bottom);
+                            } else {
+                                // Página não reconhecida - mostrar menu de debug
+                                log(
+                                    "❓ FLOATING BUTTON: Página não reconhecida - mostrando menu de debug"
+                                );
+                                showBasicDebugMenu(button);
+                            }
                         }
+                    } catch (error) {
+                        console.error(
+                            "❌ FLOATING BUTTON: Erro ao processar click:",
+                            error
+                        );
+                        showNotification("❌ Erro ao processar ação", "error");
                     }
                 });
 
                 document.body.appendChild(button);
-                log(" Botão flutuante adicionado ao DOM");
+                log("✅ FLOATING BUTTON: Botão flutuante adicionado ao DOM");
+
+                // Verificar se o botão foi realmente adicionado
+                setTimeout(() => {
+                    const addedButton =
+                        document.getElementById("sent1-auto-button");
+                    if (addedButton) {
+                        const computedStyle =
+                            window.getComputedStyle(addedButton);
+                        log("🔍 FLOATING BUTTON: Status após adição:", {
+                            existe: true,
+                            display: computedStyle.display,
+                            visibility: computedStyle.visibility,
+                            position: computedStyle.position,
+                            zIndex: computedStyle.zIndex,
+                            top: addedButton.style.top,
+                            right: addedButton.style.right,
+                            backgroundColor: computedStyle.backgroundColor,
+                        });
+
+                        // Testar se o botão responde a eventos
+                        addedButton.addEventListener(
+                            "mouseover",
+                            () => {
+                                log("🖱️ FLOATING BUTTON: Mouse over detectado");
+                            },
+                            { once: true }
+                        );
+                    } else {
+                        console.error(
+                            "❌ FLOATING BUTTON: Botão não encontrado após adição ao DOM!"
+                        );
+                    }
+                }, 100);
 
                 // Verificar e prevenir sobreposições após um pequeno delay
                 setTimeout(() => {
@@ -9047,9 +9306,29 @@ RESPOSTA (apenas JSON válido):`;
                     button.innerHTML = innerHTML;
                 }
 
-                // Aplicar cor azul personalizada eProc
-                button.style.backgroundColor = "#134377";
-                button.style.borderColor = "#134377";
+                // 🎯 SOLUÇÃO: Verificar tema ativo antes de aplicar cor
+                let temaCor = "#134377"; // Cor padrão azul eProbe
+
+                try {
+                    // Tentar pegar tema salvo do localStorage
+                    const temaSalvo = localStorage.getItem(
+                        "eprobe_tema_botoes_eproc"
+                    );
+                    if (temaSalvo && TEMAS_BOTOES_EPROC[temaSalvo]) {
+                        temaCor = TEMAS_BOTOES_EPROC[temaSalvo].backgroundColor;
+                        log(
+                            `🎨 BOTÃO: Usando cor do tema ${temaSalvo}: ${temaCor}`
+                        );
+                    }
+                } catch (e) {
+                    log(
+                        "⚠️ BOTÃO: Erro ao verificar tema salvo, usando azul padrão"
+                    );
+                }
+
+                // Aplicar cor baseada no tema ativo
+                button.style.backgroundColor = temaCor;
+                button.style.borderColor = temaCor;
 
                 // FORÇAR aplicação do margin-right no SVG
                 setTimeout(() => {
@@ -9068,25 +9347,29 @@ RESPOSTA (apenas JSON válido):`;
                     }
                 }, 50);
 
+                // 🎯 EVENTOS HOVER DINÂMICOS baseados na cor do tema
+                const corHover =
+                    temaCor === "#134377" ? "rgb(19, 67, 119)" : temaCor; // Se azul, usar hover mais escuro
+
                 // Adicionar eventos para hover, focus e blur (otimizados para performance)
                 button.addEventListener("mouseenter", () => {
-                    button.style.backgroundColor = "#0f3a66";
-                    button.style.borderColor = "#0f3a66";
+                    button.style.backgroundColor = corHover;
+                    button.style.borderColor = corHover;
                 });
 
                 button.addEventListener("mouseleave", () => {
-                    button.style.backgroundColor = "#134377";
-                    button.style.borderColor = "#134377";
+                    button.style.backgroundColor = temaCor;
+                    button.style.borderColor = temaCor;
                 });
 
                 button.addEventListener("focus", () => {
-                    button.style.backgroundColor = "#0f3a66";
-                    button.style.borderColor = "#0f3a66";
+                    button.style.backgroundColor = corHover;
+                    button.style.borderColor = corHover;
                 });
 
                 button.addEventListener("blur", () => {
-                    button.style.backgroundColor = "#134377";
-                    button.style.borderColor = "#134377";
+                    button.style.backgroundColor = temaCor;
+                    button.style.borderColor = temaCor;
                 });
 
                 return button;
@@ -16110,7 +16393,7 @@ RESPOSTA (apenas JSON válido):`;
                 // Se não há tema salvo, aplicar tema padrão elegante
                 // window.aplicarEstiloBotoesEproc('elegante');
             }
-        }, 1000);
+        }, 200); // ← REDUZIDO DE 1000ms PARA 200ms
 
         // ============================================
         // FUNÇÕES DE NAVBAR REMOVIDAS - CENTRALIZADAS EM gerenciarNavbarEprobe()
