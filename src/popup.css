@@ -1887,7 +1887,6 @@ button.btn.btn-link.btn-pesquisar:active::after,
     position: fixed !important;
     top: 20px !important;
     right: 20px !important;
-    z-index: 99999 !important;
     font-family: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI",
         sans-serif !important;
     max-width: 320px !important;

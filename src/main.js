@@ -124,6 +124,26 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             opacity: 0;
             animation: fadeInElement 0.3s ease-out forwards;
         }
+        
+        /* ===== ESTILOS PARA LEMBRETES ===== */
+        .divLembretePara {
+            margin-bottom: 15px !important;
+        }
+        
+        /* FORÇA MÁXIMA: Sobrescrever qualquer margin existente */
+        div.divLembreteData,
+        .divLembreteData,
+        div[class*="divLembreteData"],
+        body div.divLembreteData,
+        body .divLembreteData,
+        html body div.divLembreteData,
+        html body .divLembreteData {
+            margin: 15px 0 0 0 !important;
+            margin-top: 15px !important;
+            margin-bottom: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
     `;
 
     // Inserir no head IMEDIATAMENTE - antes de qualquer outro script
@@ -135,6 +155,23 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         head.insertBefore(cssInstantaneo, head.firstChild);
         logCritical("✅ INSTANT: CSS crítico aplicado no topo do head");
     }
+
+    // FORÇA ADICIONAL: CSS ultra-específico para divLembreteData
+    const cssForceMarginTop = document.createElement("style");
+    cssForceMarginTop.id = "eprobe-force-margin-top";
+    cssForceMarginTop.textContent = `
+        /* FORÇA ULTRA-ESPECÍFICA para divLembreteData */
+        html body *:not(#nonexistent) div.divLembreteData,
+        html body *:not(#nonexistent) .divLembreteData {
+            margin-top: 15px !important;
+        }
+        
+        /* Se AINDA assim não funcionar, usar JavaScript inline */
+        div[class="divLembreteData"] {
+            margin-top: 15px !important;
+        }
+    `;
+    head.appendChild(cssForceMarginTop);
 
     // Aplicar tema salvo do localStorage instantaneamente (sem aguardar APIs)
     const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
@@ -172,6 +209,36 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     // Executar imediatamente após 1ms para garantir que DOM básico está pronto
     setTimeout(() => {
         try {
+            // FORÇA JAVASCRIPT: Aplicar margin-top diretamente nos elementos divLembreteData
+            const forcarMarginTopLembretes = () => {
+                const divLembreteDataElements = document.querySelectorAll(
+                    '.divLembreteData, div[class*="divLembreteData"]'
+                );
+                divLembreteDataElements.forEach((element) => {
+                    element.style.setProperty(
+                        "margin-top",
+                        "15px",
+                        "important"
+                    );
+                    element.style.setProperty(
+                        "margin-bottom",
+                        "0",
+                        "important"
+                    );
+                    element.style.setProperty("margin-left", "0", "important");
+                    element.style.setProperty("margin-right", "0", "important");
+                });
+                if (divLembreteDataElements.length > 0) {
+                    logCritical(
+                        `🔧 FORÇA JS: Aplicado margin-top em ${divLembreteDataElements.length} elementos divLembreteData`
+                    );
+                }
+            };
+
+            // Aplicar imediatamente e a cada 500ms para garantir
+            forcarMarginTopLembretes();
+            setInterval(forcarMarginTopLembretes, 500);
+
             // Garantir que navbar está visível instantaneamente
             const navbar =
                 document.querySelector("#navbar.navbar.bg-instancia") ||
@@ -1254,7 +1321,6 @@ RESPOSTA (apenas JSON válido):`;
                 border: 0.75px solid #CAC4D0;
                 border-radius: 9px;
                 box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-                z-index: 1000;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 display: flex;
                 align-items: center;
@@ -2298,6 +2364,38 @@ RESPOSTA (apenas JSON válido):`;
             border-color: #91433d !important;
         }
         
+        /* ⚡ ANTI-FLASH TOTAL: Sistema robusto para eliminar completamente o flash visual */
+        
+        /* 1. Ocultar QUALQUER elemento de lembrete até ser processado */
+        .lista-lembretes .lembrete:not(.eprobe-lembrete-processado),
+        div.divLembrete:not(.eprobe-lembrete-processado) {
+            visibility: hidden !important;
+            opacity: 0 !important;
+            position: relative !important;
+        }
+        
+        /* 2. Mostrar apenas elementos processados */
+        .lista-lembretes .lembrete.eprobe-lembrete-processado,
+        div.divLembrete.eprobe-lembrete-processado {
+            visibility: visible !important;
+            opacity: 1 !important;
+            transition: opacity 0.2s ease-in-out !important;
+        }
+        
+        /* 3. Pré-aplicar estilos ANTES do elemento aparecer */
+        .lista-lembretes .lembrete.eprobe-lembrete-processado,
+        div.divLembrete.eprobe-lembrete-processado {
+            padding: 20px !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+            transition: box-shadow 0.5s ease !important;
+            -webkit-font-smoothing: subpixel-antialiased !important;
+        }
+        
+        /* 4. Garantir que Material Icons sejam substituídos instantaneamente */
+        .eprobe-lembrete-processado .material-icons:not([data-eprobe-icon-replaced]) {
+            display: none !important;
+        }
+        
         /* Botões de abertura otimizados */
         .eprobe-open-button:hover {
             background-color: rgba(148, 163, 184, 0.1) !important;
@@ -2334,7 +2432,7 @@ RESPOSTA (apenas JSON válido):`;
             materialIconsHistory.rel = "preload";
             materialIconsHistory.as = "style";
             materialIconsHistory.href =
-                "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=event_repeat,gavel";
+                "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=history_2,gavel";
             materialIconsHistory.onload = function () {
                 this.onload = null;
                 this.rel = "stylesheet";
@@ -5369,10 +5467,10 @@ RESPOSTA (apenas JSON válido):`;
                 }
             }
 
-            // Abrir Copilot com texto e prompt específico para análise judicial
-            async function openCopilotWithText(texto) {
+            // Função genérica para abrir IA com texto e prompt específico
+            async function openAIWithText(aiName, url, texto) {
                 try {
-                    log("🚀 Abrindo Copilot para análise manual...");
+                    log(`🚀 Abrindo ${aiName} para análise manual...`);
 
                     // Preparar o prompt específico para análise judicial
                     const prompt = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.
@@ -5386,25 +5484,399 @@ ${texto}`;
                     await navigator.clipboard.writeText(prompt);
 
                     log(
-                        `✅ Texto preparado para Copilot (${prompt.length} caracteres)`
+                        `✅ Texto preparado para ${aiName} (${prompt.length} caracteres)`
                     );
 
-                    // Abrir Copilot em nova aba
-                    const copilotUrl = "https://copilot.cloud.microsoft/";
-                    window.open(copilotUrl, "_blank");
+                    // Abrir IA em nova aba
+                    window.open(url, "_blank");
 
                     showNotification(
-                        "🤖 Copilot aberto!\n\nO prompt com o documento está na área de transferência.\nCole no Copilot (Ctrl+V) para análise.",
+                        `${aiName} aberto!\n\nO prompt com o documento está na área de transferência.\nCole no ${aiName} (Ctrl+V) para análise.`,
                         "success"
                     );
 
-                    log("✅ Copilot aberto com sucesso em nova aba");
+                    log(`✅ ${aiName} aberto com sucesso em nova aba`);
                     return true;
                 } catch (error) {
-                    log("❌ Erro ao abrir Copilot:", error);
-                    showNotification("❌ Erro ao abrir Copilot", "error");
+                    log(`❌ Erro ao abrir ${aiName}:`, error);
+                    showNotification(`❌ Erro ao abrir ${aiName}`, "error");
                     return false;
                 }
+            }
+
+            // Modal para seleção de IA
+            async function showAISelectionModal(texto) {
+                return new Promise((resolve) => {
+                    // Remover modal existente se houver
+                    const existingModal =
+                        document.getElementById("ai-selection-modal");
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Criar overlay do modal
+                    const overlay = document.createElement("div");
+                    overlay.id = "ai-selection-modal";
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.8);
+                        z-index: 10002;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-family: "Roboto", -apple-system, system-ui, sans-serif;
+                    `;
+
+                    // Criar conteúdo do modal
+                    const modal = document.createElement("div");
+                    modal.style.cssText = `
+                        background: #134377;
+                        border-radius: 12px;
+                        padding: 32px;
+                        max-width: 520px;
+                        width: 90%;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+                        border: 1px solid rgba(82, 82, 82, 0.3);
+                    `;
+
+                    modal.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white">
+                                    <path d="M335-160q-16.3 0-30.65-8.5Q290-177 282-190l-73-132h61l39.64 80H398v-24h-72.06l-40.15-80H194l-58-105q-3.8-6-5.9-13.5-2.1-7.5-2.1-15.72 0-4.78 8-29.78l60.31-104H289l39-80h72v-24h-86.67L274-638h-63l71-132q7.57-13.86 22.06-21.93Q318.54-800 335-800h70q25.1 0 42.55 17.45Q465-765.1 465-740v154h-53l-36 24h89v136h-97l-39.94-80H240l-26 24h98l40.47 80H465v182q0 25.1-17.45 42.55Q430.1-160 405-160h-70Zm214 0q-25.1 0-42.55-17.45Q489-194.9 489-220v-182h119l40-80h93l-21-24h-89.06L591-426H489v-136h95l-36-24h-59v-154q0-25.1 17.45-42.55Q523.9-800 549-800h76q16.3 0 30.65 8.5Q670-783 678-770l72 130h-62.51L647-718h-87v24h71.74l39.96 82H765l59 102q3.8 6.33 5.9 14.17Q832-488 832-480q0 5-8 29l-57 105h-94.79l-40.15 80H560v24h87.36L687-322h63l-73 132q-8 13-22.35 21.5Q640.3-160 624-160h-75Z"/>
+                                </svg>
+                                <h2 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">
+                                    Escolha sua IA
+                                </h2>
+                            </div>
+                            <p style="color: rgb(203 213 225); margin: 0; font-size: 16px;">
+                                Selecione qual IA deseja usar para análise do documento
+                            </p>
+                        </div>
+
+                        <div style="display: grid; gap: 12px; margin-bottom: 24px;">
+                            <button id="ai-chatgpt" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                    <path d="M21.55 10.004a5.416 5.416 0 00-.478-4.501c-1.217-2.09-3.662-3.166-6.05-2.66A5.59 5.59 0 0010.831 1C8.39.995 6.224 2.546 5.473 4.838A5.553 5.553 0 001.76 7.496a5.487 5.487 0 00.691 6.5 5.416 5.416 0 00.477 4.502c1.217 2.09 3.662 3.165 6.05 2.66A5.586 5.586 0 0013.168 23c2.443.006 4.61-1.546 5.361-3.84a5.553 5.553 0 003.715-2.66 5.488 5.488 0 00-.693-6.497v.001zm-8.381 11.558a4.199 4.199 0 01-2.675-.954c.034-.018.093-.05.132-.074l4.44-2.53a.71.71 0 00.364-.623v-6.176l1.877 1.069c.02.01.033.029.036.05v5.115c-.003 2.274-1.87 4.118-4.174 4.123zM4.192 17.78a4.059 4.059 0 01-.498-2.763c.032.02.09.055.131.078l4.44 2.53c.225.13.504.13.73 0l5.42-3.088v2.138a.068.068 0 01-.027.057L9.9 19.288c-1.999 1.136-4.552.46-5.707-1.51h-.001zM3.023 8.216A4.15 4.15 0 015.198 6.41l-.002.151v5.06a.711.711 0 00.364.624l5.42 3.087-1.876 1.07a.067.067 0 01-.063.005l-4.489-2.559c-1.995-1.14-2.679-3.658-1.53-5.63h.001zm15.417 3.54l-5.42-3.088L14.896 7.6a.067.067 0 01.063-.006l4.489 2.557c1.998 1.14 2.683 3.662 1.529 5.633a4.163 4.163 0 01-2.174 1.807V12.38a.71.71 0 00-.363-.623zm1.867-2.773a6.04 6.04 0 00-.132-.078l-4.44-2.53a.731.731 0 00-.729 0l-5.42 3.088V7.325a.068.068 0 01.027-.057L14.1 4.713c2-1.137 4.555-.46 5.707 1.513.487.833.664 1.809.499 2.757h.001zm-11.741 3.81l-1.877-1.068a.065.065 0 01-.036-.051V6.559c.001-2.277 1.873-4.122 4.181-4.12.976 0 1.92.338 2.671.954-.034.018-.092.05-.131.073l-4.44 2.53a.71.71 0 00-.365.623l-.003 6.173v.002zm1.02-2.168L12 9.25l2.414 1.375v2.75L12 14.75l-2.415-1.375v-2.75z"/>
+                                </svg>
+                                <span>ChatGPT</span>
+                            </button>
+
+                            <button id="ai-claude" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#D97757">
+                                    <path d="M4.709 15.955l4.72-2.647.08-.23-.08-.128H9.2l-.79-.048-2.698-.073-2.339-.097-2.266-.122-.571-.121L0 11.784l.055-.352.48-.321.686.06 1.52.103 2.278.158 1.652.097 2.449.255h.389l.055-.157-.134-.098-.103-.097-2.358-1.596-2.552-1.688-1.336-.972-.724-.491-.364-.462-.158-1.008.656-.722.881.06.225.061.893.686 1.908 1.476 2.491 1.833.365.304.145-.103.019-.073-.164-.274-1.355-2.446-1.446-2.49-.644-1.032-.17-.619a2.97 2.97 0 01-.104-.729L6.283.134 6.696 0l.996.134.42.364.62 1.414 1.002 2.229 1.555 3.03.456.898.243.832.091.255h.158V9.01l.128-1.706.237-2.095.23-2.695.08-.76.376-.91.747-.492.584.28.48.685-.067.444-.286 1.851-.559 2.903-.364 1.942h.212l.243-.242.985-1.306 1.652-2.064.73-.82.85-.904.547-.431h1.033l.76 1.129-.34 1.166-1.064 1.347-.881 1.142-1.264 1.7-.79 1.36.073.11.188-.02 2.856-.606 1.543-.28 1.841-.315.833.388.091.395-.328.807-1.969.486-2.309.462-3.439.813-.042.03.049.061 1.549.146.662.036h1.622l3.02.225.79.522.474.638-.079.485-1.215.62-1.64-.389-3.829-.91-1.312-.329h-.182v.11l1.093 1.068 2.006 1.81 2.509 2.33.127.578-.322.455-.34-.049-2.205-1.657-.851-.747-1.926-1.62h-.128v.17l.444.649 2.345 3.521.122 1.08-.17.353-.608.213-.668-.122-1.374-1.925-1.415-2.167-1.143-1.943-.14.08-.674 7.254-.316.37-.729.28-.607-.461-.322-.747.322-1.476.389-1.924.315-1.53.286-1.9.17-.632-.012-.042-.14.018-1.434 1.967-2.18 2.945-1.726 1.845-.414.164-.717-.37.067-.662.401-.589 2.388-3.036 1.44-1.882.93-1.086-.006-.158h-.055L4.132 18.56l-1.13.146-.487-.456.061-.746.231-.243 1.908-1.312-.006.006z"/>
+                                </svg>
+                                <span>Claude</span>
+                            </button>
+
+                            <button id="ai-gemini" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+                                    <defs>
+                                        <linearGradient gradientUnits="userSpaceOnUse" id="gemini-fill-0" x1="7" x2="11" y1="15.5" y2="12">
+                                            <stop stop-color="#08B962"/>
+                                            <stop offset="1" stop-color="#08B962" stop-opacity="0"/>
+                                        </linearGradient>
+                                        <linearGradient gradientUnits="userSpaceOnUse" id="gemini-fill-1" x1="8" x2="11.5" y1="5.5" y2="11">
+                                            <stop stop-color="#F94543"/>
+                                            <stop offset="1" stop-color="#F94543" stop-opacity="0"/>
+                                        </linearGradient>
+                                        <linearGradient gradientUnits="userSpaceOnUse" id="gemini-fill-2" x1="3.5" x2="17.5" y1="13.5" y2="12">
+                                            <stop stop-color="#FABC12"/>
+                                            <stop offset=".46" stop-color="#FABC12" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M20.616 10.835a14.147 14.147 0 01-4.45-3.001 14.111 14.111 0 01-3.678-6.452.503.503 0 00-.975 0 14.134 14.134 0 01-3.679 6.452 14.155 14.155 0 01-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 000 .975c.684.172 1.35.397 2.002.677a14.147 14.147 0 014.45 3.001 14.112 14.112 0 013.679 6.453.502.502 0 00.975 0c.172-.685.397-1.351.677-2.003a14.145 14.145 0 013.001-4.45 14.113 14.113 0 016.453-3.678.503.503 0 000-.975 13.245 13.245 0 01-2.003-.678z" fill="#3186FF"/>
+                                    <path d="M20.616 10.835a14.147 14.147 0 01-4.45-3.001 14.111 14.111 0 01-3.678-6.452.503.503 0 00-.975 0 14.134 14.134 0 01-3.679 6.452 14.155 14.155 0 01-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 000 .975c.684.172 1.35.397 2.002.677a14.147 14.147 0 014.45 3.001 14.112 14.112 0 013.679 6.453.502.502 0 00.975 0c.172-.685.397-1.351.677-2.003a14.145 14.145 0 013.001-4.45 14.113 14.113 0 016.453-3.678.503.503 0 000-.975 13.245 13.245 0 01-2.003-.678z" fill="url(#gemini-fill-0)"/>
+                                    <path d="M20.616 10.835a14.147 14.147 0 01-4.45-3.001 14.111 14.111 0 01-3.678-6.452.503.503 0 00-.975 0 14.134 14.134 0 01-3.679 6.452 14.155 14.155 0 01-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 000 .975c.684.172 1.35.397 2.002.677a14.147 14.147 0 014.45 3.001 14.112 14.112 0 013.679 6.453.502.502 0 00.975 0c.172-.685.397-1.351.677-2.003a14.145 14.145 0 013.001-4.45 14.113 14.113 0 016.453-3.678.503.503 0 000-.975 13.245 13.245 0 01-2.003-.678z" fill="url(#gemini-fill-1)"/>
+                                    <path d="M20.616 10.835a14.147 14.147 0 01-4.45-3.001 14.111 14.111 0 01-3.678-6.452.503.503 0 00-.975 0 14.134 14.134 0 01-3.679 6.452 14.155 14.155 0 01-4.45 3.001c-.65.28-1.318.505-2.002.678a.502.502 0 000 .975c.684.172 1.35.397 2.002.677a14.147 14.147 0 014.45 3.001 14.112 14.112 0 013.679 6.453.502.502 0 00.975 0c.172-.685.397-1.351.677-2.003a14.145 14.145 0 013.001-4.45 14.113 14.113 0 016.453-3.678.503.503 0 000-.975 13.245 13.245 0 01-2.003-.678z" fill="url(#gemini-fill-2)"/>
+                                </svg>
+                                <span>Gemini</span>
+                            </button>
+
+                            <button id="ai-perplexity" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#22B8CD">
+                                    <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                                </svg>
+                                <span>Perplexity</span>
+                            </button>
+
+                            <button id="ai-copilot" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="24" width="24" viewBox="0 0 24 24">
+                                    <defs>
+                                        <radialGradient cx="85.44%" cy="100.653%" fx="85.44%" fy="100.653%" gradientTransform="scale(-.8553 -1) rotate(50.927 2.041 -1.946)" id="copilot-fill-0" r="105.116%">
+                                            <stop offset="9.6%" stop-color="#00AEFF"/>
+                                            <stop offset="77.3%" stop-color="#2253CE"/>
+                                            <stop offset="100%" stop-color="#0736C4"/>
+                                        </radialGradient>
+                                        <radialGradient cx="18.143%" cy="32.928%" fx="18.143%" fy="32.928%" gradientTransform="scale(.8897 1) rotate(52.069 .193 .352)" id="copilot-fill-1" r="95.612%">
+                                            <stop offset="0%" stop-color="#FFB657"/>
+                                            <stop offset="63.4%" stop-color="#FF5F3D"/>
+                                            <stop offset="92.3%" stop-color="#C02B3C"/>
+                                        </radialGradient>
+                                        <radialGradient cx="82.987%" cy="-9.792%" fx="82.987%" fy="-9.792%" gradientTransform="scale(-1 -.9441) rotate(-70.872 .142 1.17)" id="copilot-fill-4" r="140.622%">
+                                            <stop offset="6.6%" stop-color="#8C48FF"/>
+                                            <stop offset="50%" stop-color="#F2598A"/>
+                                            <stop offset="89.6%" stop-color="#FFB152"/>
+                                        </radialGradient>
+                                        <linearGradient id="copilot-fill-2" x1="39.465%" x2="46.884%" y1="12.117%" y2="103.774%">
+                                            <stop offset="15.6%" stop-color="#0D91E1"/>
+                                            <stop offset="48.7%" stop-color="#52B471"/>
+                                            <stop offset="65.2%" stop-color="#98BD42"/>
+                                            <stop offset="93.7%" stop-color="#FFC800"/>
+                                        </linearGradient>
+                                        <linearGradient id="copilot-fill-3" x1="45.949%" x2="50%" y1="0%" y2="100%">
+                                            <stop offset="0%" stop-color="#3DCBFF"/>
+                                            <stop offset="24.7%" stop-color="#0588F7" stop-opacity="0"/>
+                                        </linearGradient>
+                                        <linearGradient id="copilot-fill-5" x1="83.507%" x2="83.453%" y1="-6.106%" y2="21.131%">
+                                            <stop offset="5.8%" stop-color="#F8ADFA"/>
+                                            <stop offset="70.8%" stop-color="#A86EDD" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M17.533 1.829A2.528 2.528 0 0015.11 0h-.737a2.531 2.531 0 00-2.484 2.087l-1.263 6.937.314-1.08a2.528 2.528 0 012.424-1.833h4.284l1.797.706 1.731-.706h-.505a2.528 2.528 0 01-2.423-1.829l-.715-2.453z" fill="url(#copilot-fill-0)" transform="translate(0 1)"/>
+                                    <path d="M6.726 20.16A2.528 2.528 0 009.152 22h1.566c1.37 0 2.49-1.1 2.525-2.48l.17-6.69-.357 1.228a2.528 2.528 0 01-2.423 1.83h-4.32l-1.54-.842-1.667.843h.497c1.124 0 2.113.75 2.426 1.84l.697 2.432z" fill="url(#copilot-fill-1)" transform="translate(0 1)"/>
+                                    <path d="M15 0H6.252c-2.5 0-4 3.331-5 6.662-1.184 3.947-2.734 9.225 1.75 9.225H6.78c1.13 0 2.12-.753 2.43-1.847.657-2.317 1.809-6.359 2.713-9.436.46-1.563.842-2.906 1.43-3.742A1.97 1.97 0 0115 0" fill="url(#copilot-fill-2)" transform="translate(0 1)"/>
+                                    <path d="M15 0H6.252c-2.5 0-4 3.331-5 6.662-1.184 3.947-2.734 9.225 1.75 9.225H6.78c1.13 0 2.12-.753 2.43-1.847.657-2.317 1.809-6.359 2.713-9.436.46-1.563.842-2.906 1.43-3.742A1.97 1.97 0 0115 0" fill="url(#copilot-fill-3)" transform="translate(0 1)"/>
+                                    <path d="M9 22h8.749c2.5 0 4-3.332 5-6.663 1.184-3.948 2.734-9.227-1.75-9.227H17.22c-1.129 0-2.12.754-2.43 1.848a1149.2 1149.2 0 01-2.713 9.437c-.46 1.564-.842 2.907-1.43 3.743A1.97 1.97 0 019 22" fill="url(#copilot-fill-4)" transform="translate(0 1)"/>
+                                    <path d="M9 22h8.749c2.5 0 4-3.332 5-6.663 1.184-3.948 2.734-9.227-1.75-9.227H17.22c-1.129 0-2.12.754-2.43 1.848a1149.2 1149.2 0 01-2.713 9.437c-.46 1.564-.842 2.907-1.43 3.743A1.97 1.97 0 019 22" fill="url(#copilot-fill-5)" transform="translate(0 1)"/>
+                                </svg>
+                                <span>Copilot</span>
+                            </button>
+
+                            <button id="ai-deepseek" class="ai-option" style="
+                                display: flex;
+                                align-items: center;
+                                gap: 12px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                font-size: 16px;
+                                font-weight: 500;
+                            ">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#4D6BFE">
+                                    <path d="M23.748 4.482c-.254-.124-.364.113-.512.234-.051.039-.094.09-.137.136-.372.397-.806.657-1.373.626-.829-.046-1.537.214-2.163.848-.133-.782-.575-1.248-1.247-1.548-.352-.156-.708-.311-.955-.65-.172-.241-.219-.51-.305-.774-.055-.16-.11-.323-.293-.35-.2-.031-.278.136-.356.276-.313.572-.434 1.202-.422 1.84.027 1.436.633 2.58 1.838 3.393.137.093.172.187.129.323-.082.28-.18.552-.266.833-.055.179-.137.217-.329.14a5.526 5.526 0 01-1.736-1.18c-.857-.828-1.631-1.742-2.597-2.458a11.365 11.365 0 00-.689-.471c-.985-.957.13-1.743.388-1.836.27-.098.093-.432-.779-.428-.872.004-1.67.295-2.687.684a3.055 3.055 0 01-.465.137 9.597 9.597 0 00-2.883-.102c-1.885.21-3.39 1.102-4.497 2.623C.082 8.606-.231 10.684.152 12.85c.403 2.284 1.569 4.175 3.36 5.653 1.858 1.533 3.997 2.284 6.438 2.14 1.482-.085 3.133-.284 4.994-1.86.47.234.962.327 1.78.397.63.059 1.236-.03 1.705-.128.735-.156.684-.837.419-.961-2.155-1.004-1.682-.595-2.113-.926 1.096-1.296 2.746-2.642 3.392-7.003.05-.347.007-.565 0-.845-.004-.17.035-.237.23-.256a4.173 4.173 0 001.545-.475c1.396-.763 1.96-2.015 2.093-3.517.02-.23-.004-.467-.247-.588zM11.581 18c-2.089-1.642-3.102-2.183-3.52-2.16-.392.024-.321.471-.235.763.09.288.207.486.371.739.114.167.192.416-.113.603-.673.416-1.842-.14-1.897-.167-1.361-.802-2.5-1.86-3.301-3.307-.774-1.393-1.224-2.887-1.298-4.482-.02-.386.093-.522.477-.592a4.696 4.696 0 011.529-.039c2.132.312 3.946 1.265 5.468 2.774.868.86 1.525 1.887 2.202 2.891.72 1.066 1.494 2.082 2.48 2.914.348.292.625.514.891.677-.802.09-2.14.11-3.054-.614zm1-6.44a.306.306 0 01.415-.287.302.302 0 01.2.288.306.306 0 01-.31.307.303.303 0 01-.304-.308zm3.11 1.596c-.2.081-.399.151-.59.16a1.245 1.245 0 01-.798-.254c-.274-.23-.47-.358-.552-.758a1.73 1.73 0 01.016-.588c.07-.327-.008-.537-.239-.727-.187-.156-.426-.199-.688-.199a.559.559 0 01-.254-.078c-.11-.054-.2-.19-.114-.358.028-.054.16-.186.192-.21.356-.202.767-.136 1.146.016.352.144.618.408 1.001.782.391.451.462.576.685.914.176.265.336.537.445.848.067.195-.019.354-.25.452z"/>
+                                </svg>
+                                <span>Deepseek</span>
+                            </button>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 12px;">
+                            <button id="cancel-ai" style="
+                                padding: 12px 24px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s ease;
+                            ">
+                                Cancelar
+                            </button>
+                        </div>
+                    `;
+
+                    // Adicionar CSS hover via JavaScript
+                    const style = document.createElement("style");
+                    style.textContent = `
+                        .ai-option:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            border-color: rgba(255, 255, 255, 0.3) !important;
+                            transform: translateY(-1px);
+                        }
+                        #cancel-ai:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    // Adicionar eventos aos botões
+                    modal
+                        .querySelector("#ai-chatgpt")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "ChatGPT",
+                                    "https://chat.openai.com/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#ai-claude")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "Claude",
+                                    "https://claude.ai/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#ai-gemini")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "Gemini",
+                                    "https://gemini.google.com/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#ai-perplexity")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "Perplexity",
+                                    "https://www.perplexity.ai/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#ai-copilot")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "Copilot",
+                                    "https://copilot.cloud.microsoft/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#ai-deepseek")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                openAIWithText(
+                                    "Deepseek",
+                                    "https://chat.deepseek.com/",
+                                    texto
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#cancel-ai")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        });
+
+                    // Fechar ao clicar no overlay
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        }
+                    });
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+                });
+            }
+
+            // Abrir Copilot com texto e prompt específico para análise judicial (mantida para compatibilidade)
+            async function openCopilotWithText(texto) {
+                return openAIWithText(
+                    "Copilot",
+                    "https://copilot.cloud.microsoft/",
+                    texto
+                );
             }
 
             // Enviar texto diretamente para Perplexity usando API - usando expressão de função
@@ -5890,15 +6362,13 @@ ${texto}`;
                             menu.remove();
                             const texto = await autoExtractText();
                             if (texto) {
-                                log(
-                                    "📋 Iniciando método manual com Copilot..."
-                                );
-                                const success = await openCopilotWithText(
+                                log("📝 Abrindo modal de seleção de IA...");
+                                const success = await showAISelectionModal(
                                     texto
                                 );
                                 if (!success) {
                                     log(
-                                        "❌ Falha ao abrir Copilot, usando fallback"
+                                        "❌ Usuário cancelou ou erro ao abrir IA"
                                     );
                                     // Fallback: copiar com prefixo tradicional
                                     const copied =
@@ -6056,15 +6526,13 @@ ${texto}`;
                                 menu.remove();
                                 const texto = await autoExtractText();
                                 if (texto) {
-                                    log(
-                                        "📋 Iniciando método manual com Copilot..."
-                                    );
-                                    const success = await openCopilotWithText(
+                                    log("📝 Abrindo modal de seleção de IA...");
+                                    const success = await showAISelectionModal(
                                         texto
                                     );
                                     if (!success) {
                                         log(
-                                            "❌ Falha ao abrir Copilot, usando fallback"
+                                            "❌ Usuário cancelou ou erro ao abrir IA"
                                         );
                                         // Fallback: copiar com prefixo tradicional
                                         const copied =
@@ -9590,6 +10058,7 @@ ${texto}`;
             // Observer otimizado para detectar mudanças nos elementos da interface
             const observer = new MutationObserver((mutations) => {
                 let shouldCheckOverlap = false;
+                let shouldCheckLembretes = false;
 
                 // Processar mutações de forma mais eficiente
                 for (const mutation of mutations) {
@@ -9604,8 +10073,29 @@ ${texto}`;
                                     id === "documento-relevante-options-menu"
                                 ) {
                                     shouldCheckOverlap = true;
-                                    break;
                                 }
+
+                                // Verificar se é um div.divLembrete
+                                if (
+                                    node.classList &&
+                                    node.classList.contains("divLembrete")
+                                ) {
+                                    shouldCheckLembretes = true;
+                                }
+
+                                // Verificar elementos filhos também
+                                const lembreteElements =
+                                    node.querySelectorAll &&
+                                    node.querySelectorAll("div.divLembrete");
+                                if (
+                                    lembreteElements &&
+                                    lembreteElements.length > 0
+                                ) {
+                                    shouldCheckLembretes = true;
+                                }
+
+                                if (shouldCheckOverlap && shouldCheckLembretes)
+                                    break;
                             }
                         }
                     }
@@ -9625,7 +10115,7 @@ ${texto}`;
                     }
 
                     // Early exit se já encontrou o que precisa
-                    if (shouldCheckOverlap) break;
+                    if (shouldCheckOverlap && shouldCheckLembretes) break;
                 }
 
                 // Debounce da verificação de overlap
@@ -9638,6 +10128,35 @@ ${texto}`;
                         preventElementOverlap,
                         debounceDelay
                     );
+                }
+
+                // Debounce da estilização de lembretes
+                if (
+                    shouldCheckLembretes &&
+                    typeof estilizarTodosDivLembrete === "function"
+                ) {
+                    if (debounceTimer) clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => {
+                        // ⚡ APLICAÇÃO IMEDIATA - SEM FLASH
+                        aplicarEstilizacaoImediataLembretes();
+
+                        const resultado = estilizarTodosDivLembrete();
+                        log(
+                            "🔄 OBSERVER: Lembretes re-estilizados após mudança no DOM",
+                            resultado
+                        );
+
+                        // ✨ NOVO: Aplicar também substituição de ícones de lembretes
+                        if (typeof substituirIconesLembretes === "function") {
+                            const iconesSubstituidos =
+                                substituirIconesLembretes();
+                            if (iconesSubstituidos > 0) {
+                                log(
+                                    `🔄 OBSERVER: ${iconesSubstituidos} ícones de lembretes substituídos após mudança no DOM`
+                                );
+                            }
+                        }
+                    }, debounceDelay + 100); // Pequeno delay adicional para lembretes
                 }
             });
 
@@ -9874,6 +10393,10 @@ ${texto}`;
                     substituirIconesFieldsetAcoes();
                     // Adicionar substituição global
                     substituirIconesGlobalmente();
+                    // ✨ NOVO: Adicionar substituição de ícones de lembretes
+                    if (typeof substituirIconesLembretes === "function") {
+                        substituirIconesLembretes();
+                    }
                     resultados.fieldsetAcoes = document.querySelectorAll(
                         "#fldAcoes [data-eprobe-icon-replaced]"
                     ).length;
@@ -9890,6 +10413,11 @@ ${texto}`;
                     const sucessoFerramentas = substituirIconesFerramentas();
                     // Executar também a substituição global
                     substituirIconesGlobalmente();
+                    // ✨ NOVO: Executar substituição específica de ícones de lembretes
+                    if (typeof substituirIconesLembretes === "function") {
+                        substituirIconesLembretes();
+                        log("✅ ÍCONES: Ícones de lembretes aplicados");
+                    }
                     if (sucessoFerramentas) {
                         // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
                         const totalIcones = document.querySelectorAll(
@@ -9980,6 +10508,10 @@ ${texto}`;
                         "[data-eprobe-icon-replaced]"
                     ).length;
                     substituirIconesFerramentas();
+                    // ✨ NOVO: Aplicar também ícones de lembretes aqui
+                    if (typeof substituirIconesLembretes === "function") {
+                        substituirIconesLembretes();
+                    }
                     const depois = document.querySelectorAll(
                         "[data-eprobe-icon-replaced]"
                     ).length;
@@ -12749,6 +13281,33 @@ ${texto}`;
                                 "✅ INICIALIZAÇÃO: Detecção de card de sessão iniciada"
                             );
                         }
+
+                        // Aplicar estilização de lembretes
+                        if (
+                            typeof aplicarEstilizacaoLembretesRobusta ===
+                            "function"
+                        ) {
+                            aplicarEstilizacaoLembretesRobusta();
+                            log(
+                                "✅ INICIALIZAÇÃO: Estilização robusta de lembretes iniciada"
+                            );
+                        }
+
+                        // ⚡ NOVO: Aplicar estilização IMEDIATA para eliminar flash
+                        if (
+                            typeof aplicarEstilizacaoImediataLembretes ===
+                            "function"
+                        ) {
+                            aplicarEstilizacaoImediataLembretes();
+                        }
+
+                        // ✨ NOVO: Aplicar substituição de ícones de lembretes
+                        if (typeof substituirIconesLembretes === "function") {
+                            substituirIconesLembretes();
+                            log(
+                                "✅ INICIALIZAÇÃO: Ícones de lembretes substituídos"
+                            );
+                        }
                     },
                     "deteccao-card-instantanea",
                     50
@@ -13141,17 +13700,49 @@ ${texto}`;
             log("📨 HANDLER: Listener de mensagens do popup registrado");
         }
 
-        // ===== EXECUÇÃO IMEDIATA - ELIMINAR FLASH =====
+        // ===== EXECUÇÃO IMEDIATA - ELIMINAR FLASH TOTAL =====
         // Executar inicialização IMEDIATAMENTE sem aguardar DOM
         log("⚡ INSTANT: Executando inicialização imediata...");
 
+        // ⚡ SUPER ANTI-FLASH: Aplicar imediatamente antes de qualquer coisa
+        try {
+            aplicarEstilizacaoImediataLembretes();
+        } catch (error) {
+            console.error("❌ ANTI-FLASH: Erro na aplicação imediata:", error);
+        }
+
         // Executar inicialização IMEDIATAMENTE
         inicializarAutomaticamente();
+
+        // ⚡ MONITOR CONTÍNUO: Verificar novos lembretes a cada 100ms
+        const monitorFlash = setInterval(() => {
+            try {
+                const lembretesNaoProcessados = document.querySelectorAll(
+                    ".lista-lembretes .lembrete:not(.eprobe-lembrete-processado), div.divLembrete:not(.eprobe-lembrete-processado)"
+                );
+                if (lembretesNaoProcessados.length > 0) {
+                    aplicarEstilizacaoImediataLembretes();
+                }
+            } catch (error) {
+                // Silencioso
+            }
+        }, 100);
+
+        // Parar monitor após 10 segundos
+        setTimeout(() => clearInterval(monitorFlash), 10000);
 
         // Backup: Executar novamente quando DOM estiver pronto (para reaplicar estilos se necessário)
         if (document.readyState === "loading") {
             document.addEventListener("DOMContentLoaded", () => {
                 log("🔄 BACKUP: Reaplicando estilos após DOMContentLoaded");
+
+                // Aplicar anti-flash novamente
+                try {
+                    aplicarEstilizacaoImediataLembretes();
+                } catch (error) {
+                    console.error("❌ BACKUP ANTI-FLASH: Erro:", error);
+                }
+
                 // Reaplicar apenas estilos, não toda a inicialização
                 if (window.applyThemeStyles) {
                     const tema =
@@ -13623,54 +14214,1029 @@ ${texto}`;
         }
 
         /**
-         * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA divLembrete - Aplica estilos aos elementos amarelos
+         * 🔍 FUNÇÃO DE DETECÇÃO INTELIGENTE DE LEMBRETES
+         * Detecta automaticamente quais tipos de lembretes existem na página
+         */
+        function detectarTiposLembretesNaPagina() {
+            log("🔍 DETECÇÃO: Analisando tipos de lembretes na página...");
+
+            const tiposDetectados = {
+                divLembrete: 0,
+                listaLembretes: 0,
+                outrosElementos: 0,
+                coresEncontradas: [],
+                elementos: [], // ADICIONADO: Array com todos os elementos encontrados
+                elementosPorCor: {}, // ADICIONADO: Elementos organizados por cor
+            };
+
+            // 1. Detectar div.divLembrete
+            const divLembretes = document.querySelectorAll("div.divLembrete");
+            tiposDetectados.divLembrete = divLembretes.length;
+
+            // 2. Detectar .lista-lembretes .lembrete
+            const listaLembretes = document.querySelectorAll(
+                ".lista-lembretes .lembrete"
+            );
+            tiposDetectados.listaLembretes = listaLembretes.length;
+
+            // 3. Detectar cores de background em qualquer div
+            const coresLembrete = [
+                "#efef8f",
+                "#db8080",
+                "#87adcd",
+                "#a7eda7",
+                "#f5b574",
+            ];
+
+            coresLembrete.forEach((cor) => {
+                const elementos = document.querySelectorAll(
+                    `div[style*="background-color:${cor}"], div[style*="background-color: ${cor}"]`
+                );
+                if (elementos.length > 0) {
+                    const nomeCor =
+                        cor === "#efef8f"
+                            ? "amarelo"
+                            : cor === "#db8080"
+                            ? "vermelho"
+                            : cor === "#87adcd"
+                            ? "azul"
+                            : cor === "#a7eda7"
+                            ? "verde"
+                            : "laranja";
+
+                    tiposDetectados.coresEncontradas.push(nomeCor);
+                    tiposDetectados.elementosPorCor[nomeCor] =
+                        Array.from(elementos);
+                    tiposDetectados.elementos.push(...Array.from(elementos));
+                    tiposDetectados.outrosElementos += elementos.length;
+                }
+            });
+
+            log("📊 DETECÇÃO COMPLETA:", tiposDetectados);
+            return tiposDetectados;
+        }
+
+        /**
+         * 🎨 FUNÇÃO DE ESTILIZAÇÃO INTELIGENTE PARA LEMBRETES
+         * Detecta automaticamente o tipo de elemento de lembrete na página
          */
         function estilizarDivLembrete() {
-            log("🎨 ESTILIZAÇÃO: Aplicando estilos aos divLembrete amarelos");
-
-            // Buscar elementos com background-color:#efef8f
-            const elementos = document.querySelectorAll(
-                'div.divLembrete[style*="background-color:#efef8f"], div.divLembrete[style*="background-color: #efef8f"]'
+            log(
+                "🎨 ESTILIZAÇÃO: Procurando lembretes amarelos em TODOS os seletores..."
             );
+
+            // Seletores múltiplos para diferentes tipos de lembretes
+            const seletores = [
+                'div.divLembrete[style*="background-color:#efef8f"]',
+                'div.divLembrete[style*="background-color: #efef8f"]',
+                '.lista-lembretes .lembrete[style*="background-color:#efef8f"]',
+                '.lista-lembretes .lembrete[style*="background-color: #efef8f"]',
+                'div[style*="background-color:#efef8f"]',
+                'div[style*="background-color: #efef8f"]',
+            ];
+
+            let elementosEncontrados = [];
+
+            // Tentar cada seletor
+            seletores.forEach((seletor, index) => {
+                const elementos = document.querySelectorAll(seletor);
+                if (elementos.length > 0) {
+                    log(
+                        `✅ ENCONTRADOS ${
+                            elementos.length
+                        } lembretes amarelos com seletor ${
+                            index + 1
+                        }: ${seletor}`
+                    );
+                    elementosEncontrados.push(...elementos);
+                }
+            });
+
+            // Remover duplicatas
+            elementosEncontrados = [...new Set(elementosEncontrados)];
+
+            if (elementosEncontrados.length === 0) {
+                log(
+                    "❌ Nenhum elemento lembrete com background amarelo encontrado"
+                );
+                return false;
+            }
+
+            elementosEncontrados.forEach((elemento, index) => {
+                // Aplicar gradiente amarelo
+                elemento.style.background =
+                    "linear-gradient( #F9EFAF, #F7E98D)";
+
+                // Aplicar estilos aprimorados
+                elemento.style.padding = "20px";
+                elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                elemento.style.transition = "box-shadow 0.5s ease";
+                elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // Adicionar eventos de hover e focus
+                elemento.addEventListener(
+                    "mouseenter",
+                    function () {
+                        this.style.boxShadow = "0 5px 8px rgba(0,0,0,0.15)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "mouseleave",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "focus",
+                    function () {
+                        this.style.boxShadow = "0 5px 12px rgba(0,0,0,0.2)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "blur",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                log(
+                    `✅ Gradiente amarelo aplicado ao lembrete ${
+                        index + 1
+                    } (ID: ${elemento.id || "sem-id"})`
+                );
+            });
+            log(
+                `🎨 AMARELO CONCLUÍDO: ${elementosEncontrados.length} elementos estilizados`
+            );
+            return elementosEncontrados.length;
+        }
+
+        /**
+         * 🎨 FUNÇÃO DE ESTILIZAÇÃO INTELIGENTE PARA LEMBRETES VERMELHOS
+         */
+        function estilizarDivLembreteVermelho() {
+            log(
+                "🎨 ESTILIZAÇÃO: Procurando lembretes vermelhos em TODOS os seletores..."
+            );
+
+            // Seletores múltiplos para diferentes tipos de lembretes
+            const seletores = [
+                'div.divLembrete[style*="background-color:#db8080"]',
+                'div.divLembrete[style*="background-color: #db8080"]',
+                '.lista-lembretes .lembrete[style*="background-color:#db8080"]',
+                '.lista-lembretes .lembrete[style*="background-color: #db8080"]',
+                'div[style*="background-color:#db8080"]',
+                'div[style*="background-color: #db8080"]',
+            ];
+
+            let elementosEncontrados = [];
+
+            // Tentar cada seletor
+            seletores.forEach((seletor, index) => {
+                const elementos = document.querySelectorAll(seletor);
+                if (elementos.length > 0) {
+                    log(
+                        `✅ ENCONTRADOS ${
+                            elementos.length
+                        } lembretes vermelhos com seletor ${
+                            index + 1
+                        }: ${seletor}`
+                    );
+                    elementosEncontrados.push(...elementos);
+                }
+            });
+
+            // Remover duplicatas
+            elementosEncontrados = [...new Set(elementosEncontrados)];
+
+            if (elementosEncontrados.length === 0) {
+                log("❌ Nenhum elemento lembrete vermelho encontrado");
+                return false;
+            }
+
+            elementos.forEach((elemento, index) => {
+                // Aplicar gradiente vermelho
+                elemento.style.background =
+                    "linear-gradient( #FAAFAF, #F78D8D)";
+
+                // Aplicar estilos aprimorados
+                elemento.style.padding = "20px";
+                elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                elemento.style.transition = "box-shadow 0.5s ease";
+                elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // Adicionar eventos de hover e focus
+                elemento.addEventListener(
+                    "mouseenter",
+                    function () {
+                        this.style.boxShadow = "0 5px 8px rgba(0,0,0,0.15)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "mouseleave",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "focus",
+                    function () {
+                        this.style.boxShadow = "0 5px 12px rgba(0,0,0,0.2)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "blur",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                log(
+                    `✅ Gradiente vermelho aplicado ao divLembrete ${
+                        index + 1
+                    } (ID: ${elemento.id})`
+                );
+            });
+            log(
+                `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete vermelhos com gradiente`
+            );
+            return true;
+        }
+
+        /**
+         * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA LEMBRETES AZUIS - Com detecção inteligente
+         */
+        function estilizarDivLembreteAzul() {
+            log(
+                "🎨 ESTILIZAÇÃO AZUL: Aplicando gradiente com detecção inteligente"
+            );
+
+            // Múltiplos seletores para diferentes estruturas da página
+            const seletores = [
+                'div.divLembrete[style*="background-color:#87adcd"]',
+                'div.divLembrete[style*="background-color: #87adcd"]',
+                '.lista-lembretes div[style*="#87adcd"]',
+                'div[style*="background-color:#87adcd"]',
+                'div[style*="background-color: #87adcd"]',
+            ];
+
+            let elementos = [];
+
+            // Tentar cada seletor até encontrar elementos
+            for (const seletor of seletores) {
+                elementos = document.querySelectorAll(seletor);
+                if (elementos.length > 0) {
+                    log(
+                        `✅ AZUL: Encontrados ${elementos.length} elementos com seletor: ${seletor}`
+                    );
+                    break;
+                }
+            }
 
             if (elementos.length === 0) {
                 log(
-                    "❌ Nenhum elemento divLembrete com background amarelo encontrado"
+                    "❌ AZUL: Nenhum elemento azul encontrado com nenhum dos seletores"
                 );
                 return false;
             }
 
             elementos.forEach((elemento, index) => {
-                // Aplicar estilos CSS
-                elemento.style.border = "2px solid #d4aa00";
-                elemento.style.borderRadius = "8px";
-                elemento.style.boxShadow = "0 2px 8px rgba(212, 170, 0, 0.3)";
-                elemento.style.padding = "12px";
-                elemento.style.margin = "8px 0";
-                elemento.style.transition = "all 0.3s ease";
+                // Aplicar gradiente azul
+                elemento.style.background =
+                    "linear-gradient( #AFCFFA, #8DC0F7)";
 
-                // Adicionar hover effect
-                elemento.addEventListener("mouseenter", function () {
-                    this.style.transform = "scale(1.02)";
-                    this.style.boxShadow = "0 4px 12px rgba(212, 170, 0, 0.5)";
-                });
+                // Aplicar estilos aprimorados
+                elemento.style.padding = "20px";
+                elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                elemento.style.transition = "box-shadow 0.5s ease";
+                elemento.style.webkitFontSmoothing = "subpixel-antialiased";
 
-                elemento.addEventListener("mouseleave", function () {
-                    this.style.transform = "scale(1)";
-                    this.style.boxShadow = "0 2px 8px rgba(212, 170, 0, 0.3)";
-                });
+                // Adicionar eventos de hover e focus
+                elemento.addEventListener(
+                    "mouseenter",
+                    function () {
+                        this.style.boxShadow = "0 5px 8px rgba(0,0,0,0.15)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "mouseleave",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "focus",
+                    function () {
+                        this.style.boxShadow = "0 5px 12px rgba(0,0,0,0.2)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "blur",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
 
                 log(
-                    `✅ Estilizado divLembrete ${index + 1} (ID: ${
-                        elemento.id
-                    })`
+                    `✅ AZUL: Gradiente aplicado ao elemento ${
+                        index + 1
+                    } (ID: ${elemento.id})`
+                );
+            });
+
+            log(`🎨 AZUL CONCLUÍDO: ${elementos.length} elementos estilizados`);
+            return elementos.length;
+        }
+
+        /**
+         * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA LEMBRETES VERDES - Com detecção inteligente
+         */
+        function estilizarDivLembreteVerde() {
+            log(
+                "🎨 ESTILIZAÇÃO VERDE: Aplicando gradiente com detecção inteligente"
+            );
+
+            // Múltiplos seletores para diferentes estruturas da página
+            const seletores = [
+                'div.divLembrete[style*="background-color:#a7eda7"]',
+                'div.divLembrete[style*="background-color: #a7eda7"]',
+                '.lista-lembretes div[style*="#a7eda7"]',
+                'div[style*="background-color:#a7eda7"]',
+                'div[style*="background-color: #a7eda7"]',
+            ];
+
+            let elementos = [];
+
+            // Tentar cada seletor até encontrar elementos
+            for (const seletor of seletores) {
+                elementos = document.querySelectorAll(seletor);
+                if (elementos.length > 0) {
+                    log(
+                        `✅ VERDE: Encontrados ${elementos.length} elementos com seletor: ${seletor}`
+                    );
+                    break;
+                }
+            }
+
+            if (elementos.length === 0) {
+                log(
+                    "❌ VERDE: Nenhum elemento verde encontrado com nenhum dos seletores"
+                );
+                return false;
+            }
+
+            elementos.forEach((elemento, index) => {
+                // Aplicar gradiente verde
+                elemento.style.background =
+                    "linear-gradient( #AFFAB6, #8DF792)";
+
+                // Aplicar estilos aprimorados
+                elemento.style.padding = "20px";
+                elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                elemento.style.transition = "box-shadow 0.5s ease";
+                elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // Adicionar eventos de hover e focus
+                elemento.addEventListener(
+                    "mouseenter",
+                    function () {
+                        this.style.boxShadow = "0 5px 8px rgba(0,0,0,0.15)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "mouseleave",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "focus",
+                    function () {
+                        this.style.boxShadow = "0 5px 12px rgba(0,0,0,0.2)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "blur",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                log(
+                    `✅ VERDE: Gradiente aplicado ao elemento ${
+                        index + 1
+                    } (ID: ${elemento.id})`
                 );
             });
 
             log(
-                `🎨 CONCLUÍDO: ${elementos.length} elementos divLembrete estilizados`
+                `🎨 VERDE CONCLUÍDO: ${elementos.length} elementos estilizados`
             );
-            return true;
+            return elementos.length;
+        }
+
+        /**
+         * 🎨 FUNÇÃO DE ESTILIZAÇÃO PARA LEMBRETES LARANJAS - Com detecção inteligente
+         */
+        function estilizarDivLembreteLaranja() {
+            log(
+                "🎨 ESTILIZAÇÃO LARANJA: Aplicando gradiente com detecção inteligente"
+            );
+
+            // Múltiplos seletores para diferentes estruturas da página
+            const seletores = [
+                'div.divLembrete[style*="background-color:#f5b574"]',
+                'div.divLembrete[style*="background-color: #f5b574"]',
+                '.lista-lembretes div[style*="#f5b574"]',
+                'div[style*="background-color:#f5b574"]',
+                'div[style*="background-color: #f5b574"]',
+            ];
+
+            let elementos = [];
+
+            // Tentar cada seletor até encontrar elementos
+            for (const seletor of seletores) {
+                elementos = document.querySelectorAll(seletor);
+                if (elementos.length > 0) {
+                    log(
+                        `✅ LARANJA: Encontrados ${elementos.length} elementos com seletor: ${seletor}`
+                    );
+                    break;
+                }
+            }
+
+            if (elementos.length === 0) {
+                log(
+                    "❌ LARANJA: Nenhum elemento laranja encontrado com nenhum dos seletores"
+                );
+                return false;
+            }
+
+            elementos.forEach((elemento, index) => {
+                // Aplicar gradiente laranja
+                elemento.style.background =
+                    "linear-gradient( #FAD3AF, #F7C68D)";
+
+                // Aplicar estilos aprimorados
+                elemento.style.padding = "20px";
+                elemento.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                elemento.style.transition = "box-shadow 0.5s ease";
+                elemento.style.webkitFontSmoothing = "subpixel-antialiased";
+
+                // Adicionar eventos de hover e focus
+                elemento.addEventListener(
+                    "mouseenter",
+                    function () {
+                        this.style.boxShadow = "0 5px 8px rgba(0,0,0,0.15)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "mouseleave",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "focus",
+                    function () {
+                        this.style.boxShadow = "0 5px 12px rgba(0,0,0,0.2)";
+                    },
+                    { passive: true }
+                );
+
+                elemento.addEventListener(
+                    "blur",
+                    function () {
+                        this.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.1)";
+                    },
+                    { passive: true }
+                );
+
+                log(
+                    `✅ LARANJA: Gradiente aplicado ao elemento ${
+                        index + 1
+                    } (ID: ${elemento.id})`
+                );
+            });
+
+            log(
+                `🎨 LARANJA CONCLUÍDO: ${elementos.length} elementos estilizados`
+            );
+            return elementos.length;
+        }
+
+        /**
+         * 🎨 FUNÇÃO MASTER - Aplica todos os gradientes de uma vez com detecção inteligente
+         */
+        function estilizarTodosDivLembrete() {
+            log("🎨 MASTER: Iniciando estilização com detecção inteligente...");
+
+            // Primeiro detectar que tipos de lembretes existem
+            const deteccao = detectarTiposLembretesNaPagina();
+
+            if (deteccao.coresEncontradas.length === 0) {
+                log(
+                    "ℹ️ MASTER: Nenhum lembrete colorido encontrado para estilizar"
+                );
+                return { total: 0, detalhes: {} };
+            }
+
+            log(
+                `🎯 MASTER: Cores encontradas: ${deteccao.coresEncontradas.join(
+                    ", "
+                )}`
+            );
+
+            const resultados = {
+                amarelos: 0,
+                vermelhos: 0,
+                azuis: 0,
+                verdes: 0,
+                laranjas: 0,
+                total: 0,
+                deteccao: deteccao,
+            };
+
+            // Aplicar cada cor encontrada
+            deteccao.coresEncontradas.forEach((cor) => {
+                try {
+                    let sucesso = false;
+                    let quantidade = 0;
+
+                    switch (cor) {
+                        case "amarelo":
+                            sucesso = estilizarDivLembrete();
+                            if (sucesso) {
+                                quantidade = document.querySelectorAll(
+                                    'div[style*="background-color:#efef8f"], div[style*="background-color: #efef8f"], .lista-lembretes [style*="#efef8f"]'
+                                ).length;
+                                resultados.amarelos = quantidade;
+                            }
+                            break;
+                        case "vermelho":
+                            sucesso = estilizarDivLembreteVermelho();
+                            if (sucesso) {
+                                quantidade = document.querySelectorAll(
+                                    'div[style*="background-color:#db8080"], div[style*="background-color: #db8080"], .lista-lembretes [style*="#db8080"]'
+                                ).length;
+                                resultados.vermelhos = quantidade;
+                            }
+                            break;
+                        case "azul":
+                            sucesso = estilizarDivLembreteAzul();
+                            if (sucesso) {
+                                quantidade = document.querySelectorAll(
+                                    'div[style*="background-color:#87adcd"], div[style*="background-color: #87adcd"], .lista-lembretes [style*="#87adcd"]'
+                                ).length;
+                                resultados.azuis = quantidade;
+                            }
+                            break;
+                        case "verde":
+                            sucesso = estilizarDivLembreteVerde();
+                            if (sucesso) {
+                                quantidade = document.querySelectorAll(
+                                    'div[style*="background-color:#a7eda7"], div[style*="background-color: #a7eda7"], .lista-lembretes [style*="#a7eda7"]'
+                                ).length;
+                                resultados.verdes = quantidade;
+                            }
+                            break;
+                        case "laranja":
+                            sucesso = estilizarDivLembreteLaranja();
+                            if (sucesso) {
+                                quantidade = document.querySelectorAll(
+                                    'div[style*="background-color:#f5b574"], div[style*="background-color: #f5b574"], .lista-lembretes [style*="#f5b574"]'
+                                ).length;
+                                resultados.laranjas = quantidade;
+                            }
+                            break;
+                    }
+
+                    log(
+                        `✅ MASTER ${cor}: ${quantidade} lembretes estilizados`
+                    );
+                } catch (error) {
+                    log(
+                        `❌ MASTER: Erro ao estilizar lembretes ${cor}:`,
+                        error
+                    );
+                }
+            });
+
+            resultados.total =
+                resultados.amarelos +
+                resultados.vermelhos +
+                resultados.azuis +
+                resultados.verdes +
+                resultados.laranjas;
+
+            log("🎨 MASTER CONCLUÍDO:", resultados);
+            return resultados;
+        }
+
+        /**
+         * 🔍 FUNÇÃO DE DEBUG MASTER - Verifica todos os divLembrete coloridos
+         */
+        function debugTodosDivLembrete() {
+            log("🔍 DEBUG MASTER: Analisando todos os divLembrete coloridos");
+
+            const cores = {
+                amarelo: {
+                    seletor:
+                        'div.divLembrete[style*="background-color:#efef8f"], div.divLembrete[style*="background-color: #efef8f"]',
+                    gradiente: "linear-gradient( #F9EFAF, #F7E98D)",
+                },
+                vermelho: {
+                    seletor:
+                        'div.divLembrete[style*="background-color:#db8080"], div.divLembrete[style*="background-color: #db8080"]',
+                    gradiente: "linear-gradient( #FAAFAF, #F78D8D)",
+                },
+                azul: {
+                    seletor:
+                        'div.divLembrete[style*="background-color:#87adcd"], div.divLembrete[style*="background-color: #87adcd"]',
+                    gradiente: "linear-gradient( #AFCFFA, #8DC0F7)",
+                },
+                verde: {
+                    seletor:
+                        'div.divLembrete[style*="background-color:#a7eda7"], div.divLembrete[style*="background-color: #a7eda7"]',
+                    gradiente: "linear-gradient( #AFFAB6, #8DF792)",
+                },
+                laranja: {
+                    seletor:
+                        'div.divLembrete[style*="background-color:#f5b574"], div.divLembrete[style*="background-color: #f5b574"]',
+                    gradiente: "linear-gradient( #FAD3AF, #F7C68D)",
+                },
+            };
+
+            const resumo = {
+                totalEncontrados: 0,
+                porCor: {},
+            };
+
+            Object.keys(cores).forEach((cor) => {
+                const elementos = document.querySelectorAll(cores[cor].seletor);
+                resumo.porCor[cor] = {
+                    quantidade: elementos.length,
+                    elementos: Array.from(elementos).map((el) => ({
+                        id: el.id,
+                        classes: el.className,
+                        conteudo: el.textContent.substring(0, 50) + "...",
+                    })),
+                };
+                resumo.totalEncontrados += elementos.length;
+
+                log(`📋 ${cor.toUpperCase()}: ${elementos.length} elementos`);
+            });
+
+            log("🔍 DEBUG MASTER RESUMO:", resumo);
+            return resumo;
+        }
+
+        /**
+         * 🔄 FUNÇÃO DE ESTILIZAÇÃO ROBUSTA - Com detecção inteligente e retry automático
+         */
+        function aplicarEstilizacaoLembretesRobusta() {
+            log(
+                "🔄 ESTILIZAÇÃO ROBUSTA: Iniciando com detecção inteligente..."
+            );
+
+            // 1. PRIMEIRO: Detectar que tipos de lembretes existem
+            const deteccao = detectarTiposLembretesNaPagina();
+
+            if (deteccao.coresEncontradas.length === 0) {
+                log(
+                    "ℹ️ ESTILIZAÇÃO ROBUSTA: Nenhum lembrete colorido encontrado na página atual"
+                );
+                return false;
+            }
+
+            log(
+                `🎯 ESTILIZAÇÃO ROBUSTA: Encontrados lembretes de ${deteccao.coresEncontradas.length} cores diferentes`
+            );
+
+            let tentativas = 0;
+            const maxTentativas = 5;
+            const intervalTentativas = 1000; // 1 segundo entre tentativas
+
+            const tentarEstilizar = () => {
+                tentativas++;
+                log(`🎯 ESTILIZAÇÃO: Tentativa ${tentativas}/${maxTentativas}`);
+
+                const resultado = estilizarTodosDivLembrete();
+                const sucesso = resultado.total > 0;
+
+                if (!sucesso && tentativas < maxTentativas) {
+                    log(
+                        `⏳ ESTILIZAÇÃO: Aguardando ${intervalTentativas}ms para nova tentativa...`
+                    );
+                    setTimeout(tentarEstilizar, intervalTentativas);
+                } else if (sucesso) {
+                    log(
+                        "✅ ESTILIZAÇÃO ROBUSTA: Lembretes estilizados com sucesso!"
+                    );
+                    log(
+                        `📊 RESULTADOS: ${resultado.total} lembretes processados`,
+                        resultado
+                    );
+                } else {
+                    log(
+                        "⚠️ ESTILIZAÇÃO ROBUSTA: Não foi possível encontrar lembretes após todas as tentativas"
+                    );
+                }
+            };
+
+            // Iniciar primeira tentativa
+            tentarEstilizar();
+
+            // Também agendar uma verificação após carregamento completo
+            if (document.readyState !== "complete") {
+                window.addEventListener("load", () => {
+                    setTimeout(() => {
+                        log("🔄 ESTILIZAÇÃO: Verificação pós-carregamento...");
+                        estilizarTodosDivLembrete();
+                    }, 500);
+                });
+            }
+        }
+
+        /**
+         * ⚡ APLICAÇÃO IMEDIATA ANTI-FLASH INTELIGENTE - ELIMINA COMPLETAMENTE O FLASH
+         * Sistema que usa detecção inteligente para processar lembretes instantaneamente
+         */
+        function aplicarEstilizacaoImediataLembretes() {
+            try {
+                log(
+                    "⚡ ANTI-FLASH: Iniciando aplicação imediata com detecção inteligente..."
+                );
+
+                // 1. DETECTAR que tipos de lembretes existem na página
+                const deteccao = detectarTiposLembretesNaPagina();
+
+                if (deteccao.coresEncontradas.length === 0) {
+                    log(
+                        "ℹ️ ANTI-FLASH: Nenhum lembrete colorido encontrado para processar"
+                    );
+                    return false;
+                }
+
+                log(
+                    `⚡ ANTI-FLASH: Encontrados lembretes de ${
+                        deteccao.coresEncontradas.length
+                    } cores: ${deteccao.coresEncontradas.join(", ")}`
+                );
+
+                // 2. OCULTAR TODOS os lembretes encontrados imediatamente
+                deteccao.elementos.forEach((elemento) => {
+                    if (
+                        !elemento.classList.contains(
+                            "eprobe-lembrete-processado"
+                        )
+                    ) {
+                        elemento.style.setProperty(
+                            "visibility",
+                            "hidden",
+                            "important"
+                        );
+                        elemento.style.setProperty("opacity", "0", "important");
+                    }
+                });
+
+                // 3. PROCESSAR cada tipo de lembrete encontrado instantaneamente
+                deteccao.coresEncontradas.forEach((nomeCor) => {
+                    const elementos = deteccao.elementosPorCor[nomeCor] || [];
+
+                    elementos.forEach((elemento) => {
+                        // Aplicar gradiente baseado na cor detectada
+                        switch (nomeCor) {
+                            case "amarelo":
+                                elemento.style.setProperty(
+                                    "background",
+                                    "linear-gradient(#F9EFAF, #F7E98D)",
+                                    "important"
+                                );
+                                break;
+                            case "vermelho":
+                                elemento.style.setProperty(
+                                    "background",
+                                    "linear-gradient(#FAAFAF, #F78D8D)",
+                                    "important"
+                                );
+                                break;
+                            case "azul":
+                                elemento.style.setProperty(
+                                    "background",
+                                    "linear-gradient(#AFCFFA, #8DC0F7)",
+                                    "important"
+                                );
+                                break;
+                            case "verde":
+                                elemento.style.setProperty(
+                                    "background",
+                                    "linear-gradient(#AFFAB6, #8DF792)",
+                                    "important"
+                                );
+                                break;
+                            case "laranja":
+                                elemento.style.setProperty(
+                                    "background",
+                                    "linear-gradient(#FAD3AF, #F7C68D)",
+                                    "important"
+                                );
+                                break;
+                        }
+
+                        // Aplicar estilos aprimorados
+                        elemento.style.setProperty(
+                            "padding",
+                            "20px",
+                            "important"
+                        );
+                        elemento.style.setProperty(
+                            "box-shadow",
+                            "0 4px 6px rgba(0, 0, 0, 0.1)",
+                            "important"
+                        );
+                        elemento.style.setProperty(
+                            "transition",
+                            "box-shadow 0.5s ease",
+                            "important"
+                        );
+                        elemento.style.setProperty(
+                            "-webkit-font-smoothing",
+                            "subpixel-antialiased",
+                            "important"
+                        );
+
+                        // Marcar como processado ANTES de tornar visível
+                        elemento.classList.add("eprobe-lembrete-processado");
+
+                        // Tornar visível COM os estilos já aplicados
+                        elemento.style.setProperty(
+                            "visibility",
+                            "visible",
+                            "important"
+                        );
+                        elemento.style.setProperty("opacity", "1", "important");
+                    });
+                });
+
+                // 4. Substituir ícones instantaneamente
+                substituirIconesLembretesImediato();
+
+                // 5. Garantir que TODOS os lembretes estão visíveis
+                deteccao.elementos.forEach((elemento) => {
+                    elemento.classList.add("eprobe-lembrete-processado");
+                    elemento.style.setProperty(
+                        "visibility",
+                        "visible",
+                        "important"
+                    );
+                    elemento.style.setProperty("opacity", "1", "important");
+                });
+
+                log(
+                    `⚡ ANTI-FLASH CONCLUÍDO: ${deteccao.elementos.length} lembretes processados instantaneamente`
+                );
+                return true;
+            } catch (error) {
+                log("❌ ANTI-FLASH: Erro durante aplicação imediata:", error);
+
+                // FALLBACK DE EMERGÊNCIA: Tornar todos os lembretes visíveis imediatamente
+                const todosLembretes = document.querySelectorAll(
+                    'div.divLembrete, .lista-lembretes .lembrete, div[style*="background-color:#efef8f"], div[style*="background-color:#db8080"], div[style*="background-color:#87adcd"], div[style*="background-color:#a7eda7"], div[style*="background-color:#f5b574"]'
+                );
+
+                todosLembretes.forEach((elemento) => {
+                    elemento.style.setProperty(
+                        "visibility",
+                        "visible",
+                        "important"
+                    );
+                    elemento.style.setProperty("opacity", "1", "important");
+                });
+
+                log(
+                    `🚨 FALLBACK: ${todosLembretes.length} lembretes restaurados via fallback`
+                );
+                return false;
+            }
+        }
+
+        /**
+         * ⚡ SUBSTITUIÇÃO IMEDIATA DE ÍCONES - SEM LOGS PARA MÁXIMA PERFORMANCE
+         * Versão ultra-rápida da substituição de ícones para eliminar flash
+         */
+        function substituirIconesLembretesImediato() {
+            try {
+                // 1. Substituir ícones de editar
+                const iconesEditar = document.querySelectorAll(
+                    'a[aria-label="Alterar Lembrete"] span.material-icons, a[href*="processo_lembrete_destino_alterar"] span.material-icons'
+                );
+
+                iconesEditar.forEach((icone) => {
+                    if (
+                        icone.textContent.trim() === "edit" &&
+                        !icone.hasAttribute("data-eprobe-icon-replaced")
+                    ) {
+                        const svgContainer = document.createElement("span");
+                        svgContainer.innerHTML =
+                            '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
+                        const svg = svgContainer.firstElementChild;
+                        if (icone.className) {
+                            svg.setAttribute(
+                                "class",
+                                icone.className + " eprobe-substituted-icon"
+                            );
+                        } else {
+                            svg.classList.add(
+                                "material-icons",
+                                "eprobe-substituted-icon"
+                            );
+                        }
+                        svg.setAttribute("data-eprobe-icon-replaced", "true");
+                        icone.parentNode.replaceChild(svg, icone);
+                    }
+                });
+
+                // 2. Substituir ícones de excluir
+                const iconesExcluir = document.querySelectorAll(
+                    'a[aria-label="Desativar Lembrete"] span.material-icons, a[onclick*="desativarLembrete"] span.material-icons'
+                );
+
+                iconesExcluir.forEach((icone) => {
+                    if (
+                        icone.textContent.trim() === "delete" &&
+                        !icone.hasAttribute("data-eprobe-icon-replaced")
+                    ) {
+                        const svgContainer = document.createElement("span");
+                        svgContainer.innerHTML =
+                            '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
+                        const svg = svgContainer.firstElementChild;
+                        if (icone.className) {
+                            svg.setAttribute(
+                                "class",
+                                icone.className + " eprobe-substituted-icon"
+                            );
+                        } else {
+                            svg.classList.add(
+                                "material-icons",
+                                "eprobe-substituted-icon"
+                            );
+                        }
+                        if (icone.title) svg.setAttribute("title", icone.title);
+                        if (icone.getAttribute("alt"))
+                            svg.setAttribute("alt", icone.getAttribute("alt"));
+                        if (icone.getAttribute("aria-hidden"))
+                            svg.setAttribute(
+                                "aria-hidden",
+                                icone.getAttribute("aria-hidden")
+                            );
+                        svg.setAttribute("data-eprobe-icon-replaced", "true");
+                        icone.parentNode.replaceChild(svg, icone);
+                    }
+                });
+
+                // 3. Marcar lembretes como processados
+                const lembretes = document.querySelectorAll(
+                    ".lista-lembretes .lembrete"
+                );
+                lembretes.forEach((lembrete) => {
+                    lembrete.classList.add("eprobe-lembrete-processado");
+                });
+            } catch (error) {
+                // Silencioso para não afetar performance
+            }
         }
 
         /**
@@ -14575,7 +16141,7 @@ ${texto}`;
                     <!-- Cabeçalho -->
                     <div class="rich-tooltip-header">
                         <span class="material-symbols-rounded" style="font-size: 18px; color: #1C1B1F;">
-                            schedule
+                            history_2
                         </span>
                         <div class="header-text">
                             <div class="header-title">Histórico de Sessões</div>
@@ -17802,6 +19368,89 @@ ${texto}`;
                 });
             });
 
+            // ========================================
+            // 🎨 SUBSTITUIÇÃO ESPECÍFICA PARA ÍCONES DE LEMBRETES
+            // ========================================
+
+            // Substituir ícones Material Icons para Material Symbols nos lembretes
+            // 1. Ícone de editar: "edit" → "ink_pen"
+            const iconesEditarLembrete = document.querySelectorAll(
+                'a[aria-label="Alterar Lembrete"] span.material-icons'
+            );
+
+            iconesEditarLembrete.forEach((icone) => {
+                if (icone.textContent === "edit") {
+                    // Verificar se já foi substituído
+                    if (icone.hasAttribute("data-eprobe-icon-replaced")) {
+                        return;
+                    }
+
+                    // Criar novo SVG Material Symbol "ink_pen"
+                    const svgContainer = document.createElement("span");
+                    svgContainer.innerHTML =
+                        '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
+
+                    const svg = svgContainer.firstElementChild;
+
+                    // Preservar classes e atributos do ícone original
+                    svg.classList.add("material-icons"); // Manter compatibilidade
+                    svg.setAttribute("data-eprobe-icon-replaced", "true");
+                    svg.setAttribute("data-original-icon", "edit");
+                    svg.setAttribute("data-new-icon", "ink_pen");
+
+                    // Substituir o ícone
+                    icone.parentNode.replaceChild(svg, icone);
+                    substituicoesRealizadas++;
+                    log(
+                        "✅ LEMBRETES: Ícone 'edit' substituído por Material Symbol 'ink_pen'"
+                    );
+                }
+            });
+
+            // 2. Ícone de excluir: "delete" → "delete" (mesmo nome, mas Material Symbol)
+            const iconesExcluirLembrete = document.querySelectorAll(
+                'a[aria-label="Desativar Lembrete"] span.material-icons'
+            );
+
+            iconesExcluirLembrete.forEach((icone) => {
+                if (icone.textContent === "delete") {
+                    // Verificar se já foi substituído
+                    if (icone.hasAttribute("data-eprobe-icon-replaced")) {
+                        return;
+                    }
+
+                    // Criar novo SVG Material Symbol "delete"
+                    const svgContainer = document.createElement("span");
+                    svgContainer.innerHTML =
+                        '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
+
+                    const svg = svgContainer.firstElementChild;
+
+                    // Preservar classes e atributos do ícone original
+                    svg.classList.add("material-icons"); // Manter compatibilidade
+                    svg.setAttribute("data-eprobe-icon-replaced", "true");
+                    svg.setAttribute("data-original-icon", "delete");
+                    svg.setAttribute("data-new-icon", "delete_material_symbol");
+
+                    // Preservar atributos importantes do ícone original
+                    if (icone.title) svg.setAttribute("title", icone.title);
+                    if (icone.getAttribute("alt"))
+                        svg.setAttribute("alt", icone.getAttribute("alt"));
+                    if (icone.getAttribute("aria-hidden"))
+                        svg.setAttribute(
+                            "aria-hidden",
+                            icone.getAttribute("aria-hidden")
+                        );
+
+                    // Substituir o ícone
+                    icone.parentNode.replaceChild(svg, icone);
+                    substituicoesRealizadas++;
+                    log(
+                        "✅ LEMBRETES: Ícone 'delete' substituído por Material Symbol 'delete'"
+                    );
+                }
+            });
+
             log(
                 `🎨 ÍCONES GLOBAL: ${substituicoesRealizadas} ícones substituídos globalmente`
             );
@@ -17905,6 +19554,238 @@ ${texto}`;
                 console.error("❌ ERRO NO DEBUG:", error);
                 return { erro: error.message };
             }
+        }
+
+        /**
+         * 🎨 FUNÇÃO ESPECÍFICA PARA SUBSTITUIÇÃO DE ÍCONES DOS LEMBRETES
+         * Substitui Material Icons por Material Symbols nos botões de editar e excluir lembretes
+         * PRESERVA 100% das funcionalidades originais
+         */
+        function substituirIconesLembretes() {
+            log(
+                "🎨 LEMBRETES: Iniciando substituição específica de ícones dos lembretes..."
+            );
+
+            let substituicoesRealizadas = 0;
+
+            try {
+                // 1. Substituir ícone de EDITAR LEMBRETE: "edit" → "ink_pen"
+                const iconesEditarLembrete = document.querySelectorAll(
+                    'a[aria-label="Alterar Lembrete"] span.material-icons, a[href*="processo_lembrete_destino_alterar"] span.material-icons'
+                );
+
+                iconesEditarLembrete.forEach((icone) => {
+                    if (
+                        icone.textContent.trim() === "edit" &&
+                        !icone.hasAttribute("data-eprobe-icon-replaced")
+                    ) {
+                        try {
+                            // Criar novo SVG Material Symbol "ink_pen"
+                            const svgContainer = document.createElement("span");
+                            svgContainer.innerHTML =
+                                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
+
+                            const svg = svgContainer.firstElementChild;
+
+                            // Preservar TODAS as classes e atributos do ícone original
+                            if (icone.className) {
+                                svg.setAttribute(
+                                    "class",
+                                    icone.className + " eprobe-substituted-icon"
+                                );
+                            } else {
+                                svg.classList.add(
+                                    "material-icons",
+                                    "eprobe-substituted-icon"
+                                );
+                            }
+
+                            // Marcar como substituído
+                            svg.setAttribute(
+                                "data-eprobe-icon-replaced",
+                                "true"
+                            );
+                            svg.setAttribute("data-original-icon", "edit");
+                            svg.setAttribute("data-new-icon", "ink_pen");
+                            svg.setAttribute(
+                                "data-icon-type",
+                                "lembrete-editar"
+                            );
+
+                            // Substituir o ícone mantendo o link funcional
+                            icone.parentNode.replaceChild(svg, icone);
+                            substituicoesRealizadas++;
+                            log(
+                                "✅ LEMBRETES: Ícone 'edit' substituído por Material Symbol 'ink_pen'"
+                            );
+                        } catch (error) {
+                            console.warn(
+                                "⚠️ LEMBRETES: Erro ao substituir ícone de editar:",
+                                error
+                            );
+                        }
+                    }
+                });
+
+                // 2. Substituir ícone de EXCLUIR LEMBRETE: "delete" → "delete" (Material Symbol)
+                const iconesExcluirLembrete = document.querySelectorAll(
+                    'a[aria-label="Desativar Lembrete"] span.material-icons, a[onclick*="desativarLembrete"] span.material-icons'
+                );
+
+                iconesExcluirLembrete.forEach((icone) => {
+                    if (
+                        icone.textContent.trim() === "delete" &&
+                        !icone.hasAttribute("data-eprobe-icon-replaced")
+                    ) {
+                        try {
+                            // Criar novo SVG Material Symbol "delete"
+                            const svgContainer = document.createElement("span");
+                            svgContainer.innerHTML =
+                                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
+
+                            const svg = svgContainer.firstElementChild;
+
+                            // Preservar TODAS as classes e atributos do ícone original
+                            if (icone.className) {
+                                svg.setAttribute(
+                                    "class",
+                                    icone.className + " eprobe-substituted-icon"
+                                );
+                            } else {
+                                svg.classList.add(
+                                    "material-icons",
+                                    "eprobe-substituted-icon"
+                                );
+                            }
+
+                            // Preservar atributos importantes
+                            if (icone.title)
+                                svg.setAttribute("title", icone.title);
+                            if (icone.getAttribute("alt"))
+                                svg.setAttribute(
+                                    "alt",
+                                    icone.getAttribute("alt")
+                                );
+                            if (icone.getAttribute("aria-hidden"))
+                                svg.setAttribute(
+                                    "aria-hidden",
+                                    icone.getAttribute("aria-hidden")
+                                );
+
+                            // Marcar como substituído
+                            svg.setAttribute(
+                                "data-eprobe-icon-replaced",
+                                "true"
+                            );
+                            svg.setAttribute("data-original-icon", "delete");
+                            svg.setAttribute(
+                                "data-new-icon",
+                                "delete_material_symbol"
+                            );
+                            svg.setAttribute(
+                                "data-icon-type",
+                                "lembrete-excluir"
+                            );
+
+                            // Substituir o ícone mantendo o link funcional
+                            icone.parentNode.replaceChild(svg, icone);
+                            substituicoesRealizadas++;
+                            log(
+                                "✅ LEMBRETES: Ícone 'delete' substituído por Material Symbol 'delete'"
+                            );
+                        } catch (error) {
+                            console.warn(
+                                "⚠️ LEMBRETES: Erro ao substituir ícone de excluir:",
+                                error
+                            );
+                        }
+                    }
+                });
+
+                // 3. MARCAR TODOS OS LEMBRETES COMO PROCESSADOS PARA ELIMINAR FLASH
+                const lembretes = document.querySelectorAll(
+                    ".lista-lembretes .lembrete"
+                );
+                lembretes.forEach((lembrete) => {
+                    if (
+                        !lembrete.classList.contains(
+                            "eprobe-lembrete-processado"
+                        )
+                    ) {
+                        lembrete.classList.add("eprobe-lembrete-processado");
+                        log("🎯 LEMBRETES: Lembrete marcado como processado");
+                    }
+                });
+
+                log(
+                    `🎨 LEMBRETES: ${substituicoesRealizadas} ícones de lembretes substituídos com sucesso`
+                );
+                return substituicoesRealizadas;
+            } catch (error) {
+                console.error(
+                    "❌ LEMBRETES: Erro geral na substituição de ícones:",
+                    error
+                );
+                return 0;
+            }
+        }
+
+        /**
+         * 🧪 FUNÇÃO DE TESTE PARA ÍCONES DE LEMBRETES
+         * Testa e debug específico para ícones de lembretes
+         */
+        function testarIconesLembretes() {
+            log(
+                "🧪 TESTE LEMBRETES: Iniciando diagnóstico de ícones de lembretes..."
+            );
+
+            // Buscar todos os links de lembretes
+            const linksEditarLembrete = document.querySelectorAll(
+                'a[aria-label="Alterar Lembrete"], a[href*="processo_lembrete_destino_alterar"]'
+            );
+            const linksExcluirLembrete = document.querySelectorAll(
+                'a[aria-label="Desativar Lembrete"], a[onclick*="desativarLembrete"]'
+            );
+
+            log(
+                `📊 TESTE LEMBRETES: Encontrados ${linksEditarLembrete.length} links de editar e ${linksExcluirLembrete.length} links de excluir`
+            );
+
+            // Analisar ícones de editar
+            linksEditarLembrete.forEach((link, index) => {
+                const icone = link.querySelector("span.material-icons");
+                log(`🔍 EDITAR ${index + 1}:`, {
+                    link: link.outerHTML.substring(0, 100) + "...",
+                    icone: icone ? icone.textContent : "sem ícone",
+                    substituido: icone
+                        ? icone.hasAttribute("data-eprobe-icon-replaced")
+                        : false,
+                });
+            });
+
+            // Analisar ícones de excluir
+            linksExcluirLembrete.forEach((link, index) => {
+                const icone = link.querySelector("span.material-icons");
+                log(`🗑️ EXCLUIR ${index + 1}:`, {
+                    link: link.outerHTML.substring(0, 100) + "...",
+                    icone: icone ? icone.textContent : "sem ícone",
+                    substituido: icone
+                        ? icone.hasAttribute("data-eprobe-icon-replaced")
+                        : false,
+                });
+            });
+
+            // Executar substituição
+            const resultado = substituirIconesLembretes();
+            log(
+                `✅ TESTE LEMBRETES: Resultado da substituição: ${resultado} ícones substituídos`
+            );
+
+            return {
+                linksEditar: linksEditarLembrete.length,
+                linksExcluir: linksExcluirLembrete.length,
+                substituidos: resultado,
+            };
         }
 
         // ===== SISTEMA DE THROTTLING ULTRA-OTIMIZADO PARA PERFORMANCE =====
@@ -19797,9 +21678,175 @@ ${texto}`;
             criarTooltipSimplificado:
                 allMissingFunctions.criarTooltipSimplificado,
             testarFuncaoTooltip: allMissingFunctions.testarFuncaoTooltip,
-            // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete
-            debugDivLembrete: allMissingFunctions.debugDivLembrete,
-            estilizarDivLembrete: allMissingFunctions.estilizarDivLembrete,
+            // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete - SISTEMA INTELIGENTE
+            debugDivLembrete,
+            estilizarDivLembrete,
+            estilizarDivLembreteVermelho,
+            estilizarDivLembreteAzul,
+            estilizarDivLembreteVerde,
+            estilizarDivLembreteLaranja,
+            estilizarTodosDivLembrete,
+            debugTodosDivLembrete,
+            aplicarEstilizacaoLembretesRobusta,
+
+            // 🧠 NOVA DETECÇÃO INTELIGENTE DE LEMBRETES
+            detectarTiposLembretesNaPagina,
+
+            // 🔄 TESTES DO SISTEMA CORRIGIDO
+            testarSistemaEstilizacaoCorrigido: function () {
+                log("🧪 TESTE: Sistema de estilização inteligente...");
+                log("1️⃣ Detectando tipos de lembretes...");
+                const deteccao = detectarTiposLembretesNaPagina();
+                log("2️⃣ Aplicando estilização robusta...");
+                aplicarEstilizacaoLembretesRobusta();
+                return deteccao;
+            },
+
+            // 🚨 DIAGNÓSTICO COMPLETO DE LEMBRETES
+            diagnosticarLembretesCompleto: function () {
+                log(
+                    "🔍 DIAGNÓSTICO COMPLETO: Analisando sistema de lembretes..."
+                );
+
+                // 1. Verificar se as funções existem
+                const funcoesExistem = {
+                    detectarTiposLembretesNaPagina:
+                        typeof detectarTiposLembretesNaPagina === "function",
+                    aplicarEstilizacaoImediataLembretes:
+                        typeof aplicarEstilizacaoImediataLembretes ===
+                        "function",
+                    aplicarEstilizacaoLembretesRobusta:
+                        typeof aplicarEstilizacaoLembretesRobusta ===
+                        "function",
+                    estilizarTodosDivLembrete:
+                        typeof estilizarTodosDivLembrete === "function",
+                };
+
+                log("📊 FUNÇÕES DISPONÍVEIS:", funcoesExistem);
+
+                // 2. Detectar lembretes na página
+                const deteccao = detectarTiposLembretesNaPagina();
+                log("🎯 DETECÇÃO:", deteccao);
+
+                // 3. Tentar múltiplos seletores
+                const seletoresTeste = [
+                    "div.divLembrete",
+                    ".lista-lembretes .lembrete",
+                    'div[style*="#efef8f"]',
+                    'div[style*="#db8080"]',
+                    'div[style*="#87adcd"]',
+                    'div[style*="#a7eda7"]',
+                    'div[style*="#f5b574"]',
+                ];
+
+                const resultadosSeletores = {};
+                seletoresTeste.forEach((seletor) => {
+                    const elementos = document.querySelectorAll(seletor);
+                    resultadosSeletores[seletor] = elementos.length;
+                    if (elementos.length > 0) {
+                        log(
+                            `✅ ${seletor}: ${elementos.length} elementos encontrados`
+                        );
+                    }
+                });
+
+                // 4. Forçar estilização se elementos existem
+                let totalEstilizados = 0;
+                if (deteccao.coresEncontradas.length > 0) {
+                    log("🎨 FORÇANDO ESTILIZAÇÃO...");
+                    totalEstilizados = estilizarTodosDivLembrete().total || 0;
+                }
+
+                const diagnostico = {
+                    funcoesExistem,
+                    deteccao,
+                    resultadosSeletores,
+                    totalEstilizados,
+                    sucesso: totalEstilizados > 0,
+                };
+
+                log("🏁 DIAGNÓSTICO FINAL:", diagnostico);
+                return diagnostico;
+            },
+
+            // 🔧 FORÇAR ESTILIZAÇÃO MANUAL
+            forcarEstilizacaoLembretes: function () {
+                log("🚀 FORÇA: Forçando estilização manual de lembretes...");
+
+                try {
+                    // Tentar detecção primeiro
+                    const deteccao = detectarTiposLembretesNaPagina();
+
+                    if (deteccao.coresEncontradas.length === 0) {
+                        log(
+                            "⚠️ Nenhum lembrete encontrado, tentando seletores alternativos..."
+                        );
+
+                        // Tentar seletores genéricos
+                        const seletoresGenéricos = [
+                            'div[style*="background-color"]',
+                            ".lista-lembretes div",
+                            "div.divLembrete",
+                        ];
+
+                        for (const seletor of seletoresGenéricos) {
+                            const elementos =
+                                document.querySelectorAll(seletor);
+                            if (elementos.length > 0) {
+                                log(
+                                    `✅ Encontrados ${elementos.length} elementos com ${seletor}`
+                                );
+
+                                elementos.forEach((elem, i) => {
+                                    const style =
+                                        elem.getAttribute("style") || "";
+                                    if (style.includes("background-color")) {
+                                        log(
+                                            `🎨 Estilizando elemento ${i + 1}:`,
+                                            style
+                                        );
+
+                                        // Aplicar gradiente baseado na cor
+                                        if (style.includes("#efef8f")) {
+                                            elem.style.background =
+                                                "linear-gradient(#F9EFAF, #F7E98D)";
+                                        } else if (style.includes("#db8080")) {
+                                            elem.style.background =
+                                                "linear-gradient(#FAAFAF, #F78D8D)";
+                                        } else if (style.includes("#87adcd")) {
+                                            elem.style.background =
+                                                "linear-gradient(#AFCFFA, #8DC0F7)";
+                                        } else if (style.includes("#a7eda7")) {
+                                            elem.style.background =
+                                                "linear-gradient(#AFFAB6, #8DF792)";
+                                        } else if (style.includes("#f5b574")) {
+                                            elem.style.background =
+                                                "linear-gradient(#FAD3AF, #F7C68D)";
+                                        }
+
+                                        // Aplicar estilos adicionais
+                                        elem.style.padding = "20px";
+                                        elem.style.boxShadow =
+                                            "0 4px 6px rgba(0, 0, 0, 0.1)";
+                                        elem.style.transition =
+                                            "box-shadow 0.5s ease";
+                                    }
+                                });
+                                break;
+                            }
+                        }
+                    } else {
+                        // Usar detecção inteligente
+                        aplicarEstilizacaoLembretesRobusta();
+                    }
+
+                    log("✅ FORÇA: Estilização manual concluída");
+                    return true;
+                } catch (error) {
+                    log("❌ FORÇA: Erro durante estilização manual:", error);
+                    return false;
+                }
+            },
             // 🔍 FUNÇÕES DE DEBUG PARA STATUS
             debugPadraoRetirado: allMissingFunctions.debugPadraoRetirado,
             debugStatusCompleto: allMissingFunctions.debugStatusCompleto,
@@ -19838,6 +21885,14 @@ ${texto}`;
                 allMissingFunctions.substituirIconesFerramentas,
             substituirIconesGlobalmente:
                 allMissingFunctions.substituirIconesGlobalmente,
+            // ✨ NOVO: Funções específicas para ícones de lembretes
+            substituirIconesLembretes: substituirIconesLembretes,
+            testarIconesLembretes: testarIconesLembretes,
+            // ⚡ NOVO: Funções para eliminar flash visual
+            aplicarEstilizacaoImediataLembretes:
+                aplicarEstilizacaoImediataLembretes,
+            substituirIconesLembretesImediato:
+                substituirIconesLembretesImediato,
             debugIconesSubstituicao:
                 allMissingFunctions.debugIconesSubstituicao,
             configurarAlternanciaEstrelas: function () {

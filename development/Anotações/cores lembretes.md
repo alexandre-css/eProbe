@@ -49,3 +49,14 @@ background: linear-gradient( #AFFAB6, #8DF792);
 **Mudar para**
 
 background: linear-gradient( #FAD3AF, #F7C68D);
+
+# DETALHES VISUAIS DOS LEMBRETES #
+
+padding: 20px
+border:15px solid rgba(0,0,0,0.1)
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1)
+transition: box-shadow 0.5s ease
+-webkit-font-smoothing: subpixel-antialiased
+
+ hover: box-shadow:0 5px 8px rgba(0,0,0,0.15)
+ focus: box-shadow:0 5px 12px
