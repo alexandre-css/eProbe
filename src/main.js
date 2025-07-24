@@ -214,30 +214,57 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 const divLembreteDataElements = document.querySelectorAll(
                     '.divLembreteData, div[class*="divLembreteData"]'
                 );
+                let elementosModificados = 0;
+
                 divLembreteDataElements.forEach((element) => {
-                    element.style.setProperty(
-                        "margin-top",
-                        "15px",
-                        "important"
-                    );
-                    element.style.setProperty(
-                        "margin-bottom",
-                        "0",
-                        "important"
-                    );
-                    element.style.setProperty("margin-left", "0", "important");
-                    element.style.setProperty("margin-right", "0", "important");
+                    // Verificar se já foi processado para evitar reaplicações
+                    if (!element.hasAttribute("data-eprobe-margin-applied")) {
+                        element.style.setProperty(
+                            "margin-top",
+                            "15px",
+                            "important"
+                        );
+                        element.style.setProperty(
+                            "margin-bottom",
+                            "0",
+                            "important"
+                        );
+                        element.style.setProperty(
+                            "margin-left",
+                            "0",
+                            "important"
+                        );
+                        element.style.setProperty(
+                            "margin-right",
+                            "0",
+                            "important"
+                        );
+                        element.setAttribute(
+                            "data-eprobe-margin-applied",
+                            "true"
+                        );
+                        elementosModificados++;
+                    }
                 });
-                if (divLembreteDataElements.length > 0) {
+
+                if (elementosModificados > 0) {
                     logCritical(
-                        `🔧 FORÇA JS: Aplicado margin-top em ${divLembreteDataElements.length} elementos divLembreteData`
+                        `🔧 FORÇA JS: Aplicado margin-top em ${elementosModificados} novos elementos divLembreteData`
                     );
                 }
             };
 
-            // Aplicar imediatamente e a cada 500ms para garantir
+            // Aplicar imediatamente e a cada 2 segundos por 30 segundos para garantir novos elementos
             forcarMarginTopLembretes();
-            setInterval(forcarMarginTopLembretes, 500);
+            const intervalMargin = setInterval(forcarMarginTopLembretes, 2000);
+
+            // Parar o interval após 30 segundos para evitar execução infinita
+            setTimeout(() => {
+                clearInterval(intervalMargin);
+                logCritical(
+                    "🔧 FORÇA JS: Monitoramento de margin-top finalizado"
+                );
+            }, 30000);
 
             // Garantir que navbar está visível instantaneamente
             const navbar =
@@ -9818,15 +9845,23 @@ ${texto}`;
                     temaCor === "#134377" ? "rgb(19, 67, 119)" : temaCor; // Se azul, usar hover mais escuro
 
                 // Adicionar eventos para hover, focus e blur (otimizados para performance)
-                button.addEventListener("mouseenter", () => {
-                    button.style.backgroundColor = corHover;
-                    button.style.borderColor = corHover;
-                });
+                button.addEventListener(
+                    "mouseenter",
+                    () => {
+                        button.style.backgroundColor = corHover;
+                        button.style.borderColor = corHover;
+                    },
+                    { passive: true }
+                );
 
-                button.addEventListener("mouseleave", () => {
-                    button.style.backgroundColor = temaCor;
-                    button.style.borderColor = temaCor;
-                });
+                button.addEventListener(
+                    "mouseleave",
+                    () => {
+                        button.style.backgroundColor = temaCor;
+                        button.style.borderColor = temaCor;
+                    },
+                    { passive: true }
+                );
 
                 button.addEventListener("focus", () => {
                     button.style.backgroundColor = corHover;
@@ -14087,19 +14122,27 @@ ${texto}`;
             document.body.appendChild(tooltip);
 
             // 5. Eventos simples
-            indicador.addEventListener("mouseenter", function () {
-                log("🖱️ TOOLTIP: Mostrando tooltip simples");
+            indicador.addEventListener(
+                "mouseenter",
+                function () {
+                    log("🖱️ TOOLTIP: Mostrando tooltip simples");
 
-                const rect = indicador.getBoundingClientRect();
-                tooltip.style.left = rect.left - 100 + "px";
-                tooltip.style.top = rect.bottom + 10 + "px";
-                tooltip.style.display = "block";
-            });
+                    const rect = indicador.getBoundingClientRect();
+                    tooltip.style.left = rect.left - 100 + "px";
+                    tooltip.style.top = rect.bottom + 10 + "px";
+                    tooltip.style.display = "block";
+                },
+                { passive: true }
+            );
 
-            indicador.addEventListener("mouseleave", function () {
-                log("🖱️ TOOLTIP: Ocultando tooltip simples");
-                tooltip.style.display = "none";
-            });
+            indicador.addEventListener(
+                "mouseleave",
+                function () {
+                    log("🖱️ TOOLTIP: Ocultando tooltip simples");
+                    tooltip.style.display = "none";
+                },
+                { passive: true }
+            );
 
             logCritical("✅ TOOLTIP SIMPLIFICADO: Configurado com sucesso!");
             return true;
@@ -15225,7 +15268,91 @@ ${texto}`;
                     }
                 });
 
-                // 3. Marcar lembretes como processados
+                // 3. Substituir botões "Ler mais" por ícone expand_all (apenas quando necessário)
+                let botoesLerMais = Array.from(
+                    document.querySelectorAll("div.botaoLerMais")
+                ).filter((botao) => {
+                    const texto = (botao.textContent || "").toLowerCase();
+                    return (
+                        texto.includes("ler mais") ||
+                        texto.includes("...ler mais") ||
+                        texto.includes("... ler mais")
+                    );
+                });
+
+                botoesLerMais.forEach((botao) => {
+                    if (!botao.hasAttribute("data-eprobe-expandir-replaced")) {
+                        const temEventoClick =
+                            botao.onclick || botao.getAttribute("onclick");
+                        if (!temEventoClick) return;
+
+                        const lembreteParent = botao.closest(".divLembrete");
+                        if (!lembreteParent) return;
+
+                        const desLembrete =
+                            lembreteParent.querySelector(".desLembrete");
+                        if (!desLembrete) return;
+
+                        // Verificar se há truncamento de texto
+                        const textoCompleto = desLembrete.textContent || "";
+                        const temTextoTruncado =
+                            textoCompleto.length > 150 ||
+                            desLembrete.scrollHeight >
+                                desLembrete.clientHeight ||
+                            textoCompleto.includes("...") ||
+                            window.getComputedStyle(desLembrete)
+                                .textOverflow === "ellipsis";
+
+                        if (!temTextoTruncado) return;
+
+                        // Criar container centralizado
+                        const container = document.createElement("div");
+                        container.style.cssText =
+                            "margin-top: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%;";
+                        container.setAttribute(
+                            "data-eprobe-expandir-replaced",
+                            "true"
+                        );
+
+                        container.innerHTML = `
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454">
+                                    <path d="M480-72 230-322l68-70 182 182 182-182 68 70L480-72ZM297-569l-67-71 250-250 250 250-67 71-183-183-183 183Z"/>
+                                </svg>
+                                <span style="color: #545454; font-size: 14px; font-weight: 500;">Expandir lembrete</span>
+                            </div>
+                        `;
+
+                        // Copiar eventos
+                        if (botao.onclick) container.onclick = botao.onclick;
+                        const onclickAttr = botao.getAttribute("onclick");
+                        if (onclickAttr)
+                            container.setAttribute("onclick", onclickAttr);
+
+                        // Substituir elemento mantendo compatibilidade com eProc
+                        try {
+                            // Criar backup invisível do botão original para compatibilidade com eProc
+                            const botaoBackup = botao.cloneNode(true);
+                            botaoBackup.style.display = "none";
+                            botaoBackup.style.visibility = "hidden";
+                            botaoBackup.style.position = "absolute";
+                            botaoBackup.style.top = "-9999px";
+                            botaoBackup.setAttribute(
+                                "data-eprobe-backup",
+                                "true"
+                            );
+
+                            // Inserir container e backup
+                            botao.parentNode.insertBefore(container, botao);
+                            botao.parentNode.insertBefore(botaoBackup, botao);
+                            botao.parentNode.removeChild(botao);
+                        } catch (error) {
+                            // Silencioso para máxima performance
+                        }
+                    }
+                });
+
+                // 4. Marcar lembretes como processados
                 const lembretes = document.querySelectorAll(
                     ".lista-lembretes .lembrete"
                 );
@@ -15687,17 +15814,25 @@ ${texto}`;
                         sessoesParaIndicador.length.toString();
 
                     // Adicionar hover effect
-                    indicadorMultiplas.addEventListener("mouseenter", () => {
-                        indicadorMultiplas.style.background =
-                            "rgba(28, 27, 31, 0.12)";
-                        indicadorMultiplas.style.transform = "scale(1.1)";
-                    });
+                    indicadorMultiplas.addEventListener(
+                        "mouseenter",
+                        () => {
+                            indicadorMultiplas.style.background =
+                                "rgba(28, 27, 31, 0.12)";
+                            indicadorMultiplas.style.transform = "scale(1.1)";
+                        },
+                        { passive: true }
+                    );
 
-                    indicadorMultiplas.addEventListener("mouseleave", () => {
-                        indicadorMultiplas.style.background =
-                            "rgba(28, 27, 31, 0.08)";
-                        indicadorMultiplas.style.transform = "scale(1)";
-                    });
+                    indicadorMultiplas.addEventListener(
+                        "mouseleave",
+                        () => {
+                            indicadorMultiplas.style.background =
+                                "rgba(28, 27, 31, 0.08)";
+                            indicadorMultiplas.style.transform = "scale(1)";
+                        },
+                        { passive: true }
+                    );
 
                     cardContainer.appendChild(indicadorMultiplas);
 
@@ -16459,7 +16594,9 @@ ${texto}`;
             // Eventos no indicador - CORRIGIDO
             log("🔧 TOOLTIP: Adicionando event listeners ao indicador");
 
-            indicador.addEventListener("mouseenter", mostrarTooltip);
+            indicador.addEventListener("mouseenter", mostrarTooltip, {
+                passive: true,
+            });
             indicador.addEventListener("mouseleave", (e) => {
                 log("🖱️ TOOLTIP: Mouse saindo do indicador");
 
@@ -16482,7 +16619,11 @@ ${texto}`;
                 if (tooltip) {
                     log("🔧 TOOLTIP: Adicionando event listeners ao tooltip");
 
-                    tooltip.addEventListener("mouseenter", manterTooltipAberto);
+                    tooltip.addEventListener(
+                        "mouseenter",
+                        manterTooltipAberto,
+                        { passive: true }
+                    );
                     tooltip.addEventListener("mouseleave", (e) => {
                         log("🖱️ TOOLTIP: Mouse saindo do tooltip");
 
@@ -16693,33 +16834,42 @@ ${texto}`;
             }
 
             // Eventos de mouse
-            sessionsIndicator.addEventListener("mouseenter", (e) => {
-                tooltip.innerHTML = tooltipContent;
-                tooltip.style.display = "block";
+            sessionsIndicator.addEventListener(
+                "mouseenter",
+                (e) => {
+                    tooltip.innerHTML = tooltipContent;
+                    tooltip.style.display = "block";
 
-                // Posicionar tooltip
-                const rect = sessionsIndicator.getBoundingClientRect();
-                const tooltipRect = tooltip.getBoundingClientRect();
+                    // Posicionar tooltip
+                    const rect = sessionsIndicator.getBoundingClientRect();
+                    const tooltipRect = tooltip.getBoundingClientRect();
 
-                let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
-                let top = rect.top - tooltipRect.height - 12;
+                    let left =
+                        rect.left + rect.width / 2 - tooltipRect.width / 2;
+                    let top = rect.top - tooltipRect.height - 12;
 
-                // Ajustar se sair da tela
-                if (left < 10) left = 10;
-                if (left + tooltipRect.width > window.innerWidth - 10) {
-                    left = window.innerWidth - tooltipRect.width - 10;
-                }
-                if (top < 10) {
-                    top = rect.bottom + 12;
-                }
+                    // Ajustar se sair da tela
+                    if (left < 10) left = 10;
+                    if (left + tooltipRect.width > window.innerWidth - 10) {
+                        left = window.innerWidth - tooltipRect.width - 10;
+                    }
+                    if (top < 10) {
+                        top = rect.bottom + 12;
+                    }
 
-                tooltip.style.left = left + "px";
-                tooltip.style.top = top + "px";
-            });
+                    tooltip.style.left = left + "px";
+                    tooltip.style.top = top + "px";
+                },
+                { passive: true }
+            );
 
-            sessionsIndicator.addEventListener("mouseleave", () => {
-                tooltip.style.display = "none";
-            });
+            sessionsIndicator.addEventListener(
+                "mouseleave",
+                () => {
+                    tooltip.style.display = "none";
+                },
+                { passive: true }
+            );
         }
 
         /**
@@ -24083,23 +24233,39 @@ ${texto}`;
                 };
 
                 // Eventos do indicador
-                indicador.addEventListener("mouseenter", mostrarTooltip);
-                indicador.addEventListener("mouseleave", ocultarTooltip);
+                indicador.addEventListener("mouseenter", mostrarTooltip, {
+                    passive: true,
+                });
+                indicador.addEventListener("mouseleave", ocultarTooltip, {
+                    passive: true,
+                });
 
                 // Eventos do tooltip
-                tooltip.addEventListener("mouseenter", cancelarOcultacao);
-                tooltip.addEventListener("mouseleave", ocultarTooltip);
+                tooltip.addEventListener("mouseenter", cancelarOcultacao, {
+                    passive: true,
+                });
+                tooltip.addEventListener("mouseleave", ocultarTooltip, {
+                    passive: true,
+                });
 
                 // Efeito hover no indicador
-                indicador.addEventListener("mouseenter", () => {
-                    indicador.style.background = "rgba(28, 27, 31, 0.12)";
-                    indicador.style.transform = "scale(1.1)";
-                });
+                indicador.addEventListener(
+                    "mouseenter",
+                    () => {
+                        indicador.style.background = "rgba(28, 27, 31, 0.12)";
+                        indicador.style.transform = "scale(1.1)";
+                    },
+                    { passive: true }
+                );
 
-                indicador.addEventListener("mouseleave", () => {
-                    indicador.style.background = "rgba(28, 27, 31, 0.08)";
-                    indicador.style.transform = "scale(1)";
-                });
+                indicador.addEventListener(
+                    "mouseleave",
+                    () => {
+                        indicador.style.background = "rgba(28, 27, 31, 0.08)";
+                        indicador.style.transform = "scale(1)";
+                    },
+                    { passive: true }
+                );
 
                 log(
                     "✅ TOOLTIP CORRIGIDO: Sistema funcional aplicado ao card original"
