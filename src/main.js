@@ -1,8 +1,545 @@
 ﻿// ===== SISTEMA DE LOGGING CONTROLADO =====
-const DEBUG_MODE = true; // ⚡ ATIVO PARA DEBUG DE DETECÇÃO DE SESSÃO
+const DEBUG_MODE = false; // ⚡ ATIVA/DESATIVA DEBUG DE DETECÇÃO DE SESSÃO
 const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silenciosos por padrão
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
+
+// ===== ULTRA ANTI-FLASH - EXECUÇÃO IMEDIATA ANTES DE QUALQUER RENDERIZAÇÃO =====
+(function ultraAntiFlash() {
+    // Executar IMEDIATAMENTE - antes mesmo do DOM começar
+    const iniciarUltraAntiFlash = () => {
+        log("⚡ ULTRA ANTI-FLASH: Interceptando renderização...");
+
+        // 1. CSS CRÍTICO INLINE - Aplicado instantaneamente ANTES da renderização
+        const cssUltraCritico = document.createElement("style");
+        cssUltraCritico.setAttribute("data-eprobe-ultra-critical", "true");
+        cssUltraCritico.textContent = `
+            /* ===== ULTRA ANTI-FLASH CRITICAL STYLES ===== */
+            
+            /* Preparação instantânea do body */
+            body {
+                visibility: visible !important;
+                opacity: 1 !important;
+                transition: none !important;
+            }
+            
+            /* INTERCEPTAÇÃO TOTAL: Divs de lembrete - estilos aplicados ANTES da renderização */
+            div.divLembrete[style*="background-color:#efef8f"],
+            div.divLembrete[style*="background-color: #efef8f"],
+            div[style*="background-color:#efef8f"]:not([data-eprobe-processed]) {
+                background: linear-gradient(#F9EFAF, #F7E98D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            div.divLembrete[style*="background-color:#efef8f"]:hover,
+            div.divLembrete[style*="background-color: #efef8f"]:hover,
+            div[style*="background-color:#efef8f"]:not([data-eprobe-processed]):hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            div.divLembrete[style*="background-color:#efef8f"]:focus,
+            div.divLembrete[style*="background-color: #efef8f"]:focus,
+            div[style*="background-color:#efef8f"]:not([data-eprobe-processed]):focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            div.divLembrete[style*="background-color:#db8080"],
+            div.divLembrete[style*="background-color: #db8080"],
+            div[style*="background-color:#db8080"]:not([data-eprobe-processed]) {
+                background: linear-gradient(#FAAFAF, #F78D8D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            div.divLembrete[style*="background-color:#db8080"]:hover,
+            div.divLembrete[style*="background-color: #db8080"]:hover,
+            div[style*="background-color:#db8080"]:not([data-eprobe-processed]):hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            div.divLembrete[style*="background-color:#db8080"]:focus,
+            div.divLembrete[style*="background-color: #db8080"]:focus,
+            div[style*="background-color:#db8080"]:not([data-eprobe-processed]):focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            div.divLembrete[style*="background-color:#87adcd"],
+            div.divLembrete[style*="background-color: #87adcd"],
+            div[style*="background-color:#87adcd"]:not([data-eprobe-processed]) {
+                background: linear-gradient(#AFCFFA, #8DC0F7) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            div.divLembrete[style*="background-color:#87adcd"]:hover,
+            div.divLembrete[style*="background-color: #87adcd"]:hover,
+            div[style*="background-color:#87adcd"]:not([data-eprobe-processed]):hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            div.divLembrete[style*="background-color:#87adcd"]:focus,
+            div.divLembrete[style*="background-color: #87adcd"]:focus,
+            div[style*="background-color:#87adcd"]:not([data-eprobe-processed]):focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            div.divLembrete[style*="background-color:#a7eda7"],
+            div.divLembrete[style*="background-color: #a7eda7"],
+            div[style*="background-color:#a7eda7"]:not([data-eprobe-processed]) {
+                background: linear-gradient(#AFFAB6, #8DF792) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            div.divLembrete[style*="background-color:#a7eda7"]:hover,
+            div.divLembrete[style*="background-color: #a7eda7"]:hover,
+            div[style*="background-color:#a7eda7"]:not([data-eprobe-processed]):hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            div.divLembrete[style*="background-color:#a7eda7"]:focus,
+            div.divLembrete[style*="background-color: #a7eda7"]:focus,
+            div[style*="background-color:#a7eda7"]:not([data-eprobe-processed]):focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            div.divLembrete[style*="background-color:#f5b574"],
+            div.divLembrete[style*="background-color: #f5b574"],
+            div[style*="background-color:#f5b574"]:not([data-eprobe-processed]) {
+                background: linear-gradient(#FAD3AF, #F7C68D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            div.divLembrete[style*="background-color:#f5b574"]:hover,
+            div.divLembrete[style*="background-color: #f5b574"]:hover,
+            div[style*="background-color:#f5b574"]:not([data-eprobe-processed]):hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            div.divLembrete[style*="background-color:#f5b574"]:focus,
+            div.divLembrete[style*="background-color: #f5b574"]:focus,
+            div[style*="background-color:#f5b574"]:not([data-eprobe-processed]):focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            /* INTERCEPTAÇÃO DE ELEMENTOS LISTA: Para estruturas .lista-lembretes */
+            .lista-lembretes .lembrete[style*="background-color:#efef8f"],
+            .lista-lembretes .lembrete[style*="background-color: #efef8f"] {
+                background: linear-gradient(#F9EFAF, #F7E98D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#efef8f"]:hover,
+            .lista-lembretes .lembrete[style*="background-color: #efef8f"]:hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#efef8f"]:focus,
+            .lista-lembretes .lembrete[style*="background-color: #efef8f"]:focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#db8080"],
+            .lista-lembretes .lembrete[style*="background-color: #db8080"] {
+                background: linear-gradient(#FAAFAF, #F78D8D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#db8080"]:hover,
+            .lista-lembretes .lembrete[style*="background-color: #db8080"]:hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#db8080"]:focus,
+            .lista-lembretes .lembrete[style*="background-color: #db8080"]:focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#87adcd"],
+            .lista-lembretes .lembrete[style*="background-color: #87adcd"] {
+                background: linear-gradient(#AFCFFA, #8DC0F7) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#87adcd"]:hover,
+            .lista-lembretes .lembrete[style*="background-color: #87adcd"]:hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#87adcd"]:focus,
+            .lista-lembretes .lembrete[style*="background-color: #87adcd"]:focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#a7eda7"],
+            .lista-lembretes .lembrete[style*="background-color: #a7eda7"] {
+                background: linear-gradient(#AFFAB6, #8DF792) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#a7eda7"]:hover,
+            .lista-lembretes .lembrete[style*="background-color: #a7eda7"]:hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#a7eda7"]:focus,
+            .lista-lembretes .lembrete[style*="background-color: #a7eda7"]:focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#f5b574"],
+            .lista-lembretes .lembrete[style*="background-color: #f5b574"] {
+                background: linear-gradient(#FAD3AF, #F7C68D) !important;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+                padding: 20px !important;
+                transition: box-shadow 0.5s ease !important;
+                -webkit-font-smoothing: subpixel-antialiased !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#f5b574"]:hover,
+            .lista-lembretes .lembrete[style*="background-color: #f5b574"]:hover {
+                box-shadow: 0 5px 8px rgba(0,0,0,0.15) !important;
+            }
+            
+            .lista-lembretes .lembrete[style*="background-color:#f5b574"]:focus,
+            .lista-lembretes .lembrete[style*="background-color: #f5b574"]:focus {
+                box-shadow: 0 5px 12px !important;
+            }
+            
+            /* Spacing fixes para lembretes - aplicados instantaneamente */
+            .divLembretePara, .lblLembretePara {
+                margin-bottom: 15px !important;
+            }
+            
+            .divLembreteData, .lblLembreteData {
+                margin-top: 15px !important;
+            }
+            
+            /* INTERCEPTAÇÃO TOTAL: Botões de ler mais - ocultar ANTES da renderização */
+            div.botaoLerMais:not([data-eprobe-expandir-replaced]):not([data-eprobe-processed]) {
+                visibility: hidden !important;
+                opacity: 0 !important;
+                position: absolute !important;
+                left: -9999px !important;
+                pointer-events: none !important;
+            }
+            
+            /* Botões marcados para substituição - ocultar completamente */
+            div.botaoLerMais[data-eprobe-will-replace="true"] {
+                display: none !important;
+                visibility: hidden !important;
+            }
+            
+            /* Elementos eProbe - garantir visibilidade imediata */
+            [id*="eprobe"], [class*="eprobe"], [data-eprobe-expandir-replaced] {
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: static !important;
+                left: auto !important;
+                pointer-events: auto !important;
+            }
+            
+            /* Navbar preparação - evitar interferência */
+            .navbar, #navbar, .infraBarraComandos {
+                position: relative !important;
+            }
+            
+            /* ANTI-FLASH UNIVERSAL: Prevenir qualquer transição visível */
+            .divLembrete, .lista-lembretes .lembrete {
+                will-change: auto !important;
+                backface-visibility: hidden !important;
+                transform: translateZ(0) !important;
+            }
+        `;
+
+        // Inserir no head IMEDIATAMENTE
+        if (document.head) {
+            document.head.insertBefore(
+                cssUltraCritico,
+                document.head.firstChild
+            );
+        } else {
+            // Se head não existe ainda, criar e inserir
+            const head = document.createElement("head");
+            head.appendChild(cssUltraCritico);
+            if (document.documentElement) {
+                document.documentElement.insertBefore(
+                    head,
+                    document.documentElement.firstChild
+                );
+            }
+        }
+
+        log("✅ ULTRA ANTI-FLASH: CSS crítico aplicado instantaneamente");
+
+        // 2. MARCAR BOTÕES QUE SERÃO SUBSTITUÍDOS - Antes da renderização
+        const marcarBotoesParaSubstituicao = () => {
+            const botoesLerMais = document.querySelectorAll(
+                "div.botaoLerMais:not([data-eprobe-processed])"
+            );
+            botoesLerMais.forEach((botao) => {
+                const texto = (botao.textContent || "").toLowerCase();
+                if (
+                    texto.includes("ler mais") ||
+                    texto.includes("...ler mais")
+                ) {
+                    const lembreteParent = botao.closest(".divLembrete");
+                    if (lembreteParent) {
+                        const desLembrete =
+                            lembreteParent.querySelector(".desLembrete");
+                        if (desLembrete) {
+                            const textoCompleto = desLembrete.textContent || "";
+                            const temTextoTruncado =
+                                textoCompleto.length > 150 ||
+                                desLembrete.scrollHeight >
+                                    desLembrete.clientHeight ||
+                                textoCompleto.includes("...") ||
+                                window.getComputedStyle(desLembrete)
+                                    .textOverflow === "ellipsis";
+
+                            if (temTextoTruncado) {
+                                botao.setAttribute(
+                                    "data-eprobe-will-replace",
+                                    "true"
+                                );
+                                botao.style.display = "none";
+                                botao.style.visibility = "hidden";
+                            }
+                        }
+                    }
+                }
+                // Marcar como processado para evitar reprocessamento
+                botao.setAttribute("data-eprobe-processed", "true");
+            });
+        };
+
+        // FUNÇÃO ULTRA-OTIMIZADA: Marcar lembretes como processados instantaneamente
+        const marcarLembretesComoProcessados = () => {
+            const lembretes = document.querySelectorAll(
+                'div.divLembrete:not([data-eprobe-processed]), .lista-lembretes .lembrete:not([data-eprobe-processed]), div[style*="background-color:#"]:not([data-eprobe-processed])'
+            );
+
+            lembretes.forEach((elemento) => {
+                const style = elemento.getAttribute("style") || "";
+                const coresLembrete = [
+                    "#efef8f",
+                    "#db8080",
+                    "#87adcd",
+                    "#a7eda7",
+                    "#f5b574",
+                ];
+
+                // Verificar se é um lembrete colorido
+                const isLembrete =
+                    coresLembrete.some((cor) => style.includes(cor)) ||
+                    elemento.classList.contains("divLembrete") ||
+                    elemento.classList.contains("lembrete");
+
+                if (isLembrete) {
+                    elemento.setAttribute("data-eprobe-processed", "true");
+                    elemento.classList.add("eprobe-lembrete-processado");
+                }
+            });
+        };
+
+        // 3. OBSERVADOR ULTRARRÁPIDO para elementos que aparecem
+        const observadorUltraRapido = new MutationObserver((mutations) => {
+            let needsUpdate = false;
+            let newLembretes = [];
+
+            mutations.forEach((mutation) => {
+                if (mutation.type === "childList") {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) {
+                            // Element node
+
+                            // INTERCEPTAÇÃO INSTANTÂNEA: Aplicar estilos ANTES da renderização
+                            if (node.classList?.contains("divLembrete")) {
+                                // É um divLembrete direto
+                                newLembretes.push(node);
+                                needsUpdate = true;
+                            } else if (node.querySelector?.(".divLembrete")) {
+                                // Contém divLembrete dentro
+                                const innerLembretes =
+                                    node.querySelectorAll(".divLembrete");
+                                newLembretes.push(
+                                    ...Array.from(innerLembretes)
+                                );
+                                needsUpdate = true;
+                            }
+
+                            // Verificar também elementos com cores de fundo específicas
+                            const coresLembrete = [
+                                "#efef8f",
+                                "#db8080",
+                                "#87adcd",
+                                "#a7eda7",
+                                "#f5b574",
+                            ];
+                            coresLembrete.forEach((cor) => {
+                                const style =
+                                    node.style?.backgroundColor ||
+                                    node.getAttribute?.("style") ||
+                                    "";
+                                if (style.includes(cor)) {
+                                    newLembretes.push(node);
+                                    needsUpdate = true;
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+            if (needsUpdate && newLembretes.length > 0) {
+                // APLICAÇÃO INSTANTÂNEA: Processar novos lembretes IMEDIATAMENTE
+                newLembretes.forEach((elemento) => {
+                    if (
+                        !elemento.classList.contains(
+                            "eprobe-lembrete-processado"
+                        )
+                    ) {
+                        // Detectar cor e aplicar estilo instantaneamente
+                        const style = elemento.getAttribute("style") || "";
+                        let gradiente = "";
+
+                        if (style.includes("#efef8f")) {
+                            gradiente = "linear-gradient(#F9EFAF, #F7E98D)";
+                        } else if (style.includes("#db8080")) {
+                            gradiente = "linear-gradient(#FAAFAF, #F78D8D)";
+                        } else if (style.includes("#87adcd")) {
+                            gradiente = "linear-gradient(#AFCFFA, #8DC0F7)";
+                        } else if (style.includes("#a7eda7")) {
+                            gradiente = "linear-gradient(#AFFAB6, #8DF792)";
+                        } else if (style.includes("#f5b574")) {
+                            gradiente = "linear-gradient(#FAD3AF, #F7C68D)";
+                        }
+
+                        if (gradiente) {
+                            // Aplicar todos os estilos instantaneamente
+                            elemento.style.setProperty(
+                                "background",
+                                gradiente,
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "padding",
+                                "20px",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "box-shadow",
+                                "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "transition",
+                                "box-shadow 0.2s ease",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "-webkit-font-smoothing",
+                                "subpixel-antialiased",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "visibility",
+                                "visible",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "opacity",
+                                "1",
+                                "important"
+                            );
+                            elemento.classList.add(
+                                "eprobe-lembrete-processado"
+                            );
+                        }
+                    }
+                });
+
+                // Marcar botões para substituição também
+                setTimeout(marcarBotoesParaSubstituicao, 0);
+            }
+        });
+
+        // Iniciar observação imediata
+        if (document.documentElement) {
+            observadorUltraRapido.observe(document.documentElement, {
+                childList: true,
+                subtree: true,
+            });
+        }
+
+        // 4. APLICAÇÃO INICIAL se já há elementos - ULTRA-OTIMIZADA
+        setTimeout(() => {
+            marcarBotoesParaSubstituicao();
+            marcarLembretesComoProcessados();
+        }, 0);
+
+        // APLICAÇÃO SECUNDÁRIA para elementos que aparecem após inicialização
+        setTimeout(() => {
+            marcarBotoesParaSubstituicao();
+            marcarLembretesComoProcessados();
+        }, 50);
+
+        log("⚡ ULTRA ANTI-FLASH: Sistema ativado - zero flash garantido");
+    };
+
+    // Executar IMEDIATAMENTE
+    if (document.readyState === "loading") {
+        // Ainda carregando - aplicar agora
+        iniciarUltraAntiFlash();
+    } else {
+        // Já carregado - aplicar agora mesmo assim
+        iniciarUltraAntiFlash();
+    }
+})();
 
 // ===== APLICAÇÃO INSTANTÂNEA DE ESTILOS - ELIMINAR FLASH =====
 (function aplicarEstilosInstantaneos() {
@@ -1421,9 +1958,9 @@ RESPOSTA (apenas JSON válido):`;
                 const tooltip = document.createElement("div");
                 tooltip.id = "eprobe-tooltip-sessoes";
                 tooltip.style.cssText = `
-                position: absolute;
+                position: fixed;
                 display: none;
-                z-index: 10001;
+                z-index: 999999;
                 background: #FFFBFE;
                 border: 1px solid #CAC4D0;
                 border-radius: 12px;
@@ -1431,11 +1968,8 @@ RESPOSTA (apenas JSON válido):`;
                 max-width: 420px;
                 box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
                 font-family: 'Roboto', sans-serif;
-                top: 100%;
-                left: 0;
-                margin-top: 8px;
                 opacity: 0;
-                transition: opacity 0.2s ease-in-out;
+                transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
                 pointer-events: none;
             `;
 
@@ -1522,32 +2056,141 @@ RESPOSTA (apenas JSON válido):`;
                 // Adicionar tooltip ao card
                 card.appendChild(tooltip);
 
+                // Função para posicionamento inteligente do tooltip - VERSÃO ROBUSTA
+                const ajustarPosicaoTooltip = () => {
+                    try {
+                        // Verificar se elementos estão válidos
+                        if (!card || !tooltip) return;
+
+                        const cardRect = card.getBoundingClientRect();
+                        const tooltipRect = tooltip.getBoundingClientRect();
+                        const viewportWidth = window.innerWidth;
+                        const viewportHeight = window.innerHeight;
+
+                        // Verificar se o card está visível
+                        if (cardRect.width === 0 || cardRect.height === 0) {
+                            console.warn(
+                                "⚠️ TOOLTIP: Card não visível para posicionamento"
+                            );
+                            return;
+                        }
+
+                        // Posicionar abaixo do card com coordenadas fixas (PADRÃO)
+                        let topPosition = cardRect.bottom + 8;
+                        let leftPosition =
+                            cardRect.left +
+                            cardRect.width / 2 -
+                            tooltipRect.width / 2;
+
+                        // Verificar se tooltip sai da viewport à direita
+                        if (
+                            leftPosition + tooltipRect.width >
+                            viewportWidth - 20
+                        ) {
+                            leftPosition =
+                                viewportWidth - tooltipRect.width - 20;
+                        }
+
+                        // Verificar se tooltip sai da viewport à esquerda
+                        if (leftPosition < 20) {
+                            leftPosition = 20;
+                        }
+
+                        // Verificar se tooltip sai da viewport abaixo (última opção: acima)
+                        if (
+                            topPosition + tooltipRect.height >
+                            viewportHeight - 20
+                        ) {
+                            // Só posicionar acima se não couber embaixo E houver espaço suficiente acima
+                            const spaceAbove = cardRect.top;
+                            const spaceBelow = viewportHeight - cardRect.bottom;
+
+                            if (
+                                spaceAbove > tooltipRect.height + 16 &&
+                                spaceAbove > spaceBelow
+                            ) {
+                                topPosition =
+                                    cardRect.top - tooltipRect.height - 8;
+                            } else {
+                                // Forçar posição abaixo mesmo se sair um pouco da viewport
+                                topPosition = Math.max(
+                                    8,
+                                    viewportHeight - tooltipRect.height - 20
+                                );
+                            }
+                        }
+
+                        tooltip.style.top = `${topPosition}px`;
+                        tooltip.style.left = `${leftPosition}px`;
+
+                        log(
+                            `🎯 TOOLTIP: Posicionado em top:${topPosition}px, left:${leftPosition}px`
+                        );
+                    } catch (error) {
+                        console.error(
+                            "❌ TOOLTIP: Erro no posicionamento:",
+                            error
+                        );
+                    }
+                };
+
                 // Event listeners para mostrar/ocultar tooltip
                 let tooltipTimer = null;
 
                 const mostrarTooltip = () => {
-                    if (tooltipTimer) clearTimeout(tooltipTimer);
-                    tooltip.style.display = "block";
-                    tooltip.style.pointerEvents = "auto";
-                    setTimeout(() => {
-                        tooltip.style.opacity = "1";
-                    }, 10);
+                    try {
+                        if (tooltipTimer) clearTimeout(tooltipTimer);
+                        if (hideTooltipTimer) clearTimeout(hideTooltipTimer);
+
+                        tooltip.style.display = "block";
+                        tooltip.style.pointerEvents = "auto";
+
+                        // Aguardar renderização para calcular posições corretas
+                        requestAnimationFrame(() => {
+                            // Dupla verificação: aguardar mais um frame para garantir dimensões
+                            requestAnimationFrame(() => {
+                                ajustarPosicaoTooltip();
+
+                                // Animação simples de entrada: fade in
+                                tooltip.style.opacity = "0";
+                                tooltip.style.transform = "translateY(-8px)";
+
+                                setTimeout(() => {
+                                    tooltip.style.opacity = "1";
+                                    tooltip.style.transform = "translateY(0px)";
+                                }, 10);
+                            });
+                        });
+
+                        log("✅ TOOLTIP: Mostrado com sucesso");
+                    } catch (error) {
+                        console.error("❌ TOOLTIP: Erro ao mostrar:", error);
+                    }
                 };
 
-                // Sistema de tooltip otimizado com debounce
-                const debouncedHideTooltip = window.debounce(() => {
-                    tooltip.style.display = "none";
-                    tooltip.style.pointerEvents = "none";
-                }, 200);
+                // Sistema de tooltip otimizado com timer simples
+                let hideTooltipTimer = null;
+
+                const debouncedHideTooltip = () => {
+                    if (hideTooltipTimer) clearTimeout(hideTooltipTimer);
+                    hideTooltipTimer = setTimeout(() => {
+                        tooltip.style.display = "none";
+                        tooltip.style.pointerEvents = "none";
+                    }, 200);
+                };
 
                 const ocultarTooltip = () => {
                     tooltip.style.opacity = "0";
+                    tooltip.style.transform = "translateY(-8px)";
                     debouncedHideTooltip();
                 };
 
                 const cancelarOcultacao = () => {
                     // Cancelar qualquer timer de ocultação pendente
-                    debouncedHideTooltip.cancel?.();
+                    if (hideTooltipTimer) {
+                        clearTimeout(hideTooltipTimer);
+                        hideTooltipTimer = null;
+                    }
                 };
 
                 // Eventos do card (otimizados para performance)
@@ -1566,6 +2209,21 @@ RESPOSTA (apenas JSON válido):`;
                     passive: true,
                 });
 
+                // Reposicionar tooltip ao redimensionar janela (com timer simples)
+                let resizeTimer = null;
+                const handleResize = () => {
+                    if (resizeTimer) clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        if (tooltip.style.display === "block") {
+                            ajustarPosicaoTooltip();
+                        }
+                    }, 100);
+                };
+
+                window.addEventListener("resize", handleResize, {
+                    passive: true,
+                });
+
                 // Click no card abre a tela de sessão
                 card.onclick = async (e) => {
                     e.preventDefault();
@@ -1573,38 +2231,43 @@ RESPOSTA (apenas JSON válido):`;
 
                     log("🖱️ CLICK: Clique no card de sessão detectado");
 
-                    // Tentar abrir a tela de sessão
-                    const urlSessao = await construirUrlSessao(cardInfo);
+                    // Verificar se função existe antes de usar
+                    if (typeof construirUrlSessao === "function") {
+                        try {
+                            // Tentar abrir a tela de sessão
+                            const urlSessao = await construirUrlSessao(
+                                cardInfo
+                            );
 
-                    if (urlSessao) {
-                        logCritical(
-                            "🌐 NAVEGAÇÃO: Abrindo tela de sessão:",
-                            urlSessao
-                        );
-                        logCritical(
-                            "🚀 CLICK: URL que será aberta no navegador:",
-                            urlSessao
-                        );
+                            if (urlSessao) {
+                                logCritical(
+                                    "🌐 NAVEGAÇÃO: Abrindo tela de sessão:",
+                                    urlSessao
+                                );
 
-                        // Abrir em nova aba
-                        window.open(urlSessao, "_blank");
+                                // Abrir em nova aba
+                                window.open(urlSessao, "_blank");
 
-                        // Feedback visual
-                        card.style.transform = "scale(0.95)";
-                        setTimeout(() => {
-                            card.style.transform = "scale(1)";
-                        }, 150);
-                    } else {
-                        console.warn(
-                            "⚠️ NAVEGAÇÃO: URL da sessão não pôde ser construída"
-                        );
-
-                        // Fallback: mostrar tooltip se não conseguir navegar
-                        if (tooltip.style.display === "block") {
-                            ocultarTooltip();
-                        } else {
-                            mostrarTooltip();
+                                // Feedback visual
+                                card.style.transform = "scale(0.95)";
+                                setTimeout(() => {
+                                    card.style.transform = "scale(1)";
+                                }, 150);
+                                return;
+                            }
+                        } catch (error) {
+                            console.warn(
+                                "⚠️ NAVEGAÇÃO: Erro ao construir URL:",
+                                error
+                            );
                         }
+                    }
+
+                    // Fallback: mostrar/ocultar tooltip
+                    if (tooltip.style.display === "block") {
+                        ocultarTooltip();
+                    } else {
+                        mostrarTooltip();
                     }
                 };
 
@@ -13747,22 +14410,191 @@ ${texto}`;
         // Executar inicialização IMEDIATAMENTE
         inicializarAutomaticamente();
 
-        // ⚡ MONITOR CONTÍNUO: Verificar novos lembretes a cada 100ms
-        const monitorFlash = setInterval(() => {
+        // ⚡ MONITOR ULTRARRÁPIDO: Verificação a cada 16ms (60fps) - ULTRA-OTIMIZADO
+        let tentativasMonitor = 0;
+        const maxTentativasMonitor = 1875; // 30 segundos a 60fps
+
+        const monitorUltraRapido = setInterval(() => {
+            try {
+                tentativasMonitor++;
+
+                // OTIMIZAÇÃO: Verificação ultrarrápida sem logs
+                const lembretesNaoProcessados = document.querySelectorAll(
+                    ".lista-lembretes .lembrete:not(.eprobe-lembrete-processado), div.divLembrete:not(.eprobe-lembrete-processado)"
+                );
+
+                if (lembretesNaoProcessados.length > 0) {
+                    // PROCESSAMENTO INSTANTÂNEO: Aplicar estilos diretamente sem função intermediária
+                    lembretesNaoProcessados.forEach((elemento) => {
+                        const style = elemento.getAttribute("style") || "";
+                        let aplicouEstilo = false;
+
+                        // Detecção e aplicação instantânea por cor
+                        if (style.includes("#efef8f")) {
+                            elemento.style.setProperty(
+                                "background",
+                                "linear-gradient(#F9EFAF, #F7E98D)",
+                                "important"
+                            );
+                            aplicouEstilo = true;
+                        } else if (style.includes("#db8080")) {
+                            elemento.style.setProperty(
+                                "background",
+                                "linear-gradient(#FAAFAF, #F78D8D)",
+                                "important"
+                            );
+                            aplicouEstilo = true;
+                        } else if (style.includes("#87adcd")) {
+                            elemento.style.setProperty(
+                                "background",
+                                "linear-gradient(#AFCFFA, #8DC0F7)",
+                                "important"
+                            );
+                            aplicouEstilo = true;
+                        } else if (style.includes("#a7eda7")) {
+                            elemento.style.setProperty(
+                                "background",
+                                "linear-gradient(#AFFAB6, #8DF792)",
+                                "important"
+                            );
+                            aplicouEstilo = true;
+                        } else if (style.includes("#f5b574")) {
+                            elemento.style.setProperty(
+                                "background",
+                                "linear-gradient(#FAD3AF, #F7C68D)",
+                                "important"
+                            );
+                            aplicouEstilo = true;
+                        }
+
+                        if (aplicouEstilo) {
+                            // Aplicar estilos base instantaneamente
+                            elemento.style.setProperty(
+                                "padding",
+                                "20px",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "box-shadow",
+                                "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "transition",
+                                "box-shadow 0.5s ease",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "-webkit-font-smoothing",
+                                "subpixel-antialiased",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "visibility",
+                                "visible",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "opacity",
+                                "1",
+                                "important"
+                            );
+                            elemento.classList.add(
+                                "eprobe-lembrete-processado"
+                            );
+                        }
+                    });
+
+                    // Substituição instantânea de ícones
+                    substituirIconesLembretesImediato();
+                }
+
+                // OTIMIZAÇÃO: Verificação de botões ultrarrápida
+                const botoesNaoMarcados = document.querySelectorAll(
+                    "div.botaoLerMais:not([data-eprobe-will-replace]):not([data-eprobe-expandir-replaced])"
+                );
+
+                if (botoesNaoMarcados.length > 0) {
+                    botoesNaoMarcados.forEach((botao) => {
+                        const texto = (botao.textContent || "").toLowerCase();
+                        if (
+                            texto.includes("ler mais") ||
+                            texto.includes("...ler mais")
+                        ) {
+                            const lembreteParent =
+                                botao.closest(".divLembrete");
+                            if (lembreteParent) {
+                                const desLembrete =
+                                    lembreteParent.querySelector(
+                                        ".desLembrete"
+                                    );
+                                if (desLembrete) {
+                                    const textoCompleto =
+                                        desLembrete.textContent || "";
+                                    const temTextoTruncado =
+                                        textoCompleto.length > 150 ||
+                                        desLembrete.scrollHeight >
+                                            desLembrete.clientHeight ||
+                                        textoCompleto.includes("...") ||
+                                        window.getComputedStyle(desLembrete)
+                                            .textOverflow === "ellipsis";
+
+                                    if (temTextoTruncado) {
+                                        botao.setAttribute(
+                                            "data-eprobe-will-replace",
+                                            "true"
+                                        );
+                                        botao.style.display = "none";
+                                        botao.style.visibility = "hidden";
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+
+                // OTIMIZAÇÃO: Parar após tempo limite ou estabilidade
+                if (
+                    tentativasMonitor >= maxTentativasMonitor ||
+                    (tentativasMonitor > 125 &&
+                        lembretesNaoProcessados.length === 0 &&
+                        botoesNaoMarcados.length === 0)
+                ) {
+                    clearInterval(monitorUltraRapido);
+                    // Log final apenas (sem logs intermediários para máxima performance)
+                    if (tentativasMonitor < maxTentativasMonitor) {
+                        log(
+                            "⚡ MONITOR ULTRARRÁPIDO: Finalizado - página estável após",
+                            tentativasMonitor,
+                            "verificações"
+                        );
+                    }
+                }
+            } catch (error) {
+                // Silencioso para máxima performance - sem logs de erro
+            }
+        }, 16); // 60fps para captura instantânea
+
+        // ⚡ MONITOR SECUNDÁRIO: Backup a cada 100ms para garantir cobertura total
+        const monitorBackup = setInterval(() => {
             try {
                 const lembretesNaoProcessados = document.querySelectorAll(
                     ".lista-lembretes .lembrete:not(.eprobe-lembrete-processado), div.divLembrete:not(.eprobe-lembrete-processado)"
                 );
                 if (lembretesNaoProcessados.length > 0) {
                     aplicarEstilizacaoImediataLembretes();
+                    substituirIconesLembretesImediato();
                 }
             } catch (error) {
                 // Silencioso
             }
         }, 100);
 
-        // Parar monitor após 10 segundos
-        setTimeout(() => clearInterval(monitorFlash), 10000);
+        // Parar monitores após 10 segundos
+        setTimeout(() => {
+            clearInterval(monitorBackup);
+            log("⚡ MONITORES: Finalizados após timeout de 10 segundos");
+        }, 10000);
 
         // Backup: Executar novamente quando DOM estiver pronto (para reaplicar estilos se necessário)
         if (document.readyState === "loading") {
@@ -15032,143 +15864,125 @@ ${texto}`;
         }
 
         /**
-         * ⚡ APLICAÇÃO IMEDIATA ANTI-FLASH INTELIGENTE - ELIMINA COMPLETAMENTE O FLASH
-         * Sistema que usa detecção inteligente para processar lembretes instantaneamente
+         * ⚡ APLICAÇÃO IMEDIATA ANTI-FLASH ULTRA-OTIMIZADA - ZERO FLASH GARANTIDO
+         * Sistema ultrarrápido que elimina completamente qualquer transformação visual
          */
         function aplicarEstilizacaoImediataLembretes() {
             try {
-                log(
-                    "⚡ ANTI-FLASH: Iniciando aplicação imediata com detecção inteligente..."
-                );
+                // 🚀 ULTRA-OTIMIZAÇÃO: Execução sem logs para máxima velocidade
 
-                // 1. DETECTAR que tipos de lembretes existem na página
+                // 1. DETECÇÃO ULTRARRÁPIDA de lembretes
                 const deteccao = detectarTiposLembretesNaPagina();
 
                 if (deteccao.coresEncontradas.length === 0) {
-                    log(
-                        "ℹ️ ANTI-FLASH: Nenhum lembrete colorido encontrado para processar"
-                    );
                     return false;
                 }
 
-                log(
-                    `⚡ ANTI-FLASH: Encontrados lembretes de ${
-                        deteccao.coresEncontradas.length
-                    } cores: ${deteccao.coresEncontradas.join(", ")}`
-                );
+                // 2. BATCH PROCESSING: Preparar todos os estilos em memória primeiro
+                const styleBatch = new Map();
+                const elementsToProcess = [];
 
-                // 2. OCULTAR TODOS os lembretes encontrados imediatamente
-                deteccao.elementos.forEach((elemento) => {
-                    if (
-                        !elemento.classList.contains(
-                            "eprobe-lembrete-processado"
-                        )
-                    ) {
-                        elemento.style.setProperty(
-                            "visibility",
-                            "hidden",
-                            "important"
-                        );
-                        elemento.style.setProperty("opacity", "0", "important");
-                    }
-                });
-
-                // 3. PROCESSAR cada tipo de lembrete encontrado instantaneamente
                 deteccao.coresEncontradas.forEach((nomeCor) => {
                     const elementos = deteccao.elementosPorCor[nomeCor] || [];
 
                     elementos.forEach((elemento) => {
-                        // Aplicar gradiente baseado na cor detectada
-                        switch (nomeCor) {
-                            case "amarelo":
-                                elemento.style.setProperty(
-                                    "background",
-                                    "linear-gradient(#F9EFAF, #F7E98D)",
-                                    "important"
-                                );
-                                break;
-                            case "vermelho":
-                                elemento.style.setProperty(
-                                    "background",
-                                    "linear-gradient(#FAAFAF, #F78D8D)",
-                                    "important"
-                                );
-                                break;
-                            case "azul":
-                                elemento.style.setProperty(
-                                    "background",
-                                    "linear-gradient(#AFCFFA, #8DC0F7)",
-                                    "important"
-                                );
-                                break;
-                            case "verde":
-                                elemento.style.setProperty(
-                                    "background",
-                                    "linear-gradient(#AFFAB6, #8DF792)",
-                                    "important"
-                                );
-                                break;
-                            case "laranja":
-                                elemento.style.setProperty(
-                                    "background",
-                                    "linear-gradient(#FAD3AF, #F7C68D)",
-                                    "important"
-                                );
-                                break;
+                        if (
+                            !elemento.classList.contains(
+                                "eprobe-lembrete-processado"
+                            )
+                        ) {
+                            // Preparar estilos em batch para aplicação simultânea
+                            const styleConfig = {
+                                element: elemento,
+                                styles: {},
+                            };
+
+                            // Gradientes otimizados por cor
+                            switch (nomeCor) {
+                                case "amarelo":
+                                    styleConfig.styles.background =
+                                        "linear-gradient(#F9EFAF, #F7E98D)";
+                                    break;
+                                case "vermelho":
+                                    styleConfig.styles.background =
+                                        "linear-gradient(#FAAFAF, #F78D8D)";
+                                    break;
+                                case "azul":
+                                    styleConfig.styles.background =
+                                        "linear-gradient(#AFCFFA, #8DC0F7)";
+                                    break;
+                                case "verde":
+                                    styleConfig.styles.background =
+                                        "linear-gradient(#AFFAB6, #8DF792)";
+                                    break;
+                                case "laranja":
+                                    styleConfig.styles.background =
+                                        "linear-gradient(#FAD3AF, #F7C68D)";
+                                    break;
+                            }
+
+                            // Estilos base ultra-otimizados
+                            Object.assign(styleConfig.styles, {
+                                padding: "20px",
+                                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                transition: "box-shadow 0.2s ease",
+                                WebkitFontSmoothing: "subpixel-antialiased",
+                                visibility: "visible",
+                                opacity: "1",
+                            });
+
+                            elementsToProcess.push(styleConfig);
                         }
-
-                        // Aplicar estilos aprimorados
-                        elemento.style.setProperty(
-                            "padding",
-                            "20px",
-                            "important"
-                        );
-                        elemento.style.setProperty(
-                            "box-shadow",
-                            "0 4px 6px rgba(0, 0, 0, 0.1)",
-                            "important"
-                        );
-                        elemento.style.setProperty(
-                            "transition",
-                            "box-shadow 0.5s ease",
-                            "important"
-                        );
-                        elemento.style.setProperty(
-                            "-webkit-font-smoothing",
-                            "subpixel-antialiased",
-                            "important"
-                        );
-
-                        // Marcar como processado ANTES de tornar visível
-                        elemento.classList.add("eprobe-lembrete-processado");
-
-                        // Tornar visível COM os estilos já aplicados
-                        elemento.style.setProperty(
-                            "visibility",
-                            "visible",
-                            "important"
-                        );
-                        elemento.style.setProperty("opacity", "1", "important");
                     });
                 });
 
-                // 4. Substituir ícones instantaneamente
-                substituirIconesLembretesImediato();
+                // 3. APLICAÇÃO SIMULTÂNEA: Aplicar todos os estilos de uma vez
+                // Usar requestAnimationFrame para sincronizar com o browser
+                const applyStylesBatch = () => {
+                    elementsToProcess.forEach(({ element, styles }) => {
+                        // Aplicação ultrarrápida usando Object.assign para CSSStyleDeclaration
+                        Object.entries(styles).forEach(([prop, value]) => {
+                            element.style.setProperty(
+                                prop.replace(/([A-Z])/g, "-$1").toLowerCase(),
+                                value,
+                                "important"
+                            );
+                        });
 
-                // 5. Garantir que TODOS os lembretes estão visíveis
-                deteccao.elementos.forEach((elemento) => {
-                    elemento.classList.add("eprobe-lembrete-processado");
-                    elemento.style.setProperty(
-                        "visibility",
-                        "visible",
-                        "important"
-                    );
-                    elemento.style.setProperty("opacity", "1", "important");
-                });
+                        // Marcar como processado instantaneamente
+                        element.classList.add("eprobe-lembrete-processado");
+                    });
 
-                log(
-                    `⚡ ANTI-FLASH CONCLUÍDO: ${deteccao.elementos.length} lembretes processados instantaneamente`
-                );
+                    // 4. SUBSTITUIÇÃO INSTANTÂNEA de ícones (sem logs)
+                    substituirIconesLembretesImediato();
+
+                    // 5. VERIFICAÇÃO FINAL: Garantir visibilidade
+                    deteccao.elementos.forEach((elemento) => {
+                        if (
+                            !elemento.classList.contains(
+                                "eprobe-lembrete-processado"
+                            )
+                        ) {
+                            elemento.classList.add(
+                                "eprobe-lembrete-processado"
+                            );
+                            elemento.style.setProperty(
+                                "visibility",
+                                "visible",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "opacity",
+                                "1",
+                                "important"
+                            );
+                        }
+                    });
+                };
+
+                // Executar IMEDIATAMENTE sem aguardar frame
+                applyStylesBatch();
+
                 return true;
             } catch (error) {
                 log("❌ ANTI-FLASH: Erro durante aplicação imediata:", error);
@@ -16137,9 +16951,9 @@ ${texto}`;
                 tooltip = document.createElement("div");
                 tooltip.id = "eprobe-rich-tooltip";
                 tooltip.style.cssText = `
-                position: absolute;
+                position: fixed;
                 display: none;
-                z-index: 10000;
+                z-index: 999999;
                 pointer-events: auto;
                 opacity: 0;
                 transition: opacity 0.15s ease-in-out, transform 0.15s ease-in-out;
@@ -16532,10 +17346,10 @@ ${texto}`;
                     log("📐 TOOLTIP: Dimensões indicador:", rect);
                     log("📐 TOOLTIP: Dimensões tooltip:", tooltipRect);
 
-                    // Calcular posição (acima do indicador, centralizado)
+                    // Calcular posição (abaixo do indicador por padrão, centralizado)
                     let left =
                         rect.left + rect.width / 2 - tooltipRect.width / 2;
-                    let top = rect.top - tooltipRect.height - 12;
+                    let top = rect.bottom + 12;
 
                     // Ajustar se sair da tela (horizontalmente)
                     if (left < 10) left = 10;
@@ -16543,12 +17357,10 @@ ${texto}`;
                         left = window.innerWidth - tooltipRect.width - 10;
                     }
 
-                    // Ajustar se sair da tela (verticalmente) - mostrar abaixo
-                    if (top < 10) {
-                        top = rect.bottom + 12;
-                        log(
-                            "🔄 TOOLTIP: Reposicionado para baixo do indicador"
-                        );
+                    // Ajustar se sair da tela (verticalmente) - mostrar acima apenas se necessário
+                    if (top + tooltipRect.height > window.innerHeight - 10) {
+                        top = rect.top - tooltipRect.height - 12;
+                        log("🔄 TOOLTIP: Reposicionado para cima do indicador");
                     }
 
                     log("📍 TOOLTIP: Posição final:", { left, top });
@@ -16846,15 +17658,15 @@ ${texto}`;
 
                     let left =
                         rect.left + rect.width / 2 - tooltipRect.width / 2;
-                    let top = rect.top - tooltipRect.height - 12;
+                    let top = rect.bottom + 12;
 
                     // Ajustar se sair da tela
                     if (left < 10) left = 10;
                     if (left + tooltipRect.width > window.innerWidth - 10) {
                         left = window.innerWidth - tooltipRect.width - 10;
                     }
-                    if (top < 10) {
-                        top = rect.bottom + 12;
+                    if (top + tooltipRect.height > window.innerHeight - 10) {
+                        top = rect.top - tooltipRect.height - 12;
                     }
 
                     tooltip.style.left = left + "px";
@@ -17142,80 +17954,154 @@ ${texto}`;
          */
         function inserirCardNaInterface(card) {
             log(
-                "🎯 MATERIAL: Iniciando inserção do card no XPath específico solicitado..."
+                "🎯 INSERÇÃO: Procurando txtMagistrado para inserir card ao lado DIREITO..."
             );
 
-            // XPATH EXATO SOLICITADO PELO USUÁRIO
-            const xpathElemento =
-                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[3]/label";
-
             try {
-                const elementoLabel = document.evaluate(
-                    xpathElemento,
-                    document,
-                    null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
-                    null
-                ).singleNodeValue;
+                // Buscar o span do magistrado correto (txtMagistrado)
+                const txtMagistrado = document.getElementById("txtMagistrado");
 
-                if (elementoLabel) {
-                    log("✅ MATERIAL: Elemento label encontrado via XPath!");
+                if (txtMagistrado) {
+                    log("✅ INSERÇÃO: txtMagistrado encontrado!");
                     log(
-                        "📍 MATERIAL: Elemento:",
-                        elementoLabel.tagName,
-                        elementoLabel.textContent
+                        "📍 INSERÇÃO: Texto do magistrado:",
+                        txtMagistrado.textContent
+                    );
+                    log(
+                        "📍 INSERÇÃO: Tag:",
+                        txtMagistrado.tagName,
+                        "ID:",
+                        txtMagistrado.id
                     );
 
-                    // Obter o elemento pai do label para posicionamento
-                    const containerPai = elementoLabel.parentElement;
+                    // Obter o container pai para posicionamento
+                    const containerPai = txtMagistrado.parentElement;
                     if (containerPai) {
-                        // Configurar o container pai para position relative
-                        containerPai.style.position = "relative";
+                        // Configurar o container pai para flex layout
+                        containerPai.style.display = "flex";
+                        containerPai.style.alignItems = "center";
+                        containerPai.style.gap = "15px";
 
-                        // Posicionar o card de forma absoluta ao lado direito do label
-                        card.style.position = "absolute";
-                        card.style.top = "0";
-                        card.style.left = "calc(100% + 15px)"; // 15px de espaçamento à direita
-                        card.style.zIndex = "9999";
-                        card.style.maxWidth = "180px";
-                        card.style.pointerEvents = "auto";
+                        // Configurar o card para posicionamento flexível
+                        card.style.position = "static";
+                        card.style.flexShrink = "0";
+                        card.style.marginLeft = "15px";
 
-                        // Inserir o card no container pai do label
-                        containerPai.appendChild(card);
+                        // Inserir o card DEPOIS do txtMagistrado (lado direito)
+                        txtMagistrado.parentNode.insertBefore(
+                            card,
+                            txtMagistrado.nextSibling
+                        );
 
                         log(
-                            "✅ MATERIAL: Card posicionado ao lado direito do label específico"
+                            "✅ INSERÇÃO: Card posicionado ao lado DIREITO do txtMagistrado"
                         );
                         log(
-                            "🎯 MATERIAL: Posição: absolute left:calc(100% + 15px) top:0"
+                            "🎯 INSERÇÃO: Layout flex aplicado com gap de 15px"
                         );
                         return true;
                     } else {
                         log(
-                            "⚠️ MATERIAL: Container pai do label não encontrado"
+                            "⚠️ INSERÇÃO: Container pai do txtMagistrado não encontrado"
                         );
                     }
                 } else {
                     log(
-                        "❌ MATERIAL: Elemento label não encontrado no XPath especificado"
+                        "❌ INSERÇÃO: txtMagistrado não encontrado, tentando fallback lblMagistrado..."
                     );
+
+                    // FALLBACK: Buscar lblMagistrado se txtMagistrado não existir
+                    const lblMagistrado =
+                        document.getElementById("lblMagistrado");
+
+                    if (lblMagistrado) {
+                        log(
+                            "✅ INSERÇÃO: lblMagistrado encontrado como fallback!"
+                        );
+
+                        const containerPai = lblMagistrado.parentElement;
+                        if (containerPai) {
+                            // Aplicar layout flex
+                            containerPai.style.display = "flex";
+                            containerPai.style.alignItems = "center";
+                            containerPai.style.gap = "15px";
+
+                            // Configurar card
+                            card.style.position = "static";
+                            card.style.flexShrink = "0";
+                            card.style.marginLeft = "15px";
+
+                            // Inserir DEPOIS do label (lado direito)
+                            lblMagistrado.parentNode.insertBefore(
+                                card,
+                                lblMagistrado.nextSibling
+                            );
+
+                            log(
+                                "✅ INSERÇÃO: Card inserido via fallback ao lado DIREITO do lblMagistrado"
+                            );
+                            return true;
+                        }
+                    }
+
+                    // FALLBACK FINAL: XPath para magistrado
+                    log(
+                        "⚠️ INSERÇÃO: Tentando XPath para encontrar magistrado..."
+                    );
+
+                    const xpathMagistrado =
+                        "//span[contains(@id, 'Magistrado') or contains(text(), 'ALEXANDRE MORAIS')]";
+                    const spanMagistrado = document.evaluate(
+                        xpathMagistrado,
+                        document,
+                        null,
+                        XPathResult.FIRST_ORDERED_NODE_TYPE,
+                        null
+                    ).singleNodeValue;
+
+                    if (spanMagistrado) {
+                        log("✅ INSERÇÃO: Magistrado encontrado via XPath!");
+
+                        const containerPai = spanMagistrado.parentElement;
+                        if (containerPai) {
+                            // Aplicar layout flex
+                            containerPai.style.display = "flex";
+                            containerPai.style.alignItems = "center";
+                            containerPai.style.gap = "15px";
+
+                            // Configurar card
+                            card.style.position = "static";
+                            card.style.flexShrink = "0";
+                            card.style.marginLeft = "15px";
+
+                            // Inserir DEPOIS do span (lado direito)
+                            spanMagistrado.parentNode.insertBefore(
+                                card,
+                                spanMagistrado.nextSibling
+                            );
+
+                            log(
+                                "✅ INSERÇÃO: Card inserido via XPath ao lado DIREITO do magistrado"
+                            );
+                            return true;
+                        }
+                    }
                 }
             } catch (error) {
-                log("❌ MATERIAL: Erro ao buscar elemento via XPath:", error);
+                log("❌ INSERÇÃO: Erro ao buscar lblMagistrado:", error);
             }
 
-            // FALLBACK ÚNICO: Se não encontrar o XPath específico, usar posição fixa simples
-            log("⚠️ MATERIAL: Usando fallback - posição fixa no canto direito");
+            // FALLBACK FINAL: Posição fixa apenas se não conseguir encontrar o local correto
+            log("⚠️ INSERÇÃO: Usando fallback - posição fixa");
 
             card.style.position = "fixed";
             card.style.top = "200px";
             card.style.right = "30px";
             card.style.zIndex = "9999";
             card.style.maxWidth = "180px";
-            card.style.pointerEvents = "auto";
 
             document.body.appendChild(card);
-            log("✅ MATERIAL: Card inserido com fallback garantido");
+            log("✅ INSERÇÃO: Card inserido com fallback");
             return true;
         }
 
@@ -21825,7 +22711,7 @@ ${texto}`;
             // 🔧 FUNÇÕES DE TOOLTIP CORRIGIDAS
             criarTooltipSimplificado:
                 allMissingFunctions.criarTooltipSimplificado,
-            testarFuncaoTooltip: allMissingFunctions.testarFuncaoTooltip,
+            testarFuncaoTooltip: testarFuncaoTooltip,
             // 🎨 FUNÇÕES DE ESTILIZAÇÃO divLembrete - SISTEMA INTELIGENTE
             debugDivLembrete,
             estilizarDivLembrete,
@@ -23253,9 +24139,7 @@ ${texto}`;
                 log("🔧 AUTO: Correção tooltip");
             },
 
-            diagnosticarECorrigirTooltip: function () {
-                log("🩺 DIAGNOSTICAR: Tooltip");
-            },
+            diagnosticarECorrigirTooltip: diagnosticarECorrigirTooltip,
 
             corrigirProblemasRapido: function () {
                 log("🔧 CORREÇÃO RÁPIDA: Iniciando...");
