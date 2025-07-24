@@ -37,7 +37,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         
         /* Navbar com fade-in */
         #eprobe-navbar-element {
-            opacity: 0 !important;
             animation: fadeInNavbar 0.4s ease-out 0.2s forwards !important;
         }
         
@@ -943,7 +942,7 @@ RESPOSTA (apenas JSON válido):`;
             resetDataSessaoPautado,
             resetControlesRequisicao;
         let inserirDataSessaoNaInterface,
-            processarTextoFieldsetSessao,
+            // processarTextoFieldsetSessao, // REMOVIDA - substituída por detectarCardSessaoSimplificado
             processoJaFoiProcessado,
             marcarProcessoComoProcessado;
 
@@ -1255,7 +1254,7 @@ RESPOSTA (apenas JSON válido):`;
                 border: 0.75px solid #CAC4D0;
                 border-radius: 9px;
                 box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-                z-index: 9999;
+                z-index: 1000;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                 display: flex;
                 align-items: center;
@@ -1393,7 +1392,9 @@ RESPOSTA (apenas JSON válido):`;
                                 </div>
                                 ${
                                     isAtual
-                                        ? '<span style="font-size: 11px; color: #6750A4; font-weight: 500; background: #E8DEF8; padding: 2px 6px; border-radius: 4px;">ATUAL</span>'
+                                        ? `<span style="font-size: 11px; color: #FFFFFF; font-weight: 500; background: ${
+                                              sessao.cor || corIcon
+                                          }; padding: 2px 6px; border-radius: 4px;">ATUAL</span>`
                                         : ""
                                 }
                             </div>
@@ -1940,212 +1941,151 @@ RESPOSTA (apenas JSON válido):`;
             }
         }
 
-        // Cache para evitar execuções duplicadas
-        let lastDetectionTime = 0;
-        let lastDetectionResult = null;
-        const DETECTION_COOLDOWN = 1000; // 1 segundo entre execuções
-
         /**
-         * 🎯 DETECÇÃO ROBUSTA DE SESSÕES - APENAS fieldset[id="fldMinutas"]
-         * Busca especificamente pelo fieldset com id="fldMinutas" e processa suas minutas
+         * Detecta dados da sessão APENAS em páginas de processo com fieldset#fldMinutas
          */
         function detectarCardSessaoSimplificado() {
-            try {
-                // Verificar cooldown para evitar execuções duplicadas
-                const now = Date.now();
-                if (now - lastDetectionTime < DETECTION_COOLDOWN) {
-                    return lastDetectionResult;
-                }
-
-                lastDetectionTime = now;
-
-                // Buscar especificamente o fieldset com id="fldMinutas"
-                const fieldsetMinutas = document.querySelector("#fldMinutas");
-
-                if (!fieldsetMinutas) {
-                    lastDetectionResult = null;
-                    return null;
-                }
-
-                // Encontrar o número do fieldset na estrutura DOM
-                const xpath = fieldsetMinutas.closest(
-                    'form[name="frmProcessoLista"]'
+            // 1. Verificar se está na página correta de processo
+            if (
+                !window.location.href.includes(
+                    "controlador.php?acao=processo_selecionar&acao_origem"
+                )
+            ) {
+                console.log(
+                    "🎯 DADOS SESSÃO: Página não é de processo - Motivo: URL não contém controlador.php?acao=processo_selecionar&acao_origem"
                 );
-                if (!xpath) {
-                    lastDetectionResult = null;
-                    return null;
-                }
+                return null;
+            }
 
-                // Buscar todos os fieldsets dentro do fieldset de minutas
-                const minutasFieldsets = fieldsetMinutas.querySelectorAll(
-                    "div > div:nth-child(2) > fieldset"
+            // 2. Buscar fieldset#fldMinutas
+            const fieldsetMinutas = document.querySelector("#fldMinutas");
+            if (!fieldsetMinutas) {
+                console.log(
+                    "🎯 DADOS SESSÃO: Nenhum dado encontrado - Motivo: fieldset#fldMinutas não existe"
                 );
+                return null;
+            }
 
-                const sessoes = [];
-                let dadosEncontrados = [];
+            // 3. Buscar todos os textos dentro do fieldset
+            const textos = [];
+            const botoes = fieldsetMinutas.querySelectorAll("button");
+            botoes.forEach((botao) => {
+                const texto = botao.textContent?.trim();
+                if (texto) textos.push(texto);
+            });
 
-                // Processar cada fieldset de minuta
-                minutasFieldsets.forEach((fieldset, index) => {
-                    const botao = fieldset.querySelector(
-                        "legend > span:first-child > button"
-                    );
-                    if (botao) {
-                        const textoMinuta = botao.textContent?.trim();
-                        if (textoMinuta) {
-                            dadosEncontrados.push(textoMinuta);
+            if (textos.length === 0) {
+                console.log(
+                    "🎯 DADOS SESSÃO: Nenhum dado encontrado - Motivo: não há botões com texto no fieldset#fldMinutas"
+                );
+                return null;
+            }
 
-                            // Regex universal para parsing
-                            const padraoUniversal =
-                                /^([A-Za-zÀ-ÿ\s]+?)\s*\(([A-Za-z\s]+em\s+Pauta)\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s*a\s*\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
-                            const match = textoMinuta.match(padraoUniversal);
+            // 4. Processar textos encontrados
+            const sessoes = [];
+            const padraoSessao =
+                /^([A-Za-zÀ-ÿ\s]+?)\s*\((Retirado|Julgado|Incluído)\s+(em|em\s+)\s+(Pauta|Mesa)\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s*a\s*(\d{1,2}\/\d{1,2}\/\d{4}))?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
 
-                            if (match) {
-                                const [
-                                    ,
-                                    tipoSessao,
-                                    statusCompleto,
-                                    data,
-                                    siglaOrgao,
-                                ] = match;
+            textos.forEach((texto) => {
+                const match = texto.match(padraoSessao);
+                if (match) {
+                    const [
+                        ,
+                        tipo,
+                        status,
+                        ,
+                        local,
+                        dataInicio,
+                        dataFim,
+                        orgao,
+                    ] = match;
+                    sessoes.push({
+                        tipo: tipo.trim(),
+                        status: status.trim(),
+                        local: local.trim(),
+                        dataInicio: dataInicio.trim(),
+                        dataFim: dataFim ? dataFim.trim() : null,
+                        orgao: orgao.trim(),
+                        textoCompleto: texto,
+                    });
+                }
+            });
 
-                                // Traduzir status e órgão
-                                const statusTraduzido =
-                                    traduzirStatusSessao(statusCompleto);
-                                const nomeOrgao = traduzirSiglaOrgao(
-                                    siglaOrgao.trim()
-                                );
+            // 5. Log único com resultado
+            if (sessoes.length > 0) {
+                // Mapeamento de cores por status (mesmo da função criarCardSessaoMaterial)
+                const coresFigma = {
+                    PAUTADO: "#5C85B4",
+                    INCLUÍDO: "#5C85B4", // Incluído em Pauta = Pautado
+                    RETIRADO: "#CE2D4F",
+                    VISTA: "#FFBF46",
+                    JULGADO: "#3AB795",
+                    ADIADO: "#F55D3E",
+                    ADIADO_935: "#731963",
+                    SOBRESTADO: "#FCB0B3",
+                    DILIGENCIA: "#00171F",
+                };
 
-                                sessoes.push({
-                                    indice: index + 1,
-                                    tipo: tipoSessao.trim(),
-                                    status:
-                                        statusTraduzido?.status ||
-                                        "Desconhecido",
-                                    statusCompleto: statusCompleto,
-                                    data: data.trim(),
-                                    siglaOrgao: siglaOrgao.trim(),
-                                    orgao: nomeOrgao,
-                                    cor: statusTraduzido?.cor || "#6B7280",
-                                    textoCompleto: textoMinuta,
-                                });
-                            }
-                        }
-                    }
-                });
-
-                // LOG CRÍTICO ÚNICO com resultado
-                logCritical(
-                    `🎯 MINUTAS ENCONTRADAS: Processo ${
-                        obterNumeroProcesso() || "N/A"
-                    } | Local: fieldset#fldMinutas | Total: ${
-                        dadosEncontrados.length
-                    } minutas | Dados: ${JSON.stringify(dadosEncontrados)}`
+                console.log(
+                    `🎯 DADOS SESSÃO: ${
+                        sessoes.length
+                    } sessões encontradas - Dados: ${JSON.stringify(
+                        sessoes.map((s) => s.textoCompleto)
+                    )}`
                 );
 
-                if (sessoes.length === 0) {
-                    lastDetectionResult = null;
-                    return null;
-                }
-
-                // Ordenar por data (mais recente primeiro)
-                sessoes.sort((a, b) => {
-                    const dataA = new Date(
-                        a.data.split("/").reverse().join("-")
-                    );
-                    const dataB = new Date(
-                        b.data.split("/").reverse().join("-")
-                    );
-                    return dataB - dataA;
-                });
-
-                // Armazenar dados da sessão mais recente
-                const sessaoMaisRecente = sessoes[0];
+                // Armazenar dados da primeira sessão (mais recente)
+                const sessaoPrincipal = sessoes[0];
                 const processo = obterNumeroProcesso();
 
                 if (processo) {
-                    dataSessaoPautado = sessaoMaisRecente.data;
+                    dataSessaoPautado = sessaoPrincipal.dataInicio;
                     processoComDataSessao = processo;
-
-                    // Adicionar dados completos
-                    window.dadosCompletosMinutas = sessaoMaisRecente;
-                } else {
-                    lastDetectionResult = null;
-                    return null;
+                    window.dadosCompletosMinutas = sessaoPrincipal;
                 }
 
-                // Criar card com dados da sessão mais recente
+                // Criar dados para o card no formato esperado
                 const cardInfo = {
-                    indice: sessaoMaisRecente.indice,
-                    data: sessaoMaisRecente.data,
-                    tipo: sessaoMaisRecente.tipo,
-                    status: sessaoMaisRecente.status,
-                    orgao: sessaoMaisRecente.orgao,
-                    cor: sessaoMaisRecente.cor,
+                    data: sessaoPrincipal.dataInicio,
+                    tipo: sessaoPrincipal.tipo,
+                    status: sessaoPrincipal.status,
+                    orgao: traduzirSiglaOrgao(sessaoPrincipal.orgao), // ✅ CORRIGIDO: Usar tradução de sigla
                     totalSessoes: sessoes.length,
-                    sessoes: sessoes,
+                    sessoes: sessoes.map((sessao) => ({
+                        tipo: sessao.tipo,
+                        status: sessao.status,
+                        local: sessao.local,
+                        data: sessao.dataInicio, // CORRIGIDO: mapear dataInicio para data
+                        dataInicio: sessao.dataInicio,
+                        dataFim: sessao.dataFim,
+                        orgao: traduzirSiglaOrgao(sessao.orgao), // ✅ CORRIGIDO: Usar tradução de sigla
+                        textoCompleto: sessao.textoCompleto,
+                        cor:
+                            coresFigma[
+                                sessao.status
+                                    .toUpperCase()
+                                    .replace(/\s+/g, "_")
+                                    .replace(/[()\.]/g, "")
+                            ] || "#5C85B4",
+                    })),
+                    principal: sessaoPrincipal,
                 };
 
-                criarCardSessaoMaterial(cardInfo);
-                lastDetectionResult = cardInfo;
+                // Criar card automaticamente
+                if (typeof criarCardSessaoMaterial === "function") {
+                    criarCardSessaoMaterial(cardInfo);
+                }
 
                 return cardInfo;
-            } catch (error) {
-                lastDetectionResult = null;
-                return null;
-            }
-        }
-
-        processarTextoFieldsetSessao = function (fieldsetElement) {
-            try {
-                if (!fieldsetElement) return null;
-
-                const texto =
-                    fieldsetElement.textContent ||
-                    fieldsetElement.innerText ||
-                    "";
-
-                // Padrões para diferentes tipos de sessão
-                const padroes = {
-                    pautado: /Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})/gi,
-                    julgado: /Julgado em (\d{1,2}\/\d{1,2}\/\d{4})/gi,
-                    data_generica: /(\d{1,2}\/\d{1,2}\/\d{4})/gi,
-                };
-
-                let statusDetectado = "Sessão";
-                let datasSessao = [];
-
-                // Tentar cada padrão
-                for (const [tipo, padrao] of Object.entries(padroes)) {
-                    const matches = [...texto.matchAll(padrao)];
-                    if (matches.length > 0) {
-                        statusDetectado =
-                            tipo.charAt(0).toUpperCase() +
-                            tipo.slice(1).replace("_", " ");
-                        datasSessao = matches.map((m) => m[1]);
-                        break;
-                    }
-                }
-
-                if (datasSessao.length > 0) {
-                    log(
-                        `✅ PROCESSAMENTO: ${datasSessao.length} data(s) encontrada(s) - Status: ${statusDetectado}`
-                    );
-                    return {
-                        statusDetectado,
-                        datasSessao,
-                        informacoesDetalhadas: { textoCompleto: texto },
-                    };
-                }
-
-                return null;
-            } catch (error) {
-                console.error(
-                    "❌ PROCESSAMENTO: Erro no processamento:",
-                    error
+            } else {
+                console.log(
+                    `🎯 DADOS SESSÃO: Nenhum dado encontrado - Motivo: textos não correspondem ao padrão esperado. Textos encontrados: ${JSON.stringify(
+                        textos
+                    )}`
                 );
                 return null;
             }
-        };
+        }
 
         processoJaFoiProcessado = function (numeroProcesso) {
             return numeroProcesso && processosJaProcessados.has(numeroProcesso);
@@ -16237,6 +16177,17 @@ RESPOSTA (apenas JSON válido):`;
                 )}" style="width:40px;height:40px">`;
 
                 marketplace.parentNode.insertBefore(link, marketplace);
+
+                // Aplicar z-index elevado à navbar para ficar acima de outros elementos
+                const navbarWrapper =
+                    document.querySelector(
+                        ".bootstrap-styles.navbar-wrapper"
+                    ) ||
+                    document.querySelector("nav#navbar") ||
+                    navbar;
+                if (navbarWrapper) {
+                    navbarWrapper.style.zIndex = "10000";
+                }
             }
 
             // Executar quando navbar estiver disponível
@@ -18720,7 +18671,7 @@ RESPOSTA (apenas JSON válido):`;
                 ? `border: 2px solid ${sessao.cor}`
                 : `border: 1px solid #E6E0E9`;
             const backgroundColor = isAtual
-                ? `background: ${sessao.cor}0D`
+                ? `background: ${sessao.cor}`
                 : `background: #FFFBFE`;
             const tagAtual = isAtual
                 ? `<div style="background: ${sessao.cor}; color: #FFFFFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -4px; right: -4px;">ATUAL</div>`
@@ -18974,11 +18925,7 @@ RESPOSTA (apenas JSON válido):`;
                 null
             ),
 
-            // Funções experimentais
-            detectarDataSessaoExperimental: createAsyncSafeFallback(
-                "detectarDataSessaoExperimental",
-                null
-            ),
+            // detectarDataSessaoExperimental: REMOVIDA - substituída por detectarCardSessaoSimplificado ÚNICA
         };
 
         // Fallbacks seguros para funções de interface e botões
@@ -19020,10 +18967,7 @@ RESPOSTA (apenas JSON válido):`;
                 "detectarStatusSessao",
                 null
             ),
-            detectarDataSessaoComStatus: createSafeFallback(
-                "detectarDataSessaoComStatus",
-                null
-            ),
+            // detectarDataSessaoComStatus: REMOVIDA - substituída por detectarCardSessaoSimplificado ÚNICA
             obterTextoCardPorStatus: createSafeFallback(
                 "obterTextoCardPorStatus",
                 "Status não encontrado"
@@ -19252,11 +19196,7 @@ RESPOSTA (apenas JSON válido):`;
                 {}
             ),
 
-            // Função de processamento de fieldset
-            processarTextoFieldsetSessao: createSafeFallback(
-                "processarTextoFieldsetSessao",
-                null
-            ),
+            // processarTextoFieldsetSessao: REMOVIDA - substituída por detectarCardSessaoSimplificado ÚNICA
         };
 
         log(
@@ -19527,10 +19467,6 @@ RESPOSTA (apenas JSON válido):`;
                 sessionDataFunctions.resetDadosCompletosSessionJulgamento,
             showDadosCompletosSessionJulgamento:
                 sessionDataFunctions.showDadosCompletosSessionJulgamento,
-            // Funções de debug
-            // Função experimental com Semantic Kernel
-            detectarDataSessaoExperimental:
-                safeFunctions.detectarDataSessaoExperimental,
             // Funções de interface reutilizável
             criarBotaoEleganteeProc: interfaceFunctions.criarBotaoEleganteeProc,
             botaoBrancoCapaProcesso: interfaceFunctions.botaoBrancoCapaProcesso,
@@ -19542,8 +19478,6 @@ RESPOSTA (apenas JSON válido):`;
             destacarLocalizadoresUrgentes: window.destacarLocalizadoresUrgentes,
             // Funções de status de sessão
             detectarStatusSessao: statusFunctions.detectarStatusSessao,
-            detectarDataSessaoComStatus:
-                statusFunctions.detectarDataSessaoComStatus,
             obterTextoCardPorStatus: statusFunctions.obterTextoCardPorStatus,
             obterCorCardPorStatus: statusFunctions.obterCorCardPorStatus,
             getStatusSessao: statusFunctions.getStatusSessao,
@@ -21390,9 +21324,9 @@ RESPOSTA (apenas JSON válido):`;
                         return null;
                     }
 
-                    // 2. USAR A FUNÇÃO AUXILIAR PARA PROCESSAMENTO COMPLETO
+                    // 2. USAR A FUNÇÃO SIMPLIFICADA PARA PROCESSAMENTO COMPLETO
                     const resultadoProcessamento =
-                        processarTextoFieldsetSessao(fieldsetElement);
+                        detectarCardSessaoSimplificado();
 
                     if (!resultadoProcessamento) {
                         log("⚠️ TOOLTIP: Nenhum dado de sessão no fieldset");

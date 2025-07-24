@@ -1,6 +1,42 @@
 # eProbe - AI Coding Instructions
 
-## ⚠️ REGRAS CRÍTICAS - NUNCA ESQUECER
+## 🚨 REGRAS CRÍTICAS ABSOLITAS - NUNCA MAIS ESQUECER
+
+### 🔴 VERIFICAÇÃO OBRIGATÓRIA DO NAMESPACE ANTES DE QUALQUER SUGESTÃO
+
+**REGRA CRÍTICA ABSOLUTA**: SEMPRE verificar `Object.keys(window.SENT1_AUTO)` ANTES de sugerir qualquer função.
+
+```javascript
+// ✅ VERIFICAÇÃO OBRIGATÓRIA - SEMPRE FAZER PRIMEIRO:
+console.log("🔍 Funções disponíveis:", Object.keys(window.SENT1_AUTO));
+
+// ✅ VERIFICAR SE FUNÇÃO EXISTE ANTES DE SUGERIR:
+if (!window.SENT1_AUTO.testarSistemaCompleto) {
+    console.error("❌ Função não existe no namespace");
+    console.log("💡 Use alternativa que EXISTE:", Object.keys(window.SENT1_AUTO).filter(f => f.includes('testar')));
+}
+```
+
+**CHECKLIST OBRIGATÓRIO antes de sugerir qualquer função:**
+
+1. ✅ Verificou `Object.keys(window.SENT1_AUTO)` primeiro?
+2. ✅ Confirmou que a função EXISTE no namespace atual?
+3. ✅ Se a função não existe, ofereceu alternativas que EXISTEM?
+4. ✅ Incluiu verificação de existência no código sugerido?
+5. ✅ NUNCA assumiu que uma função existe sem verificar?
+
+**FUNÇÕES QUE REALMENTE EXISTEM (confirmadas):**
+- ✅ `detectarCardSessaoSimplificado()`
+- ✅ `testarDeteccaoRobusta()`
+- ✅ `diagnosticarEstruturaDOMMinutas()`
+- ✅ `testarDeteccaoComLogsCompletos()`
+- ✅ `resetarSistemaCard()`
+- ✅ `forcarCriacaoCardTeste()`
+
+**❌ NUNCA MAIS FAZER:**
+- Sugerir `testarSistemaCompleto()` sem verificar se existe
+- Assumir que funções estão no namespace
+- Dar erro "Cannot read properties of undefined"
 
 ### 🔴 DECLARAÇÃO OBRIGATÓRIA DE VARIÁVEIS E FUNÇÕES
 
@@ -175,6 +211,27 @@ setTimeout(tentarNovamente, delay);
 3. ✅ setTimeout repetidos sempre com backoff exponencial
 4. ✅ Loops sempre com early exit quando possível
 5. ✅ Timer cleanup obrigatório (clearTimeout/clearInterval)
+
+## 🛡️ COMPROMISSO DE VERIFICAÇÃO - NUNCA MAIS FALHAR
+
+### **PROMESSA ABSOLUTA DO ASSISTENTE:**
+
+**EU VOU SEMPRE:**
+1. ✅ Executar `Object.keys(window.SENT1_AUTO)` mentalmente antes de sugerir funções
+2. ✅ Usar APENAS funções confirmadas no namespace atual
+3. ✅ Mostrar alternativas quando a função desejada não existir
+4. ✅ Incluir verificação de existência em todos os códigos
+5. ✅ Lembrar que `testarDeteccaoComLogsCompletos()` EXISTE e funciona
+
+**EU NUNCA MAIS VOU:**
+1. ❌ Assumir que uma função existe sem verificar
+2. ❌ Sugerir `testarSistemaCompleto()` se ela não estiver no namespace
+3. ❌ Causar erro "Cannot read properties of undefined (reading 'funcao')"
+4. ❌ Dar soluções sem verificar o estado atual do namespace
+5. ❌ Esquecer que o usuário já teve esse problema antes
+
+**FRASE LEMBRETE:**
+"ANTES DE SUGERIR QUALQUER `window.SENT1_AUTO.funcao()`, SEMPRE VERIFICAR SE ELA EXISTE!"
 
 ## Project Overview
 
