@@ -315,7 +315,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: static !important;
-                left: 500px !important;
                 pointer-events: auto !important;
             }
             
@@ -883,10 +882,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             window.SENT1_AUTO = window.SENT1_AUTO || {
                 // Funções essenciais que sempre devem existir
                 detectarCardSessaoSimplificado: () => {
-                    console.log(
-                        "🎯 DADOS SESSÃO: Função de emergência - verificar implementação completa"
-                    );
-                    return null;
+                    return detectarSessoesUnificado();
                 },
                 testarDeteccaoRobusta: () => {
                     console.log(
@@ -1076,54 +1072,132 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return null;
             }
 
-            // 3. Extrair todos os textos dos botões
-            const botoes = fieldset.querySelectorAll("button");
-            const textos = Array.from(botoes)
-                .map((b) => b.textContent?.trim())
-                .filter((t) => t);
+            // 3. Extrair texto completo do fieldset
+            const textoCompleto =
+                fieldset.textContent || fieldset.innerText || "";
 
-            if (textos.length === 0) {
-                console.log("❌ DETECÇÃO: Nenhum botão com texto encontrado");
+            if (!textoCompleto.trim()) {
+                console.log("❌ DETECÇÃO: Fieldset sem conteúdo de texto");
                 return null;
             }
 
-            console.log("📝 DETECÇÃO: Textos encontrados:", textos);
+            console.log(
+                "📝 DETECÇÃO: Texto completo encontrado:",
+                textoCompleto.substring(0, 200) + "..."
+            );
 
-            // 4. REGEX UNIFICADO para todos os padrões de sessão (incluindo intervalos de data)
-            const padraoUnificado =
-                /^([A-Za-zÀ-ÿ\s]+?)\s*\((Julgado|Retirado|Incluído)\s+em\s+Pauta\s+em\s+(\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9\-º]+(?:\s+[A-Z]+)*)\)$/;
+            // 4. REGEX VÁLIDOS ORIGINAIS - Os que funcionavam antes
+            const padroesValidos = [
+                {
+                    nome: "Incluído em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Incluído",
+                },
+                {
+                    nome: "Julgado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Julgado",
+                },
+                {
+                    nome: "Retirado em Pauta",
+                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                    status: "Retirado",
+                },
+            ];
 
             const sessoes = [];
 
-            textos.forEach((texto, index) => {
-                console.log(`🔍 Analisando texto ${index + 1}:`, texto);
+            // 5. Aplicar cada padrão válido original
+            padroesValidos.forEach((padrao) => {
+                console.log(`🔍 Testando padrão: ${padrao.nome}`);
 
-                const match = texto.match(padraoUnificado);
-                if (match) {
-                    const [, tipo, status, data, orgao] = match;
+                // Resetar regex
+                padrao.regex.lastIndex = 0;
+
+                let match;
+                while ((match = padrao.regex.exec(textoCompleto)) !== null) {
+                    const [textoMatchCompleto, tipoCapturado, data, orgao] =
+                        match;
+
+                    // 🔧 LIMPEZA DO TIPO: Extrair apenas o tipo real (última parte antes do parêntese)
+                    let tipoLimpo = tipoCapturado.trim();
+
+                    // Pegar apenas as últimas palavras que realmente são o tipo
+                    const tiposValidos = [
+                        "Embargos de Declaração",
+                        "Mérito",
+                        "Preliminar",
+                        "Cautelar",
+                        "Agravo Interno",
+                        "Agravo",
+                        "Apelação",
+                        "Recurso",
+                    ];
+
+                    // Tentar encontrar um tipo válido no final da string capturada
+                    let tipoEncontrado = null;
+                    for (const tipoValido of tiposValidos) {
+                        if (
+                            tipoLimpo
+                                .toLowerCase()
+                                .includes(tipoValido.toLowerCase())
+                        ) {
+                            // Se encontrou o tipo, extrair apenas essa parte
+                            const index = tipoLimpo
+                                .toLowerCase()
+                                .lastIndexOf(tipoValido.toLowerCase());
+                            if (index !== -1) {
+                                tipoEncontrado = tipoLimpo.substring(
+                                    index,
+                                    index + tipoValido.length
+                                );
+                                break;
+                            }
+                        }
+                    }
+
+                    // Se não encontrou um tipo específico, pegar as últimas palavras
+                    if (!tipoEncontrado) {
+                        const palavras = tipoLimpo
+                            .split(/\s+/)
+                            .filter((p) => p.length > 2);
+                        if (palavras.length > 0) {
+                            // Pegar as últimas 2-3 palavras que provavelmente são o tipo
+                            tipoEncontrado = palavras.slice(-3).join(" ");
+                        } else {
+                            tipoEncontrado = "Julgamento";
+                        }
+                    }
+
+                    console.log(
+                        `🔍 LIMPEZA TIPO: "${tipoCapturado}" → "${tipoEncontrado}"`
+                    );
 
                     const sessao = {
-                        tipo: tipo.trim(),
-                        status: status.trim(),
+                        tipo: tipoEncontrado,
+                        status: padrao.status,
                         data: data.trim(),
                         orgao: orgao.trim(),
-                        textoCompleto: texto,
-                        cor: obterCorPorStatus(status.trim()),
+                        textoCompleto: textoMatchCompleto,
+                        cor: obterCorPorStatus(padrao.status),
                     };
 
-                    console.log("✅ SESSÃO DETECTADA:", sessao);
+                    console.log(
+                        `✅ SESSÃO DETECTADA (${padrao.nome}):`,
+                        sessao
+                    );
                     sessoes.push(sessao);
-                } else {
-                    console.log("❌ Texto não correspondeu:", texto);
                 }
             });
 
             if (sessoes.length === 0) {
-                console.log("❌ DETECÇÃO: Nenhuma sessão válida encontrada");
+                console.log(
+                    "❌ DETECÇÃO: Nenhuma sessão válida encontrada com padrões originais"
+                );
                 return null;
             }
 
-            // 4.5. ORDENAR SESSÕES POR DATA (mais recente primeiro)
+            // 6. ORDENAR SESSÕES POR DATA (mais recente primeiro)
             sessoes.sort((a, b) => {
                 try {
                     // Converter datas para comparação (DD/MM/YYYY -> YYYY-MM-DD)
@@ -1148,7 +1222,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 sessoes.map((s) => `${s.tipo} (${s.status} em ${s.data})`)
             );
 
-            // 5. Retornar dados estruturados - SESSÃO PRINCIPAL = MAIS RECENTE
+            // 7. Retornar dados estruturados - SESSÃO PRINCIPAL = MAIS RECENTE
             const resultado = {
                 sessaoPrincipal: sessoes[0],
                 todasSessoes: sessoes,
@@ -1159,13 +1233,13 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             console.log("🎯 DETECÇÃO CONCLUÍDA:", resultado);
 
-            // 6. Salvar dados globais - CORRIGIDO: salvar objeto completo
+            // 8. Salvar dados globais - CORRIGIDO: salvar objeto completo
             dataSessaoPautado = resultado.sessaoPrincipal; // Objeto completo, não apenas a data
             processoComDataSessao = resultado.processo;
             window.dadosCompletosMinutas = resultado.sessaoPrincipal;
             window.SENT1_AUTO.todasSessoesDetectadas = sessoes;
 
-            // 7. CRIAR CARD AUTOMATICAMENTE
+            // 9. CRIAR CARD AUTOMATICAMENTE
             console.log("🎨 AUTO-CRIAÇÃO: Criando card automaticamente...");
             try {
                 // Aguardar um pouco para garantir que as variáveis globais estão definidas
@@ -1263,42 +1337,60 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 tooltip.innerHTML = tooltipHTML;
                 tooltip.style.cssText = `
                     position: fixed !important;
-                    background: white !important;
-                    border: 1px solid #e2e8f0 !important;
-                    border-radius: 8px !important;
-                    padding: 12px !important;
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+                    background: transparent !important;
+                    border: none !important;
+                    border-radius: 0 !important;
+                    padding: 0 !important;
+                    box-shadow: none !important;
                     z-index: 999999 !important;
-                    max-width: 300px !important;
-                    font-size: 13px !important;
-                    line-height: 1.4 !important;
+                    max-width: none !important;
+                    font-size: inherit !important;
+                    line-height: inherit !important;
                     pointer-events: none !important;
                     opacity: 0 !important;
-                    transition: opacity 0.2s ease-in-out !important;
-                    left: 0px !important;
-                    top: 0px !important;
-                    transform: none !important;
+                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                    left: -9999px !important;
+                    top: -9999px !important;
+                    transform: scale(0.9) !important;
                     margin: 0 !important;
+                    filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.12)) !important;
+                    visibility: hidden !important;
                 `;
 
+                // Adicionar ao DOM primeiro para permitir medição
                 document.body.appendChild(tooltip);
 
-                // 🎯 POSICIONAMENTO INTELIGENTE DIRETO (sem aguardo)
-                // A função agora busca o card diretamente no DOM
-                posicionarTooltipRelativoAoCard(tooltip, cardElement, e);
-                tooltip.style.opacity = "1";
+                // 🔧 AGUARDAR RENDERIZAÇÃO PARA OBTER DIMENSÕES REAIS
+                requestAnimationFrame(() => {
+                    // Tornar visível temporariamente para medição
+                    tooltip.style.visibility = "visible";
+                    tooltip.style.left = "-9999px";
+                    tooltip.style.top = "-9999px";
+
+                    // 🎯 POSICIONAMENTO INTELIGENTE COM DIMENSÕES REAIS
+                    posicionarTooltipRelativoAoCard(tooltip, cardElement, e);
+
+                    // ✨ ANIMAÇÃO DE ENTRADA ELEGANTE
+                    requestAnimationFrame(() => {
+                        tooltip.style.opacity = "1";
+                        tooltip.style.transform = "scale(1)";
+                    });
+                });
             }
 
             function esconderTooltip() {
                 const tooltip = document.getElementById("eprobe-rich-tooltip");
                 if (tooltip) {
-                    // Animação de saída suave
+                    // ✨ ANIMAÇÃO DE SAÍDA ELEGANTE
                     tooltip.style.opacity = "0";
+                    tooltip.style.transform = "scale(0.95)";
+                    tooltip.style.filter = "blur(1px)";
+
                     setTimeout(() => {
                         if (tooltip.parentNode) {
                             tooltip.remove();
                         }
-                    }, 200);
+                    }, 300);
                 }
             }
 
@@ -1403,267 +1495,575 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 centerY: cardRect.top + cardRect.height / 2,
             };
 
-            // 3. Obter dimensões do tooltip
+            // 3. Obter dimensões do tooltip - AGUARDAR RENDERIZAÇÃO COMPLETA
             const tooltipRect = tooltip.getBoundingClientRect();
-            const tooltipInfo = {
+            let tooltipInfo = {
                 width: tooltipRect.width,
                 height: tooltipRect.height,
             };
 
-            // 4. Definir margem mínima das bordas da tela
-            const MARGEM_BORDA = 15;
-
-            // 5. Calcular posições preferenciais (em ordem de prioridade)
-            const posicoesCandidatas = [
-                // Posição 1: Abaixo do card (NOVA PREFERENCIAL)
-                {
-                    name: "abaixo",
-                    left: cardInfo.centerX - tooltipInfo.width / 2,
-                    top: cardInfo.bottom + 12,
-                    priority: 1,
-                },
-                // Posição 2: À direita do card
-                {
-                    name: "direita",
-                    left: cardInfo.right + 12,
-                    top: cardInfo.centerY - tooltipInfo.height / 2,
-                    priority: 2,
-                },
-                // Posição 3: À esquerda do card
-                {
-                    name: "esquerda",
-                    left: cardInfo.left - tooltipInfo.width - 12,
-                    top: cardInfo.centerY - tooltipInfo.height / 2,
-                    priority: 3,
-                },
-                // Posição 4: Acima do card (fallback)
-                {
-                    name: "acima",
-                    left: cardInfo.centerX - tooltipInfo.width / 2,
-                    top: cardInfo.top - tooltipInfo.height - 12,
-                    priority: 4,
-                },
-            ];
-
-            // 6. Verificar qual posição é viável (não sai da tela)
-            let melhorPosicao = null;
-
-            console.log("🔍 POSICIONAMENTO: Avaliando posições candidatas:");
-            console.log("📊 Viewport:", viewport);
-            console.log("📦 Card:", cardInfo);
-            console.log("🎯 Tooltip:", tooltipInfo);
-
-            for (const posicao of posicoesCandidatas.sort(
-                (a, b) => a.priority - b.priority
-            )) {
-                const dentroDoViewport =
-                    posicao.left >= MARGEM_BORDA &&
-                    posicao.left + tooltipInfo.width <=
-                        viewport.width - MARGEM_BORDA &&
-                    posicao.top >= MARGEM_BORDA &&
-                    posicao.top + tooltipInfo.height <=
-                        viewport.height - MARGEM_BORDA;
-
-                console.log(`📍 Testando posição "${posicao.name}":`, {
-                    left: posicao.left,
-                    top: posicao.top,
-                    dentroDoViewport,
-                    margens: {
-                        esquerda: posicao.left >= MARGEM_BORDA,
-                        direita:
-                            posicao.left + tooltipInfo.width <=
-                            viewport.width - MARGEM_BORDA,
-                        topo: posicao.top >= MARGEM_BORDA,
-                        baixo:
-                            posicao.top + tooltipInfo.height <=
-                            viewport.height - MARGEM_BORDA,
-                    },
-                });
-
-                if (dentroDoViewport) {
-                    melhorPosicao = posicao;
-                    console.log(
-                        `✅ POSICIONAMENTO: Posição "${posicao.name}" selecionada`
-                    );
-                    break;
-                }
-            }
-
-            // 7. Se nenhuma posição ideal, usar fallback com ajustes
-            if (!melhorPosicao) {
-                console.log(
-                    "⚠️ POSICIONAMENTO: Usando posição fallback com ajustes"
+            // 🚨 VERIFICAÇÃO CRÍTICA: Se dimensões são 0, aguardar renderização
+            if (tooltipInfo.width === 0 || tooltipInfo.height === 0) {
+                console.warn(
+                    "⚠️ POSICIONAMENTO: Aguardando renderização para obter dimensões..."
                 );
-                melhorPosicao = posicoesCandidatas[0]; // Usar "abaixo" como base
 
-                // Ajustar horizontalmente se necessário
-                if (melhorPosicao.left < MARGEM_BORDA) {
-                    melhorPosicao.left = MARGEM_BORDA;
-                } else if (
-                    melhorPosicao.left + tooltipInfo.width >
-                    viewport.width - MARGEM_BORDA
-                ) {
-                    melhorPosicao.left =
-                        viewport.width - tooltipInfo.width - MARGEM_BORDA;
-                }
-
-                // Ajustar verticalmente se necessário (se sair da tela por baixo, mover para cima)
-                if (
-                    melhorPosicao.top + tooltipInfo.height >
-                    viewport.height - MARGEM_BORDA
-                ) {
-                    melhorPosicao.top = cardInfo.top - tooltipInfo.height - 12; // Mover para cima do card
-                } else if (melhorPosicao.top < MARGEM_BORDA) {
-                    melhorPosicao.top = MARGEM_BORDA;
-                }
+                // Aguardar um tick e tentar novamente
+                setTimeout(() => {
+                    const newRect = tooltip.getBoundingClientRect();
+                    tooltipInfo = {
+                        width: newRect.width || 320, // Fallback para largura padrão
+                        height: newRect.height || 200, // Fallback para altura padrão
+                    };
+                    console.log("📐 DIMENSÕES OBTIDAS:", tooltipInfo);
+                    continuarPosicionamento();
+                }, 16); // ~1 frame
+                return;
             }
 
-            // 8. Aplicar posição final com !important para forçar
-            tooltip.style.setProperty(
-                "left",
-                Math.round(melhorPosicao.left) + "px",
-                "important"
-            );
-            tooltip.style.setProperty(
-                "top",
-                Math.round(melhorPosicao.top) + "px",
-                "important"
-            );
-            tooltip.style.setProperty("position", "fixed", "important");
+            continuarPosicionamento();
 
-            // 🔧 VERIFICAÇÃO IMEDIATA: Forçar aplicação e re-check
-            setTimeout(() => {
-                const computedAfterSet = window.getComputedStyle(tooltip);
-                console.log("🔧 VERIFICAÇÃO IMEDIATA CSS:", {
-                    position: computedAfterSet.position,
-                    left: computedAfterSet.left,
-                    top: computedAfterSet.top,
-                    styleLeft: tooltip.style.left,
-                    styleTop: tooltip.style.top,
-                    stylePosition: tooltip.style.position,
+            function continuarPosicionamento() {
+                // 4. Definir margem mínima das bordas da tela
+                const MARGEM_BORDA = 15;
+
+                // 5. Calcular posições preferenciais (em ordem de prioridade)
+                const posicoesCandidatas = [
+                    // Posição 1: Abaixo do card (NOVA PREFERENCIAL)
+                    {
+                        name: "abaixo",
+                        left: cardInfo.centerX - tooltipInfo.width / 2,
+                        top: cardInfo.bottom + 12,
+                        priority: 1,
+                    },
+                    // Posição 2: À direita do card
+                    {
+                        name: "direita",
+                        left: cardInfo.right + 12,
+                        top: cardInfo.centerY - tooltipInfo.height / 2,
+                        priority: 2,
+                    },
+                    // Posição 3: À esquerda do card
+                    {
+                        name: "esquerda",
+                        left: cardInfo.left - tooltipInfo.width - 12,
+                        top: cardInfo.centerY - tooltipInfo.height / 2,
+                        priority: 3,
+                    },
+                    // Posição 4: Acima do card (fallback)
+                    {
+                        name: "acima",
+                        left: cardInfo.centerX - tooltipInfo.width / 2,
+                        top: cardInfo.top - tooltipInfo.height - 12,
+                        priority: 4,
+                    },
+                ];
+
+                // 6. Verificar qual posição é viável (não sai da tela)
+                let melhorPosicao = null;
+
+                console.log(
+                    "🔍 POSICIONAMENTO: Avaliando posições candidatas:"
+                );
+                console.log("📊 Viewport:", viewport);
+                console.log("📦 Card:", cardInfo);
+                console.log("🎯 Tooltip:", tooltipInfo);
+
+                for (const posicao of posicoesCandidatas.sort(
+                    (a, b) => a.priority - b.priority
+                )) {
+                    const dentroDoViewport =
+                        posicao.left >= MARGEM_BORDA &&
+                        posicao.left + tooltipInfo.width <=
+                            viewport.width - MARGEM_BORDA &&
+                        posicao.top >= MARGEM_BORDA &&
+                        posicao.top + tooltipInfo.height <=
+                            viewport.height - MARGEM_BORDA;
+
+                    console.log(`📍 Testando posição "${posicao.name}":`, {
+                        left: posicao.left,
+                        top: posicao.top,
+                        dentroDoViewport,
+                        margens: {
+                            esquerda: posicao.left >= MARGEM_BORDA,
+                            direita:
+                                posicao.left + tooltipInfo.width <=
+                                viewport.width - MARGEM_BORDA,
+                            topo: posicao.top >= MARGEM_BORDA,
+                            baixo:
+                                posicao.top + tooltipInfo.height <=
+                                viewport.height - MARGEM_BORDA,
+                        },
+                    });
+
+                    if (dentroDoViewport) {
+                        melhorPosicao = posicao;
+                        console.log(
+                            `✅ POSICIONAMENTO: Posição "${posicao.name}" selecionada`
+                        );
+                        break;
+                    }
+                }
+
+                // 7. Se nenhuma posição ideal, FORÇAR posição abaixo com ajustes inteligentes
+                if (!melhorPosicao) {
+                    console.log(
+                        "⚠️ POSICIONAMENTO: FORÇANDO posição abaixo com ajustes inteligentes"
+                    );
+
+                    // SEMPRE usar posição abaixo como base
+                    melhorPosicao = {
+                        name: "abaixo_forcado",
+                        left: cardInfo.centerX - tooltipInfo.width / 2,
+                        top: cardInfo.bottom + 12,
+                        priority: 1,
+                    };
+
+                    // Ajustar horizontalmente se necessário (centralizado no card)
+                    if (melhorPosicao.left < MARGEM_BORDA) {
+                        melhorPosicao.left = MARGEM_BORDA;
+                    } else if (
+                        melhorPosicao.left + tooltipInfo.width >
+                        viewport.width - MARGEM_BORDA
+                    ) {
+                        melhorPosicao.left =
+                            viewport.width - tooltipInfo.width - MARGEM_BORDA;
+                    }
+
+                    // Se sair da tela por baixo, ajustar para posição superior APENAS se necessário
+                    if (
+                        melhorPosicao.top + tooltipInfo.height >
+                        viewport.height - MARGEM_BORDA
+                    ) {
+                        // Tentar posicionar acima do card apenas se realmente não couber
+                        const posicaoAcima =
+                            cardInfo.top - tooltipInfo.height - 12;
+                        if (posicaoAcima >= MARGEM_BORDA) {
+                            melhorPosicao.top = posicaoAcima;
+                            melhorPosicao.name = "acima_forcado";
+                            console.log(
+                                "🔄 POSICIONAMENTO: Movido para acima por falta de espaço"
+                            );
+                        } else {
+                            // Se nem acima nem abaixo cabem, usar o máximo possível abaixo
+                            melhorPosicao.top =
+                                viewport.height -
+                                tooltipInfo.height -
+                                MARGEM_BORDA;
+                            console.log(
+                                "🔄 POSICIONAMENTO: Ajustado para caber na tela (abaixo)"
+                            );
+                        }
+                    }
+
+                    console.log("✅ POSICIONAMENTO FORÇADO:", melhorPosicao);
+                }
+
+                // 8. Aplicar posição final com !important para forçar
+                tooltip.style.setProperty(
+                    "left",
+                    Math.round(melhorPosicao.left) + "px",
+                    "important"
+                );
+                tooltip.style.setProperty(
+                    "top",
+                    Math.round(melhorPosicao.top) + "px",
+                    "important"
+                );
+                tooltip.style.setProperty("position", "fixed", "important");
+
+                // 🔧 VERIFICAÇÃO IMEDIATA: Forçar aplicação e re-check
+                setTimeout(() => {
+                    const computedAfterSet = window.getComputedStyle(tooltip);
+                    console.log("🔧 VERIFICAÇÃO IMEDIATA CSS:", {
+                        position: computedAfterSet.position,
+                        left: computedAfterSet.left,
+                        top: computedAfterSet.top,
+                        styleLeft: tooltip.style.left,
+                        styleTop: tooltip.style.top,
+                        stylePosition: tooltip.style.position,
+                    });
+
+                    // Se ainda não está correto, forçar novamente
+                    if (computedAfterSet.position !== "fixed") {
+                        console.warn("⚠️ FORÇANDO POSITION: fixed novamente");
+                        tooltip.style.position = "fixed";
+                        tooltip.style.setProperty(
+                            "position",
+                            "fixed",
+                            "important"
+                        );
+                    }
+                }, 10);
+
+                // 🔍 DEBUG: Verificar posicionamento final
+                const tooltipFinalRect = tooltip.getBoundingClientRect();
+                const cardFinalRect = cardNoDOM.getBoundingClientRect();
+
+                console.log("🔍 DEBUG POSICIONAMENTO FINAL:", {
+                    tooltipComputedStyles: {
+                        position: window.getComputedStyle(tooltip).position,
+                        left: window.getComputedStyle(tooltip).left,
+                        top: window.getComputedStyle(tooltip).top,
+                        zIndex: window.getComputedStyle(tooltip).zIndex,
+                        transform: window.getComputedStyle(tooltip).transform,
+                    },
+                    tooltipFinalRect: tooltipFinalRect,
+                    cardFinalRect: cardFinalRect,
+                    posicionamentoCalculado: {
+                        left: Math.round(melhorPosicao.left),
+                        top: Math.round(melhorPosicao.top),
+                    },
+                    distanciaRelativa: {
+                        deltaX: tooltipFinalRect.left - cardFinalRect.left,
+                        deltaY: tooltipFinalRect.top - cardFinalRect.top,
+                    },
+                    problemaPossivel: {
+                        tooltipEstaOndeEsperado:
+                            Math.abs(
+                                tooltipFinalRect.left -
+                                    Math.round(melhorPosicao.left)
+                            ) < 5,
+                        cardEstaVisivel:
+                            cardFinalRect.width > 0 && cardFinalRect.height > 0,
+                        tooltipEstaVisivel:
+                            tooltipFinalRect.width > 0 &&
+                            tooltipFinalRect.height > 0,
+                    },
+                    viewport: viewport,
                 });
 
-                // Se ainda não está correto, forçar novamente
-                if (computedAfterSet.position !== "fixed") {
-                    console.warn("⚠️ FORÇANDO POSITION: fixed novamente");
-                    tooltip.style.position = "fixed";
-                    tooltip.style.setProperty("position", "fixed", "important");
-                }
-            }, 10);
+                console.log(
+                    `🎯 POSICIONAMENTO: Tooltip posicionado em (${Math.round(
+                        melhorPosicao.left
+                    )}, ${Math.round(melhorPosicao.top)}) relativo ao card`
+                );
 
-            // 🔍 DEBUG: Verificar posicionamento final
-            const tooltipFinalRect = tooltip.getBoundingClientRect();
-            const cardFinalRect = cardNoDOM.getBoundingClientRect();
+                // 🔍 POSIÇÃO REAL vs ESPERADA
+                console.log("📊 COMPARAÇÃO POSIÇÕES:");
+                console.log(
+                    `   Esperado: (${Math.round(
+                        melhorPosicao.left
+                    )}, ${Math.round(melhorPosicao.top)})`
+                );
+                console.log(
+                    `   Real: (${tooltipFinalRect.left}, ${tooltipFinalRect.top})`
+                );
+                console.log(
+                    `   Diferença: (${
+                        tooltipFinalRect.left - Math.round(melhorPosicao.left)
+                    }, ${tooltipFinalRect.top - Math.round(melhorPosicao.top)})`
+                );
 
-            console.log("🔍 DEBUG POSICIONAMENTO FINAL:", {
-                tooltipComputedStyles: {
-                    position: window.getComputedStyle(tooltip).position,
-                    left: window.getComputedStyle(tooltip).left,
-                    top: window.getComputedStyle(tooltip).top,
-                    zIndex: window.getComputedStyle(tooltip).zIndex,
-                    transform: window.getComputedStyle(tooltip).transform,
-                },
-                tooltipFinalRect: tooltipFinalRect,
-                cardFinalRect: cardFinalRect,
-                posicionamentoCalculado: {
-                    left: Math.round(melhorPosicao.left),
-                    top: Math.round(melhorPosicao.top),
-                },
-                distanciaRelativa: {
-                    deltaX: tooltipFinalRect.left - cardFinalRect.left,
-                    deltaY: tooltipFinalRect.top - cardFinalRect.top,
-                },
-                problemaPossivel: {
-                    tooltipEstaOndeEsperado:
-                        Math.abs(
-                            tooltipFinalRect.left -
-                                Math.round(melhorPosicao.left)
-                        ) < 5,
-                    cardEstaVisivel:
-                        cardFinalRect.width > 0 && cardFinalRect.height > 0,
-                    tooltipEstaVisivel:
-                        tooltipFinalRect.width > 0 &&
-                        tooltipFinalRect.height > 0,
-                },
-                viewport: viewport,
-            });
+                // 🎯 VERIFICAÇÃO SE ESTÁ ABAIXO DO CARD (NOVA POSIÇÃO PREFERENCIAL)
+                const estaAbaixoDoCard =
+                    tooltipFinalRect.top > cardFinalRect.bottom;
+                const estaCentralizado =
+                    Math.abs(
+                        tooltipFinalRect.left +
+                            tooltipFinalRect.width / 2 -
+                            (cardFinalRect.left + cardFinalRect.width / 2)
+                    ) < 10;
 
-            console.log(
-                `🎯 POSICIONAMENTO: Tooltip posicionado em (${Math.round(
-                    melhorPosicao.left
-                )}, ${Math.round(melhorPosicao.top)}) relativo ao card`
-            );
+                console.log("🎯 VERIFICAÇÃO POSICIONAMENTO:", {
+                    estaAbaixoDoCard,
+                    estaCentralizado,
+                    distanciaVertical:
+                        tooltipFinalRect.top - cardFinalRect.bottom,
+                    posicaoSelecionada: melhorPosicao.name,
+                });
 
-            // 🔍 POSIÇÃO REAL vs ESPERADA
-            console.log("📊 COMPARAÇÃO POSIÇÕES:");
-            console.log(
-                `   Esperado: (${Math.round(melhorPosicao.left)}, ${Math.round(
-                    melhorPosicao.top
-                )})`
-            );
-            console.log(
-                `   Real: (${tooltipFinalRect.left}, ${tooltipFinalRect.top})`
-            );
-            console.log(
-                `   Diferença: (${
-                    tooltipFinalRect.left - Math.round(melhorPosicao.left)
-                }, ${tooltipFinalRect.top - Math.round(melhorPosicao.top)})`
-            );
-
-            // 🎯 VERIFICAÇÃO SE ESTÁ ABAIXO DO CARD (NOVA POSIÇÃO PREFERENCIAL)
-            const estaAbaixoDoCard =
-                tooltipFinalRect.top > cardFinalRect.bottom;
-            const estaCentralizado =
-                Math.abs(
-                    tooltipFinalRect.left +
-                        tooltipFinalRect.width / 2 -
-                        (cardFinalRect.left + cardFinalRect.width / 2)
-                ) < 10;
-
-            console.log("🎯 VERIFICAÇÃO POSICIONAMENTO:", {
-                estaAbaixoDoCard,
-                estaCentralizado,
-                distanciaVertical: tooltipFinalRect.top - cardFinalRect.bottom,
-                posicaoSelecionada: melhorPosicao.name,
-            });
-
-            console.log("✅ POSICIONAMENTO FINAL:");
-            console.log(`   Está abaixo do card: ${estaAbaixoDoCard}`);
-            console.log(`   Está centralizado: ${estaCentralizado}`);
-            console.log(
-                `   Distância do card: ${
-                    tooltipFinalRect.top - cardFinalRect.bottom
-                }px`
-            );
+                console.log("✅ POSICIONAMENTO FINAL:");
+                console.log(`   Está abaixo do card: ${estaAbaixoDoCard}`);
+                console.log(`   Está centralizado: ${estaCentralizado}`);
+                console.log(
+                    `   Distância do card: ${
+                        tooltipFinalRect.top - cardFinalRect.bottom
+                    }px`
+                );
+            }
         }
 
         /**
-         * Cria HTML do tooltip com dados das sessões
+         * Cria HTML do tooltip com dados das sessões - Material Symbols Design
          */
         function criarHTMLTooltip(sessoes) {
-            let html =
-                '<div style="font-weight: bold; margin-bottom: 8px; color: #1e293b;">📅 Sessões de Julgamento</div>';
+            // Determinar cor do header baseada na sessão atual
+            let corHeader = "#1976d2"; // Azul padrão
+
+            if (sessoes && sessoes.length > 0) {
+                // Pegar a primeira sessão (atual) ou procurar por uma marcada como atual
+                const sessaoAtual =
+                    sessoes.find((s) => s.isAtual) || sessoes[0];
+                if (sessaoAtual && sessaoAtual.status) {
+                    const status = sessaoAtual.status.toLowerCase();
+                    if (
+                        status.includes("incluído") ||
+                        status.includes("pautado")
+                    ) {
+                        corHeader = "#007acc"; // Azul para atual
+                    } else if (status.includes("retirado")) {
+                        corHeader = "#CE2D4F"; // Vermelho
+                    } else if (status.includes("vista")) {
+                        corHeader = "#FFBF46"; // Amarelo
+                    } else if (status.includes("julgado")) {
+                        corHeader = "#10B981"; // Verde
+                    } else if (status.includes("adiado")) {
+                        corHeader = "#F59E0B"; // Laranja
+                    } else if (status.includes("sobrestado")) {
+                        corHeader = "#8B5CF6"; // Roxo
+                    }
+                }
+            }
+
+            // 🎨 MATERIAL SYMBOLS TOOLTIP - Clean and professional com proporções otimizadas
+            let html = `
+                <div style="
+                    background: white;
+                    border: 1px solid #e0e0e0;
+                    border-radius: 12px;
+                    width: 320px;
+                    max-width: 90vw;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+                    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+                    overflow: hidden;
+                    font-size: 14px;
+                    line-height: 1.4;
+                ">
+                    <!-- Header com Material Symbols -->
+                    <div style="
+                        background: ${corHeader};
+                        color: white;
+                        padding: 16px 20px;
+                        display: flex;
+                        align-items: center;
+                        gap: 12px;
+                    ">
+                        <span class="material-symbols-outlined" style="
+                            font-size: 28px;
+                            vertical-align: middle;
+                            flex-shrink: 0;
+                        ">event_repeat</span>
+                        <div>
+                            <div style="font-weight: 600; font-size: 16px; margin-bottom: 2px;">
+                                Sessões de Julgamento
+                            </div>
+                            <div style="font-size: 13px; opacity: 0.9;">
+                                ${sessoes.length} sessão${
+                sessoes.length !== 1 ? "ões" : ""
+            } encontrada${sessoes.length !== 1 ? "s" : ""}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Conteúdo das sessões -->
+                    <div style="padding: 20px;">`;
 
             sessoes.forEach((sessao, index) => {
-                const corStatus = sessao.cor || "#6B7280";
+                const isAtual = index === 0 || sessao.isAtual;
+
+                // Determinar cor baseada no status da sessão individual
+                let corStatus = "#757575"; // Cinza padrão
+                if (sessao.status) {
+                    const status = sessao.status.toLowerCase();
+                    if (
+                        status.includes("incluído") ||
+                        status.includes("pautado")
+                    ) {
+                        corStatus = "#007acc"; // Azul para atual
+                    } else if (status.includes("retirado")) {
+                        corStatus = "#CE2D4F"; // Vermelho
+                    } else if (status.includes("vista")) {
+                        corStatus = "#FFBF46"; // Amarelo
+                    } else if (status.includes("julgado")) {
+                        corStatus = "#10B981"; // Verde
+                    } else if (status.includes("adiado")) {
+                        corStatus = "#F59E0B"; // Laranja
+                    } else if (status.includes("sobrestado")) {
+                        corStatus = "#8B5CF6"; // Roxo
+                    }
+                }
+
+                // Background e border também usam a cor do status para sessão atual
+                const backgroundCard = isAtual ? `${corStatus}15` : "#fafafa"; // 15 = ~8.5% opacity
+                const borderCard = isAtual ? corStatus : "#e0e0e0";
+
                 html += `
-                    <div style="margin-bottom: ${
-                        index < sessoes.length - 1 ? "8px" : "0"
-                    }; padding: 6px; border-left: 3px solid ${corStatus}; background: #f8fafc;">
-                        <div style="font-weight: 500; color: #334155;">${
-                            sessao.tipo
-                        }</div>
-                        <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
-                            <span style="color: ${corStatus};">●</span> ${
-                    sessao.status
-                } em ${sessao.data}
+                    <div style="
+                        background: ${backgroundCard};
+                        border: 1px solid ${borderCard};
+                        border-radius: 8px;
+                        padding: 16px;
+                        margin-bottom: ${
+                            index < sessoes.length - 1 ? "12px" : "0"
+                        };
+                        position: relative;
+                        transition: all 0.2s ease;
+                        box-shadow: ${
+                            isAtual
+                                ? `0 4px 12px ${corStatus}20`
+                                : "0 1px 3px rgba(0,0,0,0.08)"
+                        };
+                    ">
+                        ${
+                            isAtual
+                                ? `
+                        <div style="
+                            position: absolute;
+                            top: 8px;
+                            right: 8px;
+                            background: ${corStatus};
+                            color: white;
+                            padding: 3px 8px;
+                            border-radius: 12px;
+                            font-size: 9px;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.5px;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                            z-index: 10;
+                        ">ATUAL</div>
+                        `
+                                : ""
+                        }
+                        
+                        <!-- Tipo de julgamento com Material Symbol -->
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 14px;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 18px;
+                                color: ${corStatus};
+                                vertical-align: middle;
+                                flex-shrink: 0;
+                            ">gavel</span>
+                            <div style="
+                                background: ${corStatus};
+                                color: white;
+                                padding: 6px 14px;
+                                border-radius: 20px;
+                                font-size: 11px;
+                                font-weight: 600;
+                                text-transform: uppercase;
+                                letter-spacing: 0.5px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                                flex-shrink: 0;
+                            ">
+                                ${sessao.tipo || "Julgamento"}
+                            </div>
                         </div>
-                        <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">${
-                            sessao.orgao
-                        }</div>
+                        
+                        <!-- Status e Data -->
+                        <div style="
+                            display: flex;
+                            align-items: center;
+                            gap: 10px;
+                            margin-bottom: 12px;
+                            flex-wrap: wrap;
+                        ">
+                            <div style="
+                                color: ${corStatus};
+                                font-weight: 600;
+                                font-size: 14px;
+                                line-height: 1.2;
+                            ">${sessao.status}</div>
+                            <div style="
+                                background: ${corStatus}20;
+                                color: ${corStatus};
+                                padding: 4px 10px;
+                                border-radius: 12px;
+                                font-size: 12px;
+                                font-weight: 500;
+                                white-space: nowrap;
+                            ">${sessao.data}</div>
+                        </div>
+                        
+                        <!-- Órgão Julgador com ícone -->
+                        <div style="
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 8px;
+                            color: #64748B;
+                            font-size: 13px;
+                            margin-bottom: 8px;
+                            line-height: 1.4;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 16px;
+                                vertical-align: middle;
+                                color: #64748B;
+                                flex-shrink: 0;
+                                margin-top: 1px;
+                            ">account_balance</span>
+                            <span style="
+                                font-weight: 500;
+                                word-break: break-word;
+                            ">${
+                                traduzirSiglaOrgao(sessao.orgao) ||
+                                "Órgão não identificado"
+                            }</span>
+                        </div>
+                        
+                        ${
+                            sessao.observacoes
+                                ? `
+                        <div style="
+                            margin-top: 14px;
+                            padding: 12px;
+                            background: rgba(99, 102, 241, 0.06);
+                            border-left: 3px solid #6366F1;
+                            border-radius: 0 8px 8px 0;
+                            font-size: 12px;
+                            color: #4C4F69;
+                            line-height: 1.5;
+                        ">
+                            <div style="display: flex; align-items: flex-start; gap: 8px;">
+                                <span class="material-symbols-outlined" style="
+                                    font-size: 16px;
+                                    color: #6366F1;
+                                    margin-top: 1px;
+                                    flex-shrink: 0;
+                                ">info</span>
+                                <div>
+                                    <strong>Observações:</strong> ${sessao.observacoes}
+                                </div>
+                            </div>
+                        </div>
+                        `
+                                : ""
+                        }
                     </div>
                 `;
             });
+
+            html += `
+                    </div>
+                    
+                    <!-- Footer elegante -->
+                    <div style="
+                        background: #f8fafc;
+                        padding: 12px 20px;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        border-top: 1px solid #e2e8f0;
+                        font-size: 11px;
+                    ">
+                        <span style="
+                            color: #64748b;
+                            font-weight: 400;
+                        ">Atualizado automaticamente</span>
+                        <span style="
+                            color: #1976d2;
+                            font-weight: 600;
+                            letter-spacing: 0.5px;
+                        ">eProbe</span>
+                    </div>
+                </div>
+            `;
 
             return html;
         }
@@ -2448,7 +2848,9 @@ RESPOSTA (apenas JSON válido):`;
                         dados?.dataFormatada ||
                         "Data não disponível",
                     status: dados?.status || "PAUTADO",
-                    orgao: dados?.orgao || "Órgão não informado",
+                    orgao:
+                        traduzirSiglaOrgao(dados?.orgao) ||
+                        "Órgão não informado",
                     tipo: dados?.tipo || "Tipo não informado",
                     totalSessoes: dados?.totalSessoes || 1,
                     sessoes: dados?.sessoes || [],
@@ -11995,7 +12397,7 @@ ${texto}`;
     Descrição: ${status.descricao}
     Tipo do Processo: ${status.tipoProcesso}
     Data: ${status.data.dataFormatada}
-    Órgão: ${status.orgao}
+    Órgão: ${traduzirSiglaOrgao(status.orgao)}
     Texto Completo: ${status.textoCompleto}`;
 
                 log(info);
@@ -12042,7 +12444,9 @@ ${texto}`;
                     log(`📋 Status: ${statusDetectado.status}`);
                     log(`📝 Descrição: ${statusDetectado.descricao}`);
                     log(`📅 Data: ${statusDetectado.data.dataFormatada}`);
-                    log(`🏛️ Órgão: ${statusDetectado.orgao}`);
+                    log(
+                        `🏛️ Órgão: ${traduzirSiglaOrgao(statusDetectado.orgao)}`
+                    );
                 }
 
                 // 3. Testar funções de texto e cor
@@ -14034,7 +14438,9 @@ ${texto}`;
                 };
 
                 log(
-                    `📋 LINHA: Sessão extraída - ${orgaoJulgador} em ${dataSessao}`
+                    `📋 LINHA: Sessão extraída - ${traduzirSiglaOrgao(
+                        orgaoJulgador
+                    )} em ${dataSessao}`
                 );
                 return sessao;
             } catch (error) {
@@ -14070,7 +14476,9 @@ ${texto}`;
                 if (sessaoEncontrada) {
                     log(`✅ BUSCA: Sessão encontrada!`);
                     log(
-                        `📋 BUSCA: ${sessaoEncontrada.orgaoJulgador} - ${sessaoEncontrada.dataHoraCompleta}`
+                        `📋 BUSCA: ${traduzirSiglaOrgao(
+                            sessaoEncontrada.orgaoJulgador
+                        )} - ${sessaoEncontrada.dataHoraCompleta}`
                     );
 
                     // Armazenar na variável global
@@ -14202,7 +14610,7 @@ ${texto}`;
                 const dados = dadosCompletosSessionJulgamento;
                 const info = `📋 DADOS COMPLETOS DA SESSÃO:
 
-            🏛️ Órgão Julgador: ${dados.orgaoJulgador}
+            🏛️ Órgão Julgador: ${traduzirSiglaOrgao(dados.orgaoJulgador)}
             📅 Data da Sessão: ${dados.dataSessao}
             ⏰ Horário: ${dados.horaSessao}
             🖥️ Tipo: ${dados.tipoSessao}
@@ -17065,12 +17473,12 @@ ${texto}`;
                 position: absolute !important;
                 display: none;
                 z-index: 999999 !important;
-                background: #FFFBFE;
-                border: 1px solid #CAC4D0;
-                border-radius: 12px;
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-radius: 8px;
                 min-width: 280px;
-                max-width: 420px;
-                box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
                 font-family: 'Roboto', sans-serif;
                 opacity: 0;
                 transition: opacity 0.15s ease-in-out;
@@ -17084,57 +17492,204 @@ ${texto}`;
             let htmlSessoes = "";
             todasSessoes.forEach((sessao, index) => {
                 const isAtual = index === 0 || sessao.isAtual;
-                const statusIcon = getStatusIcon(
-                    sessao.statusOriginal || sessao.status
-                );
+
+                // Determinar cor baseada no status da sessão individual
+                let corStatus = "#757575"; // Cinza padrão
+                if (sessao.status) {
+                    const status = sessao.status.toLowerCase();
+                    if (
+                        status.includes("incluído") ||
+                        status.includes("pautado")
+                    ) {
+                        corStatus = "#007acc"; // Azul para atual
+                    } else if (status.includes("retirado")) {
+                        corStatus = "#CE2D4F"; // Vermelho
+                    } else if (status.includes("vista")) {
+                        corStatus = "#FFBF46"; // Amarelo
+                    } else if (status.includes("julgado")) {
+                        corStatus = "#10B981"; // Verde
+                    } else if (status.includes("adiado")) {
+                        corStatus = "#F59E0B"; // Laranja
+                    } else if (status.includes("sobrestado")) {
+                        corStatus = "#8B5CF6"; // Roxo
+                    }
+                }
+
+                // Background e border também usam a cor do status para sessão atual
+                const backgroundCard = isAtual ? `${corStatus}15` : "#fafafa"; // 15 = ~8.5% opacity
+                const borderCard = isAtual ? corStatus : "#e0e0e0";
 
                 htmlSessoes += `
-                    <div style="min-width: 120px; padding: 10px; border: 2px solid ${
-                        isAtual ? "#007acc" : "#CAC4D0"
-                    }; border-radius: 8px; background: ${
-                    isAtual ? "#E8F4FD" : "#FAFAFA"
-                }; position: relative; margin: 0 6px 6px 0;">
-                        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
-                            <span style="color: ${
-                                isAtual ? "#007acc" : "#666"
-                            }; font-size: 14px;">${statusIcon || "●"}</span>
-                            <div style="font-size: 11px; font-weight: 500; color: #1C1B1F; flex: 1;">${
-                                isAtual ? "Atual" : "Anterior"
-                            }</div>
-                        </div>
-                        ${
+                    <div style="
+                        min-width: 120px; 
+                        padding: 12px; 
+                        border: 1px solid ${borderCard}; 
+                        border-radius: 6px; 
+                        background: ${backgroundCard}; 
+                        position: relative; 
+                        margin: 0 6px 6px 0;
+                        transition: all 0.2s ease;
+                        box-shadow: ${
                             isAtual
-                                ? '<div style="background: #007acc; color: #FFFFFF; font-size: 9px; font-weight: 500; padding: 2px 5px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -3px; right: -3px;">ATUAL</div>'
+                                ? `0 2px 8px ${corStatus}25`
+                                : "0 1px 3px rgba(0,0,0,0.1)"
+                        };
+                    ">
+                        
+                        <!-- Badge Atual/Anterior -->
+                        ${
+                            isAtual || !isAtual
+                                ? `
+                        <div style="
+                            position: absolute;
+                            top: 8px;
+                            right: 8px;
+                            background: ${corStatus}; 
+                            color: white; 
+                            padding: 3px 8px; 
+                            border-radius: 12px; 
+                            font-size: 9px; 
+                            font-weight: 600; 
+                            text-transform: uppercase; 
+                            letter-spacing: 0.5px;
+                            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+                            z-index: 10;
+                        ">
+                            ${isAtual ? "ATUAL" : "ANTERIOR"}
+                        </div>
+                        `
                                 : ""
                         }
-                        <div style="font-size: 12px; font-weight: 600; color: #1C1B1F; line-height: 16px; margin-bottom: 3px;">${
-                            sessao.data
-                        }</div>
-                        <div style="font-size: 10px; color: #49454F; line-height: 12px; margin-bottom: 2px;">${
-                            sessao.orgao || "Órgão não identificado"
-                        }</div>
-                        <div style="font-size: 9px; color: #79747E; line-height: 11px; font-style: italic;">${
-                            sessao.status
-                        }</div>
+                        
+                        <!-- Tipo de julgamento com Material Symbol -->
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 8px; 
+                            margin-bottom: 12px;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 16px; 
+                                color: ${corStatus}; 
+                                vertical-align: middle;
+                            ">gavel</span>
+                        </div>
+                        
+                        <!-- Status e Data -->
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 8px; 
+                            margin-bottom: 10px;
+                        ">
+                            <div style="
+                                color: ${corStatus}; 
+                                font-weight: 600; 
+                                font-size: 14px; 
+                                line-height: 1.2;
+                            ">${sessao.data}</div>
+                            <div style="
+                                background: ${corStatus}20; 
+                                color: ${corStatus}; 
+                                padding: 3px 8px; 
+                                border-radius: 12px; 
+                                font-size: 12px; 
+                                font-weight: 500;
+                            ">${sessao.status}</div>
+                        </div>
+                        
+                        <!-- Órgão Julgador com ícone -->
+                        <div style="
+                            display: flex; 
+                            align-items: center; 
+                            gap: 6px; 
+                            color: #64748B; 
+                            font-size: 12px; 
+                            margin-bottom: 6px;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 14px; 
+                                vertical-align: middle; 
+                                color: #64748B;
+                            ">account_balance</span>
+                            <span style="font-weight: 500;">${
+                                traduzirSiglaOrgao(sessao.orgao) ||
+                                "Órgão não identificado"
+                            }</span>
+                        </div>
+                        
+                        ${
+                            sessao.observacoes
+                                ? `
+                        <div style="
+                            margin-top: 12px; 
+                            padding: 10px; 
+                            background: rgba(99, 102, 241, 0.05); 
+                            border-left: 3px solid #6366F1; 
+                            border-radius: 0 8px 8px 0; 
+                            font-size: 12px; 
+                            color: #4C4F69; 
+                            line-height: 1.4;
+                        ">
+                            <div style="display: flex; align-items: flex-start; gap: 6px;">
+                                <span class="material-symbols-outlined" style="
+                                    font-size: 14px; 
+                                    color: #6366F1; 
+                                    margin-top: 1px;
+                                ">info</span>
+                                <div>
+                                    <strong>Obs:</strong> ${sessao.observacoes}
+                                </div>
+                            </div>
+                        </div>
+                        `
+                                : ""
+                        }
                     </div>
                 `;
             });
 
-            tooltip.innerHTML = `
-                <div style="padding: 12px 14px 10px 14px; display: flex; align-items: flex-start; gap: 10px; background: #F7F2FA; border-bottom: 1px solid #E6E0E9;">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1B1F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
-                    <div style="flex: 1;">
-                        <div style="font-size: 13px; font-weight: 500; color: #1C1B1F; line-height: 18px; margin-bottom: 2px;">
-                            Histórico de Sessões
-                        </div>
-                        <div style="font-size: 11px; font-weight: 400; color: #49454F; line-height: 14px;">
-                            ${todasSessoes.length} ${
-                todasSessoes.length === 1 ? "evento" : "eventos"
+            // Determinar cor do header baseada na sessão atual
+            let corHeader = "#1976d2"; // Azul padrão
+
+            if (todasSessoes && todasSessoes.length > 0) {
+                // Pegar a primeira sessão (atual) ou procurar por uma marcada como atual
+                const sessaoAtual =
+                    todasSessoes.find((s) => s.isAtual) || todasSessoes[0];
+                if (sessaoAtual && sessaoAtual.status) {
+                    const status = sessaoAtual.status.toLowerCase();
+                    if (
+                        status.includes("incluído") ||
+                        status.includes("pautado")
+                    ) {
+                        corHeader = "#007acc"; // Azul para atual
+                    } else if (status.includes("retirado")) {
+                        corHeader = "#CE2D4F"; // Vermelho
+                    } else if (status.includes("vista")) {
+                        corHeader = "#FFBF46"; // Amarelo
+                    } else if (status.includes("julgado")) {
+                        corHeader = "#10B981"; // Verde
+                    } else if (status.includes("adiado")) {
+                        corHeader = "#F59E0B"; // Laranja
+                    } else if (status.includes("sobrestado")) {
+                        corHeader = "#8B5CF6"; // Roxo
+                    }
+                }
             }
-                        </div>
+
+            tooltip.innerHTML = `
+                <div style="background: ${corHeader}; color: white; padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
+                    <span class="material-symbols-outlined" style="font-size: 24px; vertical-align: middle;">event_repeat</span>
+                    <div>
+                        <div style="font-weight: 500; font-size: 16px;">Sessões de Julgamento</div>
+                        <div style="font-size: 12px; opacity: 0.9;">${
+                            todasSessoes.length
+                        } ${
+                todasSessoes.length === 1 ? "evento" : "eventos"
+            }</div>
                     </div>
                 </div>
-                <div style="padding: 12px; display: flex; gap: 12px; overflow-x: auto; flex-wrap: wrap;">
+                <div style="padding: 16px; display: flex; gap: 12px; overflow-x: auto; flex-wrap: wrap; flex-direction: column;">
                     ${htmlSessoes}
                 </div>
             `;
@@ -21505,7 +22060,7 @@ ${texto}`;
                 ? `background: ${sessao.cor}`
                 : `background: #FFFBFE`;
             const tagAtual = isAtual
-                ? `<div style="background: ${sessao.cor}; color: #FFFFFF; font-size: 10px; font-weight: 500; padding: 2px 6px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: -4px; right: -4px;">ATUAL</div>`
+                ? `<div style="background: ${sessao.cor}; color: #FFFFFF; font-size: 9px; font-weight: 600; padding: 3px 8px; border-radius: 12px; text-transform: uppercase; letter-spacing: 0.5px; position: absolute; top: 8px; right: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.15); z-index: 10;">ATUAL</div>`
                 : "";
 
             return `
@@ -24000,6 +24555,104 @@ ${texto}`;
                 return relatorio;
             },
 
+            // 🧪 TESTE DE TOOLTIP MATERIAL SYMBOLS
+            testarTooltipMaterialSymbols: function () {
+                log(
+                    "🧪 TESTE MATERIAL SYMBOLS: Criando tooltip com ícones Material Symbols"
+                );
+
+                try {
+                    // Dados de exemplo para demonstração
+                    const sessoesExemplo = [
+                        {
+                            status: "PAUTADO",
+                            data: "28/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Julgamento de Mérito",
+                            cor: "#1976d2",
+                            isAtual: true,
+                        },
+                        {
+                            status: "ADIADO",
+                            data: "21/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Sessão Adiada",
+                            cor: "#f44336",
+                        },
+                        {
+                            status: "VISTA",
+                            data: "14/01/2025",
+                            orgao: "2ª CÂMARA DE DIREITO CIVIL",
+                            tipo: "Pedido de Vista",
+                            cor: "#ff9800",
+                            observacoes:
+                                "Prazo de 30 dias para apresentação de parecer",
+                        },
+                    ];
+
+                    // Criar um elemento temporário para demonstrar o tooltip
+                    let elementoTeste = document.getElementById(
+                        "eprobe-teste-tooltip"
+                    );
+                    if (!elementoTeste) {
+                        elementoTeste = document.createElement("div");
+                        elementoTeste.id = "eprobe-teste-tooltip";
+                        elementoTeste.style.cssText = `
+                            position: fixed;
+                            top: 20px;
+                            right: 20px;
+                            background: #1976d2;
+                            color: white;
+                            padding: 12px 16px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                            z-index: 10000;
+                            font-family: Roboto, sans-serif;
+                            font-size: 14px;
+                            font-weight: 500;
+                        `;
+                        elementoTeste.innerHTML =
+                            "🧪 Teste Material Symbols Tooltip";
+                        document.body.appendChild(elementoTeste);
+                    }
+
+                    // Aplicar o tooltip com Material Symbols
+                    aplicarTooltipUnificado(elementoTeste, sessoesExemplo);
+
+                    // Auto-remover após 30 segundos
+                    setTimeout(() => {
+                        if (elementoTeste && elementoTeste.parentNode) {
+                            elementoTeste.remove();
+                        }
+                    }, 30000);
+
+                    log(
+                        "✅ TESTE MATERIAL SYMBOLS: Tooltip criado! Passe o mouse sobre o elemento azul no canto superior direito"
+                    );
+                    log(
+                        `📊 TESTE: Tooltip contém ${sessoesExemplo.length} sessões com ícones Material Symbols`
+                    );
+                    log(
+                        "🎨 ICONS: event_repeat (📅) e gavel (🏛️) convertidos para Material Symbols"
+                    );
+
+                    return {
+                        sucesso: true,
+                        elemento: elementoTeste.id,
+                        sessoes: sessoesExemplo.length,
+                        icons: ["event_repeat", "gavel"],
+                        posicao: "top-right",
+                    };
+                } catch (error) {
+                    console.error("❌ TESTE MATERIAL SYMBOLS: Erro:", error);
+                    return {
+                        sucesso: false,
+                        erro: error.message,
+                    };
+                }
+            },
+
             // 🔥 FUNÇÕES DE CONTROLE DE PERFORMANCE ULTRA
             ativarModoUltraPerformance: function () {
                 log("🔥 PERFORMANCE: Modo ultra-performance ATIVADO");
@@ -25358,18 +26011,77 @@ ${texto}`;
 
             // 🎯 TOOLTIP UNIFICADO - FUNÇÕES DE TESTE SIMPLIFICADAS
             testarTooltipComDadosReais: function () {
-                log("🎨 TESTE: Aplicando tooltip unificado com dados reais");
+                log("🎨 TESTE: Aplicando tooltip visual rico restaurado");
 
                 const card = document.querySelector(
                     "#eprobe-data-sessao, .eprobe-figma-card-pautado"
                 );
                 if (!card) {
-                    log("❌ Card não encontrado");
+                    log("❌ TOOLTIP: Card não encontrado");
                     return false;
                 }
 
-                // Aplicar tooltip unificado
-                return adicionarTooltipUnificado(card);
+                // Criar dados de teste com visual rico
+                const dadosTeste = [
+                    {
+                        tipo: "Julgamento Virtual",
+                        status: "Julgado",
+                        data: "25/07/2025",
+                        orgao: "2ª Câmara de Direito Civil",
+                        cor: "#22C55E",
+                        statusOriginal: "JULGADO",
+                        isAtual: true,
+                        observacoes: "Julgamento realizado em sessão virtual",
+                    },
+                    {
+                        tipo: "Julgamento Presencial",
+                        status: "Pautado",
+                        data: "30/07/2025",
+                        orgao: "1ª Câmara de Direito Público",
+                        cor: "#3B82F6",
+                        statusOriginal: "PAUTADO",
+                        isAtual: false,
+                    },
+                ];
+
+                // Aplicar tooltip unificado com dados de teste
+                const resultado = adicionarTooltipUnificado(card, dadosTeste);
+
+                if (resultado && resultado.status === "sucesso") {
+                    log(
+                        "✅ TOOLTIP RICO: Aplicado com sucesso - passe o mouse sobre o card para ver!"
+                    );
+
+                    // Simular hover automático para demonstração
+                    setTimeout(() => {
+                        const mouseEvent = new MouseEvent("mouseenter", {
+                            bubbles: true,
+                            cancelable: true,
+                            clientX: 200,
+                            clientY: 200,
+                        });
+                        card.dispatchEvent(mouseEvent);
+
+                        log(
+                            "🎯 DEMONSTRAÇÃO: Tooltip ativado automaticamente por 5 segundos"
+                        );
+
+                        // Esconder após demonstração
+                        setTimeout(() => {
+                            const mouseLeave = new MouseEvent("mouseleave", {
+                                bubbles: true,
+                                cancelable: true,
+                            });
+                            card.dispatchEvent(mouseLeave);
+                            log("✨ DEMONSTRAÇÃO: Tooltip escondido");
+                        }, 5000);
+                    }, 1000);
+
+                    return true;
+                } else {
+                    log("❌ TOOLTIP RICO: Falha na aplicação");
+                    return false;
+                }
             },
 
             validarSistemaTooltipCompleto: function () {
@@ -25413,6 +26125,97 @@ ${texto}`;
                     log("❌ Falha ao configurar tooltip");
                     return false;
                 }
+            },
+
+            // 🔍 NOVA FUNÇÃO: Verificar se o tipo de sessão está sendo capturado corretamente
+            debugTipoSessaoTooltip: function () {
+                log("🔍 DEBUG: Verificando captura do tipo de sessão...");
+
+                // 1. Verificar dados detectados
+                const dadosSessoes =
+                    window.SENT1_AUTO.detectarSessoesUnificado(true);
+                if (!dadosSessoes || !dadosSessoes.todasSessoes) {
+                    console.error("❌ Nenhuma sessão detectada");
+                    return false;
+                }
+
+                log("📊 SESSÕES DETECTADAS:", dadosSessoes);
+
+                // 2. Verificar cada sessão individualmente
+                dadosSessoes.todasSessoes.forEach((sessao, index) => {
+                    log(`🔍 SESSÃO ${index + 1}:`, {
+                        tipo: sessao.tipo,
+                        status: sessao.status,
+                        data: sessao.data,
+                        orgao: sessao.orgao,
+                        textoCompleto:
+                            sessao.textoCompleto?.substring(0, 100) + "...",
+                    });
+
+                    // Verificar se o tipo está vazio ou indefinido
+                    if (!sessao.tipo || sessao.tipo.trim() === "") {
+                        console.warn(
+                            `⚠️ SESSÃO ${index + 1}: Tipo vazio ou indefinido!`
+                        );
+
+                        // Tentar extrair o tipo novamente do texto completo
+                        if (sessao.textoCompleto) {
+                            const match =
+                                sessao.textoCompleto.match(/^([^(]+)/);
+                            if (match) {
+                                const tipoExtraido = match[1].trim();
+                                log(`💡 TIPO EXTRAÍDO: "${tipoExtraido}"`);
+                            }
+                        }
+                    } else {
+                        log(
+                            `✅ SESSÃO ${index + 1}: Tipo OK - "${sessao.tipo}"`
+                        );
+                    }
+                });
+
+                // 3. Verificar tooltip atual
+                const card = document.querySelector(".eprobe-card-sessao");
+                if (card) {
+                    log("🎯 TESTANDO TOOLTIP:");
+
+                    // Simular hover para ativar tooltip
+                    const event = new MouseEvent("mouseenter", {
+                        bubbles: true,
+                        cancelable: true,
+                    });
+                    card.dispatchEvent(event);
+
+                    setTimeout(() => {
+                        const tooltip = document.querySelector(
+                            ".eprobe-tooltip-unificado"
+                        );
+                        if (tooltip) {
+                            const conteudo = tooltip.innerHTML;
+                            log(
+                                "📝 CONTEÚDO DO TOOLTIP:",
+                                conteudo.substring(0, 500) + "..."
+                            );
+
+                            // Verificar se há menção aos tipos
+                            const tiposEncontrados = conteudo.match(
+                                /Embargos|Apelação|Agravo|Recurso/gi
+                            );
+                            if (tiposEncontrados) {
+                                log(
+                                    "✅ TIPOS ENCONTRADOS NO TOOLTIP:",
+                                    tiposEncontrados
+                                );
+                            } else {
+                                console.warn(
+                                    "⚠️ NENHUM TIPO ENCONTRADO NO TOOLTIP"
+                                );
+                            }
+                        }
+                    }, 200);
+                }
+
+                return true;
             },
         };
 
