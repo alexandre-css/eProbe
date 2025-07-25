@@ -301,6 +301,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 position: absolute !important;
                 left: -9999px !important;
                 pointer-events: none !important;
+                margin-bottom: inherit !important;
             }
             
             /* Botões marcados para substituição - ocultar completamente */
@@ -314,7 +315,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: static !important;
-                left: auto !important;
+                left: 500px !important;
                 pointer-events: auto !important;
             }
             
@@ -3791,7 +3792,9 @@ RESPOSTA (apenas JSON válido):`;
                     return false;
                 }
 
-                log("📋 LOCALIZADORES: Página 'Meus Localizadores' detectada");
+                console.log(
+                    "📋 LOCALIZADORES: Página 'Meus Localizadores' detectada"
+                );
 
                 // Processa a tabela de localizadores
                 processarTabelaLocalizadores();
@@ -3801,7 +3804,9 @@ RESPOSTA (apenas JSON válido):`;
 
             // Função para processar a tabela de localizadores
             function processarTabelaLocalizadores() {
-                log("🔍 LOCALIZADORES: Iniciando processamento da tabela");
+                console.log(
+                    "🔍 LOCALIZADORES: Iniciando processamento da tabela"
+                );
 
                 // Busca a tabela de localizadores
                 const tabela = document.querySelector(
@@ -3809,13 +3814,15 @@ RESPOSTA (apenas JSON válido):`;
                 );
 
                 if (!tabela) {
-                    log(
+                    console.log(
                         "⚠️ LOCALIZADORES: Tabela de localizadores não encontrada"
                     );
                     return;
                 }
 
-                log("✅ LOCALIZADORES: Tabela encontrada, processando...");
+                console.log(
+                    "✅ LOCALIZADORES: Tabela encontrada, processando..."
+                );
 
                 // Destaca localizadores urgentes
                 destacarLocalizadoresUrgentes(tabela);
@@ -4345,25 +4352,43 @@ RESPOSTA (apenas JSON válido):`;
                     "tbody tr:not(.eprobe-divisor-linha)"
                 );
 
+                console.log(
+                    `🔍 LOCALIZADORES: Adicionando menu de contexto a ${linhas.length} linhas`
+                );
+
                 linhas.forEach((linha, index) => {
-                    // Adicionar evento de clique direito
-                    linha.addEventListener("contextmenu", function (e) {
-                        e.preventDefault();
-                        mostrarMenuContextoSeparador(
-                            e,
-                            linha,
-                            tabela,
-                            index + 1
-                        );
-                    });
+                    // Remover event listeners existentes para evitar duplicação
+                    const novaLinha = linha.cloneNode(true);
+                    linha.parentNode.replaceChild(novaLinha, linha);
+
+                    // Adicionar evento de clique direito na nova linha
+                    novaLinha.addEventListener(
+                        "contextmenu",
+                        function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log(
+                                `🖱️ LOCALIZADORES: Clique direito na linha ${
+                                    index + 1
+                                }`
+                            );
+                            mostrarMenuContextoSeparador(
+                                e,
+                                novaLinha,
+                                tabela,
+                                index + 1
+                            );
+                        },
+                        { passive: false }
+                    ); // Importante: não é passivo para permitir preventDefault
 
                     // Adicionar indicação visual de que é clicável
-                    linha.style.cursor = "context-menu";
-                    linha.title =
+                    novaLinha.style.cursor = "context-menu";
+                    novaLinha.title =
                         "Clique com o botão direito para adicionar separador";
                 });
 
-                log(
+                console.log(
                     `✅ LOCALIZADORES: Menu de contexto adicionado a ${linhas.length} linhas`
                 );
             }
@@ -4375,43 +4400,99 @@ RESPOSTA (apenas JSON válido):`;
                 tabela,
                 numeroLinha
             ) {
+                console.log(
+                    `🎯 LOCALIZADORES: Criando menu de contexto para linha ${numeroLinha}`
+                );
+
+                // IMPERATIVO: Prevenir menu nativo PRIMEIRO
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
                 // Remover menu existente se houver
                 const menuExistente = document.getElementById(
                     "eprobe-menu-contexto-separador"
                 );
                 if (menuExistente) {
                     menuExistente.remove();
+                    console.log("🗑️ LOCALIZADORES: Menu existente removido");
                 }
+
+                // TRUQUE: Criar overlay para bloquear menu nativo
+                const overlay = document.createElement("div");
+                overlay.id = "eprobe-menu-overlay";
+                overlay.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999998 !important;
+            background: transparent !important;
+            pointer-events: auto !important;
+        `;
+                document.body.appendChild(overlay);
 
                 // Criar menu de contexto
                 const menu = document.createElement("div");
                 menu.id = "eprobe-menu-contexto-separador";
                 menu.style.cssText = `
-            position: fixed;
-            top: ${event.clientY}px;
-            left: ${event.clientX}px;
-            background: white;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            z-index: 10000;
-            min-width: 200px;
-            font-family: 'Roboto', sans-serif;
+            position: fixed !important;
+            top: ${event.clientY + 2}px !important;
+            left: 500px !important;
+            background: white !important;
+            border: 1px solid #ccc !important;
+            border-radius: 6px !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+            z-index: 9999999 !important;
+            min-width: 220px !important;
+            max-width: 320px !important;
+            font-family: 'Roboto', 'Segoe UI', sans-serif !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: scale(1) !important;
+            margin: 0 !important;
+            padding: 4px 0 !important;
+            backdrop-filter: blur(8px) !important;
+            user-select: none !important;
         `;
 
                 // Criar opção do menu
                 const opcaoSeparador = document.createElement("div");
                 opcaoSeparador.style.cssText = `
-            padding: 8px 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            padding: 12px 16px !important;
+            cursor: pointer !important;
+            border-bottom: 1px solid #f0f0f0 !important;
+            font-size: 14px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: white !important;
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: all 0.15s ease !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            font-weight: 500 !important;
+            line-height: 1.4 !important;
         `;
+
+                // Adicionar hover effect via JavaScript para garantir funcionamento
+                opcaoSeparador.addEventListener("mouseenter", function () {
+                    this.style.backgroundColor = "#f8f9fa !important";
+                    this.style.color = "#1a73e8 !important";
+                });
+
+                opcaoSeparador.addEventListener("mouseleave", function () {
+                    this.style.backgroundColor = "white !important";
+                    this.style.color = "#333 !important";
+                });
+
                 opcaoSeparador.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-separator-horizontal">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                 <path d="m16 16-4 4-4-4"/>
                 <path d="M3 12h18"/>
                 <path d="m8 8 4-4 4 4"/>
@@ -4421,44 +4502,100 @@ RESPOSTA (apenas JSON válido):`;
 
                 // Evento da opção
                 opcaoSeparador.addEventListener("click", function () {
+                    console.log("📝 LOCALIZADORES: Opção do menu clicada");
+
+                    // Remover overlay e menu imediatamente
+                    overlay.remove();
+                    menu.remove();
+
                     const nomeSecao = prompt(
                         "Digite o nome da seção:",
                         "Nova Seção"
                     );
                     if (nomeSecao !== null && nomeSecao.trim() !== "") {
-                        criarDivisorEditavel(tabela, linha, nomeSecao.trim());
-                        log(
-                            `📝 LOCALIZADORES: Separador "${nomeSecao}" adicionado após linha ${numeroLinha}`
+                        console.log(
+                            `🎯 LOCALIZADORES: Criando separador "${nomeSecao}" após linha ${numeroLinha}`
+                        );
+                        try {
+                            const separadorCriado = criarDivisorEditavel(
+                                tabela,
+                                linha,
+                                nomeSecao.trim()
+                            );
+                            if (separadorCriado) {
+                                console.log(
+                                    `✅ LOCALIZADORES: Separador "${nomeSecao}" criado com sucesso`
+                                );
+                            } else {
+                                console.error(
+                                    "❌ LOCALIZADORES: Falha ao criar separador"
+                                );
+                            }
+                        } catch (error) {
+                            console.error(
+                                "❌ LOCALIZADORES: Erro ao criar separador:",
+                                error
+                            );
+                        }
+                    } else {
+                        console.log(
+                            "ℹ️ LOCALIZADORES: Criação de separador cancelada pelo usuário"
                         );
                     }
-                    menu.remove();
                 });
-
-                // ⚡ OTIMIZAÇÃO: CSS hover em vez de event listeners
-                opcaoSeparador.classList.add("eprobe-menu-option");
 
                 // Adicionar opção ao menu
                 menu.appendChild(opcaoSeparador);
 
-                // Adicionar menu ao documento
-                document.body.appendChild(menu);
+                // Adicionar menu ao overlay (que já está no body)
+                overlay.appendChild(menu);
+                console.log("📋 LOCALIZADORES: Menu adicionado ao overlay");
 
-                // Remover menu ao clicar fora
-                setTimeout(() => {
-                    document.addEventListener("click", function removerMenu() {
-                        menu.remove();
-                        document.removeEventListener("click", removerMenu);
-                    });
-                }, 100);
+                // Remover menu ao clicar fora (no overlay)
+                overlay.addEventListener("click", function (e) {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        console.log(
+                            "🗑️ LOCALIZADORES: Menu removido por clique no overlay"
+                        );
+                    }
+                });
+
+                // Escape key para fechar
+                const fecharComEscape = function (e) {
+                    if (e.key === "Escape") {
+                        overlay.remove();
+                        document.removeEventListener(
+                            "keydown",
+                            fecharComEscape
+                        );
+                        console.log(
+                            "🗑️ LOCALIZADORES: Menu removido por Escape"
+                        );
+                    }
+                };
+                document.addEventListener("keydown", fecharComEscape);
 
                 // Ajustar posição se sair da tela
-                const rect = menu.getBoundingClientRect();
-                if (rect.right > window.innerWidth) {
-                    menu.style.left = event.clientX - rect.width + "px";
-                }
-                if (rect.bottom > window.innerHeight) {
-                    menu.style.top = event.clientY - rect.height + "px";
-                }
+                setTimeout(() => {
+                    const rect = menu.getBoundingClientRect();
+                    let newTop = event.clientY + 2;
+                    let newLeft = event.clientX + 2;
+
+                    if (rect.right > window.innerWidth) {
+                        newLeft = event.clientX - rect.width - 2;
+                    }
+                    if (rect.bottom > window.innerHeight) {
+                        newTop = event.clientY - rect.height - 2;
+                    }
+
+                    menu.style.top = newTop + "px";
+                    menu.style.left = newLeft + "px";
+                }, 10);
+
+                console.log(
+                    "✅ LOCALIZADORES: Menu de contexto criado e posicionado com overlay"
+                );
             }
 
             // Sistema robusto de criação de botão com múltiplas tentativas
@@ -10646,24 +10783,32 @@ ${texto}`;
                     "eprobe-separadores-toolbar"
                 );
 
-                log("🐛 DEBUG LOCALIZADORES:", {
+                console.log("🐛 DEBUG LOCALIZADORES:", {
                     url: currentUrl,
                     isLocalizadoresPage: isLocalizadoresPage,
                     tabelaEncontrada: !!tabela,
                     toolbarCriado: !!toolbar,
                     urlPattern:
                         "acao=usuario_tipo_monitoramento_localizador_listar",
+                    numeroLinhas: tabela
+                        ? tabela.querySelectorAll(
+                              "tbody tr:not(.eprobe-divisor-linha)"
+                          ).length
+                        : 0,
                 });
 
                 if (!isLocalizadoresPage) {
-                    log("⚠️ Não está na página de localizadores");
+                    console.log("⚠️ Não está na página de localizadores");
                 } else {
-                    log("✅ Está na página de localizadores");
+                    console.log("✅ Está na página de localizadores");
                     if (tabela) {
-                        log("✅ Tabela de localizadores encontrada");
-                    }
-                    if (toolbar) {
-                        log("✅ Toolbar de separadores encontrado");
+                        console.log(
+                            "✅ Tabela encontrada - forçando reprocessamento"
+                        );
+                        // Forçar re-processamento
+                        processarTabelaLocalizadores();
+                    } else {
+                        console.log("❌ Tabela não encontrada");
                     }
                 }
 
@@ -22163,9 +22308,422 @@ ${texto}`;
             detectarPaginaLocalizadores: window.detectarPaginaLocalizadores,
             processarTabelaLocalizadores: window.processarTabelaLocalizadores,
             destacarLocalizadoresUrgentes: window.destacarLocalizadoresUrgentes,
-            debugLocalizadores: debugLocalizadores,
-            testarSeparadoresHover: testarSeparadoresHover,
-            corrigirVisibilidadeBotoes: corrigirVisibilidadeBotoes,
+            debugLocalizadores: function () {
+                const currentUrl = window.location.href;
+                const isLocalizadoresPage = currentUrl.includes(
+                    "acao=usuario_tipo_monitoramento_localizador_listar"
+                );
+                const tabela = document.querySelector(
+                    'table.infraTable[summary*="Localizadores"]'
+                );
+                const toolbar = document.getElementById(
+                    "eprobe-separadores-toolbar"
+                );
+
+                console.log("🐛 DEBUG LOCALIZADORES:", {
+                    url: currentUrl,
+                    isLocalizadoresPage: isLocalizadoresPage,
+                    tabelaEncontrada: !!tabela,
+                    toolbarCriado: !!toolbar,
+                    urlPattern:
+                        "acao=usuario_tipo_monitoramento_localizador_listar",
+                    numeroLinhas: tabela
+                        ? tabela.querySelectorAll(
+                              "tbody tr:not(.eprobe-divisor-linha)"
+                          ).length
+                        : 0,
+                });
+
+                if (!isLocalizadoresPage) {
+                    console.log("⚠️ Não está na página de localizadores");
+                } else {
+                    console.log("✅ Está na página de localizadores");
+                    if (tabela) {
+                        console.log(
+                            "✅ Tabela encontrada - forçando reprocessamento"
+                        );
+                        // Forçar re-processamento
+                        window.processarTabelaLocalizadores();
+                    } else {
+                        console.log("❌ Tabela não encontrada");
+                    }
+                }
+
+                return {
+                    isLocalizadoresPage,
+                    tabelaEncontrada: !!tabela,
+                    toolbarCriado: !!toolbar,
+                };
+            },
+            testarSeparadoresHover: function () {
+                console.log("🧪 TESTE: Verificando hover dos separadores");
+                const separadores = document.querySelectorAll(
+                    ".eprobe-divisor-linha"
+                );
+                console.log(`🔍 Encontrados ${separadores.length} separadores`);
+
+                separadores.forEach((separador, index) => {
+                    const botaoRemover = separador.querySelector(
+                        ".eprobe-remove-button"
+                    );
+                    const titulo = separador.querySelector(
+                        ".eprobe-container-hover"
+                    );
+
+                    console.log(`📋 Separador ${index + 1}:`, {
+                        temBotaoRemover: !!botaoRemover,
+                        temTitulo: !!titulo,
+                        visibilidadeBotao: botaoRemover
+                            ? window.getComputedStyle(botaoRemover).opacity
+                            : "N/A",
+                    });
+                });
+
+                return separadores.length;
+            },
+            corrigirVisibilidadeBotoes: function () {
+                console.log(
+                    "🔧 CORRIGIR: Ajustando visibilidade dos botões de remoção"
+                );
+
+                const css = `
+                    .eprobe-remove-button {
+                        opacity: 0 !important;
+                        transition: opacity 0.2s ease !important;
+                    }
+                    .eprobe-container-hover:hover .eprobe-remove-button {
+                        opacity: 1 !important;
+                    }
+                `;
+
+                let styleElement = document.getElementById("eprobe-hover-fix");
+                if (!styleElement) {
+                    styleElement = document.createElement("style");
+                    styleElement.id = "eprobe-hover-fix";
+                    document.head.appendChild(styleElement);
+                }
+
+                styleElement.textContent = css;
+                console.log("✅ CORRIGIR: CSS de hover aplicado");
+
+                return true;
+            },
+            forcarInicializacaoLocalizadores: function () {
+                console.log(
+                    "🚀 FORÇA: Inicializando sistema de localizadores manualmente"
+                );
+
+                // Forçar detecção e processamento
+                detectarPaginaLocalizadores();
+
+                // Aguardar um momento e processar novamente se necessário
+                setTimeout(() => {
+                    const tabela = document.querySelector(
+                        'table.infraTable[summary*="Localizadores"]'
+                    );
+                    if (tabela) {
+                        console.log(
+                            "✅ FORÇA: Tabela encontrada, reprocessando..."
+                        );
+                        processarTabelaLocalizadores();
+                    } else {
+                        console.log("❌ FORÇA: Tabela não encontrada");
+                    }
+                }, 500);
+
+                return "Inicialização forçada - verifique o console para resultados";
+            },
+            diagnosticarMenuContexto: function () {
+                console.log(
+                    "🔍 DIAGNÓSTICO COMPLETO: Menu de contexto dos localizadores"
+                );
+
+                const currentUrl = window.location.href;
+                const isLocalizadoresPage = currentUrl.includes(
+                    "acao=usuario_tipo_monitoramento_localizador_listar"
+                );
+                const tabela = document.querySelector(
+                    'table.infraTable[summary*="Localizadores"]'
+                );
+                const linhas = tabela
+                    ? tabela.querySelectorAll(
+                          "tbody tr:not(.eprobe-divisor-linha)"
+                      )
+                    : [];
+                const infoSeparadores = document.getElementById(
+                    "eprobe-info-separadores"
+                );
+
+                // Verificar event listeners nas linhas
+                let linhasComEventListener = 0;
+                if (linhas.length > 0) {
+                    linhas.forEach((linha, index) => {
+                        // Verificar se tem cursor de contexto
+                        const hasContextCursor =
+                            linha.style.cursor === "context-menu";
+                        const hasTitle =
+                            linha.title &&
+                            linha.title.includes("botão direito");
+
+                        if (hasContextCursor || hasTitle) {
+                            linhasComEventListener++;
+                        }
+
+                        console.log(`📋 Linha ${index + 1}:`, {
+                            hasContextCursor,
+                            hasTitle,
+                            title: linha.title || "sem title",
+                        });
+                    });
+                }
+
+                const relatorio = {
+                    url: currentUrl,
+                    isLocalizadoresPage,
+                    tabelaEncontrada: !!tabela,
+                    numeroLinhas: linhas.length,
+                    linhasComEventListener,
+                    infoSeparadoresExiste: !!infoSeparadores,
+                    funcaoDetectarDisponivel:
+                        typeof detectarPaginaLocalizadores === "function",
+                    funcaoProcessarDisponivel:
+                        typeof processarTabelaLocalizadores === "function",
+                    funcaoMenuContextoDisponivel:
+                        typeof adicionarMenuContextoLinhas === "function",
+                };
+
+                console.log("📊 RELATÓRIO DIAGNÓSTICO:", relatorio);
+
+                // Sugestões baseadas no diagnóstico
+                if (!isLocalizadoresPage) {
+                    console.log(
+                        "❌ PROBLEMA: Não está na página de localizadores"
+                    );
+                    console.log(
+                        "💡 SOLUÇÃO: Navegue para 'Controle de Processos > Meus Localizadores'"
+                    );
+                } else if (!tabela) {
+                    console.log(
+                        "❌ PROBLEMA: Tabela de localizadores não encontrada"
+                    );
+                    console.log(
+                        "💡 SOLUÇÃO: Verifique se a página carregou completamente"
+                    );
+                } else if (linhasComEventListener === 0) {
+                    console.log(
+                        "❌ PROBLEMA: Linhas não têm event listeners configurados"
+                    );
+                    console.log(
+                        "💡 SOLUÇÃO: Execute window.SENT1_AUTO.forcarInicializacaoLocalizadores()"
+                    );
+                } else {
+                    console.log(
+                        "✅ STATUS: Sistema parece estar configurado corretamente"
+                    );
+                    console.log(
+                        "💡 TESTE: Clique com botão direito em qualquer linha da tabela"
+                    );
+                }
+
+                return relatorio;
+            },
+            testarMenuContextoForcado: function () {
+                console.log(
+                    "🧪 TESTE: Simulando clique direito para testar menu"
+                );
+
+                const tabela = document.querySelector(
+                    'table.infraTable[summary*="Localizadores"]'
+                );
+                if (!tabela) {
+                    console.log("❌ TESTE: Tabela não encontrada");
+                    return false;
+                }
+
+                const linhas = tabela.querySelectorAll(
+                    "tbody tr:not(.eprobe-divisor-linha)"
+                );
+                if (linhas.length === 0) {
+                    console.log("❌ TESTE: Nenhuma linha encontrada");
+                    return false;
+                }
+
+                // Testar na primeira linha
+                const primeiraLinha = linhas[0];
+                console.log(
+                    "🎯 TESTE: Testando primeira linha:",
+                    primeiraLinha
+                );
+
+                // Criar evento de contexto simulado
+                const eventoContexto = new MouseEvent("contextmenu", {
+                    bubbles: true,
+                    cancelable: true,
+                    clientX: 100,
+                    clientY: 100,
+                    button: 2,
+                });
+
+                console.log("📤 TESTE: Disparando evento contextmenu...");
+                const resultado = primeiraLinha.dispatchEvent(eventoContexto);
+
+                // Verificar se o menu foi criado
+                setTimeout(() => {
+                    const menu = document.getElementById(
+                        "eprobe-menu-contexto-separador"
+                    );
+                    if (menu) {
+                        console.log("✅ TESTE: Menu criado com sucesso!", menu);
+                        // Remover o menu após 3 segundos
+                        setTimeout(() => {
+                            menu.remove();
+                            console.log(
+                                "🗑️ TESTE: Menu removido automaticamente"
+                            );
+                        }, 3000);
+                    } else {
+                        console.log("❌ TESTE: Menu não foi criado");
+                    }
+                }, 100);
+
+                return resultado;
+            },
+            testarMenuCompleto: function () {
+                console.log(
+                    "🧪 TESTE COMPLETO: Sistema de menu de contexto para separadores"
+                );
+
+                // 1. Verificar se estamos na página correta
+                const currentUrl = window.location.href;
+                const isLocalizadoresPage = currentUrl.includes(
+                    "acao=usuario_tipo_monitoramento_localizador_listar"
+                );
+
+                if (!isLocalizadoresPage) {
+                    console.log("❌ ERRO: Não está na página de localizadores");
+                    console.log(
+                        "💡 SOLUÇÃO: Navegue para 'Controle de Processos > Meus Localizadores'"
+                    );
+                    return false;
+                }
+
+                // 2. Verificar tabela
+                const tabela = document.querySelector(
+                    'table.infraTable[summary*="Localizadores"]'
+                );
+                if (!tabela) {
+                    console.log(
+                        "❌ ERRO: Tabela de localizadores não encontrada"
+                    );
+                    return false;
+                }
+
+                // 3. Verificar linhas
+                const linhas = tabela.querySelectorAll(
+                    "tbody tr:not(.eprobe-divisor-linha)"
+                );
+                console.log(
+                    `✅ Encontradas ${linhas.length} linhas de localizadores`
+                );
+
+                // 4. Verificar se as linhas têm event listeners configurados
+                let linhasComListener = 0;
+                linhas.forEach((linha, index) => {
+                    if (
+                        linha.style.cursor === "context-menu" ||
+                        (linha.title && linha.title.includes("botão direito"))
+                    ) {
+                        linhasComListener++;
+                    }
+                });
+
+                console.log(
+                    `✅ ${linhasComListener} linhas têm event listeners configurados`
+                );
+
+                // 5. Teste de criação de menu simulado com overlay
+                if (linhas.length > 0) {
+                    console.log(
+                        "🧪 Simulando clique direito na primeira linha com sistema de overlay..."
+                    );
+
+                    const primeiraLinha = linhas[0];
+                    const rect = primeiraLinha.getBoundingClientRect();
+                    const evento = new MouseEvent("contextmenu", {
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: rect.left + 100, // Posição visível na tela
+                        clientY: rect.top + 10, // Posição visível na tela
+                        button: 2,
+                    });
+
+                    primeiraLinha.dispatchEvent(evento);
+
+                    // Verificar se menu e overlay foram criados
+                    setTimeout(() => {
+                        const menu = document.getElementById(
+                            "eprobe-menu-contexto-separador"
+                        );
+                        const overlay = document.getElementById(
+                            "eprobe-menu-overlay"
+                        );
+
+                        if (menu && overlay) {
+                            console.log(
+                                "✅ SUCESSO: Menu com overlay criado!",
+                                { menu, overlay }
+                            );
+                            console.log("🎯 POSIÇÃO DO MENU:", {
+                                left: menu.style.left,
+                                top: menu.style.top,
+                                zIndex: menu.style.zIndex,
+                            });
+                            console.log(
+                                "🛡️ OVERLAY Z-INDEX:",
+                                overlay.style.zIndex
+                            );
+                            console.log(
+                                "🚫 MENU NATIVO BLOQUEADO: Overlay ativo"
+                            );
+
+                            // Remover menu após 3 segundos
+                            setTimeout(() => {
+                                overlay.remove(); // Remove overlay e menu junto
+                                console.log(
+                                    "🗑️ Menu e overlay removidos automaticamente"
+                                );
+                            }, 3000);
+                        } else {
+                            console.log(
+                                "❌ FALHA: Menu ou overlay não foi criado"
+                            );
+                            if (!menu)
+                                console.log("  - Menu principal ausente");
+                            if (!overlay)
+                                console.log("  - Overlay de bloqueio ausente");
+                        }
+                    }, 100);
+                }
+
+                const resultado = {
+                    paginaCorreta: isLocalizadoresPage,
+                    tabelaEncontrada: !!tabela,
+                    numeroLinhas: linhas.length,
+                    linhasComListener: linhasComListener,
+                    percentualConfigurado: Math.round(
+                        (linhasComListener / linhas.length) * 100
+                    ),
+                };
+
+                console.log("📊 RESULTADO FINAL:", resultado);
+                console.log(
+                    resultado.percentualConfigurado === 100
+                        ? "✅ SISTEMA 100% FUNCIONAL"
+                        : "⚠️ SISTEMA PARCIALMENTE CONFIGURADO"
+                );
+
+                return resultado;
+            },
             // Funções de status de sessão
             detectarStatusSessao: statusFunctions.detectarStatusSessao,
             obterTextoCardPorStatus: statusFunctions.obterTextoCardPorStatus,
