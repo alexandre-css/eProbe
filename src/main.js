@@ -3372,14 +3372,44 @@ RESPOSTA (apenas JSON válido):`;
             background-color: rgba(148, 163, 184, 0.1) !important;
         }
         
-        /* Container e botão de remoção otimizados */
+        /* Container e botão de remoção otimizados - MÚLTIPLAS ESPECIFICIDADES */
         .eprobe-container-hover .eprobe-remove-button {
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            opacity: 0 !important;
+            transition: opacity 0.2s ease !important;
+        }
+        
+        /* Forçar especificidade extra para garantir que funcione */
+        div.eprobe-container-hover .eprobe-remove-button,
+        .eprobe-container-hover button.eprobe-remove-button {
+            opacity: 0 !important;
+            transition: opacity 0.2s ease !important;
         }
         
         .eprobe-container-hover:hover .eprobe-remove-button {
             opacity: 1 !important;
+        }
+        
+        /* Hover com especificidade extra */
+        div.eprobe-container-hover:hover .eprobe-remove-button,
+        .eprobe-container-hover:hover button.eprobe-remove-button {
+            opacity: 1 !important;
+        }
+        
+        /* Efeitos hover para o ícone SVG do botão de remover */
+        .eprobe-remove-button {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s ease !important;
+        }
+        
+        .eprobe-remove-button svg {
+            transition: all 0.2s ease !important;
+        }
+        
+        .eprobe-remove-button:hover svg {
+        fill: #dc2626 !important;
+        transform: scale(1.1) !important;
         }
         
         /* Opções de menu otimizadas */
@@ -3975,13 +4005,15 @@ RESPOSTA (apenas JSON válido):`;
                 // Criar container para o título editável
                 const containerTitulo = document.createElement("div");
                 containerTitulo.style.position = "relative";
-                containerTitulo.style.display = "inline-block";
+                containerTitulo.style.display = "inline-flex";
+                containerTitulo.style.alignItems = "center";
+                containerTitulo.style.justifyContent = "center";
 
                 // Criar ícone do separador
                 const iconeSeparador = document.createElement("span");
                 iconeSeparador.style.cssText = `
-                display: inline-block !important;
-                margin-right: 4px !important;
+                display: grid !important;
+                margin-right: 10px !important;
                 vertical-align: middle !important;
                 width: 16px !important;
                 height: 16px !important;
@@ -4048,25 +4080,24 @@ RESPOSTA (apenas JSON válido):`;
 
                 // Criar botão para remover divisor (discreto, só aparece no hover)
                 const botaoRemover = document.createElement("button");
-                botaoRemover.innerHTML = "×";
+                botaoRemover.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#374151"><path d="m350-281 130.19-130.19L610.37-281 679-349.63 548.81-479.81 679-610l-69-69-130.19 130.19L349.63-679 281-610.37l130.19 130.18L281-350l69 69ZM218.87-113.7q-43.63 0-74.4-30.77-30.77-30.77-30.77-74.4v-522.26q0-43.63 30.77-74.4 30.77-30.77 74.4-30.77h522.26q43.63 0 74.4 30.77 30.77 30.77 30.77 74.4v522.26q0 43.63-30.77 74.4-30.77 30.77-74.4 30.77H218.87Zm0-105.17h522.26v-522.26H218.87v522.26Zm0-522.26v522.26-522.26Z"/></svg>`;
                 botaoRemover.style.cssText = `
-            position: absolute;
-            top: -8px;
-            right: -20px;
+            position: relative;
+            top: 0;
+            margin-left: 8px;
             border: none;
-            background: #ef4444;
-            color: white;
+            background: transparent;
             border-radius: 50%;
-            width: 18px;
-            height: 18px;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
-            font-size: 12px;
             line-height: 1;
-            opacity: 0;
-            transition: opacity 0.2s ease;
-            display: flex;
+            transition: all 0.2s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
+            vertical-align: middle;
+            padding: 4px;
         `;
                 botaoRemover.title = "Remover divisor";
 
@@ -10625,27 +10656,120 @@ ${texto}`;
                 });
 
                 if (!isLocalizadoresPage) {
-                    logError("❌ Você não está na página de localizadores!");
-                    log(
-                        "🔗 Para acessar: Painel → Localizadores → Meus Localizadores"
+                    log("⚠️ Não está na página de localizadores");
+                } else {
+                    log("✅ Está na página de localizadores");
+                    if (tabela) {
+                        log("✅ Tabela de localizadores encontrada");
+                    }
+                    if (toolbar) {
+                        log("✅ Toolbar de separadores encontrado");
+                    }
+                }
+
+                return {
+                    isLocalizadoresPage,
+                    tabelaEncontrada: !!tabela,
+                    toolbarCriado: !!toolbar,
+                };
+            }
+
+            // 🧪 Função de teste específica para separadores
+            function testarSeparadoresHover() {
+                log(
+                    "🧪 TESTE SEPARADORES: Iniciando teste do hover dos botões..."
+                );
+
+                const separadores = document.querySelectorAll(
+                    ".eprobe-container-hover"
+                );
+                log(
+                    `📊 SEPARADORES: Encontrados ${separadores.length} separadores`
+                );
+
+                separadores.forEach((separador, index) => {
+                    const botaoRemover = separador.querySelector(
+                        ".eprobe-remove-button"
                     );
-                    return false;
+                    const titulo = separador.querySelector(
+                        'span[contentEditable="true"]'
+                    );
+
+                    log(`🔍 SEPARADOR ${index + 1}:`, {
+                        temBotao: !!botaoRemover,
+                        temTitulo: !!titulo,
+                        tituloTexto: titulo?.textContent,
+                        botaoOpacidade: botaoRemover?.style.opacity,
+                        botaoOpacidadeComputada: botaoRemover
+                            ? window.getComputedStyle(botaoRemover).opacity
+                            : "N/A",
+                        posicionamento: {
+                            position: botaoRemover?.style.position,
+                            marginLeft: botaoRemover?.style.marginLeft,
+                            display: botaoRemover?.style.display,
+                        },
+                    });
+                });
+
+                // Simular hover no primeiro separador para teste
+                if (separadores.length > 0) {
+                    const primeiroSeparador = separadores[0];
+                    log("✨ TESTE: Simulando hover no primeiro separador...");
+
+                    // Trigger mouseenter event
+                    const event = new MouseEvent("mouseenter", {
+                        bubbles: true,
+                    });
+                    primeiroSeparador.dispatchEvent(event);
+
+                    setTimeout(() => {
+                        const botao = primeiroSeparador.querySelector(
+                            ".eprobe-remove-button"
+                        );
+                        log(
+                            `📊 APÓS HOVER: Botão opacidade inline = ${
+                                botao?.style.opacity || "não definido"
+                            }`
+                        );
+                        log(
+                            `📊 APÓS HOVER: Botão opacidade computada = ${
+                                botao
+                                    ? window.getComputedStyle(botao).opacity
+                                    : "N/A"
+                            }`
+                        );
+
+                        // Trigger mouseleave para voltar ao normal
+                        const leaveEvent = new MouseEvent("mouseleave", {
+                            bubbles: true,
+                        });
+                        primeiroSeparador.dispatchEvent(leaveEvent);
+                    }, 100);
                 }
 
-                if (!tabela) {
-                    logError("❌ Tabela de localizadores não encontrada!");
-                    return false;
-                }
+                return separadores.length;
+            }
 
-                if (!toolbar) {
-                    logError("❌ Interface de separadores não foi criada!");
-                    log("🔧 Tentando criar agora...");
-                    adicionarInterfaceSeparadores(tabela);
-                    return true;
-                }
+            // 🔧 Função para forçar correção da visibilidade dos botões de remover
+            function corrigirVisibilidadeBotoes() {
+                log("🔧 CORREÇÃO: Forçando visibilidade correta dos botões...");
 
-                log("✅ Tudo funcionando corretamente!");
-                return true;
+                const botoes = document.querySelectorAll(
+                    ".eprobe-remove-button"
+                );
+                botoes.forEach((botao, index) => {
+                    // Remover qualquer opacity inline que possa estar conflitando
+                    botao.style.removeProperty("opacity");
+
+                    log(`🔧 BOTÃO ${index + 1}: Opacity inline removida`);
+                    log(
+                        `   Opacity computada atual: ${
+                            window.getComputedStyle(botao).opacity
+                        }`
+                    );
+                });
+
+                return botoes.length;
             }
 
             // 🎨 FUNÇÕES REUTILIZÁVEIS DE INTERFACE
@@ -18325,7 +18449,6 @@ ${texto}`;
     
     /* 🛡️ PROTEÇÃO: Garantir espaçamento correto em todos os botões eProbe */
     button[id*="documento-relevante"] svg { margin-right: 4px !important; }
-    button[class*="eprobe"] svg { margin-right: 4px !important; }
     `;
 
             // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
@@ -22040,6 +22163,9 @@ ${texto}`;
             detectarPaginaLocalizadores: window.detectarPaginaLocalizadores,
             processarTabelaLocalizadores: window.processarTabelaLocalizadores,
             destacarLocalizadoresUrgentes: window.destacarLocalizadoresUrgentes,
+            debugLocalizadores: debugLocalizadores,
+            testarSeparadoresHover: testarSeparadoresHover,
+            corrigirVisibilidadeBotoes: corrigirVisibilidadeBotoes,
             // Funções de status de sessão
             detectarStatusSessao: statusFunctions.detectarStatusSessao,
             obterTextoCardPorStatus: statusFunctions.obterTextoCardPorStatus,
