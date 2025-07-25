@@ -273,10 +273,25 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             /* Spacing fixes para lembretes - aplicados instantaneamente */
             .divLembretePara, .lblLembretePara {
                 margin-bottom: 15px !important;
+                justify-content: space-around !important;
+                font-size: small !important;
+                -webkit-font-smoothing: antialiased !important;
             }
             
             .divLembreteData, .lblLembreteData {
-                margin-top: 35px !important;
+                /* margin-top removido - sem mais forçar margem superior */
+            }
+            
+            /* Novos estilos para classes do eProc */
+            .desLembrete {
+                margin: 25px 25px 25px 25px !important;
+                align-items: baseline !important;
+            }
+            
+            .divLembretePara {
+                justify-content: space-around !important;
+                font-size: small !important;
+                -webkit-font-smoothing: antialiased !important;
             }
             
             /* INTERCEPTAÇÃO TOTAL: Botões de ler mais - ocultar ANTES da renderização */
@@ -695,21 +710,22 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         /* ===== ESTILOS PARA LEMBRETES ===== */
         .divLembretePara {
             margin-bottom: 15px !important;
+            justify-content: space-around !important;
+            font-size: small !important;
+            -webkit-font-smoothing: antialiased !important;
         }
         
-        /* FORÇA MÁXIMA: Sobrescrever qualquer margin existente */
-        div.divLembreteData,
-        .divLembreteData,
-        div[class*="divLembreteData"],
-        body div.divLembreteData,
-        body .divLembreteData,
-        html body div.divLembreteData,
-        html body .divLembreteData {
-            margin: 35px 0 0 0 !important;
-            margin-top: 35px !important;
-            margin-bottom: 0 !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
+        /* Classe do eProc - desLembrete com novos estilos */
+        .desLembrete {
+            margin: 25px 25px 25px 25px !important;
+            align-items: baseline !important;
+        }
+        
+        /* Classe do eProc - divLembretePara com novos estilos */
+        .divLembretePara {
+            justify-content: space-around !important;
+            font-size: small !important;
+            -webkit-font-smoothing: antialiased !important;
         }
     `;
 
@@ -722,23 +738,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         head.insertBefore(cssInstantaneo, head.firstChild);
         logCritical("✅ INSTANT: CSS crítico aplicado no topo do head");
     }
-
-    // FORÇA ADICIONAL: CSS ultra-específico para divLembreteData
-    const cssForceMarginTop = document.createElement("style");
-    cssForceMarginTop.id = "eprobe-force-margin-top";
-    cssForceMarginTop.textContent = `
-        /* FORÇA ULTRA-ESPECÍFICA para divLembreteData */
-        html body *:not(#nonexistent) div.divLembreteData,
-        html body *:not(#nonexistent) .divLembreteData {
-            margin-top: 35px !important;
-        }
-        
-        /* Se AINDA assim não funcionar, usar JavaScript inline */
-        div[class="divLembreteData"] {
-            margin-top: 35px !important;
-        }
-    `;
-    head.appendChild(cssForceMarginTop);
 
     // Aplicar tema salvo do localStorage instantaneamente (sem aguardar APIs)
     const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
@@ -776,63 +775,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     // Executar imediatamente após 1ms para garantir que DOM básico está pronto
     setTimeout(() => {
         try {
-            // FORÇA JAVASCRIPT: Aplicar margin-top diretamente nos elementos divLembreteData
-            const forcarMarginTopLembretes = () => {
-                const divLembreteDataElements = document.querySelectorAll(
-                    '.divLembreteData, div[class*="divLembreteData"]'
-                );
-                let elementosModificados = 0;
-
-                divLembreteDataElements.forEach((element) => {
-                    // Verificar se já foi processado para evitar reaplicações
-                    if (!element.hasAttribute("data-eprobe-margin-applied")) {
-                        element.style.setProperty(
-                            "margin-top",
-                            "35px",
-                            "important"
-                        );
-                        element.style.setProperty(
-                            "margin-bottom",
-                            "0",
-                            "important"
-                        );
-                        element.style.setProperty(
-                            "margin-left",
-                            "0",
-                            "important"
-                        );
-                        element.style.setProperty(
-                            "margin-right",
-                            "0",
-                            "important"
-                        );
-                        element.setAttribute(
-                            "data-eprobe-margin-applied",
-                            "true"
-                        );
-                        elementosModificados++;
-                    }
-                });
-
-                if (elementosModificados > 0) {
-                    logCritical(
-                        `🔧 FORÇA JS: Aplicado margin-top em ${elementosModificados} novos elementos divLembreteData`
-                    );
-                }
-            };
-
-            // Aplicar imediatamente e a cada 2 segundos por 30 segundos para garantir novos elementos
-            forcarMarginTopLembretes();
-            const intervalMargin = setInterval(forcarMarginTopLembretes, 2000);
-
-            // Parar o interval após 30 segundos para evitar execução infinita
-            setTimeout(() => {
-                clearInterval(intervalMargin);
-                logCritical(
-                    "🔧 FORÇA JS: Monitoramento de margin-top finalizado"
-                );
-            }, 30000);
-
             // Garantir que navbar está visível instantaneamente
             const navbar =
                 document.querySelector("#navbar.navbar.bg-instancia") ||
