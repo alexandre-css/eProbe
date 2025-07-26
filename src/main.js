@@ -1033,7 +1033,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
          */
         function detectarSessoesUnificado(forcarDeteccao = false) {
             console.log(
-                "🎯 DETECÇÃO UNIFICADA: Iniciando detecção única de sessões..."
+                "🎯 DETECÇÃO UNIFICADA: Iniciando detecção única de sessões com nova estrutura DOM..."
             );
 
             // 0. VERIFICAR SE JÁ TEMOS DADOS VÁLIDOS (anti-duplicação)
@@ -1065,139 +1065,213 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return null;
             }
 
-            // 2. Buscar fieldset#fldMinutas
-            const fieldset = document.querySelector("#fldMinutas");
-            if (!fieldset) {
-                console.log("❌ DETECÇÃO: Fieldset #fldMinutas não encontrado");
-                return null;
-            }
-
-            // 3. Extrair texto completo do fieldset
-            const textoCompleto =
-                fieldset.textContent || fieldset.innerText || "";
-
-            if (!textoCompleto.trim()) {
-                console.log("❌ DETECÇÃO: Fieldset sem conteúdo de texto");
-                return null;
-            }
-
-            console.log(
-                "📝 DETECÇÃO: Texto completo encontrado:",
-                textoCompleto.substring(0, 200) + "..."
-            );
-
-            // 4. REGEX VÁLIDOS ORIGINAIS - Os que funcionavam antes
-            const padroesValidos = [
-                {
-                    nome: "Incluído em Pauta",
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                    status: "Incluído",
-                },
-                {
-                    nome: "Julgado em Pauta",
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                    status: "Julgado",
-                },
-                {
-                    nome: "Retirado em Pauta",
-                    regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
-                    status: "Retirado",
-                },
-            ];
-
-            const sessoes = [];
-
-            // 5. Aplicar cada padrão válido original
-            padroesValidos.forEach((padrao) => {
-                console.log(`🔍 Testando padrão: ${padrao.nome}`);
-
-                // Resetar regex
-                padrao.regex.lastIndex = 0;
-
-                let match;
-                while ((match = padrao.regex.exec(textoCompleto)) !== null) {
-                    const [textoMatchCompleto, tipoCapturado, data, orgao] =
-                        match;
-
-                    // 🔧 LIMPEZA DO TIPO: Extrair apenas o tipo real (última parte antes do parêntese)
-                    let tipoLimpo = tipoCapturado.trim();
-
-                    // Pegar apenas as últimas palavras que realmente são o tipo
-                    const tiposValidos = [
-                        "Embargos de Declaração",
-                        "Mérito",
-                        "Preliminar",
-                        "Cautelar",
-                        "Agravo Interno",
-                        "Agravo",
-                        "Apelação",
-                        "Recurso",
-                    ];
-
-                    // Tentar encontrar um tipo válido no final da string capturada
-                    let tipoEncontrado = null;
-                    for (const tipoValido of tiposValidos) {
-                        if (
-                            tipoLimpo
-                                .toLowerCase()
-                                .includes(tipoValido.toLowerCase())
-                        ) {
-                            // Se encontrou o tipo, extrair apenas essa parte
-                            const index = tipoLimpo
-                                .toLowerCase()
-                                .lastIndexOf(tipoValido.toLowerCase());
-                            if (index !== -1) {
-                                tipoEncontrado = tipoLimpo.substring(
-                                    index,
-                                    index + tipoValido.length
-                                );
-                                break;
-                            }
-                        }
-                    }
-
-                    // Se não encontrou um tipo específico, pegar as últimas palavras
-                    if (!tipoEncontrado) {
-                        const palavras = tipoLimpo
-                            .split(/\s+/)
-                            .filter((p) => p.length > 2);
-                        if (palavras.length > 0) {
-                            // Pegar as últimas 2-3 palavras que provavelmente são o tipo
-                            tipoEncontrado = palavras.slice(-3).join(" ");
-                        } else {
-                            tipoEncontrado = "Julgamento";
-                        }
-                    }
-
-                    console.log(
-                        `🔍 LIMPEZA TIPO: "${tipoCapturado}" → "${tipoEncontrado}"`
-                    );
-
-                    const sessao = {
-                        tipo: tipoEncontrado,
-                        status: padrao.status,
-                        data: data.trim(),
-                        orgao: orgao.trim(),
-                        textoCompleto: textoMatchCompleto,
-                        cor: obterCorPorStatus(padrao.status),
-                    };
-
-                    console.log(
-                        `✅ SESSÃO DETECTADA (${padrao.nome}):`,
-                        sessao
-                    );
-                    sessoes.push(sessao);
-                }
-            });
-
-            if (sessoes.length === 0) {
+            // 2. NOVA ESTRUTURA: Buscar container principal de minutas
+            const containerMinutas = document.querySelector("#conteudoMinutas");
+            if (!containerMinutas) {
                 console.log(
-                    "❌ DETECÇÃO: Nenhuma sessão válida encontrada com padrões originais"
+                    "❌ DETECÇÃO: Container #conteudoMinutas não encontrado"
                 );
                 return null;
             }
 
-            // 6. ORDENAR SESSÕES POR DATA (mais recente primeiro)
+            console.log("✅ DETECÇÃO: Container #conteudoMinutas encontrado");
+
+            // 3. BUSCAR TODAS AS MINUTAS: div[id^="conteudoMinutas_"] exceto conteudoMinutas_0
+            const minutasEncontradas = containerMinutas.querySelectorAll(
+                'div[id^="conteudoMinutas_"]:not([id="conteudoMinutas_0"])'
+            );
+
+            if (minutasEncontradas.length === 0) {
+                console.log("❌ DETECÇÃO: Nenhuma minuta encontrada");
+                return null;
+            }
+
+            console.log(
+                `🔍 DETECÇÃO: ${minutasEncontradas.length} minutas encontradas`
+            );
+
+            // 4. PROCESSAR CADA MINUTA INDIVIDUALMENTE
+            const sessoes = [];
+
+            minutasEncontradas.forEach((minuta, index) => {
+                const minutaId = minuta.id;
+                console.log(`📋 PROCESSANDO MINUTA ${index + 1}: ${minutaId}`);
+
+                // 5. NAVEGAR PARA O BOTÃO DE SESSÃO: fieldset#fldMinutas → legend → span#historico → button
+                const fieldsetMinuta = minuta.querySelector(
+                    "fieldset#fldMinutas"
+                );
+                if (!fieldsetMinuta) {
+                    console.log(
+                        `   ⚠️ MINUTA ${
+                            index + 1
+                        }: fieldset#fldMinutas não encontrado`
+                    );
+                    return;
+                }
+
+                const spanHistorico = fieldsetMinuta.querySelector(
+                    "legend span#historico"
+                );
+                if (!spanHistorico) {
+                    console.log(
+                        `   ⚠️ MINUTA ${
+                            index + 1
+                        }: span#historico não encontrado`
+                    );
+                    return;
+                }
+
+                const botaoSessao = spanHistorico.querySelector(
+                    "button[id^='legMinutasMaisMenos_']"
+                );
+                if (!botaoSessao) {
+                    console.log(
+                        `   ⚠️ MINUTA ${
+                            index + 1
+                        }: botão de sessão não encontrado`
+                    );
+                    return;
+                }
+
+                const textoCompleto = botaoSessao.textContent?.trim();
+                if (!textoCompleto) {
+                    console.log(`   ⚠️ MINUTA ${index + 1}: botão sem texto`);
+                    return;
+                }
+
+                console.log(
+                    `   ✅ MINUTA ${
+                        index + 1
+                    }: Texto encontrado: ${textoCompleto.substring(0, 100)}...`
+                );
+
+                // 6. APLICAR PADRÕES REGEX PARA ESTA MINUTA - CORRIGIDOS
+                const padroesValidos = [
+                    {
+                        nome: "Incluído em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Incluído",
+                    },
+                    {
+                        nome: "Pedido de Vista em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Vista",
+                    },
+                    {
+                        nome: "Convertido em Diligência em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Convertido em Diligência em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Diligência",
+                    },
+                    {
+                        nome: "Julgado em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Julgado",
+                    },
+                    {
+                        nome: "Retirado em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Retirado",
+                    },
+                ];
+
+                padroesValidos.forEach((padrao) => {
+                    console.log(
+                        `   🔍 MINUTA ${index + 1}: Testando padrão ${
+                            padrao.nome
+                        }`
+                    );
+                    console.log(`   📝 REGEX: ${padrao.regex}`);
+                    console.log(`   📝 TEXTO: "${textoCompleto}"`);
+
+                    // Resetar regex para esta iteração
+                    padrao.regex.lastIndex = 0;
+
+                    let match;
+                    while (
+                        (match = padrao.regex.exec(textoCompleto)) !== null
+                    ) {
+                        console.log(`   ✅ MATCH ENCONTRADO:`, match);
+                        const [textoMatchCompleto, tipoCapturado, data, orgao] =
+                            match;
+
+                        // 🔧 LIMPEZA DO TIPO: Extrair apenas o tipo real
+                        let tipoLimpo = tipoCapturado.trim();
+
+                        // Pegar apenas as últimas palavras que realmente são o tipo
+                        const tiposValidos = [
+                            "Embargos de Declaração",
+                            "Mérito",
+                            "Preliminar",
+                            "Cautelar",
+                            "Agravo Interno",
+                            "Agravo",
+                            "Apelação",
+                            "Recurso",
+                        ];
+
+                        // Tentar encontrar um tipo válido no final da string capturada
+                        let tipoEncontrado = null;
+                        for (const tipoValido of tiposValidos) {
+                            if (
+                                tipoLimpo
+                                    .toLowerCase()
+                                    .includes(tipoValido.toLowerCase())
+                            ) {
+                                const index = tipoLimpo
+                                    .toLowerCase()
+                                    .lastIndexOf(tipoValido.toLowerCase());
+                                if (index !== -1) {
+                                    tipoEncontrado = tipoLimpo.substring(
+                                        index,
+                                        index + tipoValido.length
+                                    );
+                                    break;
+                                }
+                            }
+                        }
+
+                        // Se não encontrou um tipo específico, pegar as últimas palavras
+                        if (!tipoEncontrado) {
+                            const palavras = tipoLimpo
+                                .split(/\s+/)
+                                .filter((p) => p.length > 2);
+                            if (palavras.length > 0) {
+                                tipoEncontrado = palavras.slice(-3).join(" ");
+                            } else {
+                                tipoEncontrado = "Julgamento";
+                            }
+                        }
+
+                        console.log(
+                            `   � LIMPEZA TIPO: "${tipoCapturado}" → "${tipoEncontrado}"`
+                        );
+
+                        const sessao = {
+                            tipo: tipoEncontrado,
+                            status: padrao.status,
+                            data: data.trim(),
+                            orgao: orgao.trim(),
+                            textoCompleto: textoMatchCompleto,
+                            cor: obterCorPorStatus(padrao.status),
+                            minutaId: minutaId,
+                        };
+
+                        console.log(
+                            `   ✅ SESSÃO DETECTADA (${padrao.nome}):`,
+                            sessao
+                        );
+                        sessoes.push(sessao);
+                    }
+                });
+            });
+
+            if (sessoes.length === 0) {
+                console.log("❌ DETECÇÃO: Nenhuma sessão válida encontrada");
+                return null;
+            }
+
+            // 7. ORDENAR SESSÕES POR DATA (mais recente primeiro)
             sessoes.sort((a, b) => {
                 try {
                     // Converter datas para comparação (DD/MM/YYYY -> YYYY-MM-DD)
@@ -1222,7 +1296,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 sessoes.map((s) => `${s.tipo} (${s.status} em ${s.data})`)
             );
 
-            // 7. Retornar dados estruturados - SESSÃO PRINCIPAL = MAIS RECENTE
+            // 8. Retornar dados estruturados - SESSÃO PRINCIPAL = MAIS RECENTE
             const resultado = {
                 sessaoPrincipal: sessoes[0],
                 todasSessoes: sessoes,
@@ -1233,13 +1307,13 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             console.log("🎯 DETECÇÃO CONCLUÍDA:", resultado);
 
-            // 8. Salvar dados globais - CORRIGIDO: salvar objeto completo
+            // 9. Salvar dados globais - CORRIGIDO: salvar objeto completo
             dataSessaoPautado = resultado.sessaoPrincipal; // Objeto completo, não apenas a data
             processoComDataSessao = resultado.processo;
             window.dadosCompletosMinutas = resultado.sessaoPrincipal;
             window.SENT1_AUTO.todasSessoesDetectadas = sessoes;
 
-            // 9. CRIAR CARD AUTOMATICAMENTE
+            // 10. CRIAR CARD AUTOMATICAMENTE
             console.log("🎨 AUTO-CRIAÇÃO: Criando card automaticamente...");
             try {
                 // Aguardar um pouco para garantir que as variáveis globais estão definidas
@@ -1263,6 +1337,34 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             return resultado;
         }
 
+        // 🧪 FUNÇÃO DE TESTE ESPECÍFICA PARA O PROBLEMA ATUAL
+        function testarRegexEspecifica() {
+            console.log("🧪 TESTE ESPECÍFICO: Validando regex com texto real");
+
+            const textoReal =
+                "Mérito (Incluído em Pauta em 29/07/2025 - CAMPUB5)";
+
+            const padraoCorrigido =
+                /^([A-Za-zÀ-ÿ\s]+?)\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
+
+            console.log("📝 Texto real:", textoReal);
+            console.log("🎯 Regex corrigida:", padraoCorrigido);
+
+            const match = padraoCorrigido.exec(textoReal);
+
+            if (match) {
+                console.log("✅ SUCESSO! Match encontrado:", match);
+                console.log("   - Texto completo:", match[0]);
+                console.log("   - Tipo capturado:", match[1]);
+                console.log("   - Data capturada:", match[2]);
+                console.log("   - Órgão capturado:", match[3]);
+                return true;
+            } else {
+                console.log("❌ FALHA: Regex não capturou o texto");
+                return false;
+            }
+        }
+
         /**
          * ÚNICA função para obter cor por status - substitui todas as outras
          * @param {string} status - Status da sessão
@@ -1274,8 +1376,123 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 Retirado: "#CE2D4F",
                 Incluído: "#5C85B4",
                 Pautado: "#5C85B4",
+                Vista: "#FFBF46",
+                Diligência: "#00171F",
             };
             return cores[status] || "#6B7280";
+        }
+
+        // 🧪 FUNÇÃO DE TESTE PARA A NOVA ESTRUTURA DOM
+        function debugDeteccaoSessaoRapida() {
+            console.log(
+                "🧪 TESTE RÁPIDO: Nova estrutura DOM de detecção de sessões"
+            );
+
+            try {
+                // 1. Verificar container principal
+                const containerMinutas =
+                    document.querySelector("#conteudoMinutas");
+                console.log(
+                    "📋 Container #conteudoMinutas:",
+                    !!containerMinutas
+                );
+
+                if (!containerMinutas) {
+                    console.log("❌ TESTE: Container não encontrado");
+                    return {
+                        erro: "Container #conteudoMinutas não encontrado",
+                    };
+                }
+
+                // 2. Buscar minutas (exceto conteudoMinutas_0)
+                const minutas = containerMinutas.querySelectorAll(
+                    'div[id^="conteudoMinutas_"]:not([id="conteudoMinutas_0"])'
+                );
+                console.log(`📁 Minutas encontradas: ${minutas.length}`);
+
+                const resultados = [];
+
+                minutas.forEach((minuta, index) => {
+                    const minutaId = minuta.id;
+                    console.log(`\n🔍 MINUTA ${index + 1}: ${minutaId}`);
+
+                    const resultado = {
+                        minutaId,
+                        temFieldset: false,
+                        temSpanHistorico: false,
+                        temBotao: false,
+                        textoEncontrado: null,
+                    };
+
+                    // Verificar fieldset
+                    const fieldset = minuta.querySelector(
+                        "fieldset#fldMinutas"
+                    );
+                    resultado.temFieldset = !!fieldset;
+                    console.log(
+                        `   📄 Fieldset #fldMinutas: ${resultado.temFieldset}`
+                    );
+
+                    if (fieldset) {
+                        // Verificar span historico
+                        const spanHistorico = fieldset.querySelector(
+                            "legend span#historico"
+                        );
+                        resultado.temSpanHistorico = !!spanHistorico;
+                        console.log(
+                            `   📋 Span #historico: ${resultado.temSpanHistorico}`
+                        );
+
+                        if (spanHistorico) {
+                            // Verificar botão
+                            const botao = spanHistorico.querySelector(
+                                "button[id^='legMinutasMaisMenos_']"
+                            );
+                            resultado.temBotao = !!botao;
+                            console.log(
+                                `   🔘 Botão encontrado: ${resultado.temBotao}`
+                            );
+
+                            if (botao) {
+                                resultado.textoEncontrado =
+                                    botao.textContent?.trim();
+                                console.log(
+                                    `   📝 Texto: ${resultado.textoEncontrado?.substring(
+                                        0,
+                                        80
+                                    )}...`
+                                );
+                            }
+                        }
+                    }
+
+                    resultados.push(resultado);
+                });
+
+                const resumo = {
+                    totalMinutas: minutas.length,
+                    comFieldset: resultados.filter((r) => r.temFieldset).length,
+                    comSpanHistorico: resultados.filter(
+                        (r) => r.temSpanHistorico
+                    ).length,
+                    comBotao: resultados.filter((r) => r.temBotao).length,
+                    comTexto: resultados.filter((r) => r.textoEncontrado)
+                        .length,
+                    resultados,
+                };
+
+                console.log("\n📊 RESUMO DO TESTE:", resumo);
+
+                // 3. Testar detecção unificada
+                console.log("\n🎯 TESTANDO DETECÇÃO UNIFICADA...");
+                const deteccao = detectarSessoesUnificado(true);
+                console.log("📊 RESULTADO DA DETECÇÃO:", deteccao);
+
+                return { resumo, deteccao };
+            } catch (error) {
+                console.error("❌ TESTE: Erro durante execução:", error);
+                return { erro: error.message };
+            }
         }
 
         // ========================================
@@ -1789,7 +2006,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
          */
         function criarHTMLTooltip(sessoes) {
             // Determinar cor do header baseada na sessão atual
-            let corHeader = "#1976d2"; // Azul padrão
+            let corHeader = "#5C85B4"; // Azul padrão do Figma
 
             if (sessoes && sessoes.length > 0) {
                 // Pegar a primeira sessão (atual) ou procurar por uma marcada como atual
@@ -1801,17 +2018,22 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         status.includes("incluído") ||
                         status.includes("pautado")
                     ) {
-                        corHeader = "#007acc"; // Azul para atual
+                        corHeader = "#5C85B4"; // Azul padrão do Figma
                     } else if (status.includes("retirado")) {
                         corHeader = "#CE2D4F"; // Vermelho
                     } else if (status.includes("vista")) {
                         corHeader = "#FFBF46"; // Amarelo
                     } else if (status.includes("julgado")) {
-                        corHeader = "#10B981"; // Verde
+                        corHeader = "#3AB795"; // Verde do Figma
                     } else if (status.includes("adiado")) {
-                        corHeader = "#F59E0B"; // Laranja
+                        corHeader = "#F55D3E"; // Laranja do Figma
                     } else if (status.includes("sobrestado")) {
-                        corHeader = "#8B5CF6"; // Roxo
+                        corHeader = "#FCB0B3"; // Rosa do Figma
+                    } else if (
+                        status.includes("diligência") ||
+                        status.includes("diligencia")
+                    ) {
+                        corHeader = "#00171F"; // Preto oficial do Figma para Diligência
                     }
                 }
             }
@@ -1893,7 +2115,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         background: ${backgroundCard};
                         border: 1px solid ${borderCard};
                         border-radius: 8px;
-                        padding: 16px;
+                        padding: 16px ${isAtual ? "50px" : "16px"} 16px 16px;
                         margin-bottom: ${
                             index < sessoes.length - 1 ? "12px" : "0"
                         };
@@ -1922,6 +2144,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             letter-spacing: 0.5px;
                             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
                             z-index: 10;
+                            min-width: 35px;
+                            text-align: center;
                         ">ATUAL</div>
                         `
                                 : ""
@@ -1934,12 +2158,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             gap: 10px;
                             margin-bottom: 14px;
                         ">
-                            <span class="material-symbols-outlined" style="
-                                font-size: 18px;
-                                color: ${corStatus};
-                                vertical-align: middle;
-                                flex-shrink: 0;
-                            ">gavel</span>
                             <div style="
                                 background: ${corStatus};
                                 color: white;
@@ -1956,21 +2174,27 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             </div>
                         </div>
                         
-                        <!-- Status e Data -->
+                        <!-- Status e Data com ícone gavel -->
                         <div style="
                             display: flex;
                             align-items: center;
                             gap: 10px;
                             margin-bottom: 12px;
                             flex-wrap: wrap;
+                            min-height: 24px;
                         ">
                             <div style="
                                 color: ${corStatus};
                                 font-weight: 600;
                                 font-size: 14px;
                                 line-height: 1.2;
+                                flex-shrink: 1;
+                                word-break: break-word;
                             ">${sessao.status}</div>
                             <div style="
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
                                 background: ${corStatus}20;
                                 color: ${corStatus};
                                 padding: 4px 10px;
@@ -1978,7 +2202,16 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 font-size: 12px;
                                 font-weight: 500;
                                 white-space: nowrap;
-                            ">${sessao.data}</div>
+                                flex-shrink: 0;
+                            ">
+                                <span class="material-symbols-outlined" style="
+                                    font-size: 14px;
+                                    color: #64748B;
+                                    vertical-align: middle;
+                                    flex-shrink: 0;
+                                ">gavel</span>
+                                ${sessao.data}
+                            </div>
                         </div>
                         
                         <!-- Órgão Julgador com ícone -->
@@ -2926,16 +3159,18 @@ RESPOSTA (apenas JSON válido):`;
                 logCritical(`❌ ERRO em extrairLinkSessao: ${error.message}`);
             }
 
-            // Testar detecção em buscarDadosReaisSessoes
+            // Testar detecção unificada apenas
             try {
-                logCritical("🔍 TESTANDO: buscarDadosReaisSessoes...");
-                const resultado3 = buscarDadosReaisSessoes();
+                logCritical("🔍 TESTANDO: detectarSessoesUnificado...");
+                const resultadoUnificado = detectarSessoesUnificado();
                 logCritical(
-                    `📊 RESULTADO Dados Reais: ${JSON.stringify(resultado3)}`
+                    `📊 RESULTADO Sessões Unificado: ${JSON.stringify(
+                        resultadoUnificado
+                    )}`
                 );
             } catch (error) {
                 logCritical(
-                    `❌ ERRO em buscarDadosReaisSessoes: ${error.message}`
+                    `❌ ERRO em detectarSessoesUnificado: ${error.message}`
                 );
             }
 
@@ -2982,6 +3217,7 @@ RESPOSTA (apenas JSON válido):`;
                 // Mapeamento de cores do Figma por status
                 const coresFigma = {
                     PAUTADO: "#5C85B4",
+                    INCLUIDO: "#5C85B4",
                     RETIRADO: "#CE2D4F",
                     VISTA: "#FFBF46",
                     JULGADO: "#3AB795",
@@ -2996,7 +3232,9 @@ RESPOSTA (apenas JSON válido):`;
                 const statusKey = status
                     .toUpperCase()
                     .replace(/\s+/g, "_")
-                    .replace(/[()\.]/g, "");
+                    .replace(/[()\.]/g, "")
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, ""); // Remove acentos
                 const corIcon = coresFigma[statusKey] || coresFigma["PAUTADO"];
 
                 log(
@@ -3017,7 +3255,7 @@ RESPOSTA (apenas JSON válido):`;
 
                 // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA NÃO INTERFERIR
                 card.style.cssText = `
-                width: 169px;
+                width: 190px;
                 height: 60px;
                 background: #FEF7FF;
                 border: 0.75px solid #CAC4D0;
@@ -3045,6 +3283,7 @@ RESPOSTA (apenas JSON válido):`;
                 // Texto do status mapeado
                 const statusTextos = {
                     PAUTADO: "Pautado",
+                    INCLUIDO: "Incluído em Pauta",
                     RETIRADO: "Retirado de Pauta",
                     VISTA: "Pedido de Vista",
                     JULGADO: "Julgado",
@@ -14114,7 +14353,8 @@ ${texto}`;
         }
 
         // ========================================
-        // FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
+        // ❌ SEÇÃO REMOVIDA: FUNÇÕES DE CRUZAMENTO DE DADOS DE SESSÃO
+        // ✅ SUBSTITUÍDO POR: detectarSessoesUnificado() - busca específica no DOM
         // ========================================
 
         /**
@@ -16861,7 +17101,7 @@ ${texto}`;
                 cardContainer.id = "eprobe-data-sessao";
                 cardContainer.className = "eprobe-figma-card-pautado";
                 cardContainer.style.cssText = `
-                width: 169px;
+                width: 190px;
                 height: 60px;
                 margin: 8px 4px;
                 display: inline-block;
@@ -16873,14 +17113,14 @@ ${texto}`;
                 border-radius: 9px;
             `;
 
-                // 2. SVG BASE - Dimensões exatas 169x60px conforme especificação
+                // 2. SVG BASE - Dimensões atualizadas 190x60px para comportar "Conv. em Diligência"
                 const svg = document.createElementNS(
                     "http://www.w3.org/2000/svg",
                     "svg"
                 );
-                svg.setAttribute("width", "169");
+                svg.setAttribute("width", "190");
                 svg.setAttribute("height", "60");
-                svg.setAttribute("viewBox", "0 0 169 60");
+                svg.setAttribute("viewBox", "0 0 190 60");
                 svg.setAttribute("fill", "none");
 
                 // 3. FUNDO DO CARD - COR EXATA FIGMA
@@ -16890,7 +17130,7 @@ ${texto}`;
                 );
                 backgroundRect.setAttribute("x", "0");
                 backgroundRect.setAttribute("y", "0");
-                backgroundRect.setAttribute("width", "169");
+                backgroundRect.setAttribute("width", "190");
                 backgroundRect.setAttribute("height", "60");
                 backgroundRect.setAttribute("rx", "9");
                 backgroundRect.setAttribute("fill", "#FEF7FF");
@@ -16904,9 +17144,9 @@ ${texto}`;
                     "g"
                 );
 
-                // Posição do ícone conforme especificações Figma exatas
+                // Posição do ícone conforme especificações Figma exatas (ajustada para nova largura)
                 // left: 6.51%, top: 27.65%, dimensões: 24.9 x 24.75px
-                const iconX = Math.round(169 * 0.0651); // 6.51% de 169px = ~11px
+                const iconX = Math.round(190 * 0.0651); // 6.51% de 190px = ~12px
                 const iconY = Math.round(60 * 0.2765); // 27.65% de 60px = ~16.6px
 
                 // Container do ícone com dimensões exatas
@@ -16946,8 +17186,8 @@ ${texto}`;
                     "http://www.w3.org/2000/svg",
                     "text"
                 );
-                // Cálculos exatos: 26.04% de 169px = 44px, 23.33% de 60px = 14px
-                const headerX = Math.round(169 * 0.2604); // 26.04% = ~44px
+                // Cálculos atualizados: 26.04% de 190px = ~49.5px, 23.33% de 60px = 14px
+                const headerX = Math.round(190 * 0.2604); // 26.04% = ~49.5px
                 const headerY = Math.round(60 * 0.2333) + 13.5; // 23.33% + font-size para baseline = ~27.5px
 
                 textPrincipal.setAttribute("x", headerX.toString());
@@ -16970,8 +17210,8 @@ ${texto}`;
                     "http://www.w3.org/2000/svg",
                     "text"
                 );
-                // Cálculos exatos: 26.04% de 169px = 44px, 50.1% de 60px = 30px
-                const subheadX = Math.round(169 * 0.2604); // 26.04% = ~44px
+                // Cálculos atualizados: 26.04% de 190px = ~49.5px, 50.1% de 60px = 30px
+                const subheadX = Math.round(190 * 0.2604); // 26.04% = ~49.5px
                 const subheadY = Math.round(60 * 0.501) + 11; // 50.1% + font-size para baseline = ~41px
 
                 textData.setAttribute("x", subheadX.toString());
@@ -17439,9 +17679,8 @@ ${texto}`;
             if (!todasSessoes) {
                 todasSessoes =
                     window.SENT1_AUTO?.todasSessoesDetectadas ||
-                    (typeof buscarDadosReaisSessoes === "function"
-                        ? buscarDadosReaisSessoes()
-                        : []);
+                    detectarSessoesUnificado() ||
+                    [];
             }
 
             // Se ainda não há sessões, criar dados de fallback
@@ -17501,17 +17740,22 @@ ${texto}`;
                         status.includes("incluído") ||
                         status.includes("pautado")
                     ) {
-                        corStatus = "#007acc"; // Azul para atual
+                        corStatus = "#5C85B4"; // Azul padrão do Figma
                     } else if (status.includes("retirado")) {
                         corStatus = "#CE2D4F"; // Vermelho
                     } else if (status.includes("vista")) {
                         corStatus = "#FFBF46"; // Amarelo
                     } else if (status.includes("julgado")) {
-                        corStatus = "#10B981"; // Verde
+                        corStatus = "#3AB795"; // Verde do Figma
                     } else if (status.includes("adiado")) {
-                        corStatus = "#F59E0B"; // Laranja
+                        corStatus = "#F55D3E"; // Laranja do Figma
                     } else if (status.includes("sobrestado")) {
-                        corStatus = "#8B5CF6"; // Roxo
+                        corStatus = "#FCB0B3"; // Rosa do Figma
+                    } else if (
+                        status.includes("diligência") ||
+                        status.includes("diligencia")
+                    ) {
+                        corStatus = "#00171F"; // Preto oficial do Figma para Diligência
                     }
                 }
 
@@ -17522,7 +17766,7 @@ ${texto}`;
                 htmlSessoes += `
                     <div style="
                         min-width: 120px; 
-                        padding: 12px; 
+                        padding: 12px 12px 12px 12px; 
                         border: 1px solid ${borderCard}; 
                         border-radius: 6px; 
                         background: ${backgroundCard}; 
@@ -17542,18 +17786,21 @@ ${texto}`;
                                 ? `
                         <div style="
                             position: absolute;
-                            top: 8px;
-                            right: 8px;
+                            top: 6px;
+                            right: 6px;
                             background: ${corStatus}; 
                             color: white; 
-                            padding: 3px 8px; 
-                            border-radius: 12px; 
-                            font-size: 9px; 
+                            padding: 2px 6px; 
+                            border-radius: 10px; 
+                            font-size: 8px; 
                             font-weight: 600; 
                             text-transform: uppercase; 
                             letter-spacing: 0.5px;
                             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
                             z-index: 10;
+                            min-width: 28px;
+                            text-align: center;
+                            line-height: 1.2;
                         ">
                             ${isAtual ? "ATUAL" : "ANTERIOR"}
                         </div>
@@ -17561,33 +17808,37 @@ ${texto}`;
                                 : ""
                         }
                         
-                        <!-- Tipo de julgamento com Material Symbol -->
-                        <div style="
-                            display: flex; 
-                            align-items: center; 
-                            gap: 8px; 
-                            margin-bottom: 12px;
-                        ">
-                            <span class="material-symbols-outlined" style="
-                                font-size: 16px; 
-                                color: ${corStatus}; 
-                                vertical-align: middle;
-                            ">gavel</span>
-                        </div>
-                        
-                        <!-- Status e Data -->
+                        <!-- Status e Data com ícone gavel -->
                         <div style="
                             display: flex; 
                             align-items: center; 
                             gap: 8px; 
                             margin-bottom: 10px;
+                            margin-top: ${isAtual || !isAtual ? "16px" : "0px"};
+                            flex-wrap: wrap;
+                            min-height: 24px;
+                            padding-right: ${
+                                isAtual || !isAtual ? "35px" : "0px"
+                            };
                         ">
                             <div style="
+                                display: flex;
+                                align-items: center;
+                                gap: 6px;
                                 color: ${corStatus}; 
                                 font-weight: 600; 
                                 font-size: 14px; 
                                 line-height: 1.2;
-                            ">${sessao.data}</div>
+                                flex-shrink: 0;
+                                word-break: break-word;
+                            ">
+                                <span class="material-symbols-outlined" style="
+                                    font-size: 14px; 
+                                    color: #64748B; 
+                                    vertical-align: middle;
+                                ">gavel</span>
+                                ${sessao.data}
+                            </div>
                             <div style="
                                 background: ${corStatus}20; 
                                 color: ${corStatus}; 
@@ -17595,6 +17846,8 @@ ${texto}`;
                                 border-radius: 12px; 
                                 font-size: 12px; 
                                 font-weight: 500;
+                                flex-shrink: 0;
+                                white-space: nowrap;
                             ">${sessao.status}</div>
                         </div>
                         
@@ -17650,7 +17903,7 @@ ${texto}`;
             });
 
             // Determinar cor do header baseada na sessão atual
-            let corHeader = "#1976d2"; // Azul padrão
+            let corHeader = "#5C85B4"; // Azul padrão do Figma
 
             if (todasSessoes && todasSessoes.length > 0) {
                 // Pegar a primeira sessão (atual) ou procurar por uma marcada como atual
@@ -17662,17 +17915,22 @@ ${texto}`;
                         status.includes("incluído") ||
                         status.includes("pautado")
                     ) {
-                        corHeader = "#007acc"; // Azul para atual
+                        corHeader = "#5C85B4"; // Azul padrão do Figma
                     } else if (status.includes("retirado")) {
                         corHeader = "#CE2D4F"; // Vermelho
                     } else if (status.includes("vista")) {
                         corHeader = "#FFBF46"; // Amarelo
                     } else if (status.includes("julgado")) {
-                        corHeader = "#10B981"; // Verde
+                        corHeader = "#3AB795"; // Verde do Figma
                     } else if (status.includes("adiado")) {
-                        corHeader = "#F59E0B"; // Laranja
+                        corHeader = "#F55D3E"; // Laranja do Figma
                     } else if (status.includes("sobrestado")) {
-                        corHeader = "#8B5CF6"; // Roxo
+                        corHeader = "#FCB0B3"; // Rosa do Figma
+                    } else if (
+                        status.includes("diligência") ||
+                        status.includes("diligencia")
+                    ) {
+                        corHeader = "#00171F"; // Preto oficial do Figma para Diligência
                     }
                 }
             }
@@ -17824,40 +18082,43 @@ ${texto}`;
             };
         }
 
+        // ❌ FUNÇÕES DUPLICADAS REMOVIDAS - Use apenas adicionarTooltipDiretoNoCard()
+        // Todas as funções de tooltip agora redirecionam para a função ativa adicionarTooltipDiretoNoCard
+
         /**
-         * ✅ FUNÇÃO UNIFICADA DE TOOLTIP - USA POSICIONAMENTO INTELIGENTE EXCLUSIVO
-         * Todas as outras funções de tooltip redirecionam para aplicarTooltipUnificado
+         * ✅ FUNÇÃO UNIFICADA DE TOOLTIP - REDIRECIONAMENTO PARA FUNÇÃO ATIVA
+         * @param {HTMLElement} cardElement - Elemento do card
+         * @param {Array} todasSessoes - Array com todas as sessões
          */
         function adicionarTooltipUnificado(cardElement, todasSessoes = null) {
             log(
-                "🎯 TOOLTIP UNIFICADO: Redirecionando para posicionamento inteligente"
+                "🔄 REDIRECT: adicionarTooltipUnificado → adicionarTooltipDiretoNoCard"
             );
-            return aplicarTooltipUnificado(cardElement, todasSessoes);
+            return adicionarTooltipDiretoNoCard(cardElement, todasSessoes);
         }
 
         /**
-         * ✅ FUNÇÃO TOOLTIP INTERATIVO - USA POSICIONAMENTO INTELIGENTE EXCLUSIVO
+         * ✅ FUNÇÃO TOOLTIP INTERATIVO - REDIRECIONAMENTO PARA FUNÇÃO ATIVA
          * @param {HTMLElement} cardElement - Elemento do card
          * @param {Array} todasSessoes - Array com todas as sessões
          */
         function adicionarTooltipInterativo(cardElement, todasSessoes) {
             log(
-                "🎯 TOOLTIP INTERATIVO: Redirecionando para posicionamento inteligente"
+                "🔄 REDIRECT: adicionarTooltipInterativo → adicionarTooltipDiretoNoCard"
             );
-            return aplicarTooltipUnificado(cardElement, todasSessoes);
+            return adicionarTooltipDiretoNoCard(cardElement, todasSessoes);
         }
 
         /**
-         * ✅ FUNÇÃO TOOLTIP SIMPLIFICADO - USA POSICIONAMENTO INTELIGENTE EXCLUSIVO
+         * ✅ FUNÇÃO TOOLTIP SIMPLIFICADO - REDIRECIONAMENTO PARA FUNÇÃO ATIVA
          * @param {HTMLElement} cardElement - Elemento do card
          * @param {Array} todasSessoes - Array com todas as sessões
-         * @returns {Object} - Resultado da função unificada
          */
         function criarTooltipSimplificado(cardElement, todasSessoes) {
             log(
-                "🎯 TOOLTIP SIMPLIFICADO: Redirecionando para posicionamento inteligente"
+                "🔄 REDIRECT: criarTooltipSimplificado → adicionarTooltipDiretoNoCard"
             );
-            return aplicarTooltipUnificado(cardElement, todasSessoes);
+            return adicionarTooltipDiretoNoCard(cardElement, todasSessoes);
         }
 
         /**
@@ -21887,105 +22148,6 @@ ${texto}`;
         // ============================================================================
 
         // Função para adicionar tooltip ao card original existente
-        // Função para buscar dados reais das sessões passadas
-        function buscarDadosReaisSessoes() {
-            log("🔍 BUSCAR SESSÕES: Iniciando busca por dados reais...");
-
-            // Detectar qual fieldset usar (6 ou 7)
-            let basePath = null;
-            let fieldsetEncontrado = null;
-
-            for (const fieldsetNum of [6, 7]) {
-                const testePath = `/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[${fieldsetNum}]/div`;
-                const teste = document.evaluate(
-                    testePath,
-                    document,
-                    null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
-                    null
-                ).singleNodeValue;
-
-                if (teste) {
-                    basePath = testePath;
-                    fieldsetEncontrado = fieldsetNum;
-                    log(`✅ BUSCAR SESSÕES: Usando fieldset[${fieldsetNum}]`);
-                    break;
-                }
-            }
-
-            if (!basePath) {
-                log("❌ BUSCAR SESSÕES: Nenhum fieldset de sessão encontrado");
-                return [];
-            }
-
-            const sessoes = [];
-
-            // Buscar dados da câmara no XPath especificado
-            const xpathCamara =
-                "/html/body/div[2]/div[3]/div[2]/div/div[1]/form[2]/div[3]/div/div/fieldset[1]/div/div[2]/div[2]/span";
-            let dadosCamara = null;
-
-            try {
-                const resultadoCamara = document.evaluate(
-                    xpathCamara,
-                    document,
-                    null,
-                    XPathResult.FIRST_ORDERED_NODE_TYPE,
-                    null
-                );
-
-                if (resultadoCamara.singleNodeValue) {
-                    dadosCamara =
-                        resultadoCamara.singleNodeValue.textContent.trim();
-                    log(`✅ CÂMARA ENCONTRADA: ${dadosCamara}`);
-                } else {
-                    log(`❌ CÂMARA NÃO ENCONTRADA no XPath: ${xpathCamara}`);
-                }
-            } catch (error) {
-                logError(`❌ ERRO ao buscar câmara:`, error);
-            }
-
-            // Buscar nas diferentes divs (div[3], div[4], div[5], div[6])
-            for (let i = 3; i <= 6; i++) {
-                const xpath = `${basePath}/div[${i}]/fieldset/legend/span[1]/button`;
-                log(`🔍 BUSCAR SESSÕES: Testando xpath: ${xpath}`);
-
-                try {
-                    const resultado = document.evaluate(
-                        xpath,
-                        document,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    );
-
-                    if (resultado.singleNodeValue) {
-                        const botao = resultado.singleNodeValue;
-                        const textoCompleto = botao.textContent.trim();
-                        log(`✅ SESSÃO ENCONTRADA: ${textoCompleto}`);
-
-                        // Extrair informações do texto, passando os dados da câmara
-                        const dadosSessao = extrairDadosSessao(
-                            textoCompleto,
-                            dadosCamara
-                        );
-                        if (dadosSessao) {
-                            sessoes.push(dadosSessao);
-                        }
-                    } else {
-                        logError(`❌ SESSÃO NÃO ENCONTRADA: div[${i}]`);
-                    }
-                } catch (error) {
-                    logError(`❌ ERRO ao buscar sessão div[${i}]:`, error);
-                }
-            }
-
-            log(
-                `📊 BUSCAR SESSÕES: ${sessoes.length} sessões encontradas:`,
-                sessoes
-            );
-            return sessoes;
-        }
 
         // Função para extrair dados da sessão a partir do texto do botão
         function extrairDadosSessao(texto, dadosCamara = null) {
@@ -22166,13 +22328,6 @@ ${texto}`;
         let nsExtractTextFromPDF = async function () {
             console.error(
                 "❌ NAMESPACE: extractTextFromPDF não está disponível"
-            );
-            return null;
-        };
-
-        let nsDetectarDataSessao = async function () {
-            console.error(
-                "❌ NAMESPACE: detectarDataSessao não está disponível"
             );
             return null;
         };
@@ -22610,6 +22765,7 @@ ${texto}`;
                     minutasEncontradas: [],
                     estrutura: {},
                     recomendacoes: [],
+                    problemaDetectado: null,
                 };
 
                 // 1. Buscar o fieldset principal #fldMinutas
@@ -22633,7 +22789,92 @@ ${texto}`;
 
                 log("✅ DIAGNÓSTICO: fieldset#fldMinutas encontrado!");
 
-                // 2. Analisar fieldsets internos
+                // 2. Verificar hierarquia específica do problema
+                const conteudoMinutas =
+                    fieldsetPrincipal.querySelector("#conteudoMinutas");
+                if (!conteudoMinutas) {
+                    resultados.problemaDetectado =
+                        "Elemento #conteudoMinutas não encontrado";
+                    logCritical(
+                        "❌ PROBLEMA: #conteudoMinutas não encontrado!"
+                    );
+                    return resultados;
+                }
+
+                const conteudoDinamico = conteudoMinutas.querySelector(
+                    'div[id^="conteudoMinutas_"]'
+                );
+                if (!conteudoDinamico) {
+                    resultados.problemaDetectado =
+                        "Div dinâmica conteudoMinutas_ não encontrada";
+                    logCritical(
+                        "❌ PROBLEMA: Div dinâmica conteudoMinutas_ não encontrada!"
+                    );
+                    return resultados;
+                }
+
+                log("✅ DIAGNÓSTICO: Hierarquia DOM até div dinâmica OK");
+
+                // 3. FOCO NO PROBLEMA: Analisar todos os botões na div dinâmica
+                const todosBotoes = conteudoDinamico.querySelectorAll("button");
+                log(
+                    `🔍 DIAGNÓSTICO: ${todosBotoes.length} botões encontrados na div dinâmica`
+                );
+
+                const analiseBotoes = [];
+                todosBotoes.forEach((botao, index) => {
+                    const analise = {
+                        indice: index + 1,
+                        classes: botao.className,
+                        temTexto: !!botao.textContent?.trim(),
+                        texto: botao.textContent?.trim().substring(0, 100),
+                        innerHTML: botao.innerHTML?.substring(0, 100),
+                        matchesSeletor: botao.matches(
+                            "button.infraLegendObrigatorio.btn.btn-link.btn-sm.p-0"
+                        ),
+                        matchesInfraLegend: botao.matches(
+                            "button.infraLegendObrigatorio"
+                        ),
+                        matchesBtnLink: botao.matches("button.btn-link"),
+                    };
+                    analiseBotoes.push(analise);
+
+                    log(`   Botão ${index + 1}:`, analise);
+                });
+
+                resultados.analiseBotoes = analiseBotoes;
+
+                // 4. Tentar seletores alternativos
+                const seletoresAlternativos = [
+                    "button.infraLegendObrigatorio",
+                    "button[class*='infraLegend']",
+                    "button.btn-link",
+                    "button",
+                    ".infraLegendObrigatorio",
+                ];
+
+                const testeSeletores = {};
+                seletoresAlternativos.forEach((seletor) => {
+                    const elemento = conteudoDinamico.querySelector(seletor);
+                    testeSeletores[seletor] = {
+                        encontrado: !!elemento,
+                        temTexto: elemento
+                            ? !!elemento.textContent?.trim()
+                            : false,
+                        texto: elemento
+                            ? elemento.textContent?.trim().substring(0, 50)
+                            : null,
+                        classes: elemento ? elemento.className : null,
+                    };
+                });
+
+                resultados.testeSeletores = testeSeletores;
+                log(
+                    "🔍 DIAGNÓSTICO: Teste de seletores alternativos:",
+                    testeSeletores
+                );
+
+                // 5. Analisar fieldsets internos (método original)
                 const minutasFieldsets = fieldsetPrincipal.querySelectorAll(
                     "div > div:nth-child(2) > fieldset"
                 );
@@ -22654,14 +22895,14 @@ ${texto}`;
                         texto: textoMinuta,
                         comprimento: textoMinuta.length,
                     });
-
-                    log(
-                        `📋 MINUTA ${index + 1}: ${textoMinuta.substring(
-                            0,
-                            100
-                        )}...`
-                    );
                 });
+
+                log(
+                    `📋 MINUTA ${index + 1}: ${textoMinuta.substring(
+                        0,
+                        100
+                    )}...`
+                );
 
                 // 3. Estrutura geral
                 resultados.estrutura = {
@@ -22819,12 +23060,12 @@ ${texto}`;
             cleanInvisibleChars: nsCleanInvisibleChars,
             debugEventStructure: nsDebugEventStructure,
             extractTextFromPDF: nsExtractTextFromPDF,
-            // Novas funções de detecção de data de sessão
+            // Novas funções de detecção de data de sessão - CORRIGIDA ESTRUTURA DOM
             detectarDataSessao: function () {
                 log(
-                    "⚠️ FUNÇÃO REMOVIDA: Use window.SENT1_AUTO.detectarCardSessaoSimplificado()"
+                    "⚠️ FUNÇÃO REDIRECIONADA: Use window.SENT1_AUTO.detectarSessoesUnificado() com nova estrutura DOM"
                 );
-                return window.SENT1_AUTO.detectarCardSessaoSimplificado();
+                return window.SENT1_AUTO.detectarSessoesUnificado();
             },
             getDataSessaoPautado: getDataSessaoPautado,
             hasDataSessaoPautado: hasDataSessaoPautado,
@@ -26126,6 +26367,12 @@ ${texto}`;
                     return false;
                 }
             },
+
+            // 🧪 FUNÇÃO DE TESTE RÁPIDA PARA DEBUG - NOVA ESTRUTURA DOM
+            debugDeteccaoSessaoRapida: debugDeteccaoSessaoRapida,
+
+            // 🧪 TESTE ESPECÍFICO PARA REGEX
+            testarRegexEspecifica: testarRegexEspecifica,
 
             // 🔍 NOVA FUNÇÃO: Verificar se o tipo de sessão está sendo capturado corretamente
             debugTipoSessaoTooltip: function () {
