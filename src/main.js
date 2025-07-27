@@ -1036,8 +1036,24 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 "🎯 DETECÇÃO UNIFICADA: Iniciando detecção única de sessões com nova estrutura DOM..."
             );
 
-            // 0. VERIFICAR SE JÁ TEMOS DADOS VÁLIDOS (anti-duplicação)
+            // 🛡️ PROTEÇÃO ANTI-DUPLICAÇÃO ROBUSTA
             const processoAtual = obterNumeroProcesso();
+            const chaveProtecao = `eprobe_deteccao_${processoAtual}`;
+
+            // Verificar se já está em execução para este processo
+            if (window[chaveProtecao] === "executando") {
+                console.log(
+                    "🚨 PROTEÇÃO: Detecção já em execução para este processo, ignorando chamada duplicada"
+                );
+                return null;
+            }
+
+            // Marcar como em execução
+            if (!forcarDeteccao) {
+                window[chaveProtecao] = "executando";
+            }
+
+            // 0. VERIFICAR SE JÁ TEMOS DADOS VÁLIDOS (anti-duplicação)
             if (
                 !forcarDeteccao &&
                 hasDataSessaoPautado() &&
@@ -1046,6 +1062,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 console.log(
                     "✅ DETECÇÃO: Dados já existem para este processo, retornando cache"
                 );
+
+                // Marcar como concluído
+                window[chaveProtecao] = "concluido";
+
                 return {
                     sessaoPrincipal: dataSessaoPautado,
                     todasSessoes: [dataSessaoPautado],
@@ -1062,6 +1082,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 )
             ) {
                 console.log("❌ DETECÇÃO: Página incorreta");
+                // Limpar proteção em caso de erro
+                window[chaveProtecao] = "erro";
                 return null;
             }
 
@@ -1071,6 +1093,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 console.log(
                     "❌ DETECÇÃO: Container #conteudoMinutas não encontrado"
                 );
+                // Limpar proteção em caso de erro
+                window[chaveProtecao] = "erro";
                 return null;
             }
 
@@ -1083,6 +1107,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             if (minutasEncontradas.length === 0) {
                 console.log("❌ DETECÇÃO: Nenhuma minuta encontrada");
+                // Limpar proteção em caso de erro
+                window[chaveProtecao] = "erro";
                 return null;
             }
 
@@ -1248,7 +1274,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         );
 
                         const sessao = {
-                            tipo: tipoEncontrado,
+                            tipo: extrairTipoSessao(textoCompleto),
                             status: padrao.status,
                             data: data.trim(),
                             orgao: orgao.trim(),
@@ -1268,6 +1294,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             if (sessoes.length === 0) {
                 console.log("❌ DETECÇÃO: Nenhuma sessão válida encontrada");
+                // Limpar proteção em caso de erro
+                window[chaveProtecao] = "erro";
                 return null;
             }
 
@@ -1334,6 +1362,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 console.error("❌ AUTO-CRIAÇÃO: Erro ao criar card:", error);
             }
 
+            // 🛡️ MARCAR PROTEÇÃO COMO CONCLUÍDA
+            window[chaveProtecao] = "concluido";
+            console.log(
+                "🛡️ PROTEÇÃO: Detecção concluída, marcando como finalizada"
+            );
+
             return resultado;
         }
 
@@ -1363,6 +1397,231 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 console.log("❌ FALHA: Regex não capturou o texto");
                 return false;
             }
+        }
+
+        // 🧪 FUNÇÃO DE TESTE PARA EXTRAÇÃO DE TIPOS
+        function testarExtracaoTipos() {
+            console.log("🧪 TESTE: Validando extração de tipos de sessão...");
+
+            const exemplos = [
+                "Mérito (Julgado em Pauta em 01/07/2025 - CAMPUB5)",
+                "Embargos de Declaração (Julgado em Pauta em 19/03/2024 - CAMPUB5)",
+                "Agravo Interno (Julgado em Pauta em 22/07/2025 - CAMPUB5)",
+                "Preliminar (Incluído em Pauta em 15/08/2025 - CAMCIV2)",
+                "Cautelar (Convertido em Diligência em Pauta em 30/06/2025 - CAMCOM1)",
+                "1. Recurso Especial (Retirado em Pauta em 10/09/2025 - SORGESP)",
+            ];
+
+            exemplos.forEach((exemplo, index) => {
+                const tipoExtraido = extrairTipoSessao(exemplo);
+                console.log(`   ${index + 1}. "${exemplo}"`);
+                console.log(`      → Tipo extraído: "${tipoExtraido}"`);
+                console.log("");
+            });
+
+            return true;
+        }
+
+        // 🔍 FUNÇÃO DE DEBUG ESPECÍFICA PARA TOOLTIP E TIPO
+        function debugTooltipComTipo() {
+            console.log(
+                "🔍 DEBUG: Verificando tooltip e exibição do tipo de sessão..."
+            );
+
+            // 1. Verificar se existe card
+            const card = document.querySelector(
+                "#eprobe-card-sessao-material, #eprobe-data-sessao"
+            );
+            console.log("📋 Card encontrado:", !!card);
+
+            if (!card) {
+                console.log(
+                    "❌ Nenhum card encontrado. Execute primeiro window.SENT1_AUTO.detectarSessoesUnificado()"
+                );
+                return false;
+            }
+
+            // 2. Verificar dados de sessão
+            const dadosSessoes = window.SENT1_AUTO.todasSessoesDetectadas;
+            console.log("📊 Dados de sessões:", dadosSessoes);
+
+            if (!dadosSessoes || dadosSessoes.length === 0) {
+                console.log("❌ Nenhum dado de sessão encontrado");
+                return false;
+            }
+
+            // 3. Verificar tooltip existente
+            const tooltipExistente = document.getElementById(
+                "eprobe-rich-tooltip"
+            );
+            console.log("🎨 Tooltip existe:", !!tooltipExistente);
+
+            // 4. Testar criação de tooltip com dados reais
+            console.log("🧪 Testando criação de tooltip...");
+            const resultadoTooltip = aplicarTooltipUnificado(
+                card,
+                dadosSessoes
+            );
+            console.log("📋 Resultado aplicação tooltip:", resultadoTooltip);
+
+            // 5. Verificar se tooltip foi criado e contém tipo
+            setTimeout(() => {
+                const novoTooltip = document.getElementById(
+                    "eprobe-rich-tooltip"
+                );
+                if (novoTooltip) {
+                    console.log("✅ Tooltip criado com sucesso");
+                    const conteudoTooltip = novoTooltip.innerHTML;
+                    const contemTipo =
+                        conteudoTooltip.includes("Tipo do Julgamento");
+                    const contemIconeBalance =
+                        conteudoTooltip.includes("balance") ||
+                        conteudoTooltip.includes("M60.65-108.65");
+
+                    console.log("🔍 Análise do tooltip:");
+                    console.log(
+                        "  - Contém seção 'Tipo do Julgamento':",
+                        contemTipo
+                    );
+                    console.log(
+                        "  - Contém ícone balance:",
+                        contemIconeBalance
+                    );
+
+                    // Verificar tipos extraídos
+                    dadosSessoes.forEach((sessao, index) => {
+                        console.log(`  - Sessão ${index + 1}:`);
+                        console.log(
+                            `    - Texto original: "${sessao.textoCompleto}"`
+                        );
+                        console.log(`    - Tipo extraído: "${sessao.tipo}"`);
+                        console.log(
+                            `    - Tipo no HTML: ${conteudoTooltip.includes(
+                                sessao.tipo
+                            )}`
+                        );
+                    });
+                } else {
+                    console.log("❌ Tooltip não foi criado");
+                }
+            }, 100);
+
+            return true;
+        }
+
+        /**
+         * 🎯 FUNÇÃO PARA EXTRAIR TIPO DE SESSÃO - REGRA: Tudo antes do primeiro parênteses
+         * @param {string} textoCompleto - Texto completo da sessão
+         * @returns {string} - Tipo da sessão limpo e formatado
+         */
+        function extrairTipoSessao(textoCompleto) {
+            console.log(
+                "🔍 EXTRAIR TIPO: Iniciando extração de tipo de sessão..."
+            );
+            console.log("📝 EXTRAIR TIPO: Texto de entrada:", textoCompleto);
+
+            if (!textoCompleto) {
+                console.log(
+                    "❌ EXTRAIR TIPO: Texto vazio, retornando padrão 'Julgamento'"
+                );
+                return "Julgamento";
+            }
+
+            // Extrair tudo antes do primeiro parênteses
+            const partesTipo = textoCompleto.split("(")[0];
+            console.log(
+                "✂️ EXTRAIR TIPO: Parte antes do parênteses:",
+                partesTipo
+            );
+
+            if (!partesTipo) {
+                console.log(
+                    "❌ EXTRAIR TIPO: Nenhuma parte encontrada antes do parênteses, retornando padrão"
+                );
+                return "Julgamento";
+            }
+
+            // Limpar e formatar
+            let tipoLimpo = partesTipo.trim();
+            console.log("🧹 EXTRAIR TIPO: Após trim inicial:", tipoLimpo);
+
+            // Remover prefixos comuns como números, etc
+            const tipoAntes = tipoLimpo;
+            tipoLimpo = tipoLimpo.replace(/^\d+\s*[-.]?\s*/, ""); // Remove números no início
+            tipoLimpo = tipoLimpo.replace(/^\W+/, ""); // Remove caracteres especiais no início
+            tipoLimpo = tipoLimpo.trim();
+
+            if (tipoAntes !== tipoLimpo) {
+                console.log(
+                    "🔧 EXTRAIR TIPO: Após limpeza de prefixos:",
+                    tipoAntes,
+                    "→",
+                    tipoLimpo
+                );
+            }
+
+            // Se ficou vazio, retornar padrão
+            if (!tipoLimpo || tipoLimpo.length < 2) {
+                console.log(
+                    "❌ EXTRAIR TIPO: Tipo muito curto ou vazio após limpeza, retornando padrão"
+                );
+                return "Julgamento";
+            }
+
+            // Aplicar formatação de title case para tipos conhecidos
+            const tiposEspeciais = {
+                merito: "Mérito",
+                preliminar: "Preliminar",
+                cautelar: "Cautelar",
+                "embargos de declaracao": "Embargos de Declaração",
+                "agravo interno": "Agravo Interno",
+                agravo: "Agravo",
+                apelacao: "Apelação",
+                recurso: "Recurso",
+                "recurso especial": "Recurso Especial",
+                "recurso extraordinario": "Recurso Extraordinário",
+            };
+
+            const tipoNormalizado = tipoLimpo
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, ""); // Remove acentos para comparação
+
+            console.log(
+                "🔤 EXTRAIR TIPO: Tipo normalizado para comparação:",
+                tipoNormalizado
+            );
+
+            // Verificar se é um tipo especial
+            for (const [chave, valor] of Object.entries(tiposEspeciais)) {
+                const chaveNormalizada = chave
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+                if (tipoNormalizado === chaveNormalizada) {
+                    console.log(
+                        `✅ EXTRAIR TIPO: Match especial encontrado! "${tipoNormalizado}" → "${valor}"`
+                    );
+                    return valor;
+                }
+            }
+
+            // Se não é um tipo especial, aplicar title case simples
+            const tipoFormatado = tipoLimpo
+                .split(" ")
+                .map(
+                    (palavra) =>
+                        palavra.charAt(0).toUpperCase() +
+                        palavra.slice(1).toLowerCase()
+                )
+                .join(" ");
+
+            console.log(
+                `🎨 EXTRAIR TIPO: Aplicando title case genérico: "${tipoLimpo}" → "${tipoFormatado}"`
+            );
+            console.log(`✅ EXTRAIR TIPO: Resultado final: "${tipoFormatado}"`);
+
+            return tipoFormatado;
         }
 
         /**
@@ -1528,18 +1787,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return { status: "aviso", motivo: "sem_sessoes" };
             }
 
-            // 2. Remover tooltip existente
+            // 2. Remover tooltip existente APENAS UMA VEZ para evitar flash
             const tooltipExistente = document.getElementById(
                 "eprobe-rich-tooltip"
             );
             if (tooltipExistente) {
+                console.log(
+                    "🔄 TOOLTIP: Removendo tooltip existente para evitar duplicação"
+                );
                 tooltipExistente.remove();
             }
 
             // 3. Criar tooltip HTML
             const tooltipHTML = criarHTMLTooltip(sessoes);
 
-            // 4. Adicionar event listeners direto no card
+            // 4. Adicionar event listeners direto no card COM PASSIVE
             cardElement.addEventListener("mouseenter", mostrarTooltip, {
                 passive: true,
             });
@@ -1548,7 +1810,35 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             });
 
             // 5. Funções do tooltip
+            let tooltipTimer = null; // Timer para controlar o escondimento
+
             function mostrarTooltip(e) {
+                // 🛡️ CANCELAR TIMER DE ESCONDIMENTO SE EXISTIR
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
+                    tooltipTimer = null;
+                    console.log("⏰ TOOLTIP: Timer de escondimento cancelado");
+                }
+
+                // 🛡️ PROTEÇÃO ANTI-FLASH: Verificar se já existe tooltip
+                const tooltipExistente = document.getElementById(
+                    "eprobe-rich-tooltip"
+                );
+                if (tooltipExistente) {
+                    console.log(
+                        "🔄 TOOLTIP: Reutilizando tooltip existente para evitar flash"
+                    );
+
+                    // Apenas mostrar o tooltip existente
+                    tooltipExistente.style.opacity = "1";
+                    tooltipExistente.style.visibility = "visible";
+                    return;
+                }
+
+                console.log(
+                    "🎨 TOOLTIP: Criando novo tooltip com tipos de sessão..."
+                );
+
                 const tooltip = document.createElement("div");
                 tooltip.id = "eprobe-rich-tooltip";
                 tooltip.innerHTML = tooltipHTML;
@@ -1563,52 +1853,102 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     max-width: none !important;
                     font-size: inherit !important;
                     line-height: inherit !important;
-                    pointer-events: none !important;
+                    pointer-events: auto !important;
                     opacity: 0 !important;
-                    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-                    left: -9999px !important;
-                    top: -9999px !important;
-                    transform: scale(0.9) !important;
+                    transition: opacity 0.15s ease-in-out !important;
+                    left: 0px !important;
+                    top: 0px !important;
+                    transform: none !important;
                     margin: 0 !important;
-                    filter: drop-shadow(0 8px 32px rgba(0, 0, 0, 0.12)) !important;
+                    filter: none !important;
                     visibility: hidden !important;
                 `;
 
                 // Adicionar ao DOM primeiro para permitir medição
                 document.body.appendChild(tooltip);
 
+                // 🎯 EVENT LISTENERS DO TOOLTIP PARA MANTER VISÍVEL DURANTE HOVER
+                tooltip.addEventListener(
+                    "mouseenter",
+                    () => {
+                        console.log(
+                            "🖱️ TOOLTIP: Mouse sobre tooltip - mantendo visível"
+                        );
+                        // Cancelar qualquer timer de escondimento
+                        if (tooltipTimer) {
+                            clearTimeout(tooltipTimer);
+                            tooltipTimer = null;
+                            console.log(
+                                "⏰ TOOLTIP: Timer cancelado durante hover no tooltip"
+                            );
+                        }
+                        tooltip.style.opacity = "1";
+                    },
+                    { passive: true }
+                );
+
+                tooltip.addEventListener(
+                    "mouseleave",
+                    () => {
+                        console.log(
+                            "🖱️ TOOLTIP: Mouse saiu do tooltip - programando escondimento"
+                        );
+                        programarEscondimento();
+                    },
+                    { passive: true }
+                );
+
                 // 🔧 AGUARDAR RENDERIZAÇÃO PARA OBTER DIMENSÕES REAIS
                 requestAnimationFrame(() => {
-                    // Tornar visível temporariamente para medição
-                    tooltip.style.visibility = "visible";
-                    tooltip.style.left = "-9999px";
-                    tooltip.style.top = "-9999px";
-
                     // 🎯 POSICIONAMENTO INTELIGENTE COM DIMENSÕES REAIS
                     posicionarTooltipRelativoAoCard(tooltip, cardElement, e);
 
                     // ✨ ANIMAÇÃO DE ENTRADA ELEGANTE
                     requestAnimationFrame(() => {
+                        tooltip.style.visibility = "visible";
                         tooltip.style.opacity = "1";
-                        tooltip.style.transform = "scale(1)";
                     });
                 });
             }
 
             function esconderTooltip() {
-                const tooltip = document.getElementById("eprobe-rich-tooltip");
-                if (tooltip) {
-                    // ✨ ANIMAÇÃO DE SAÍDA ELEGANTE
-                    tooltip.style.opacity = "0";
-                    tooltip.style.transform = "scale(0.95)";
-                    tooltip.style.filter = "blur(1px)";
+                console.log(
+                    "🖱️ TOOLTIP: Mouse saiu do card - programando escondimento"
+                );
+                programarEscondimento();
+            }
 
-                    setTimeout(() => {
-                        if (tooltip.parentNode) {
-                            tooltip.remove();
-                        }
-                    }, 300);
+            function programarEscondimento() {
+                // Cancelar timer anterior se existir
+                if (tooltipTimer) {
+                    clearTimeout(tooltipTimer);
                 }
+
+                // Programar escondimento com delay
+                tooltipTimer = setTimeout(() => {
+                    const tooltip = document.getElementById(
+                        "eprobe-rich-tooltip"
+                    );
+                    if (tooltip) {
+                        console.log(
+                            "🔄 TOOLTIP: Escondendo tooltip após delay"
+                        );
+
+                        // ✨ ANIMAÇÃO DE SAÍDA ELEGANTE
+                        tooltip.style.opacity = "0";
+
+                        // Remover após animação
+                        setTimeout(() => {
+                            if (tooltip.parentNode) {
+                                tooltip.remove();
+                                console.log(
+                                    "✅ TOOLTIP: Removido do DOM com sucesso"
+                                );
+                            }
+                        }, 200);
+                    }
+                    tooltipTimer = null;
+                }, 300); // 300ms de delay
             }
 
             console.log("✅ TOOLTIP: Aplicado com sucesso");
@@ -2005,6 +2345,29 @@ const logError = console.error.bind(console); // Erros sempre visíveis
          * Cria HTML do tooltip com dados das sessões - Material Symbols Design
          */
         function criarHTMLTooltip(sessoes) {
+            console.log(
+                "🎨 TOOLTIP HTML: Iniciando criação do HTML do tooltip..."
+            );
+            console.log("📊 TOOLTIP HTML: Sessões recebidas:", sessoes);
+            console.log(
+                "🔢 TOOLTIP HTML: Total de sessões:",
+                sessoes?.length || 0
+            );
+
+            // Log dos tipos das sessões
+            if (sessoes && sessoes.length > 0) {
+                console.log("📋 TOOLTIP HTML: Tipos das sessões encontradas:");
+                sessoes.forEach((sessao, index) => {
+                    console.log(
+                        `   ${index + 1}. Tipo: "${
+                            sessao.tipo || "N/A"
+                        }" | Status: "${sessao.status}" | Data: "${
+                            sessao.data
+                        }"`
+                    );
+                });
+            }
+
             // Determinar cor do header baseada na sessão atual
             let corHeader = "#5C85B4"; // Azul padrão do Figma
 
@@ -2170,7 +2533,22 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 box-shadow: 0 2px 4px rgba(0,0,0,0.2);
                                 flex-shrink: 0;
                             ">
-                                ${sessao.tipo || "Julgamento"}
+                                ${(() => {
+                                    const tipoFinal =
+                                        sessao.tipo || "Julgamento";
+                                    console.log(
+                                        `🎯 TOOLTIP HTML: Inserindo tipo na sessão ${
+                                            index + 1
+                                        }: "${tipoFinal}"`
+                                    );
+                                    console.log(
+                                        `📋 TOOLTIP HTML: Dados da sessão ${
+                                            index + 1
+                                        }:`,
+                                        sessao
+                                    );
+                                    return tipoFinal;
+                                })()}
                             </div>
                         </div>
                         
@@ -2183,6 +2561,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             flex-wrap: wrap;
                             min-height: 24px;
                         ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 16px;
+                                color: #64748B;
+                                vertical-align: middle;
+                                flex-shrink: 0;
+                            ">gavel</span>
                             <div style="
                                 color: ${corStatus};
                                 font-weight: 600;
@@ -2192,9 +2576,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 word-break: break-word;
                             ">${sessao.status}</div>
                             <div style="
-                                display: flex;
-                                align-items: center;
-                                gap: 6px;
                                 background: ${corStatus}20;
                                 color: ${corStatus};
                                 padding: 4px 10px;
@@ -2204,12 +2585,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 white-space: nowrap;
                                 flex-shrink: 0;
                             ">
-                                <span class="material-symbols-outlined" style="
-                                    font-size: 14px;
-                                    color: #64748B;
-                                    vertical-align: middle;
-                                    flex-shrink: 0;
-                                ">gavel</span>
                                 ${sessao.data}
                             </div>
                         </div>
@@ -2220,12 +2595,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             align-items: flex-start;
                             gap: 8px;
                             color: #64748B;
-                            font-size: 13px;
+                            font-size: 12px;
                             margin-bottom: 8px;
                             line-height: 1.4;
                         ">
                             <span class="material-symbols-outlined" style="
-                                font-size: 16px;
+                                font-size: 16px !important;
                                 vertical-align: middle;
                                 color: #64748B;
                                 flex-shrink: 0;
@@ -2240,6 +2615,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             }</span>
                         </div>
                         
+
                         ${
                             sessao.observacoes
                                 ? `
@@ -2274,29 +2650,36 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             html += `
                     </div>
-                    
-                    <!-- Footer elegante -->
-                    <div style="
-                        background: #f8fafc;
-                        padding: 12px 20px;
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        border-top: 1px solid #e2e8f0;
-                        font-size: 11px;
-                    ">
-                        <span style="
-                            color: #64748b;
-                            font-weight: 400;
-                        ">Atualizado automaticamente</span>
-                        <span style="
-                            color: #1976d2;
-                            font-weight: 600;
-                            letter-spacing: 0.5px;
-                        ">eProbe</span>
-                    </div>
                 </div>
             `;
+
+            console.log("✅ TOOLTIP HTML: HTML do tooltip criado com sucesso!");
+            console.log(
+                "📏 TOOLTIP HTML: Tamanho do HTML gerado:",
+                html.length,
+                "caracteres"
+            );
+            console.log("🎯 TOOLTIP HTML: Resumo do conteúdo criado:");
+            console.log(
+                `   - ${sessoes.length} sessão${
+                    sessoes.length !== 1 ? "ões" : ""
+                } processada${sessoes.length !== 1 ? "s" : ""}`
+            );
+            console.log(`   - Cor do header: ${corHeader}`);
+
+            // Verificar se tipos foram incluídos no HTML
+            const tiposIncluidos = sessoes.map((s) => s.tipo || "Julgamento");
+            console.log(
+                "🔍 TOOLTIP HTML: Verificando inclusão dos tipos no HTML:"
+            );
+            tiposIncluidos.forEach((tipo, index) => {
+                const incluido = html.includes(tipo);
+                console.log(
+                    `   ${index + 1}. "${tipo}": ${
+                        incluido ? "✅ Incluído" : "❌ Não encontrado"
+                    }`
+                );
+            });
 
             return html;
         }
@@ -3159,20 +3542,8 @@ RESPOSTA (apenas JSON válido):`;
                 logCritical(`❌ ERRO em extrairLinkSessao: ${error.message}`);
             }
 
-            // Testar detecção unificada apenas
-            try {
-                logCritical("🔍 TESTANDO: detectarSessoesUnificado...");
-                const resultadoUnificado = detectarSessoesUnificado();
-                logCritical(
-                    `📊 RESULTADO Sessões Unificado: ${JSON.stringify(
-                        resultadoUnificado
-                    )}`
-                );
-            } catch (error) {
-                logCritical(
-                    `❌ ERRO em detectarSessoesUnificado: ${error.message}`
-                );
-            }
+            // 🚨 REMOVIDO: Chamada duplicada desnecessária de detectarSessoesUnificado()
+            // Esta função já é chamada automaticamente pela detecção unificada
 
             logCritical(
                 "✅ TESTE CRÍTICO: Detecção dinâmica de fieldset concluída!"
@@ -3374,13 +3745,16 @@ RESPOSTA (apenas JSON válido):`;
                         `📐 CARD: Posição final - x:${rect.x}, y:${rect.y}, width:${rect.width}, height:${rect.height}`
                     );
 
-                    // 🎯 APLICAR TOOLTIP DIRETAMENTE NO CARD (SEM INDICADOR)
+                    // 🎯 APLICAR TOOLTIP UNIFICADO DIRETAMENTE NO CARD
                     log(
-                        "🎯 TOOLTIP: Aplicando tooltip direto no card sem indicador..."
+                        "🎯 TOOLTIP: Aplicando tooltip unificado direto no card..."
                     );
                     try {
-                        const resultadoTooltip =
-                            adicionarTooltipDiretoNoCard(cardNoDom);
+                        // ✅ USAR APENAS A FUNÇÃO UNIFICADA PARA EVITAR DUPLICAÇÃO
+                        const resultadoTooltip = aplicarTooltipUnificado(
+                            cardNoDom,
+                            window.SENT1_AUTO?.todasSessoesDetectadas || null
+                        );
                         if (
                             resultadoTooltip &&
                             resultadoTooltip.status === "sucesso"
@@ -17658,428 +18032,20 @@ ${texto}`;
         }
 
         /**
-         * 🎯 TOOLTIP DIRETO NO CARD - SEM INDICADOR
-         * Aplica tooltip diretamente no hover do card de sessão
-         * @param {HTMLElement} cardElement - Elemento do card
-         * @param {Array} todasSessoes - Array com todas as sessões (opcional)
-         * @returns {Object} - Status da operação
+         * ❌ FUNÇÃO DUPLICADA DESATIVADA
+         * Esta função foi substituída por aplicarTooltipUnificado()
+         * Redirecionando para evitar conflitos de tooltip
          */
         function adicionarTooltipDiretoNoCard(
             cardElement,
             todasSessoes = null
         ) {
-            log("🎯 TOOLTIP DIRETO: Iniciando configuração no card...");
-
-            if (!cardElement) {
-                logError("❌ TOOLTIP DIRETO: Card element obrigatório");
-                return { status: "erro", erro: "Card element obrigatório" };
-            }
-
-            // Buscar dados reais se não foram fornecidos
-            if (!todasSessoes) {
-                todasSessoes =
-                    window.SENT1_AUTO?.todasSessoesDetectadas ||
-                    detectarSessoesUnificado() ||
-                    [];
-            }
-
-            // Se ainda não há sessões, criar dados de fallback
-            if (!todasSessoes || todasSessoes.length === 0) {
-                todasSessoes = [
-                    {
-                        data: "Data não encontrada",
-                        status: "Pautado",
-                        statusOriginal: "PAUTADO",
-                        orgao: "Câmara não identificada",
-                        isAtual: true,
-                    },
-                ];
-            }
-
-            // Remover tooltip antigo se existir
-            const tooltipAntigo = document.getElementById(
-                "eprobe-rich-tooltip"
+            console.log(
+                "⚠️ TOOLTIP DUPLICADO: Redirecionando para função unificada..."
             );
-            if (tooltipAntigo) {
-                tooltipAntigo.remove();
-                log("🗑️ TOOLTIP DIRETO: Tooltip antigo removido");
-            }
 
-            // Criar tooltip único
-            const tooltip = document.createElement("div");
-            tooltip.id = "eprobe-rich-tooltip";
-            tooltip.style.cssText = `
-                position: absolute !important;
-                display: none;
-                z-index: 999999 !important;
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 8px;
-                min-width: 280px;
-                max-width: 400px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-                font-family: 'Roboto', sans-serif;
-                opacity: 0;
-                transition: opacity 0.15s ease-in-out;
-                overflow: hidden;
-                pointer-events: auto;
-                left: 0;
-                top: 0;
-            `;
-
-            // Gerar HTML das sessões
-            let htmlSessoes = "";
-            todasSessoes.forEach((sessao, index) => {
-                const isAtual = index === 0 || sessao.isAtual;
-
-                // Determinar cor baseada no status da sessão individual
-                let corStatus = "#757575"; // Cinza padrão
-                if (sessao.status) {
-                    const status = sessao.status.toLowerCase();
-                    if (
-                        status.includes("incluído") ||
-                        status.includes("pautado")
-                    ) {
-                        corStatus = "#5C85B4"; // Azul padrão do Figma
-                    } else if (status.includes("retirado")) {
-                        corStatus = "#CE2D4F"; // Vermelho
-                    } else if (status.includes("vista")) {
-                        corStatus = "#FFBF46"; // Amarelo
-                    } else if (status.includes("julgado")) {
-                        corStatus = "#3AB795"; // Verde do Figma
-                    } else if (status.includes("adiado")) {
-                        corStatus = "#F55D3E"; // Laranja do Figma
-                    } else if (status.includes("sobrestado")) {
-                        corStatus = "#FCB0B3"; // Rosa do Figma
-                    } else if (
-                        status.includes("diligência") ||
-                        status.includes("diligencia")
-                    ) {
-                        corStatus = "#00171F"; // Preto oficial do Figma para Diligência
-                    }
-                }
-
-                // Background e border também usam a cor do status para sessão atual
-                const backgroundCard = isAtual ? `${corStatus}15` : "#fafafa"; // 15 = ~8.5% opacity
-                const borderCard = isAtual ? corStatus : "#e0e0e0";
-
-                htmlSessoes += `
-                    <div style="
-                        min-width: 120px; 
-                        padding: 12px 12px 12px 12px; 
-                        border: 1px solid ${borderCard}; 
-                        border-radius: 6px; 
-                        background: ${backgroundCard}; 
-                        position: relative; 
-                        margin: 0 6px 6px 0;
-                        transition: all 0.2s ease;
-                        box-shadow: ${
-                            isAtual
-                                ? `0 2px 8px ${corStatus}25`
-                                : "0 1px 3px rgba(0,0,0,0.1)"
-                        };
-                    ">
-                        
-                        <!-- Badge Atual/Anterior -->
-                        ${
-                            isAtual || !isAtual
-                                ? `
-                        <div style="
-                            position: absolute;
-                            top: 6px;
-                            right: 6px;
-                            background: ${corStatus}; 
-                            color: white; 
-                            padding: 2px 6px; 
-                            border-radius: 10px; 
-                            font-size: 8px; 
-                            font-weight: 600; 
-                            text-transform: uppercase; 
-                            letter-spacing: 0.5px;
-                            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-                            z-index: 10;
-                            min-width: 28px;
-                            text-align: center;
-                            line-height: 1.2;
-                        ">
-                            ${isAtual ? "ATUAL" : "ANTERIOR"}
-                        </div>
-                        `
-                                : ""
-                        }
-                        
-                        <!-- Status e Data com ícone gavel -->
-                        <div style="
-                            display: flex; 
-                            align-items: center; 
-                            gap: 8px; 
-                            margin-bottom: 10px;
-                            margin-top: ${isAtual || !isAtual ? "16px" : "0px"};
-                            flex-wrap: wrap;
-                            min-height: 24px;
-                            padding-right: ${
-                                isAtual || !isAtual ? "35px" : "0px"
-                            };
-                        ">
-                            <div style="
-                                display: flex;
-                                align-items: center;
-                                gap: 6px;
-                                color: ${corStatus}; 
-                                font-weight: 600; 
-                                font-size: 14px; 
-                                line-height: 1.2;
-                                flex-shrink: 0;
-                                word-break: break-word;
-                            ">
-                                <span class="material-symbols-outlined" style="
-                                    font-size: 14px; 
-                                    color: #64748B; 
-                                    vertical-align: middle;
-                                ">gavel</span>
-                                ${sessao.data}
-                            </div>
-                            <div style="
-                                background: ${corStatus}20; 
-                                color: ${corStatus}; 
-                                padding: 3px 8px; 
-                                border-radius: 12px; 
-                                font-size: 12px; 
-                                font-weight: 500;
-                                flex-shrink: 0;
-                                white-space: nowrap;
-                            ">${sessao.status}</div>
-                        </div>
-                        
-                        <!-- Órgão Julgador com ícone -->
-                        <div style="
-                            display: flex; 
-                            align-items: center; 
-                            gap: 6px; 
-                            color: #64748B; 
-                            font-size: 12px; 
-                            margin-bottom: 6px;
-                        ">
-                            <span class="material-symbols-outlined" style="
-                                font-size: 14px; 
-                                vertical-align: middle; 
-                                color: #64748B;
-                            ">account_balance</span>
-                            <span style="font-weight: 500;">${
-                                traduzirSiglaOrgao(sessao.orgao) ||
-                                "Órgão não identificado"
-                            }</span>
-                        </div>
-                        
-                        ${
-                            sessao.observacoes
-                                ? `
-                        <div style="
-                            margin-top: 12px; 
-                            padding: 10px; 
-                            background: rgba(99, 102, 241, 0.05); 
-                            border-left: 3px solid #6366F1; 
-                            border-radius: 0 8px 8px 0; 
-                            font-size: 12px; 
-                            color: #4C4F69; 
-                            line-height: 1.4;
-                        ">
-                            <div style="display: flex; align-items: flex-start; gap: 6px;">
-                                <span class="material-symbols-outlined" style="
-                                    font-size: 14px; 
-                                    color: #6366F1; 
-                                    margin-top: 1px;
-                                ">info</span>
-                                <div>
-                                    <strong>Obs:</strong> ${sessao.observacoes}
-                                </div>
-                            </div>
-                        </div>
-                        `
-                                : ""
-                        }
-                    </div>
-                `;
-            });
-
-            // Determinar cor do header baseada na sessão atual
-            let corHeader = "#5C85B4"; // Azul padrão do Figma
-
-            if (todasSessoes && todasSessoes.length > 0) {
-                // Pegar a primeira sessão (atual) ou procurar por uma marcada como atual
-                const sessaoAtual =
-                    todasSessoes.find((s) => s.isAtual) || todasSessoes[0];
-                if (sessaoAtual && sessaoAtual.status) {
-                    const status = sessaoAtual.status.toLowerCase();
-                    if (
-                        status.includes("incluído") ||
-                        status.includes("pautado")
-                    ) {
-                        corHeader = "#5C85B4"; // Azul padrão do Figma
-                    } else if (status.includes("retirado")) {
-                        corHeader = "#CE2D4F"; // Vermelho
-                    } else if (status.includes("vista")) {
-                        corHeader = "#FFBF46"; // Amarelo
-                    } else if (status.includes("julgado")) {
-                        corHeader = "#3AB795"; // Verde do Figma
-                    } else if (status.includes("adiado")) {
-                        corHeader = "#F55D3E"; // Laranja do Figma
-                    } else if (status.includes("sobrestado")) {
-                        corHeader = "#FCB0B3"; // Rosa do Figma
-                    } else if (
-                        status.includes("diligência") ||
-                        status.includes("diligencia")
-                    ) {
-                        corHeader = "#00171F"; // Preto oficial do Figma para Diligência
-                    }
-                }
-            }
-
-            tooltip.innerHTML = `
-                <div style="background: ${corHeader}; color: white; padding: 12px 16px; display: flex; align-items: center; gap: 8px;">
-                    <span class="material-symbols-outlined" style="font-size: 24px; vertical-align: middle;">event_repeat</span>
-                    <div>
-                        <div style="font-weight: 500; font-size: 16px;">Sessões de Julgamento</div>
-                        <div style="font-size: 12px; opacity: 0.9;">${
-                            todasSessoes.length
-                        } ${
-                todasSessoes.length === 1 ? "evento" : "eventos"
-            }</div>
-                    </div>
-                </div>
-                <div style="padding: 16px; display: flex; gap: 12px; overflow-x: auto; flex-wrap: wrap; flex-direction: column;">
-                    ${htmlSessoes}
-                </div>
-            `;
-
-            document.body.appendChild(tooltip);
-
-            // Sistema de eventos simplificado - direto no card
-            let tooltipTimer = null;
-
-            const mostrarTooltip = (event) => {
-                log("🖱️ TOOLTIP DIRETO: Mostrando tooltip no card");
-                console.log(
-                    "🔍 DEBUG: posicionarTooltipRelativoAoCard está disponível?",
-                    typeof posicionarTooltipRelativoAoCard
-                );
-
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
-
-                // 1. Mostrar tooltip primeiro para obter dimensões reais
-                tooltip.style.display = "block";
-                tooltip.style.opacity = "0"; // Manter invisível durante posicionamento
-
-                // 2. Aguardar um frame para garantir que o DOM atualizou
-                requestAnimationFrame(() => {
-                    try {
-                        // 3. Aplicar posicionamento inteligente relativo ao card
-                        if (
-                            typeof posicionarTooltipRelativoAoCard ===
-                            "function"
-                        ) {
-                            posicionarTooltipRelativoAoCard(
-                                tooltip,
-                                cardElement
-                            );
-                        } else {
-                            // Fallback: posicionamento manual se função não disponível
-                            console.warn(
-                                "⚠️ posicionarTooltipRelativoAoCard não encontrada, usando fallback"
-                            );
-                            const cardRect =
-                                cardElement.getBoundingClientRect();
-                            const tooltipRect = tooltip.getBoundingClientRect();
-
-                            // Posicionar acima do card
-                            let left =
-                                cardRect.left +
-                                cardRect.width / 2 -
-                                tooltipRect.width / 2;
-                            let top = cardRect.top - tooltipRect.height - 12;
-
-                            // Verificar bordas da tela
-                            if (left < 15) left = 15;
-                            if (
-                                left + tooltipRect.width >
-                                window.innerWidth - 15
-                            ) {
-                                left =
-                                    window.innerWidth - tooltipRect.width - 15;
-                            }
-                            if (top < 15) {
-                                top = cardRect.bottom + 12; // Mover para baixo
-                            }
-
-                            tooltip.style.left = Math.round(left) + "px";
-                            tooltip.style.top =
-                                Math.round(top + window.pageYOffset) + "px";
-                            console.log(
-                                `📍 FALLBACK: Tooltip posicionado em (${Math.round(
-                                    left
-                                )}, ${Math.round(top)})`
-                            );
-                        }
-                    } catch (error) {
-                        console.error(
-                            "❌ Erro no posicionamento do tooltip:",
-                            error
-                        );
-                    }
-
-                    // 4. Mostrar com fade após posicionamento
-                    tooltip.style.opacity = "1";
-                });
-            };
-
-            const ocultarTooltip = () => {
-                log("🖱️ TOOLTIP DIRETO: Ocultando tooltip");
-                tooltipTimer = setTimeout(() => {
-                    tooltip.style.opacity = "0";
-                    setTimeout(() => {
-                        tooltip.style.display = "none";
-                    }, 150);
-                }, 250);
-            };
-
-            const cancelarOcultacao = () => {
-                if (tooltipTimer) {
-                    clearTimeout(tooltipTimer);
-                    tooltipTimer = null;
-                }
-            };
-
-            // Limpar event listeners antigos do card
-            const novoCard = cardElement.cloneNode(true);
-            cardElement.parentNode.replaceChild(novoCard, cardElement);
-
-            // Eventos diretos no card (SEM INDICADOR)
-            novoCard.addEventListener("mouseenter", mostrarTooltip, {
-                passive: true,
-            });
-            novoCard.addEventListener("mouseleave", ocultarTooltip, {
-                passive: true,
-            });
-
-            // Eventos do tooltip (manter aberto quando mouse sobre tooltip)
-            tooltip.addEventListener("mouseenter", cancelarOcultacao, {
-                passive: true,
-            });
-            tooltip.addEventListener("mouseleave", ocultarTooltip, {
-                passive: true,
-            });
-
-            log("✅ TOOLTIP DIRETO: Sistema configurado no card sem indicador");
-            return {
-                status: "sucesso",
-                cardElement: novoCard,
-                tooltip: tooltip,
-                sessoes: todasSessoes.length,
-                metodo: "direto-no-card",
-            };
+            // 🔄 REDIRECIONAR PARA A FUNÇÃO UNIFICADA
+            return aplicarTooltipUnificado(cardElement, todasSessoes);
         }
 
         // ❌ FUNÇÕES DUPLICADAS REMOVIDAS - Use apenas adicionarTooltipDiretoNoCard()
@@ -23087,6 +23053,10 @@ ${texto}`;
 
             // 🏛️ FUNÇÕES DE TRADUÇÃO DE ÓRGÃOS TJSC
             traduzirSiglaOrgao: traduzirSiglaOrgao,
+
+            // 🎯 FUNÇÕES DE EXTRAÇÃO DE TIPO DE SESSÃO
+            extrairTipoSessao: extrairTipoSessao,
+
             getDadosCompletosSessionJulgamento:
                 sessionDataFunctions.getDadosCompletosSessionJulgamento,
             hasDadosCompletosSessionJulgamento:
@@ -26373,6 +26343,12 @@ ${texto}`;
 
             // 🧪 TESTE ESPECÍFICO PARA REGEX
             testarRegexEspecifica: testarRegexEspecifica,
+
+            // 🧪 TESTE PARA EXTRAÇÃO DE TIPOS
+            testarExtracaoTipos: testarExtracaoTipos,
+
+            // 🔍 DEBUG ESPECÍFICO PARA TOOLTIP E TIPO
+            debugTooltipComTipo: debugTooltipComTipo,
 
             // 🔍 NOVA FUNÇÃO: Verificar se o tipo de sessão está sendo capturado corretamente
             debugTipoSessaoTooltip: function () {
