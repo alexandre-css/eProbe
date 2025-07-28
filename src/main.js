@@ -4,6 +4,117 @@ const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silencios
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
 
+// ===== APLICAÇÃO INSTANTÂNEA DA NAVBAR - ANTES DE QUALQUER FLASH =====
+(function aplicarNavbarInstantaneo() {
+    // CSS da navbar aplicado IMEDIATAMENTE ao carregar o arquivo
+    const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
+    const tema = temaLocalStorage || "blue";
+
+    const gradientes = {
+        blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
+        dark: "linear-gradient(to left, #1a1a1a, #696363)",
+        light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+        violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+    };
+    const gradiente = gradientes[tema];
+
+    const cssNavbarImediato = document.createElement("style");
+    cssNavbarImediato.id = "eprobe-navbar-instant-immediate";
+    cssNavbarImediato.textContent = `
+        /* NAVBAR APLICADA IMEDIATAMENTE NO CARREGAMENTO DO SCRIPT */
+        #navbar.navbar.bg-instancia,
+        .navbar.bg-instancia,
+        nav.navbar.bg-instancia,
+        .navbar.text-white.bg-instancia,
+        .navbar.text-white.d-xl-flex.bg-instancia {
+            background-image: ${gradiente} !important;
+            display: flex !important;
+            align-items: center !important;
+            position: relative !important;
+            min-height: 50px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            transition: none !important; /* Sem transições para evitar flash */
+        }
+        
+        #navbar.navbar.bg-instancia > *,
+        .navbar.bg-instancia > *,
+        nav.navbar.bg-instancia > * {
+            display: inline-flex !important;
+            align-items: center !important;
+            vertical-align: middle !important;
+            min-height: 50px !important;
+        }
+    `;
+
+    // APLICAÇÃO MAIS ROBUSTA E IMEDIATA
+    const aplicarCSS = () => {
+        // Remover CSS anterior se existir
+        const cssAnterior = document.getElementById(
+            "eprobe-navbar-instant-immediate"
+        );
+        if (cssAnterior) {
+            cssAnterior.remove();
+        }
+
+        const head =
+            document.head ||
+            document.getElementsByTagName("head")[0] ||
+            document.documentElement;
+        if (head) {
+            head.insertBefore(cssNavbarImediato, head.firstChild);
+            console.log(
+                `⚡ NAVBAR IMEDIATO: Tema ${tema} aplicado instantaneamente`
+            );
+            return true;
+        }
+        return false;
+    };
+
+    // Aplicar imediatamente se possível
+    if (!aplicarCSS()) {
+        // Se falhou, tentar novamente em intervalos mínimos
+        const tentativas = 5;
+        let tentativa = 0;
+
+        const intervalo = setInterval(() => {
+            if (aplicarCSS() || tentativa >= tentativas) {
+                clearInterval(intervalo);
+            }
+            tentativa++;
+        }, 1);
+    }
+
+    // Listener para mudanças de tema em tempo real
+    window.addEventListener("storage", (e) => {
+        if (e.key === "eprobe_selected_theme") {
+            // Atualizar tema e reaplicar CSS
+            const novoTema = e.newValue || "blue";
+            const gradientes = {
+                blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
+                dark: "linear-gradient(to left, #1a1a1a, #696363)",
+                light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+            };
+            const novoGradiente = gradientes[novoTema];
+
+            // Atualizar CSS instantaneamente
+            const cssExistente = document.getElementById(
+                "eprobe-navbar-instant-immediate"
+            );
+            if (cssExistente) {
+                cssExistente.textContent = cssExistente.textContent.replace(
+                    /background-image: [^;]+/g,
+                    `background-image: ${novoGradiente}`
+                );
+                console.log(
+                    `⚡ NAVBAR: Tema atualizado para ${novoTema} instantaneamente`
+                );
+            }
+        }
+    });
+})();
+
 // ===== ULTRA ANTI-FLASH - EXECUÇÃO IMEDIATA ANTES DE QUALQUER RENDERIZAÇÃO =====
 (function ultraAntiFlash() {
     // Executar IMEDIATAMENTE - antes mesmo do DOM começar
@@ -321,6 +432,29 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             /* Navbar preparação - evitar interferência */
             .navbar, #navbar, .infraBarraComandos {
                 position: relative !important;
+                align-items: center !important;
+            }
+            
+            /* NAVBAR ANTI-FLASH INSTANTÂNEO */
+            #navbar.navbar.bg-instancia,
+            .navbar.bg-instancia,
+            nav.navbar.bg-instancia,
+            .navbar.text-white.bg-instancia,
+            .navbar.text-white.d-xl-flex.bg-instancia {
+                display: flex !important;
+                align-items: center !important;
+                position: relative !important;
+                min-height: 50px !important;
+            }
+            
+            /* Alinhamento instantâneo dos elementos internos da navbar */
+            #navbar.navbar.bg-instancia > *,
+            .navbar.bg-instancia > *,
+            nav.navbar.bg-instancia > * {
+                display: inline-flex !important;
+                align-items: center !important;
+                vertical-align: middle !important;
+                min-height: 50px !important;
             }
             
             /* ANTI-FLASH UNIVERSAL: Prevenir qualquer transição visível */
@@ -604,6 +738,27 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         /* Preparar containers para elementos eProbe */
         .navbar, #navbar {
             position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* ANTI-FLASH NAVBAR INSTANTÂNEO */
+        #navbar.navbar.bg-instancia,
+        .navbar.bg-instancia,
+        nav.navbar.bg-instancia {
+            display: flex !important;
+            align-items: center !important;
+            position: relative !important;
+            min-height: 50px !important;
+        }
+        
+        #navbar.navbar.bg-instancia > *,
+        .navbar.bg-instancia > *,
+        nav.navbar.bg-instancia > * {
+            display: inline-flex !important;
+            align-items: center !important;
+            vertical-align: middle !important;
+            min-height: 50px !important;
         }
         
         /* Fontes críticas carregadas instantaneamente */
@@ -739,63 +894,23 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         logCritical("✅ INSTANT: CSS crítico aplicado no topo do head");
     }
 
-    // Aplicar tema salvo do localStorage instantaneamente (sem aguardar APIs)
-    const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
-    if (temaLocalStorage && temaLocalStorage !== "blue") {
-        log(`⚡ INSTANT: Aplicando tema ${temaLocalStorage} do localStorage`);
-
-        const temasDisponiveis = {
-            dark: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-            light: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 50%, #dee2e6 100%)",
-            violet: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #8e44ad 100%)",
-            blue: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
-        };
-
-        const gradientTema =
-            temasDisponiveis[temaLocalStorage] || temasDisponiveis.blue;
-
-        const temaInstantaneo = document.createElement("style");
-        temaInstantaneo.id = "eprobe-instant-theme";
-        temaInstantaneo.textContent = `
-            /* Tema aplicado instantaneamente */
-            #navbar.navbar.bg-instancia,
-            .navbar.bg-instancia,
-            nav.navbar.bg-instancia,
-            .navbar.text-white.bg-instancia,
-            .navbar.text-white.d-xl-flex.bg-instancia {
-                background-image: ${gradientTema} !important;
-                transition: background-image 0.3s ease !important;
-            }
-        `;
-        head.insertBefore(temaInstantaneo, head.firstChild);
-        log("✅ INSTANT: Tema aplicado instantaneamente");
-    }
-
     // ===== APLICAÇÃO ULTRA-RÁPIDA DE ELEMENTOS CRÍTICOS =====
     // Executar imediatamente após 1ms para garantir que DOM básico está pronto
     setTimeout(() => {
         try {
-            // Garantir que navbar está visível instantaneamente
+            // Navbar já está com CSS completo aplicado - apenas verificar
             const navbar =
                 document.querySelector("#navbar.navbar.bg-instancia") ||
                 document.querySelector(".navbar.bg-instancia") ||
                 document.querySelector("nav.navbar.bg-instancia");
 
             if (navbar) {
-                navbar.style.opacity = "1";
-                navbar.style.transition = "all 0.3s ease";
-                log("⚡ INSTANT: Navbar forcada a aparecer instantaneamente");
-            }
-
-            // Forçar aplicação de tema se ainda não foi aplicado
-            if (temaLocalStorage && navbar && !navbar.style.backgroundImage) {
-                const gradientTema =
-                    temasDisponiveis[temaLocalStorage] || temasDisponiveis.blue;
-                navbar.style.backgroundImage = gradientTema;
-                log("⚡ INSTANT: Tema forçado diretamente na navbar");
+                log(
+                    "⚡ INSTANT: Navbar encontrada com CSS completo já aplicado"
+                );
             }
         } catch (error) {
-            console.warn("⚠️ INSTANT: Erro na aplicação ultra-rápida:", error);
+            console.warn("⚠️ INSTANT: Erro na verificação:", error);
         }
     }, 1);
 })();
@@ -2741,152 +2856,65 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         function applyThemeStyles(themeName) {
             log(`🎨 Aplicando tema ${themeName} automaticamente...`);
 
-            // Remove estilos de tema anteriores
-            const existingThemeStyle = document.getElementById(
-                "eprobe-theme-styles"
-            );
-            if (existingThemeStyle) {
-                existingThemeStyle.remove();
-            }
+            // Salvar tema no localStorage APENAS - CSS instantâneo já cuida da aplicação
+            localStorage.setItem("eprobe_selected_theme", themeName);
 
-            // Define as cores dos temas
-            const themeColors = {
-                blue: {
-                    navbar: "linear-gradient(to left, #0d1c2c, #007ebd)",
-                    name: "Azul",
-                },
-                dark: {
-                    navbar: "linear-gradient(to left, #1a1a1a, #696363)",
-                    name: "Escuro",
-                },
-                light: {
-                    navbar: "linear-gradient(to top, #7BC6CC, #BE93C5)",
-                    name: "Claro",
-                },
-                violet: {
-                    navbar: "linear-gradient(to left, #6b46c1, #4c1d95)",
-                    name: "Violeta",
-                },
-            };
-
-            const theme = themeColors[themeName];
-            if (!theme) {
-                logError(`❌ Tema ${themeName} não encontrado`);
-                return;
-            }
-
-            // Aplica o estilo IMEDIATAMENTE via CSS inline para evitar qualquer delay
-            const navbar =
-                document.querySelector("#navbar.navbar.bg-instancia") ||
-                document.querySelector(".navbar.bg-instancia") ||
-                document.querySelector("nav.navbar.bg-instancia");
-
-            if (navbar) {
-                navbar.style.backgroundImage = theme.navbar;
-                navbar.style.transition = "background-image 0.3s ease";
-                log(`🎨 Estilo aplicado diretamente na navbar: ${theme.name}`);
-            }
-
-            // Cria elemento de estilo para garantir que persista
-            const styleElement = document.createElement("style");
-            styleElement.id = "eprobe-theme-styles";
-            styleElement.textContent = `
-            /* eProbe Theme: ${theme.name} */
-            #navbar.navbar.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-            
-            .navbar.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-            
-            /* Para compatibilidade com diferentes versões do eProc */
-            nav.navbar.bg-instancia,
-            .navbar.text-white.bg-instancia,
-            .navbar.text-white.d-xl-flex.bg-instancia {
-                background-image: ${theme.navbar} !important;
-                transition: background-image 0.3s ease !important;
-            }
-            
-            /* Efeitos de hover para o elemento eProbe na navbar - CORRIGIDO para ser mais visível como o nativo */
-            #eprobe-navbar-element {
-                transition: all 0.2s ease !important;
-                position: relative !important;
-                font-family: 'Exo 2', 'Exo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-                font-weight: 500 !important;
-                font-display: swap !important;
-            }
-            
-            #eprobe-navbar-element:hover {
-                background-color: rgba(255, 255, 255, 0.15) !important;
-                color: #ffffff !important;
-                opacity: 1 !important;
-                text-decoration: none !important;
-                border-radius: 4px !important;
-            }
-            
-            #eprobe-navbar-element:active {
-                background-color: rgba(255, 255, 255, 0.2) !important;
-                opacity: 1 !important;
-                border-radius: 4px !important;
-            }
-            
-            /* Garantir que mantém a mesma aparência dos outros links da navbar */
-            #eprobe-navbar-element:focus {
-                outline: none !important;
-                background-color: rgba(255, 255, 255, 0.15) !important;
-                opacity: 1 !important;
-                border-radius: 4px !important;
-            }
-        `;
-
-            // Adiciona o estilo ao head da página
-            document.head.appendChild(styleElement);
-
-            log(`✅ Tema ${theme.name} aplicado automaticamente!`);
+            log(`🎨 Tema ${themeName} salvo - CSS instantâneo já aplicado`);
         }
 
-        // Função para verificar e aplicar tema salvo - OTIMIZADA
+        /**
+         * 🎯 FUNÇÃO REMOVIDA - unificarNavbarStyles
+         * CSS instantâneo já cuida de toda aplicação da navbar
+         * Função mantida apenas como stub para compatibilidade
+         */
+        function unificarNavbarStyles() {
+            console.log(
+                "✅ NAVBAR: CSS instantâneo já aplicado, função desnecessária"
+            );
+            return true;
+        }
+
+        // Função para verificar e aplicar tema salvo - SIMPLIFICADA
         function loadAndApplyTheme() {
-            // Primeiro tentar localStorage para aplicação instantânea
+            // CSS instantâneo já cuida da aplicação - apenas sincronizar storage
             try {
                 const localTheme = localStorage.getItem(
                     "eprobe_selected_theme"
                 );
                 if (localTheme) {
                     log(
-                        `⚡ Tema local encontrado: ${localTheme} - aplicando instantaneamente`
+                        `⚡ Tema local encontrado: ${localTheme} - CSS instantâneo já aplicado`
                     );
-                    applyThemeStyles(localTheme);
                 }
             } catch (e) {
                 console.warn("⚠️ Erro ao acessar localStorage:", e);
             }
 
-            // Depois verificar chrome.storage para sincronização
+            // Sincronizar com chrome.storage sem reaplicar estilos
             if (typeof chrome !== "undefined" && chrome.storage) {
                 chrome.storage.sync.get(["selectedTheme"], function (result) {
                     const savedTheme = result.selectedTheme || "blue";
                     log(`💾 Tema sincronizado encontrado: ${savedTheme}`);
 
-                    // Salvar no localStorage para próxima vez
+                    // Salvar no localStorage para próxima vez (CSS instantâneo usará isso)
                     try {
                         localStorage.setItem(
                             "eprobe_selected_theme",
                             savedTheme
                         );
+                        log(`✅ Tema ${savedTheme} salvo no localStorage`);
                     } catch (e) {
                         console.warn("⚠️ Erro ao salvar no localStorage:", e);
                     }
-
-                    applyThemeStyles(savedTheme);
                 });
             } else {
-                // Fallback: aplicar tema blue se não há chrome.storage
-                log("🔄 Chrome storage não disponível, usando tema blue");
-                applyThemeStyles("blue");
+                // Fallback: garantir tema blue no localStorage
+                log("🔄 Chrome storage não disponível, garantindo tema blue");
+                try {
+                    localStorage.setItem("eprobe_selected_theme", "blue");
+                } catch (e) {
+                    console.warn("⚠️ Erro ao definir tema fallback:", e);
+                }
             }
         }
 
@@ -2908,7 +2936,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             );
         }
 
-        // Escuta mudanças no storage para aplicar temas em tempo real
+        // Escuta mudanças no storage para sincronizar temas em tempo real
         if (typeof chrome !== "undefined" && chrome.storage) {
             chrome.storage.onChanged.addListener(function (changes, area) {
                 log(
@@ -2918,11 +2946,24 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     area
                 );
                 if (area === "sync") {
-                    // Mudança de tema
+                    // Mudança de tema - apenas sincronizar localStorage
                     if (changes.selectedTheme) {
                         const newTheme = changes.selectedTheme.newValue;
-                        log(`🔄 Tema alterado para: ${newTheme}`);
-                        applyThemeStyles(newTheme);
+                        log(
+                            `🔄 Tema alterado para: ${newTheme} - sincronizando localStorage`
+                        );
+                        try {
+                            localStorage.setItem(
+                                "eprobe_selected_theme",
+                                newTheme
+                            );
+                            // CSS instantâneo detectará mudança via listener storage
+                            log(
+                                `✅ Tema ${newTheme} sincronizado - CSS instantâneo aplicará automaticamente`
+                            );
+                        } catch (e) {
+                            console.warn("⚠️ Erro ao sincronizar tema:", e);
+                        }
                     }
 
                     // Mudança no destaque da data da sessão
@@ -2946,6 +2987,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
         // Exposição das funções globais para chamada direta (debugging)
         window.applyThemeStyles = applyThemeStyles;
+        window.unificarNavbarStyles = unificarNavbarStyles;
         window.testVioletTheme = function () {
             log("🧪 TESTE: Aplicando tema violeta diretamente...");
             applyThemeStyles("violet");
@@ -15264,16 +15306,11 @@ ${texto}`;
                 "⚡ INICIALIZAÇÃO: Aplicando estilos e elementos imediatamente..."
             );
 
-            // 1. Aplicar tema instantaneamente
+            // 1. CSS Instantâneo já aplicado no início do arquivo - sem ação necessária
             try {
                 const tema =
                     localStorage.getItem("eprobe_selected_theme") || "blue";
-                if (window.applyThemeStyles) {
-                    window.applyThemeStyles(tema);
-                    log(
-                        `✅ INICIALIZAÇÃO: Tema ${tema} aplicado imediatamente`
-                    );
-                }
+                log(`✅ INICIALIZAÇÃO: Tema ${tema} usando CSS instantâneo`);
             } catch (error) {
                 console.warn("⚠️ INICIALIZAÇÃO: Erro ao aplicar tema:", error);
             }
@@ -15674,23 +15711,14 @@ ${texto}`;
                     const theme = request.theme;
                     log("🎨 MAIN: Aplicando tema recebido do popup:", theme);
 
-                    // Verificar se a função applyThemeStyles está disponível (do themeApply.js)
-                    if (typeof window.applyThemeStyles === "function") {
-                        window.applyThemeStyles(theme);
-                        sendResponse({
-                            success: true,
-                            message: `Tema ${theme} aplicado com sucesso`,
-                        });
-                    } else {
-                        console.error(
-                            "❌ MAIN: Função applyThemeStyles não encontrada"
-                        );
-                        sendResponse({
-                            success: false,
-                            message:
-                                "Erro: função de aplicação de tema não disponível",
-                        });
-                    }
+                    // Salvar tema - CSS instantâneo já aplicado
+                    localStorage.setItem("eprobe_selected_theme", theme);
+
+                    // CSS instantâneo já aplicado - resposta imediata
+                    sendResponse({
+                        success: true,
+                        message: `Tema ${theme} aplicado com sucesso`,
+                    });
                 }
 
                 // Handler para temas de botões
@@ -15970,12 +15998,8 @@ ${texto}`;
                     console.error("❌ BACKUP ANTI-FLASH: Erro:", error);
                 }
 
-                // Reaplicar apenas estilos, não toda a inicialização
-                if (window.applyThemeStyles) {
-                    const tema =
-                        localStorage.getItem("eprobe_selected_theme") || "blue";
-                    window.applyThemeStyles(tema);
-                }
+                // CSS instantâneo já aplicado - sem necessidade de reaplicação
+                log("✅ BACKUP: CSS instantâneo já garante aplicação correta");
             });
         }
 
@@ -26376,6 +26400,9 @@ ${texto}`;
 
                 return true;
             },
+
+            // 🎨 FUNÇÃO UNIFICADA DE NAVBAR - SOLUÇÃO CONSOLIDADA
+            unificarNavbarStyles: unificarNavbarStyles,
         };
 
         // Fim da seção de funcionalidades
