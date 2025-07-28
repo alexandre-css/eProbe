@@ -4317,10 +4317,18 @@ RESPOSTA (apenas JSON válido):`;
             pointer-events: none !important;
         }
         
-        /* PRESERVAR clicabilidade para ícones dentro de links */
+        /* PRESERVAR clicabilidade para ícones dentro de botões e links - CORREÇÃO CRÍTICA */
+        button .substituted-icon,
+        button .iconeFerramentas,
+        button [data-eprobe-icon-replaced="true"],
+        button span,
         a .substituted-icon,
         a .iconeFerramentas,
         a [data-eprobe-icon-replaced="true"],
+        .infraLegendObrigatorio button .substituted-icon,
+        .infraLegendObrigatorio button .iconeFerramentas,
+        .infraLegendObrigatorio button [data-eprobe-icon-replaced="true"],
+        .infraLegendObrigatorio button span,
         .infraLegendObrigatorio .substituted-icon,
         .infraLegendObrigatorio .iconeFerramentas,
         .infraLegendObrigatorio [data-eprobe-icon-replaced="true"] {
@@ -12632,6 +12640,116 @@ ${texto}`;
 
             log("🔧 CORREÇÃO COMPLETA:", resultadoCorrecao);
             return resultadoCorrecao;
+        }
+
+        /**
+         * 🔧 FUNÇÃO CRÍTICA: Corrigir pointer-events de botões do eProc
+         * Garante que botões importantes como LegNovaMinuta sejam clicáveis
+         */
+        function corrigirPointerEventsBotoes() {
+            console.log(
+                "🔧 CORREÇÃO: Iniciando correção de pointer-events em botões críticos..."
+            );
+
+            const correcoesAplicadas = [];
+
+            // 1. Corrigir especificamente o botão LegNovaMinuta
+            const botaoLegNovaMinuta = document.querySelector(
+                "#LegNovaMinuta button"
+            );
+            if (botaoLegNovaMinuta) {
+                // Corrigir o botão e todos os seus elementos filhos
+                botaoLegNovaMinuta.style.setProperty(
+                    "pointer-events",
+                    "auto",
+                    "important"
+                );
+                const spansDoBotao =
+                    botaoLegNovaMinuta.querySelectorAll("span");
+                spansDoBotao.forEach((span) => {
+                    span.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+                const iconesDoBotao = botaoLegNovaMinuta.querySelectorAll(
+                    "svg, img, [data-eprobe-icon-replaced]"
+                );
+                iconesDoBotao.forEach((icone) => {
+                    icone.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+                correcoesAplicadas.push("LegNovaMinuta button");
+                console.log("✅ CORREÇÃO: Botão LegNovaMinuta corrigido");
+            }
+
+            // 2. Corrigir todos os botões com classe infraLegendObrigatorio
+            const botoesInfraLegend = document.querySelectorAll(
+                ".infraLegendObrigatorio button"
+            );
+            botoesInfraLegend.forEach((botao, index) => {
+                botao.style.setProperty("pointer-events", "auto", "important");
+                const spans = botao.querySelectorAll("span");
+                spans.forEach((span) => {
+                    span.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+                const icones = botao.querySelectorAll(
+                    "svg, img, [data-eprobe-icon-replaced]"
+                );
+                icones.forEach((icone) => {
+                    icone.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+                correcoesAplicadas.push(
+                    `infraLegendObrigatorio button ${index + 1}`
+                );
+            });
+
+            // 3. Corrigir botões btn-link que podem estar bloqueados
+            const botoesBtnLink = document.querySelectorAll("button.btn-link");
+            botoesBtnLink.forEach((botao, index) => {
+                botao.style.setProperty("pointer-events", "auto", "important");
+                const spans = botao.querySelectorAll("span");
+                spans.forEach((span) => {
+                    span.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+                const icones = botao.querySelectorAll(
+                    "svg, img, [data-eprobe-icon-replaced]"
+                );
+                icones.forEach((icone) => {
+                    icone.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                });
+            });
+
+            console.log(
+                `✅ CORREÇÃO: ${correcoesAplicadas.length} correções aplicadas:`,
+                correcoesAplicadas
+            );
+
+            return {
+                status: "sucesso",
+                correcoesAplicadas: correcoesAplicadas.length,
+                detalhes: correcoesAplicadas,
+            };
         }
 
         /**
@@ -21919,6 +22037,31 @@ ${texto}`;
             }
         }, 500);
 
+        // 🔧 EXECUÇÃO AUTOMÁTICA - Corrigir pointer-events de botões críticos
+        setTimeout(() => {
+            log(
+                "🔧 CORREÇÃO: Aplicando correção automática de pointer-events..."
+            );
+            try {
+                if (typeof corrigirPointerEventsBotoes === "function") {
+                    const resultado = corrigirPointerEventsBotoes();
+                    log(
+                        "✅ CORREÇÃO: Pointer-events corrigidos automaticamente:",
+                        resultado
+                    );
+                } else {
+                    console.warn(
+                        "⚠️ CORREÇÃO: Função corrigirPointerEventsBotoes não encontrada"
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "❌ CORREÇÃO: Erro na correção automática:",
+                    error
+                );
+            }
+        }, 750);
+
         // 🔧 EXECUÇÃO ROBUSTA - Segunda tentativa para correção de inconsistências
         setTimeout(() => {
             log("🔧 ROBUSTA: Verificação e correção de inconsistências...");
@@ -23801,6 +23944,7 @@ ${texto}`;
             // 🔍 FUNÇÕES DE DIAGNÓSTICO E CORREÇÃO - IMPLEMENTAÇÕES REAIS
             diagnosticarCompleto: debugInterfaceFunctions.diagnosticarCompleto,
             corrigirProblemas: debugInterfaceFunctions.corrigirProblemas,
+            corrigirPointerEventsBotoes: corrigirPointerEventsBotoes, // CORREÇÃO CRÍTICA para botões bloqueados
             forcarReaplicacaoIcones: forcarReaplicacaoIcones, // Implementação real
             inicializarSubstituicaoIcones: inicializarSubstituicaoIcones, // Implementação real
             diagnosticarIconesCSS:
