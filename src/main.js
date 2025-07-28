@@ -682,7 +682,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             background-image: ${gradiente} !important;
             display: flex !important;
             align-items: center !important;
-            position: relative !important;
             min-height: 50px !important;
             opacity: 1 !important;
             visibility: visible !important;
@@ -692,10 +691,18 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         #navbar.navbar.bg-instancia > *,
         .navbar.bg-instancia > *,
         nav.navbar.bg-instancia > * {
-            display: inline-flex !important;
+            display: flex !important; 
             align-items: center !important;
-            vertical-align: middle !important;
             min-height: 50px !important;
+        }
+        
+        /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX */
+        .d-none.d-md-flex,
+        div.d-none.d-md-flex,
+        .navbar .d-none.d-md-flex,
+        #navbar .d-none.d-md-flex {
+            display: flex !important;
+            align-items: center !important;
         }
     `;
 
@@ -1083,7 +1090,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             
             /* Navbar preparação - evitar interferência */
             .navbar, #navbar, .infraBarraComandos {
-                position: relative !important;
                 align-items: center !important;
             }
             
@@ -1095,7 +1101,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             .navbar.text-white.d-xl-flex.bg-instancia {
                 display: flex !important;
                 align-items: center !important;
-                position: relative !important;
                 min-height: 50px !important;
             }
             
@@ -1103,9 +1108,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             #navbar.navbar.bg-instancia > *,
             .navbar.bg-instancia > *,
             nav.navbar.bg-instancia > * {
-                display: inline-flex !important;
+                display: flex !important; 
                 align-items: center !important;
-                vertical-align: middle !important;
                 min-height: 50px !important;
             }
             
@@ -1114,6 +1118,19 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 will-change: auto !important;
                 backface-visibility: hidden !important;
                 transform: translateZ(0) !important;
+            }
+            
+            /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX - ULTRA PRIORITÁRIO */
+            .d-none.d-md-flex,
+            div.d-none.d-md-flex,
+            .navbar .d-none.d-md-flex,
+            #navbar .d-none.d-md-flex,
+            .navbar-nav .d-none.d-md-flex,
+            .navbar-collapse .d-none.d-md-flex {
+                display: flex !important;
+                align-items: center !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
         `;
 
@@ -1389,8 +1406,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         
         /* Preparar containers para elementos eProbe */
         .navbar, #navbar {
-            position: relative !important;
-            display: flex !important;
+            display: flex !important; 
             align-items: center !important;
         }
         
@@ -1400,17 +1416,16 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         nav.navbar.bg-instancia {
             display: flex !important;
             align-items: center !important;
-            position: relative !important;
             min-height: 50px !important;
         }
         
         #navbar.navbar.bg-instancia > *,
         .navbar.bg-instancia > *,
         nav.navbar.bg-instancia > * {
-            display: inline-flex !important;
+            display: flex !important; 
             align-items: center !important;
-            vertical-align: middle !important;
             min-height: 50px !important;
+            
         }
         
         /* Fontes críticas carregadas instantaneamente */
@@ -1427,6 +1442,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         /* Navbar com fade-in */
         #eprobe-navbar-element {
             animation: fadeInNavbar 0.4s ease-out 0.2s forwards !important;
+            display: flex !important; 
+            align-items: center !important;
         }
         
         @keyframes fadeInNavbar {
@@ -1522,6 +1539,19 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             -webkit-font-smoothing: antialiased !important;
         }
         
+        /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX - INSTANTÂNEO */
+        .d-none.d-md-flex,
+        div.d-none.d-md-flex,
+        .navbar .d-none.d-md-flex,
+        #navbar .d-none.d-md-flex,
+        .navbar-nav .d-none.d-md-flex,
+        .navbar-collapse .d-none.d-md-flex {
+            display: flex !important;
+            align-items: center !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+        
         /* Classe do eProc - desLembrete com novos estilos */
         .desLembrete {
             margin: 25px 25px 25px 25px !important;
@@ -1544,6 +1574,103 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     if (head) {
         head.insertBefore(cssInstantaneo, head.firstChild);
         logCritical("✅ INSTANT: CSS crítico aplicado no topo do head");
+    }
+
+    // ===== FUNÇÃO OBRIGATÓRIA: FORÇAR FLEXBOX NA NAVBAR =====
+    function forcarFlexboxNavbar() {
+        // Aplicar estilos inline obrigatórios em todos os elementos .d-none.d-md-flex
+        const elementosNavbar = document.querySelectorAll(".d-none.d-md-flex");
+        elementosNavbar.forEach((elemento) => {
+            elemento.style.setProperty("display", "flex", "important");
+            elemento.style.setProperty("align-items", "center", "important");
+            elemento.style.setProperty("visibility", "visible", "important");
+            elemento.style.setProperty("opacity", "1", "important");
+        });
+
+        if (elementosNavbar.length > 0) {
+            console.log(
+                `🎯 NAVBAR OBRIGATÓRIO: Flexbox forçado em ${elementosNavbar.length} elementos`
+            );
+        }
+    }
+
+    // ===== OBSERVADOR CRÍTICO PARA NAVBAR =====
+    const observadorNavbar = new MutationObserver((mutations) => {
+        let needsUpdate = false;
+
+        mutations.forEach((mutation) => {
+            // Verificar se foram adicionados elementos
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        // Element node
+                        // Verificar se é um elemento .d-none.d-md-flex ou contém um
+                        if (
+                            node.classList?.contains("d-none") &&
+                            node.classList?.contains("d-md-flex")
+                        ) {
+                            needsUpdate = true;
+                        } else if (
+                            node.querySelector &&
+                            node.querySelector(".d-none.d-md-flex")
+                        ) {
+                            needsUpdate = true;
+                        }
+                    }
+                });
+            }
+
+            // Verificar mudanças de atributos que possam afetar display
+            if (
+                mutation.type === "attributes" &&
+                (mutation.attributeName === "class" ||
+                    mutation.attributeName === "style")
+            ) {
+                const target = mutation.target;
+                if (
+                    target.classList?.contains("d-none") &&
+                    target.classList?.contains("d-md-flex")
+                ) {
+                    needsUpdate = true;
+                }
+            }
+        });
+
+        if (needsUpdate) {
+            // Aplicar com pequeno delay para garantir que DOM esteja atualizado
+            setTimeout(forcarFlexboxNavbar, 1);
+        }
+    });
+
+    // Iniciar observação IMEDIATA
+    if (document.body) {
+        observadorNavbar.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class", "style"],
+        });
+
+        // Aplicação inicial
+        forcarFlexboxNavbar();
+
+        console.log(
+            "🔍 NAVBAR OBSERVER: Monitoramento de flexbox obrigatório ativado"
+        );
+    } else {
+        // Se body ainda não existe, aplicar quando existir
+        document.addEventListener("DOMContentLoaded", () => {
+            observadorNavbar.observe(document.body, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+                attributeFilter: ["class", "style"],
+            });
+            forcarFlexboxNavbar();
+            console.log(
+                "🔍 NAVBAR OBSERVER: Monitoramento de flexbox obrigatório ativado (DOMContentLoaded)"
+            );
+        });
     }
 
     // ===== APLICAÇÃO ULTRA-RÁPIDA DE ELEMENTOS CRÍTICOS =====
@@ -1682,6 +1809,37 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         basico.status
                     );
                     return basico;
+                },
+
+                // 🎯 FUNÇÃO OBRIGATÓRIA: Forçar flexbox na navbar
+                forcarFlexboxNavbar: () => {
+                    const elementosNavbar =
+                        document.querySelectorAll(".d-none.d-md-flex");
+                    elementosNavbar.forEach((elemento) => {
+                        elemento.style.setProperty(
+                            "display",
+                            "flex",
+                            "important"
+                        );
+                        elemento.style.setProperty(
+                            "align-items",
+                            "center",
+                            "important"
+                        );
+                        elemento.style.setProperty(
+                            "visibility",
+                            "visible",
+                            "important"
+                        );
+                        elemento.style.setProperty("opacity", "1", "important");
+                    });
+
+                    if (elementosNavbar.length > 0) {
+                        console.log(
+                            `🎯 NAVBAR CRÍTICO: Flexbox forçado em ${elementosNavbar.length} elementos via namespace`
+                        );
+                    }
+                    return elementosNavbar.length;
                 },
 
                 // Metadados de status
@@ -16668,6 +16826,8 @@ ${texto}`;
                     .navbar.bg-instancia {
                         opacity: 1 !important;
                         transition: all 0.3s ease !important;
+                        display: flex !important; 
+                        align-items: center !important;
                     }
                     
                     /* Aplicar estilos SVG Figma instantaneamente */
@@ -20657,9 +20817,7 @@ ${texto}`;
 
             // CSS para margin-right do botão - SOLUÇÃO SIMPLES QUE FUNCIONOU
             css += `
-    /* 🛡️ EPROBE BUTTONS: Margin-right no botão */
-    #documento-relevante-auto-button { margin-right: 4px !important; }
-    
+
     /* 🛡️ EPROBE BUTTONS: Margin-right nos SVGs dos botões personalizados */
     #documento-relevante-auto-button svg { margin-right: 4px !important; }
     .infraButton svg { margin-right: 4px !important; }
@@ -20672,7 +20830,7 @@ ${texto}`;
 
             // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
             css +=
-                '\n\n    /* 🎯 ALINHAMENTO: Centralizar navbar flexbox */\n    .d-none.d-md-flex {\n        align-items: center !important;\n    }\n\n    /* 🛡️ PROTEÇÃO: Manter aparência original para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        /* Preservar estilos originais sem resetar tudo */\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n ';
+                '\n\n    /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX - ALTA PRIORIDADE */\n    .d-none.d-md-flex,\n    div.d-none.d-md-flex,\n    .navbar .d-none.d-md-flex,\n    #navbar .d-none.d-md-flex,\n    .navbar-nav .d-none.d-md-flex,\n    .navbar-collapse .d-none.d-md-flex {\n        display: flex !important;\n        align-items: center !important;\n        visibility: visible !important;\n        opacity: 1 !important;\n        height: auto !important;\n        width: auto !important;\n    }\n\n    /* 🛡️ PROTEÇÃO: Manter aparência original para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        /* Preservar estilos originais sem resetar tudo */\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n ';
 
             estiloElemento.textContent = css;
             document.head.appendChild(estiloElemento);
@@ -20772,42 +20930,10 @@ ${texto}`;
             }
         }, 200); // ← REDUZIDO DE 1000ms PARA 200ms
 
-        // ============================================
-        // FUNÇÕES DE NAVBAR REMOVIDAS - CENTRALIZADAS EM gerenciarNavbarEprobe()
-        // ============================================
-        //
-        // 🗑️ REMOVIDAS:
-        // - inserirElementoNavbarEproc()
-        // - removerElementoNavbarEproc()
-        // - forcarElementoEprobeNavbar()
-        // - carregarFonteExo2() [removida - desnecessária na versão minimalista]
-        //
-        // ✅ ÚNICA FUNÇÃO ATIVA: window.gerenciarNavbarEprobe()
-        //
-
-        // ============================================
-        // GERENCIADOR CENTRALIZADO DA NAVBAR - FUNÇÃO ÚNICA
-        // ============================================
-        //
-        // 🎯 ARQUITETURA LIMPA:
-        // ✅ CSS unificado: Uma única regra CSS consolida todos os estilos (linha ~11800)
-        // ✅ JavaScript centralizado: Uma única função gerencia toda a lógica
-        // ✅ Observer unificado: Um só MutationObserver para detecção
-        // ✅ Monitoramento simples: Um único setInterval para manutenção
-        // ✅ Zero duplicação: Todas as funções antigas foram removidas
-        //
-        // Esta função substitui todas as funções anteriores:
-        // - tentarInserirElementoNavbar()
-        // - inicializarNavbarOtimizada()
-        // - aplicarEstilosNavbarInstantaneos()
-        // - executarOtimizacoesImediatas()
-        // - monitorarElementoEprobe()
-        // - navbarObserver + navbarStyleObserver
-        // - múltiplos setTimeout/setInterval duplicados
-
         /**
          * 🎯 NAVBAR SIMPLES: Função otimizada sem complexidades desnecessárias
          */
+
         window.gerenciarNavbarEprobe = function () {
             if (window.navbarEprobeInicializada) return;
             window.navbarEprobeInicializada = true;
@@ -20831,7 +20957,7 @@ ${texto}`;
                 link.href = "https://e-probe.vercel.app/";
                 link.target = "_blank";
                 link.style.cssText =
-                    "padding:5px 6px;text-decoration:none;display:flex;align-items:center !important;height:50px";
+                    "padding: 5px 6px;text-decoration: none;display: flex !important; align-items: center !important;height: 50px";
 
                 // Verificar se chrome.runtime está disponível (contexto de extensão)
                 if (
@@ -27846,6 +27972,33 @@ ${texto}`;
 
             // 🎨 FUNÇÃO UNIFICADA DE NAVBAR - SOLUÇÃO CONSOLIDADA
             unificarNavbarStyles: unificarNavbarStyles,
+
+            // 🎯 FUNÇÃO OBRIGATÓRIA: Forçar flexbox na navbar - CRÍTICA
+            forcarFlexboxNavbar: () => {
+                const elementosNavbar =
+                    document.querySelectorAll(".d-none.d-md-flex");
+                elementosNavbar.forEach((elemento) => {
+                    elemento.style.setProperty("display", "flex", "important");
+                    elemento.style.setProperty(
+                        "align-items",
+                        "center",
+                        "important"
+                    );
+                    elemento.style.setProperty(
+                        "visibility",
+                        "visible",
+                        "important"
+                    );
+                    elemento.style.setProperty("opacity", "1", "important");
+                });
+
+                if (elementosNavbar.length > 0) {
+                    console.log(
+                        `🎯 NAVBAR CRÍTICO: Flexbox forçado em ${elementosNavbar.length} elementos via namespace principal`
+                    );
+                }
+                return elementosNavbar.length;
+            },
         };
 
         // Fim da seção de funcionalidades
