@@ -4,6 +4,658 @@ const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silencios
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
 
+// 🚨 INTERCEPTAÇÃO ULTRA-PRECOCE - CAPTURA AMBAS AS FUNÇÕES PROBLEMÁTICAS
+(function interceptacaoUltraPrecoce() {
+    logCritical(
+        "🚨 INTERCEPTAÇÃO ULTRA-PRECOCE: Bloqueando switchRelevanciaDocumento E switchRelevanciaEvento..."
+    );
+
+    // Criar nossa função robusta para switchRelevanciaDocumento
+    function switchRelevanciaDocumentoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        try {
+            logCritical(
+                "🛡️ ULTRA-SEGURA: switchRelevanciaDocumento interceptada:",
+                {
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax,
+                }
+            );
+
+            // Validação extremamente robusta
+            if (!idEvento) {
+                console.error("❌ ID do evento não fornecido");
+                return false;
+            }
+
+            if (!urlAjax) {
+                console.error("❌ URL AJAX não fornecida");
+                return false;
+            }
+
+            // Construir URL com máxima segurança
+            let fullUrl = String(urlAjax);
+            const separator = fullUrl.includes("?") ? "&" : "?";
+            const params = `idEvento=${encodeURIComponent(
+                String(idEvento)
+            )}&relevancia=${encodeURIComponent(
+                String(relevancia)
+            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
+            fullUrl += separator + params;
+
+            logCritical("🌐 URL CONSTRUÍDA:", fullUrl);
+
+            // AJAX ultra-robusto
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", fullUrl, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        logCritical(
+                            "✅ SUCESSO ULTRA-SEGURO:",
+                            xhr.responseText
+                        );
+
+                        // Atualizar ícone após sucesso
+                        setTimeout(() => {
+                            atualizarIconeUltraSeguro(idEvento, relevancia);
+                        }, 50);
+
+                        // Verificar se deve recarregar
+                        const resposta = String(
+                            xhr.responseText || ""
+                        ).toLowerCase();
+                        if (
+                            resposta.includes("reload") ||
+                            resposta.includes("location")
+                        ) {
+                            setTimeout(() => window.location.reload(), 300);
+                        }
+                    } else {
+                        console.error("❌ ERRO HTTP:", xhr.status);
+                    }
+                }
+            };
+
+            xhr.onerror = () => console.error("❌ ERRO REDE");
+            xhr.ontimeout = () => console.error("❌ TIMEOUT");
+            xhr.timeout = 15000;
+
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error("❌ ERRO CRÍTICO na função ultra-segura:", error);
+            return false;
+        }
+    }
+
+    // Função ultra-segura para atualizar ícones
+    function atualizarIconeUltraSeguro(idEvento, relevancia) {
+        try {
+            logCritical(`🌟 ATUALIZANDO ÍCONE: ${idEvento} -> ${relevancia}`);
+
+            const seletores = [
+                `img[onclick*="${idEvento}"]`,
+                `a[onclick*="${idEvento}"]`,
+                `[onclick*="switchRelevanciaDocumento('${idEvento}'"]`,
+                `[onclick*='switchRelevanciaDocumento("${idEvento}"']`,
+                `img[src*="estrela"]`,
+                `img[alt*="estrela"]`,
+            ];
+
+            let iconesAtualizados = 0;
+
+            for (const seletor of seletores) {
+                try {
+                    const elementos = document.querySelectorAll(seletor);
+                    elementos.forEach((elemento) => {
+                        if (elemento.tagName === "IMG" && elemento.src) {
+                            const srcOriginal = elemento.src;
+                            let novoSrc = srcOriginal;
+
+                            // Lógica robusta de troca de ícones
+                            if (
+                                relevancia === "S" ||
+                                relevancia === "1" ||
+                                relevancia === 1
+                            ) {
+                                // Marcar como relevante
+                                novoSrc = novoSrc
+                                    .replace(/estrela[_\-]?off/gi, "estrela_on")
+                                    .replace(
+                                        /estrela[_\-]?apagada/gi,
+                                        "estrela_acesa"
+                                    )
+                                    .replace(/EstrelaApagada/gi, "EstrelaAcesa")
+                                    .replace(/estrela\.gif/gi, "estrela_on.gif")
+                                    .replace(/estrela_0/gi, "estrela_1");
+                            } else {
+                                // Marcar como não relevante
+                                novoSrc = novoSrc
+                                    .replace(/estrela[_\-]?on/gi, "estrela_off")
+                                    .replace(
+                                        /estrela[_\-]?acesa/gi,
+                                        "estrela_apagada"
+                                    )
+                                    .replace(/EstrelaAcesa/gi, "EstrelaApagada")
+                                    .replace(/estrela_on\.gif/gi, "estrela.gif")
+                                    .replace(/estrela_1/gi, "estrela_0");
+                            }
+
+                            if (novoSrc !== srcOriginal) {
+                                elemento.src = novoSrc;
+                                iconesAtualizados++;
+                                logCritical(
+                                    `✅ Ícone ${iconesAtualizados}: ${srcOriginal} → ${novoSrc}`
+                                );
+                            }
+                        }
+                    });
+                } catch (selectorError) {
+                    console.warn(
+                        `⚠️ Erro com seletor ${seletor}:`,
+                        selectorError
+                    );
+                }
+            }
+
+            logCritical(`🎯 Total de ícones atualizados: ${iconesAtualizados}`);
+        } catch (error) {
+            console.error("❌ Erro ao atualizar ícones:", error);
+        }
+    }
+
+    // �️ FUNÇÃO ULTRA-SEGURA PARA switchRelevanciaEvento
+    function switchRelevanciaEventoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        try {
+            logCritical(
+                "🛡️ ULTRA-SEGURA: switchRelevanciaEvento interceptada:",
+                {
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax,
+                }
+            );
+
+            // Validação extremamente robusta - MESMA LÓGICA
+            if (!idEvento) {
+                console.error(
+                    "❌ switchRelevanciaEvento: ID do evento não fornecido"
+                );
+                return false;
+            }
+
+            if (!urlAjax) {
+                console.error(
+                    "❌ switchRelevanciaEvento: URL AJAX não fornecida"
+                );
+                return false;
+            }
+
+            // Construir URL com máxima segurança - MESMA LÓGICA
+            let fullUrl = String(urlAjax);
+            const separator = fullUrl.includes("?") ? "&" : "?";
+            const params = `idEvento=${encodeURIComponent(
+                String(idEvento)
+            )}&relevancia=${encodeURIComponent(
+                String(relevancia)
+            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
+            fullUrl += separator + params;
+
+            logCritical("🌐 switchRelevanciaEvento URL CONSTRUÍDA:", fullUrl);
+
+            // AJAX ultra-robusto - MESMA LÓGICA
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", fullUrl, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        logCritical(
+                            "✅ switchRelevanciaEvento SUCESSO:",
+                            xhr.responseText
+                        );
+
+                        // Atualizar ícone após sucesso
+                        setTimeout(() => {
+                            atualizarIconeUltraSeguro(idEvento, relevancia);
+                        }, 50);
+
+                        // Verificar se deve recarregar
+                        const resposta = String(
+                            xhr.responseText || ""
+                        ).toLowerCase();
+                        if (
+                            resposta.includes("reload") ||
+                            resposta.includes("location")
+                        ) {
+                            setTimeout(() => window.location.reload(), 300);
+                        }
+                    } else {
+                        console.error(
+                            "❌ switchRelevanciaEvento ERRO HTTP:",
+                            xhr.status
+                        );
+                    }
+                }
+            };
+
+            xhr.onerror = () =>
+                console.error("❌ switchRelevanciaEvento ERRO REDE");
+            xhr.ontimeout = () =>
+                console.error("❌ switchRelevanciaEvento TIMEOUT");
+            xhr.timeout = 15000;
+
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error(
+                "❌ ERRO CRÍTICO na switchRelevanciaEvento ultra-segura:",
+                error
+            );
+            return false;
+        }
+    }
+
+    // �🔒 INTERCEPTAÇÃO COM Object.defineProperty - BLOQUEIA QUALQUER TENTATIVA DE DEFINIÇÃO
+    let funcaoInterceptada = switchRelevanciaDocumentoUltraSegura;
+    let tentativasRedefinicao = 0;
+
+    Object.defineProperty(window, "switchRelevanciaDocumento", {
+        get: function () {
+            return funcaoInterceptada;
+        },
+        set: function (novaFuncao) {
+            tentativasRedefinicao++;
+            logCritical(
+                `🚨 TENTATIVA ${tentativasRedefinicao} DE REDEFINIÇÃO BLOQUEADA!`
+            );
+
+            // Analisar a função que está tentando ser definida
+            if (typeof novaFuncao === "function") {
+                const codigoFuncao = novaFuncao.toString();
+                logCritical(
+                    "🔍 Código da função bloqueada:",
+                    codigoFuncao.substring(0, 200) + "..."
+                );
+
+                // Se for a função problemática do eProc, mantenha nossa versão
+                if (
+                    codigoFuncao.includes("substring") ||
+                    codigoFuncao.includes("controlador.php")
+                ) {
+                    logCritical(
+                        "🛡️ FUNÇÃO PROBLEMÁTICA DETECTADA E BLOQUEADA!"
+                    );
+                }
+            }
+
+            // NÃO permitir a redefinição - manter sempre nossa função
+            return;
+        },
+        configurable: false,
+        enumerable: true,
+    });
+
+    // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento
+    let funcaoEventoInterceptada = switchRelevanciaEventoUltraSegura;
+    let tentativasRedefinicaoEvento = 0;
+
+    Object.defineProperty(window, "switchRelevanciaEvento", {
+        get: function () {
+            return funcaoEventoInterceptada;
+        },
+        set: function (novaFuncao) {
+            tentativasRedefinicaoEvento++;
+            logCritical(
+                `🚨 switchRelevanciaEvento: TENTATIVA ${tentativasRedefinicaoEvento} DE REDEFINIÇÃO BLOQUEADA!`
+            );
+
+            // Analisar a função que está tentando ser definida
+            if (typeof novaFuncao === "function") {
+                const codigoFuncao = novaFuncao.toString();
+                logCritical(
+                    "🔍 switchRelevanciaEvento código bloqueado:",
+                    codigoFuncao.substring(0, 200) + "..."
+                );
+
+                // Se for a função problemática do eProc, mantenha nossa versão
+                if (
+                    codigoFuncao.includes("substring") ||
+                    codigoFuncao.includes("controlador.php")
+                ) {
+                    logCritical(
+                        "🛡️ switchRelevanciaEvento FUNÇÃO PROBLEMÁTICA DETECTADA E BLOQUEADA!"
+                    );
+                }
+            }
+
+            // NÃO permitir a redefinição - manter sempre nossa função
+            return;
+        },
+        configurable: false,
+        enumerable: true,
+    });
+
+    // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - AMBAS AS FUNÇÕES
+    let verificacaoAtiva = true;
+
+    const verificarIntegridade = () => {
+        if (!verificacaoAtiva) return;
+
+        try {
+            // Verificar switchRelevanciaDocumento
+            if (window.switchRelevanciaDocumento !== funcaoInterceptada) {
+                logCritical(
+                    "🚨 switchRelevanciaDocumento ALTERADA! Forçando restore..."
+                );
+
+                // Tentar forçar nossa função de volta
+                try {
+                    delete window.switchRelevanciaDocumento;
+                } catch (e) {}
+
+                window.switchRelevanciaDocumento = funcaoInterceptada;
+            }
+
+            // Verificar switchRelevanciaEvento
+            if (window.switchRelevanciaEvento !== funcaoEventoInterceptada) {
+                logCritical(
+                    "🚨 switchRelevanciaEvento ALTERADA! Forçando restore..."
+                );
+
+                // Tentar forçar nossa função de volta
+                try {
+                    delete window.switchRelevanciaEvento;
+                } catch (e) {}
+
+                window.switchRelevanciaEvento = funcaoEventoInterceptada;
+            }
+
+            // Verificar se as funções existem e são nossas
+            const funcaoDocumento = window.switchRelevanciaDocumento;
+            if (typeof funcaoDocumento === "function") {
+                const codigo = funcaoDocumento.toString();
+                if (!codigo.includes("ULTRA-SEGURA")) {
+                    logCritical(
+                        "🚨 switchRelevanciaDocumento ESTRANHA DETECTADA! Substituindo..."
+                    );
+                    window.switchRelevanciaDocumento = funcaoInterceptada;
+                }
+            }
+
+            const funcaoEvento = window.switchRelevanciaEvento;
+            if (typeof funcaoEvento === "function") {
+                const codigo = funcaoEvento.toString();
+                if (!codigo.includes("ULTRA-SEGURA")) {
+                    logCritical(
+                        "🚨 switchRelevanciaEvento ESTRANHA DETECTADA! Substituindo..."
+                    );
+                    window.switchRelevanciaEvento = funcaoEventoInterceptada;
+                }
+            }
+        } catch (error) {
+            console.warn("⚠️ Erro na verificação de integridade:", error);
+        }
+
+        // Continuar verificação
+        setTimeout(verificarIntegridade, 100);
+    };
+
+    // Iniciar verificação imediata
+    setTimeout(verificarIntegridade, 50);
+
+    // 🎯 INTERCEPTAÇÃO ADICIONAL - Window.prototype
+    const originalDefineProperty = Object.defineProperty;
+    Object.defineProperty = function (obj, prop, descriptor) {
+        if (obj === window && prop === "switchRelevanciaDocumento") {
+            logCritical(
+                "🚨 switchRelevanciaDocumento: TENTATIVA VIA Object.defineProperty BLOQUEADA!"
+            );
+            return; // Bloquear
+        }
+        if (obj === window && prop === "switchRelevanciaEvento") {
+            logCritical(
+                "🚨 switchRelevanciaEvento: TENTATIVA VIA Object.defineProperty BLOQUEADA!"
+            );
+            return; // Bloquear
+        }
+        return originalDefineProperty.call(this, obj, prop, descriptor);
+    };
+
+    // �️ INTERCEPTAÇÃO DE EVAL E NEW FUNCTION
+    const originalEval = window.eval;
+    window.eval = function (code) {
+        if (
+            code &&
+            code.includes &&
+            (code.includes("switchRelevanciaDocumento") ||
+                code.includes("switchRelevanciaEvento"))
+        ) {
+            logCritical(
+                "🚨 TENTATIVA DE REDEFINIÇÃO VIA EVAL BLOQUEADA! (AMBAS FUNÇÕES)"
+            );
+            return;
+        }
+        return originalEval.call(this, code);
+    };
+
+    // 🔍 INTERCEPTAÇÃO ADICIONAL - QUALQUER FUNÇÃO COM 'switchRelevancia'
+    // Interceptar QUALQUER definição de função que contenha 'switchRelevancia'
+    const monitorarDefinicoesFuncoes = () => {
+        const originalFunction = window.Function;
+        window.Function = function (...args) {
+            const codigo = args[args.length - 1] || "";
+            if (
+                codigo.includes("switchRelevancia") &&
+                codigo.includes("substring")
+            ) {
+                logCritical(
+                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA VIA Function():",
+                    codigo.substring(0, 200)
+                );
+                // Retornar nossa função segura em vez da problemática
+                return function (idEvento, relevancia, tipo, urlAjax) {
+                    if (codigo.includes("switchRelevanciaEvento")) {
+                        return switchRelevanciaEventoUltraSegura(
+                            idEvento,
+                            relevancia,
+                            tipo,
+                            urlAjax
+                        );
+                    } else {
+                        return switchRelevanciaDocumentoUltraSegura(
+                            idEvento,
+                            relevancia,
+                            tipo,
+                            urlAjax
+                        );
+                    }
+                };
+            }
+            return originalFunction.apply(this, args);
+        };
+    };
+
+    // Ativar monitoramento
+    monitorarDefinicoesFuncoes();
+
+    // 🕷️ INTERCEPTAÇÃO DE SCRIPT TAGS - Última linha de defesa
+    const observarScripts = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.tagName === "SCRIPT" && node.textContent) {
+                        const conteudo = node.textContent;
+                        if (
+                            conteudo.includes("switchRelevancia") &&
+                            conteudo.includes("substring")
+                        ) {
+                            logCritical(
+                                "🚨 SCRIPT PROBLEMÁTICO DETECTADO E REMOVIDO!"
+                            );
+                            node.remove();
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // Observar document para novos scripts
+    if (document.documentElement) {
+        observarScripts.observe(document.documentElement, {
+            childList: true,
+            subtree: true,
+        });
+    }
+
+    // 🎯 INTERCEPTAÇÃO ULTRA-AGRESSIVA - Monitorar TODA criação de propriedade no window
+    const monitorarPropriedadesWindow = () => {
+        const todasPropriedades = Object.getOwnPropertyNames(window);
+
+        const verificarNovasPropriedades = () => {
+            try {
+                const novasPropriedades = Object.getOwnPropertyNames(window);
+                const adicionadas = novasPropriedades.filter(
+                    (prop) => !todasPropriedades.includes(prop)
+                );
+
+                adicionadas.forEach((prop) => {
+                    if (
+                        prop.includes("switchRelevancia") &&
+                        typeof window[prop] === "function"
+                    ) {
+                        const funcaoString = window[prop].toString();
+                        if (funcaoString.includes("substring")) {
+                            logCritical(
+                                `🚨 FUNÇÃO PROBLEMÁTICA DETECTADA DINAMICAMENTE: ${prop}`
+                            );
+
+                            // Substituir imediatamente
+                            if (prop.includes("Evento")) {
+                                window[prop] =
+                                    switchRelevanciaEventoUltraSegura;
+                                logCritical(
+                                    `✅ ${prop} substituída por versão segura!`
+                                );
+                            } else {
+                                window[prop] =
+                                    switchRelevanciaDocumentoUltraSegura;
+                                logCritical(
+                                    `✅ ${prop} substituída por versão segura!`
+                                );
+                            }
+                        }
+                    }
+                    todasPropriedades.push(prop);
+                });
+            } catch (error) {
+                // Ignorar erros de acesso a propriedades
+            }
+        };
+
+        // Verificar a cada 50ms inicialmente (mais agressivo)
+        const intervaloRapido = setInterval(verificarNovasPropriedades, 50);
+
+        // Depois de 5 segundos, reduzir para 200ms
+        setTimeout(() => {
+            clearInterval(intervaloRapido);
+            setInterval(verificarNovasPropriedades, 200);
+        }, 5000);
+    };
+
+    // Ativar monitoramento de propriedades
+    monitorarPropriedadesWindow();
+
+    logCritical(
+        "🔒 INTERCEPTAÇÃO ULTRA-PRECOCE ATIVADA: switchRelevanciaDocumento E switchRelevanciaEvento TOTALMENTE BLINDADAS!"
+    );
+    logCritical(
+        "✅ switchRelevanciaDocumento substituída:",
+        typeof window.switchRelevanciaDocumento
+    );
+    logCritical(
+        "✅ switchRelevanciaEvento substituída:",
+        typeof window.switchRelevanciaEvento
+    );
+
+    // Testar imediatamente AMBAS
+    setTimeout(() => {
+        logCritical("🧪 TESTE IMEDIATO DA INTERCEPTAÇÃO DUPLA:");
+        logCritical(
+            "  - switchRelevanciaDocumento existe:",
+            typeof window.switchRelevanciaDocumento === "function"
+        );
+        logCritical(
+            "  - switchRelevanciaDocumento é nossa:",
+            window.switchRelevanciaDocumento.toString().includes("ULTRA-SEGURA")
+        );
+        logCritical(
+            "  - switchRelevanciaEvento existe:",
+            typeof window.switchRelevanciaEvento === "function"
+        );
+        logCritical(
+            "  - switchRelevanciaEvento é nossa:",
+            window.switchRelevanciaEvento.toString().includes("ULTRA-SEGURA")
+        );
+        logCritical(
+            "  - Tentativas bloqueadas (Documento):",
+            tentativasRedefinicao
+        );
+        logCritical(
+            "  - Tentativas bloqueadas (Evento):",
+            tentativasRedefinicaoEvento
+        );
+
+        // 🔍 VERIFICAÇÃO ADICIONAL - Detectar funções problemáticas que podem ter escapado
+        setTimeout(() => {
+            logCritical(
+                "🔍 VERIFICAÇÃO FINAL - Buscando funções problemáticas..."
+            );
+
+            // Verificar se há funções problemáticas no window
+            for (const prop in window) {
+                try {
+                    if (
+                        typeof window[prop] === "function" &&
+                        window[prop].toString().includes("substring") &&
+                        prop.includes("switchRelevancia")
+                    ) {
+                        logCritical(
+                            `🚨 FUNÇÃO PROBLEMÁTICA ENCONTRADA: ${prop}`
+                        );
+                        logCritical("🔧 Substituindo por versão segura...");
+
+                        if (prop.includes("Evento")) {
+                            window[prop] = switchRelevanciaEventoUltraSegura;
+                        } else {
+                            window[prop] = switchRelevanciaDocumentoUltraSegura;
+                        }
+
+                        logCritical(`✅ ${prop} substituída com sucesso!`);
+                    }
+                } catch (e) {
+                    // Ignorar erros de acesso a propriedades
+                }
+            }
+        }, 100);
+    }, 10);
+})();
+
 // ===== APLICAÇÃO INSTANTÂNEA DA NAVBAR - ANTES DE QUALQUER FLASH =====
 (function aplicarNavbarInstantaneo() {
     // CSS da navbar aplicado IMEDIATAMENTE ao carregar o arquivo
@@ -12716,7 +13368,24 @@ ${texto}`;
                 );
             });
 
-            // 3. Corrigir botões btn-link que podem estar bloqueados
+            // 3. Corrigir especificamente ícones de estrela protegidos
+            const iconesEstrelaProtegidos = document.querySelectorAll(
+                'img[data-eprobe-protected="true"]'
+            );
+            iconesEstrelaProtegidos.forEach((icone, index) => {
+                icone.style.setProperty("pointer-events", "auto", "important");
+                const parentLink = icone.closest("a");
+                if (parentLink) {
+                    parentLink.style.setProperty(
+                        "pointer-events",
+                        "auto",
+                        "important"
+                    );
+                }
+                correcoesAplicadas.push(`Ícone estrela protegido ${index + 1}`);
+            });
+
+            // 4. Corrigir botões btn-link que podem estar bloqueados
             const botoesBtnLink = document.querySelectorAll("button.btn-link");
             botoesBtnLink.forEach((botao, index) => {
                 botao.style.setProperty("pointer-events", "auto", "important");
@@ -12742,6 +13411,551 @@ ${texto}`;
 
             console.log(
                 `✅ CORREÇÃO: ${correcoesAplicadas.length} correções aplicadas:`,
+                correcoesAplicadas
+            );
+
+            return {
+                status: "sucesso",
+                correcoesAplicadas: correcoesAplicadas.length,
+                detalhes: correcoesAplicadas,
+            };
+        }
+
+        /**
+         * � NOVA VERSÃO ROBUSTA: switchRelevanciaDocumento sem dependências problemáticas
+         */
+        function corrigirSwitchRelevanciaDocumentoRobusta() {
+            console.log(
+                "🚀 CORREÇÃO ROBUSTA: Iniciando substituição completa da função switchRelevanciaDocumento..."
+            );
+
+            const correcoesAplicadas = [];
+
+            // 🔧 IMPLEMENTAÇÃO ROBUSTA COMPLETA da switchRelevanciaDocumento
+            function switchRelevanciaDocumentoRobusta(
+                idEvento,
+                relevancia,
+                tipo,
+                urlAjax
+            ) {
+                try {
+                    console.log(
+                        "🚀 FUNÇÃO ROBUSTA: switchRelevanciaDocumento chamada:",
+                        {
+                            idEvento,
+                            relevancia,
+                            tipo,
+                            urlAjax,
+                        }
+                    );
+
+                    // Validação básica dos parâmetros
+                    if (!idEvento || !urlAjax) {
+                        console.error("❌ PARÂMETROS INVÁLIDOS:", {
+                            idEvento,
+                            urlAjax,
+                        });
+                        return false;
+                    }
+
+                    // Construir URL da requisição AJAX de forma segura
+                    let fullUrl = urlAjax;
+                    const separator = fullUrl.indexOf("?") === -1 ? "?" : "&";
+                    fullUrl += `${separator}idEvento=${encodeURIComponent(
+                        idEvento
+                    )}&relevancia=${encodeURIComponent(
+                        relevancia
+                    )}&tipo=${encodeURIComponent(tipo || "")}`;
+
+                    console.log("🌐 REQUISIÇÃO AJAX ROBUSTA:", fullUrl);
+
+                    // Executar requisição AJAX com tratamento completo de erros
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", fullUrl, true);
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                console.log(
+                                    "✅ AJAX SUCESSO:",
+                                    xhr.responseText
+                                );
+
+                                // Atualizar ícone visualmente
+                                setTimeout(() => {
+                                    atualizarIconeEstrelaVisualRobusta(
+                                        idEvento,
+                                        relevancia
+                                    );
+                                }, 100);
+
+                                // Verificar se precisa recarregar (comportamento padrão do eProc)
+                                if (
+                                    xhr.responseText &&
+                                    xhr.responseText
+                                        .toLowerCase()
+                                        .includes("reload")
+                                ) {
+                                    console.log(
+                                        "🔄 RECARREGANDO PÁGINA conforme resposta do servidor"
+                                    );
+                                    setTimeout(
+                                        () => window.location.reload(),
+                                        500
+                                    );
+                                }
+                            } else {
+                                console.error(
+                                    "❌ AJAX ERRO:",
+                                    xhr.status,
+                                    xhr.statusText
+                                );
+                            }
+                        }
+                    };
+
+                    xhr.onerror = function () {
+                        console.error("❌ AJAX ERRO DE REDE");
+                    };
+
+                    xhr.timeout = 10000; // 10 segundos de timeout
+                    xhr.ontimeout = function () {
+                        console.error("❌ AJAX TIMEOUT");
+                    };
+
+                    xhr.send();
+                    return true;
+                } catch (error) {
+                    console.error("❌ ERRO CRÍTICO na função robusta:", error);
+                    return false;
+                }
+            }
+
+            // Função auxiliar para atualizar ícone visualmente (versão robusta)
+            function atualizarIconeEstrelaVisualRobusta(idEvento, relevancia) {
+                try {
+                    console.log(
+                        `🌟 ATUALIZANDO ÍCONES: Evento ${idEvento}, Relevância ${relevancia}`
+                    );
+
+                    // Procurar ícones de estrela por múltiplos seletores
+                    const seletores = [
+                        `img[onclick*="switchRelevanciaDocumento('${idEvento}'"]`,
+                        `a[onclick*="switchRelevanciaDocumento('${idEvento}'"]`,
+                        `img[onclick*='switchRelevanciaDocumento("${idEvento}"']`,
+                        `a[onclick*='switchRelevanciaDocumento("${idEvento}"']`,
+                        `img[src*="estrela"]`,
+                        `img[src*="Estrela"]`,
+                    ];
+
+                    let iconesAtualizados = 0;
+
+                    for (const seletor of seletores) {
+                        const elementos = document.querySelectorAll(seletor);
+                        elementos.forEach((elemento, index) => {
+                            try {
+                                // Verificar se este elemento pertence ao evento correto
+                                const pertenceAoEvento =
+                                    verificarSeElementoPertenceAoEventoRobusta(
+                                        elemento,
+                                        idEvento
+                                    );
+
+                                if (pertenceAoEvento) {
+                                    if (elemento.tagName === "IMG") {
+                                        // Atualizar src da imagem
+                                        const srcAtual = elemento.src;
+                                        let novoSrc;
+
+                                        if (
+                                            relevancia === "S" ||
+                                            relevancia === "1"
+                                        ) {
+                                            // Marcar como relevante (estrela acesa)
+                                            novoSrc = srcAtual
+                                                .replace(
+                                                    /estrela[_\-]?off/gi,
+                                                    "estrela_on"
+                                                )
+                                                .replace(
+                                                    /estrela[_\-]?apagada/gi,
+                                                    "estrela_acesa"
+                                                )
+                                                .replace(
+                                                    /EstrelaApagada/gi,
+                                                    "EstrelaAcesa"
+                                                );
+                                        } else {
+                                            // Marcar como não relevante (estrela apagada)
+                                            novoSrc = srcAtual
+                                                .replace(
+                                                    /estrela[_\-]?on/gi,
+                                                    "estrela_off"
+                                                )
+                                                .replace(
+                                                    /estrela[_\-]?acesa/gi,
+                                                    "estrela_apagada"
+                                                )
+                                                .replace(
+                                                    /EstrelaAcesa/gi,
+                                                    "EstrelaApagada"
+                                                );
+                                        }
+
+                                        if (novoSrc !== srcAtual) {
+                                            elemento.src = novoSrc;
+                                            iconesAtualizados++;
+                                            console.log(
+                                                `✅ Ícone ${index} atualizado: ${srcAtual} → ${novoSrc}`
+                                            );
+                                        }
+                                    }
+
+                                    // Atualizar atributos de acessibilidade
+                                    const textoRelevancia =
+                                        relevancia === "S" || relevancia === "1"
+                                            ? "Relevante"
+                                            : "Não relevante";
+                                    elemento.title = textoRelevancia;
+                                    elemento.alt = textoRelevancia;
+                                }
+                            } catch (iconError) {
+                                console.warn(
+                                    `⚠️ Erro ao atualizar ícone ${index}:`,
+                                    iconError
+                                );
+                            }
+                        });
+                    }
+
+                    console.log(
+                        `🎯 RESULTADO: ${iconesAtualizados} ícones atualizados para evento ${idEvento}`
+                    );
+                } catch (error) {
+                    console.error(
+                        "❌ ERRO ao atualizar ícones visuais:",
+                        error
+                    );
+                }
+            }
+
+            // Função para verificar se um elemento pertence ao evento específico (versão robusta)
+            function verificarSeElementoPertenceAoEventoRobusta(
+                elemento,
+                idEvento
+            ) {
+                try {
+                    // Método 1: Verificar onclick do próprio elemento
+                    const onclick = elemento.getAttribute("onclick");
+                    if (onclick && onclick.includes(idEvento)) {
+                        console.log(
+                            `🎯 MATCH: Elemento pertence ao evento ${idEvento} (onclick)`
+                        );
+                        return true;
+                    }
+
+                    // Método 2: Procurar no container pai por referência ao evento
+                    const container = elemento.closest(
+                        'tr, .evento, [id*="evento"], .infraLinha'
+                    );
+                    if (container) {
+                        // Verificar se o ID do evento aparece no texto ou atributos do container
+                        if (
+                            container.textContent.includes(idEvento) ||
+                            container.innerHTML.includes(idEvento) ||
+                            container.getAttribute("id")?.includes(idEvento)
+                        ) {
+                            console.log(
+                                `🎯 MATCH: Elemento pertence ao evento ${idEvento} (container)`
+                            );
+                            return true;
+                        }
+                    }
+
+                    // Método 3: Verificar elementos irmãos
+                    const parent = elemento.parentElement;
+                    if (
+                        parent &&
+                        (parent.textContent.includes(idEvento) ||
+                            parent.innerHTML.includes(idEvento))
+                    ) {
+                        console.log(
+                            `🎯 MATCH: Elemento pertence ao evento ${idEvento} (parent)`
+                        );
+                        return true;
+                    }
+
+                    return false;
+                } catch (error) {
+                    console.warn("⚠️ Erro ao verificar evento:", error);
+                    return false;
+                }
+            }
+
+            // 🔄 SUBSTITUIR COMPLETAMENTE a função original
+            const funcaoOriginal = window.switchRelevanciaDocumento;
+            window.switchRelevanciaDocumento = switchRelevanciaDocumentoRobusta;
+
+            if (funcaoOriginal) {
+                console.log(
+                    "🔄 SUBSTITUIÇÃO COMPLETA: Função original substituída por versão robusta"
+                );
+                correcoesAplicadas.push(
+                    "Função original completamente substituída por versão robusta"
+                );
+            } else {
+                console.log(
+                    "🆕 CRIAÇÃO: Função switchRelevanciaDocumento robusta criada do zero"
+                );
+                correcoesAplicadas.push("Função robusta criada do zero");
+            }
+
+            // 🛡️ PROTEÇÃO: Observar e re-aplicar se a função for sobrescrita
+            let reprotecaoAttempts = 0;
+            const maxReprotecaoAttempts = 5;
+
+            const observerReprotecao = new MutationObserver(() => {
+                if (
+                    window.switchRelevanciaDocumento !==
+                        switchRelevanciaDocumentoRobusta &&
+                    reprotecaoAttempts < maxReprotecaoAttempts
+                ) {
+                    reprotecaoAttempts++;
+                    console.log(
+                        `🔄 REPROTECÇÃO ${reprotecaoAttempts}: Re-aplicando função robusta...`
+                    );
+                    window.switchRelevanciaDocumento =
+                        switchRelevanciaDocumentoRobusta;
+                    correcoesAplicadas.push(
+                        `Re-proteção aplicada (tentativa ${reprotecaoAttempts})`
+                    );
+                }
+            });
+
+            observerReprotecao.observe(document.body, {
+                childList: true,
+                subtree: true,
+            });
+
+            // Parar observer após 30 segundos para evitar overhead
+            setTimeout(() => {
+                observerReprotecao.disconnect();
+                console.log(
+                    "🛑 Observer de re-proteção desativado após 30 segundos"
+                );
+            }, 30000);
+
+            // 🔧 CORRIGIR links onclick existentes para usar nossa função robusta
+            setTimeout(() => {
+                const linksEstrela = document.querySelectorAll(
+                    'a[onclick*="switchRelevanciaDocumento"], img[onclick*="switchRelevanciaDocumento"]'
+                );
+                console.log(
+                    `🔗 CORREÇÃO: Encontrados ${linksEstrela.length} links com switchRelevanciaDocumento`
+                );
+
+                linksEstrela.forEach((link, index) => {
+                    try {
+                        // Pular links já protegidos pela nossa extensão
+                        if (
+                            link.classList?.contains("eprobe-icon-protected") ||
+                            link.dataset?.eprobeProtected === "true"
+                        ) {
+                            console.log(
+                                `🛡️ PROTEÇÃO: Link ${index} já protegido pelo eProbe, mantendo...`
+                            );
+                            return;
+                        }
+
+                        const onclickOriginal = link.getAttribute("onclick");
+                        if (
+                            onclickOriginal &&
+                            onclickOriginal.includes(
+                                "switchRelevanciaDocumento"
+                            )
+                        ) {
+                            // Garantir que usa a função global robusta
+                            const novoOnclick = onclickOriginal.replace(
+                                /switchRelevanciaDocumento\(/g,
+                                "window.switchRelevanciaDocumento("
+                            );
+
+                            if (novoOnclick !== onclickOriginal) {
+                                link.setAttribute("onclick", novoOnclick);
+                                link.classList.add(
+                                    "eprobe-link-corrigido-robusta"
+                                );
+                                console.log(
+                                    `✅ LINK ${index} CORRIGIDO: onclick atualizado para versão robusta`
+                                );
+                                correcoesAplicadas.push(
+                                    `Link onclick corrigido robustamente (${index})`
+                                );
+                            }
+                        }
+                    } catch (linkError) {
+                        console.warn(
+                            `⚠️ Erro ao corrigir link ${index}:`,
+                            linkError
+                        );
+                    }
+                });
+            }, 500);
+
+            console.log(
+                `✅ CORREÇÃO ROBUSTA COMPLETA: ${correcoesAplicadas.length} correções aplicadas:`,
+                correcoesAplicadas
+            );
+
+            return {
+                status: "sucesso_robusta",
+                correcoesAplicadas: correcoesAplicadas.length,
+                detalhes: correcoesAplicadas,
+                funcaoOriginal: funcaoOriginal ? "substituída" : "criada",
+            };
+        }
+
+        /**
+         * �🔧 FUNÇÃO CRÍTICA: Corrigir problemas com switchRelevanciaDocumento do eProc
+         * Garante que a função de marcar/desmarcar eventos como relevantes funcione
+         */
+        function corrigirSwitchRelevanciaDocumento() {
+            console.log(
+                "🔧 CORREÇÃO: Iniciando correção da função switchRelevanciaDocumento..."
+            );
+
+            const correcoesAplicadas = [];
+
+            // 1. Interceptar e corrigir erros na função switchRelevanciaDocumento
+            if (typeof window.switchRelevanciaDocumento === "function") {
+                const originalFunction = window.switchRelevanciaDocumento;
+
+                window.switchRelevanciaDocumento = function (...args) {
+                    try {
+                        console.log(
+                            "🔍 INTERCEPTAÇÃO: switchRelevanciaDocumento chamada com args:",
+                            args
+                        );
+                        return originalFunction.apply(this, args);
+                    } catch (error) {
+                        console.error(
+                            "❌ ERRO interceptado em switchRelevanciaDocumento:",
+                            error
+                        );
+
+                        // Tentar recuperar e executar manualmente se possível
+                        if (args.length >= 4) {
+                            const [idEvento, relevancia, tipo, urlAjax] = args;
+                            console.log("🔧 TENTATIVA DE RECUPERAÇÃO:", {
+                                idEvento,
+                                relevancia,
+                                tipo,
+                                urlAjax,
+                            });
+
+                            // Fazer chamada AJAX manual se possível
+                            if (urlAjax && typeof urlAjax === "string") {
+                                try {
+                                    const xhr = new XMLHttpRequest();
+                                    const fullUrl =
+                                        urlAjax +
+                                        "&idEvento=" +
+                                        idEvento +
+                                        "&relevancia=" +
+                                        relevancia +
+                                        "&tipo=" +
+                                        tipo;
+
+                                    xhr.open("GET", fullUrl, true);
+                                    xhr.onreadystatechange = function () {
+                                        if (
+                                            xhr.readyState === 4 &&
+                                            xhr.status === 200
+                                        ) {
+                                            console.log(
+                                                "✅ RECUPERAÇÃO: Requisição AJAX manual executada com sucesso"
+                                            );
+                                            // Atualizar visualmente o ícone
+                                            atualizarIconeEstrela(
+                                                idEvento,
+                                                relevancia
+                                            );
+                                        }
+                                    };
+                                    xhr.send();
+
+                                    correcoesAplicadas.push(
+                                        "Requisição AJAX manual executada"
+                                    );
+                                    return true;
+                                } catch (ajaxError) {
+                                    console.error(
+                                        "❌ ERRO na recuperação AJAX:",
+                                        ajaxError
+                                    );
+                                }
+                            }
+                        }
+
+                        // Se não conseguiu recuperar, mostrar erro amigável
+                        alert(
+                            "Erro ao alterar relevância do evento. Tente recarregar a página."
+                        );
+                        return false;
+                    }
+                };
+
+                correcoesAplicadas.push(
+                    "Função switchRelevanciaDocumento interceptada"
+                );
+                console.log(
+                    "✅ CORREÇÃO: switchRelevanciaDocumento interceptada com proteção"
+                );
+            }
+
+            // 2. Função auxiliar para atualizar visualmente os ícones de estrela
+            function atualizarIconeEstrela(idEvento, relevancia) {
+                // Procurar o ícone relacionado ao evento
+                const iconesEstrela = document.querySelectorAll(
+                    'img[src*="Estrela"], img[data-eprobe-protected="true"]'
+                );
+
+                iconesEstrela.forEach((icone) => {
+                    // Verificar se o ícone pertence ao evento correto (por contexto ou id)
+                    const eventoContainer = icone.closest(
+                        'tr, .evento, [id*="evento"]'
+                    );
+                    if (
+                        eventoContainer &&
+                        eventoContainer.textContent.includes(idEvento)
+                    ) {
+                        if (relevancia === "1") {
+                            // Mudar para estrela acesa
+                            if (icone.src.includes("EstrelaApagada")) {
+                                icone.src = icone.src.replace(
+                                    "EstrelaApagada",
+                                    "EstrelaAcesa"
+                                );
+                                icone.alt = "Evento relevante";
+                                icone.title = "Relevante";
+                            }
+                        } else {
+                            // Mudar para estrela apagada
+                            if (icone.src.includes("EstrelaAcesa")) {
+                                icone.src = icone.src.replace(
+                                    "EstrelaAcesa",
+                                    "EstrelaApagada"
+                                );
+                                icone.alt = "Evento normal";
+                                icone.title = "Marcar como relevante";
+                            }
+                        }
+                    }
+                });
+            }
+
+            console.log(
+                `✅ CORREÇÃO: ${correcoesAplicadas.length} correções aplicadas para switchRelevanciaDocumento:`,
                 correcoesAplicadas
             );
 
@@ -20878,6 +22092,50 @@ ${texto}`;
                             return;
                         }
 
+                        // 🚨 PROTEÇÃO CRÍTICA: NÃO substituir ícones de estrela que são interativos
+                        // Verifica se é um ícone de estrela e se tem funcionalidade de clique
+                        const isEstrelaIcon =
+                            selector.includes("Estrela") ||
+                            img.src.includes("EstrelaAcesa") ||
+                            img.src.includes("EstrelaApagada") ||
+                            img.alt.includes("Evento relevante") ||
+                            img.alt.includes("Evento normal");
+
+                        if (isEstrelaIcon) {
+                            // Verificar se tem onclick ou está em link com javascript
+                            const hasOnclick =
+                                img.onclick || img.hasAttribute("onclick");
+                            const parentLink = img.closest(
+                                "a[href*='javascript:'], a[onclick]"
+                            );
+
+                            if (hasOnclick || parentLink) {
+                                console.log(
+                                    "🛡️ PROTEÇÃO: Ícone de estrela interativo preservado:",
+                                    {
+                                        src: img.src,
+                                        hasOnclick: !!hasOnclick,
+                                        parentLink: !!parentLink,
+                                        linkHref: parentLink?.href || "N/A",
+                                    }
+                                );
+
+                                // Apenas adicionar visual feedback que está sendo protegido
+                                img.style.filter =
+                                    "drop-shadow(0 0 2px rgba(224, 187, 0, 0.3))";
+                                img.setAttribute(
+                                    "data-eprobe-protected",
+                                    "true"
+                                );
+                                img.setAttribute(
+                                    "title",
+                                    (img.title || img.alt) +
+                                        " (Protegido pelo eProbe)"
+                                );
+                                return; // NÃO substituir
+                            }
+                        }
+
                         try {
                             // Preservar todas as propriedades originais
                             const originalWidth =
@@ -22061,6 +23319,43 @@ ${texto}`;
                 );
             }
         }, 750);
+
+        // 🔧 EXECUÇÃO AUTOMÁTICA - Corrigir função switchRelevanciaDocumento (VERSÃO ROBUSTA)
+        setTimeout(() => {
+            log(
+                "� CORREÇÃO ROBUSTA: Aplicando correção automática da função switchRelevanciaDocumento (versão robusta)..."
+            );
+            try {
+                if (
+                    typeof corrigirSwitchRelevanciaDocumentoRobusta ===
+                    "function"
+                ) {
+                    const resultado =
+                        corrigirSwitchRelevanciaDocumentoRobusta();
+                    log(
+                        "✅ CORREÇÃO ROBUSTA: switchRelevanciaDocumento corrigida automaticamente:",
+                        resultado
+                    );
+                } else if (
+                    typeof corrigirSwitchRelevanciaDocumento === "function"
+                ) {
+                    const resultado = corrigirSwitchRelevanciaDocumento();
+                    log(
+                        "✅ CORREÇÃO: switchRelevanciaDocumento corrigida automaticamente (versão padrão):",
+                        resultado
+                    );
+                } else {
+                    console.warn(
+                        "⚠️ CORREÇÃO: Nenhuma função de correção de switchRelevanciaDocumento encontrada"
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "❌ CORREÇÃO: Erro na correção da função switchRelevanciaDocumento:",
+                    error
+                );
+            }
+        }, 1000);
 
         // 🔧 EXECUÇÃO ROBUSTA - Segunda tentativa para correção de inconsistências
         setTimeout(() => {
@@ -23945,6 +25240,10 @@ ${texto}`;
             diagnosticarCompleto: debugInterfaceFunctions.diagnosticarCompleto,
             corrigirProblemas: debugInterfaceFunctions.corrigirProblemas,
             corrigirPointerEventsBotoes: corrigirPointerEventsBotoes, // CORREÇÃO CRÍTICA para botões bloqueados
+            corrigirSwitchRelevanciaDocumento:
+                corrigirSwitchRelevanciaDocumento, // CORREÇÃO CRÍTICA para função de relevância
+            corrigirSwitchRelevanciaDocumentoRobusta:
+                corrigirSwitchRelevanciaDocumentoRobusta, // NOVA VERSÃO ROBUSTA - usa implementação própria
             forcarReaplicacaoIcones: forcarReaplicacaoIcones, // Implementação real
             inicializarSubstituicaoIcones: inicializarSubstituicaoIcones, // Implementação real
             diagnosticarIconesCSS:
@@ -26555,6 +27854,87 @@ ${texto}`;
         // 🚀 EXPOSIÇÃO GLOBAL DO NAMESPACE - CRÍTICO!
         // Mover as funções para o escopo global DENTRO da IIFE
         window.SENT1_AUTO = eProbeNamespaceFunctions;
+
+        // 🚨 EXECUÇÃO IMEDIATA DAS CORREÇÕES CRÍTICAS
+        logCritical(
+            "🔧 EXECUÇÃO IMEDIATA: Aplicando correções críticas na inicialização..."
+        );
+
+        // Executar correções de pointer-events imediatamente
+        try {
+            if (typeof corrigirPointerEventsBotoes === "function") {
+                const resultadoPointer = corrigirPointerEventsBotoes();
+                logCritical(
+                    "✅ CORREÇÃO IMEDIATA: Pointer-events corrigidos:",
+                    resultadoPointer
+                );
+            }
+        } catch (error) {
+            console.error(
+                "❌ ERRO na correção imediata de pointer-events:",
+                error
+            );
+        }
+
+        // Executar correção de switchRelevanciaDocumento imediatamente (VERSÃO ROBUSTA)
+        try {
+            if (
+                typeof corrigirSwitchRelevanciaDocumentoRobusta === "function"
+            ) {
+                const resultadoSwitch =
+                    corrigirSwitchRelevanciaDocumentoRobusta();
+                logCritical(
+                    "✅ CORREÇÃO IMEDIATA ROBUSTA: switchRelevanciaDocumento corrigido:",
+                    resultadoSwitch
+                );
+            } else if (
+                typeof corrigirSwitchRelevanciaDocumento === "function"
+            ) {
+                const resultadoSwitch = corrigirSwitchRelevanciaDocumento();
+                logCritical(
+                    "✅ CORREÇÃO IMEDIATA: switchRelevanciaDocumento corrigido:",
+                    resultadoSwitch
+                );
+            }
+        } catch (error) {
+            console.error(
+                "❌ ERRO na correção imediata de switchRelevanciaDocumento:",
+                error
+            );
+        }
+
+        // Aguardar um pouco e executar novamente (para casos onde as funções do eProc ainda não existem)
+        setTimeout(() => {
+            logCritical(
+                "🔧 SEGUNDA TENTATIVA ROBUSTA: Reaplicando correções após delay..."
+            );
+            try {
+                if (
+                    typeof corrigirSwitchRelevanciaDocumentoRobusta ===
+                    "function"
+                ) {
+                    const resultado =
+                        corrigirSwitchRelevanciaDocumentoRobusta();
+                    logCritical(
+                        "✅ SEGUNDA TENTATIVA ROBUSTA: switchRelevanciaDocumento re-corrigido:",
+                        resultado
+                    );
+                } else if (
+                    typeof corrigirSwitchRelevanciaDocumento === "function"
+                ) {
+                    const resultado = corrigirSwitchRelevanciaDocumento();
+                    logCritical(
+                        "✅ SEGUNDA TENTATIVA: switchRelevanciaDocumento re-corrigido:",
+                        resultado
+                    );
+                }
+            } catch (error) {
+                console.error(
+                    "❌ ERRO na segunda tentativa de correção:",
+                    error
+                );
+            }
+        }, 2000);
 
         logCritical(
             "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!"
