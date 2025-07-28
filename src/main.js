@@ -8403,7 +8403,7 @@ ${texto}`;
                     // Menu para páginas de documento específico
                     log(" Mostrando menu para documento específico");
                     menu.innerHTML = `
- <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+ <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
  Processar Documento
  </li>
@@ -8414,11 +8414,10 @@ ${texto}`;
  Resumir com Perplexity
  </li>
  <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
+ <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
  </svg>
- Método Manual
+ Escolher IA
  </li>
  <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8560,7 +8559,7 @@ ${texto}`;
                             " Há documentos, mostrando menu de documento específico"
                         );
                         menu.innerHTML = `
- <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+ <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
  <path d="M12 8V4H8"/>
  <rect width="16" height="12" x="4" y="8" rx="2"/>
@@ -8578,11 +8577,10 @@ ${texto}`;
  Resumo Perplexity
  </li>
  <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+ <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
+ <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
  </svg>
- Método Manual
+ Escolher IA
  </li>
  <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -19132,69 +19130,7 @@ ${texto}`;
                     boxShadow: "0 0 0 3px rgba(52, 58, 64, 0.3)",
                 },
             },
-            /* TEMPORARIAMENTE DESABILITADO - Tema Material
-    material: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        lineHeight: "1",
-        textDecoration: "none",
-        color: "#3e505b",
-        fontSize: "15px",
-        borderRadius: "5px",
-        width: "200px",
-        height: "40px",
-        fontWeight: "bold",
-        position: "relative",
-        transition: "0.3s",
-        boxShadow: "1px 2px 4px -2px rgba(0, 0, 0, 0.53)",
-        overflow: "hidden",
-        backgroundColor: "#e0e0e0",
-        border: "none",
-        hover: {
-            backgroundColor: "#f2f2f2",
-        },
-        // Pseudo-elementos serão aplicados via CSS dinâmico
-        beforeAfter: {
-            display: "block",
-            height: "2px",
-            width: "100%",
-            position: "absolute",
-            left: "0",
-    },
-    /* TEMPORARIAMENTE DESABILITADO - Tema Material
-    material: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        lineHeight: "1",
-        textDecoration: "none",
-        color: "#3e505b",
-        fontSize: "15px",
-        borderRadius: "5px",
-        width: "200px",
-        height: "40px",
-        fontWeight: "bold",
-        position: "relative",
-        transition: "0.3s",
-        boxShadow: "1px 2px 4px -2px rgba(0, 0, 0, 0.53)",
-        overflow: "hidden",
-        backgroundColor: "#e0e0e0",
-        border: "none",
-        hover: {
-            backgroundColor: "#f2f2f2",
-        },
-        beforeAfter: {
-            display: "block",
-            height: "2px",
-            width: "100%",
-            position: "absolute",
-            left: "0",
-            background: "#144CFF",
-            transition: ".3s",
-        },
-    },
-    */
+
             profissional: {
                 backgroundColor: "#007ebd",
                 color: "#ffffff",
@@ -19539,7 +19475,7 @@ ${texto}`;
                 link.href = "https://e-probe.vercel.app/";
                 link.target = "_blank";
                 link.style.cssText =
-                    "padding:5px 6px;text-decoration:none;display:flex;align-items:center;height:50px";
+                    "padding:5px 6px;text-decoration:none;display:flex;align-items:center !important;height:50px";
 
                 // Verificar se chrome.runtime está disponível (contexto de extensão)
                 if (
