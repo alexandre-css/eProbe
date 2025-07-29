@@ -1522,6 +1522,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         .eprobe-button {
             opacity: 0;
             animation: fadeInElement 0.5s ease-out 0.3s forwards;
+            margin-right: 3px !important;
         }
         
         /* ===== MODAL E NOTIFICAÇÕES PREPARADAS ===== */
@@ -5084,6 +5085,11 @@ RESPOSTA (apenas JSON válido):`;
             font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
         }
         
+        /* Estilo específico para o botão documento-relevante-auto-button */
+        #documento-relevante-auto-button {
+            margin-right: 3px !important;
+        }
+        
         /* Elementos criados dinamicamente pela extensão */
         [id*="sent1"] *, [id*="documento-relevante"] *, [class*="eprobe"] *,
         #sent1-auto-button *, #documento-relevante-options-menu *,
@@ -5901,7 +5907,7 @@ RESPOSTA (apenas JSON válido):`;
                 height: 16px !important;
             `;
                 iconeSeparador.innerHTML = `
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px !important; vertical-align: middle;">
                     <path d="m16 16-4 4-4-4"/>
                     <path d="M3 12h18"/>
                     <path d="m8 8 4-4 4 4"/>
@@ -10128,7 +10134,7 @@ ${texto}`;
                 const button = criarInfraButtonPrimary(
                     "documento-relevante-auto-button",
                     `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px !important; vertical-align: middle;">
  <rect width="18" height="18" x="3" y="3" rx="2"/>
  <path d="m9 8 6 4-6 4Z"/>
  </svg>
@@ -10812,7 +10818,7 @@ ${texto}`;
                 button.id = "sent1-auto-button";
                 button.className = "eprobe-button";
                 button.innerHTML = `
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px !important; vertical-align: middle;">
+ <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px !important; vertical-align: middle;">
  <rect width="18" height="18" x="3" y="3" rx="2"/>
  <path d="m9 8 6 4-6 4Z"/>
  </svg>
@@ -12851,6 +12857,7 @@ ${texto}`;
                 const button = document.createElement("button");
                 button.id = id;
                 button.className = "infraButton btn-primary";
+                button.style.marginRight = "3px !important";
 
                 // Conteúdo do botão (HTML interno)
                 if (innerHTML) {
@@ -18683,7 +18690,7 @@ ${texto}`;
                         // Criar container centralizado
                         const container = document.createElement("div");
                         container.style.cssText =
-                            "margin-top: 15px; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%;";
+                            "margin-top: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: center; cursor: pointer; width: 100%;";
                         container.setAttribute(
                             "data-eprobe-expandir-replaced",
                             "true"
@@ -20699,7 +20706,6 @@ ${texto}`;
             ];
 
             // Remover estilo anterior se existir
-            // Remover estilo anterior se existir
             const estiloAnterior = document.getElementById(
                 "eprobe-estilo-botoes-eproc"
             );
@@ -20819,13 +20825,13 @@ ${texto}`;
             css += `
 
     /* 🛡️ EPROBE BUTTONS: Margin-right nos SVGs dos botões personalizados */
-    #documento-relevante-auto-button svg { margin-right: 4px !important; }
-    .infraButton svg { margin-right: 4px !important; }
-    .btn-primary svg { margin-right: 4px !important; }
-    .eprobe-button svg { margin-right: 4px !important; }
+    #documento-relevante-auto-button svg { margin-right: 3px !important; }
+    .infraButton svg { margin-right: 3px !important; }
+    .btn-primary svg { margin-right: 3px !important; }
+    .eprobe-button svg { margin-right: 3px !important; }
     
     /* 🛡️ PROTEÇÃO: Garantir espaçamento correto em todos os botões eProbe */
-    button[id*="documento-relevante"] svg { margin-right: 4px !important; }
+    button[id*="documento-relevante"] svg { margin-right: 3px !important; }
     `;
 
             // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
