@@ -2,6 +2,29 @@
 
 ## 🚨 REGRAS CRÍTICAS ABSOLITAS - NUNCA MAIS ESQUECER
 
+### 🔴 CODIFICAÇÃO UTF-8 OBRIGATÓRIA - REGRA CRÍTICA ABSOLUTA
+
+**REGRA CRÍTICA ABSOLUTA**: SEMPRE usar APENAS caracteres compatíveis com UTF-8. NUNCA usar emojis, símbolos especiais ou caracteres não-ASCII em código JavaScript.
+
+**CARACTERES PROIBIDOS (JAMAIS USAR):**
+- ❌ ✅ 📄 🎯 ⚠️ 📋 🔄 🚀 📅 🎨 🔧 🌐 📊 💥 🆘 🛡️ 
+- Qualquer emoji ou símbolo Unicode especial
+- Caracteres acentuados em strings de código
+- Símbolos decorativos não-ASCII
+
+**CARACTERES PERMITIDOS (APENAS ESTES):**
+- Letras: a-z, A-Z
+- Números: 0-9  
+- Pontuação básica: . , ; : ! ? " ' ( ) [ ] { } + - * / = < > % & | ^ ~ _ $ # @
+- Espaços e quebras de linha padrão
+
+**CHECKLIST OBRIGATÓRIO antes de qualquer edição:**
+1. ✅ Código usa APENAS caracteres ASCII básicos?
+2. ✅ Strings não contêm emojis ou símbolos especiais?
+3. ✅ Comentários usam apenas texto simples?
+4. ✅ Mensagens de log são ASCII-compatíveis?
+5. ✅ NUNCA assumiu que caracteres especiais funcionarão?
+
 ### 🔴 VERIFICAÇÃO OBRIGATÓRIA DO NAMESPACE ANTES DE QUALQUER SUGESTÃO
 
 **REGRA CRÍTICA ABSOLUTA**: SEMPRE verificar `Object.keys(window.SENT1_AUTO)` ANTES de sugerir qualquer função.
