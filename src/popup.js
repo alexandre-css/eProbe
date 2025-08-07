@@ -205,15 +205,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             // Remove estado ativo de todos os botões
             for (var i = 0; i < buttons.length; i++) {
-                buttons[i].classList.remove("theme-active");
+                buttons[i].classList.remove("active");
             }
 
             // Ativa o tema azul (índice 0)
             if (buttons[0]) {
-                buttons[0].classList.add("theme-active");
-            }
-
-            // Remove o tema salvo e aplica o padrão
+                buttons[0].classList.add("active");
+            } // Remove o tema salvo e aplica o padrão
             chrome.storage.sync.remove("selectedTheme", function () {
                 console.log(
                     "🗑️ POPUP: Tema salvo removido, voltando ao padrão"
@@ -229,13 +227,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 resetButton.title = "✅ Reset aplicado!";
                 resetButton.style.transform = "scale(1.1)";
                 resetButton.style.color = "rgb(var(--color-success-600))";
-                resetButton.classList.add("theme-active");
+                resetButton.classList.add("active");
 
                 setTimeout(() => {
                     resetButton.title = originalText;
                     resetButton.style.transform = "";
                     resetButton.style.color = originalColor;
-                    resetButton.classList.remove("theme-active");
+                    resetButton.classList.remove("active");
                 }, 1500);
             });
 
@@ -244,11 +242,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Remove estado ativo de todos os botões
         for (var i = 0; i < buttons.length; i++) {
-            buttons[i].classList.remove("theme-active");
+            buttons[i].classList.remove("active");
         }
 
         // Adiciona estado ativo ao botão selecionado
-        buttons[index].classList.add("theme-active");
+        buttons[index].classList.add("active");
 
         // Aplica o tema selecionado
         var theme = buttons[index].getAttribute("data-theme");

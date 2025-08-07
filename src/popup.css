@@ -1311,13 +1311,15 @@ body {
     box-shadow: 0 4px 12px rgb(var(--color-background) / 0.2);
 }
 
-.button-theme-option.active {
+.button-theme-option.active,
+.button-theme-option.theme-active {
     border-color: rgb(var(--color-primary-600));
     background: rgb(var(--color-primary-600) / 0.1);
     color: rgb(var(--color-primary-600));
 }
 
-.button-theme-option.active .button-theme-preview {
+.button-theme-option.active .button-theme-preview,
+.button-theme-option.theme-active .button-theme-preview {
     box-shadow: 0 0 0 2px rgb(var(--color-primary-600));
 }
 

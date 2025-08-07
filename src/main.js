@@ -772,6 +772,22 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             }
         }
     });
+
+    // Listener para evento customizado de mudança de tema
+    window.addEventListener("eprobe-theme-changed", (e) => {
+        const { theme, gradient } = e.detail;
+
+        // Forçar aplicação imediata nos elementos da navbar
+        const navbarElements = document.querySelectorAll(
+            "#navbar.navbar.bg-instancia, .navbar.bg-instancia, nav.navbar.bg-instancia"
+        );
+
+        navbarElements.forEach((navbar) => {
+            navbar.style.setProperty("background-image", gradient, "important");
+        });
+
+        console.log(`⚡ NAVBAR: Evento customizado aplicou tema ${theme}`);
+    });
 })();
 
 // ===== ULTRA ANTI-FLASH - EXECUÇÃO IMEDIATA ANTES DE QUALQUER RENDERIZAÇÃO =====
@@ -3326,9 +3342,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 Sessões de Julgamento
                             </div>
                             <div style="font-size: 13px; opacity: 0.9;">
-                                ${sessoes.length} sessão${
-                sessoes.length !== 1 ? "ões" : ""
-            } encontrada${sessoes.length !== 1 ? "s" : ""}
+                                ${sessoes.length} ${
+                sessoes.length === 1
+                    ? "sessão encontrada"
+                    : "sessões encontradas"
+            }
                             </div>
                         </div>
                     </div>
@@ -3553,9 +3571,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             );
             console.log("🎯 TOOLTIP HTML: Resumo do conteúdo criado:");
             console.log(
-                `   - ${sessoes.length} sessão${
-                    sessoes.length !== 1 ? "ões" : ""
-                } processada${sessoes.length !== 1 ? "s" : ""}`
+                `   - ${sessoes.length} ${
+                    sessoes.length === 1
+                        ? "sessão processada"
+                        : "sessões processadas"
+                }`
             );
             console.log(`   - Cor do header: ${corHeader}`);
 
@@ -3631,24 +3651,165 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
         // Função para aplicar estilos do tema (definida globalmente)
         function applyThemeStyles(themeName) {
-            log(`🎨 Aplicando tema ${themeName} automaticamente...`);
+            log(`🎨 Aplicando tema ${themeName}...`);
 
-            // Salvar tema no localStorage APENAS - CSS instantâneo já cuida da aplicação
+            // Salvar tema no localStorage
             localStorage.setItem("eprobe_selected_theme", themeName);
 
-            log(`🎨 Tema ${themeName} salvo - CSS instantâneo já aplicado`);
+            // Definir gradientes dos temas
+            const gradientes = {
+                blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
+                dark: "linear-gradient(to left, #1a1a1a, #696363)",
+                light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+            };
+
+            const gradiente = gradientes[themeName] || gradientes.blue;
+
+            // Aplicar CSS imediatamente
+            const cssNavbarTema = document.createElement("style");
+            cssNavbarTema.id = "eprobe-navbar-instant-immediate";
+            cssNavbarTema.textContent = `
+                /* NAVBAR APLICADA IMEDIATAMENTE NO CARREGAMENTO DO SCRIPT */
+                #navbar.navbar.bg-instancia,
+                .navbar.bg-instancia,
+                nav.navbar.bg-instancia,
+                .navbar.text-white.bg-instancia,
+                .navbar.text-white.d-xl-flex.bg-instancia {
+                    background-image: ${gradiente} !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    min-height: 50px !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    transition: background-image 0.3s ease !important;
+                }
+                
+                #navbar.navbar.bg-instancia > *,
+                .navbar.bg-instancia > *,
+                nav.navbar.bg-instancia > * {
+                    display: flex !important; 
+                    align-items: center !important;
+                    min-height: 50px !important;
+                }
+                
+                /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX */
+                .d-none.d-md-flex,
+                div.d-none.d-md-flex,
+                .navbar .d-none.d-md-flex,
+                #navbar .d-none.d-md-flex {
+                    display: flex !important;
+                    align-items: center !important;
+                }
+            `;
+
+            // Remover CSS anterior se existir
+            const cssAnterior = document.getElementById(
+                "eprobe-navbar-instant-immediate"
+            );
+            if (cssAnterior) {
+                cssAnterior.remove();
+            }
+
+            // Aplicar novo CSS
+            const head =
+                document.head ||
+                document.getElementsByTagName("head")[0] ||
+                document.documentElement;
+            if (head) {
+                head.insertBefore(cssNavbarTema, head.firstChild);
+                log(`🎨 Tema ${themeName} aplicado com sucesso na navbar`);
+            }
+
+            // Disparar evento para notificar outros componentes
+            window.dispatchEvent(
+                new CustomEvent("eprobe-theme-changed", {
+                    detail: { theme: themeName, gradient: gradiente },
+                })
+            );
         }
 
         /**
-         * 🎯 FUNÇÃO REMOVIDA - unificarNavbarStyles
-         * CSS instantâneo já cuida de toda aplicação da navbar
-         * Função mantida apenas como stub para compatibilidade
+         * 🎯 FUNÇÃO PARA UNIFICAR ESTILOS DA NAVBAR
+         * Força a aplicação dos estilos de navbar quando necessário
          */
         function unificarNavbarStyles() {
-            console.log(
-                "✅ NAVBAR: CSS instantâneo já aplicado, função desnecessária"
-            );
-            return true;
+            console.log("🔧 NAVBAR: Unificando estilos da navbar...");
+
+            try {
+                // Obter tema atual
+                const temaAtual =
+                    localStorage.getItem("eprobe_selected_theme") || "blue";
+
+                // Definir gradientes
+                const gradientes = {
+                    blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
+                    dark: "linear-gradient(to left, #1a1a1a, #696363)",
+                    light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                    violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+                };
+
+                const gradiente = gradientes[temaAtual] || gradientes.blue;
+
+                // Buscar elementos da navbar
+                const navbarElements = document.querySelectorAll(
+                    "#navbar.navbar.bg-instancia, .navbar.bg-instancia, nav.navbar.bg-instancia"
+                );
+
+                if (navbarElements.length > 0) {
+                    navbarElements.forEach((navbar) => {
+                        navbar.style.setProperty(
+                            "background-image",
+                            gradiente,
+                            "important"
+                        );
+                        navbar.style.setProperty(
+                            "display",
+                            "flex",
+                            "important"
+                        );
+                        navbar.style.setProperty(
+                            "align-items",
+                            "center",
+                            "important"
+                        );
+                        navbar.style.setProperty(
+                            "min-height",
+                            "50px",
+                            "important"
+                        );
+                    });
+
+                    // Forçar flexbox nos elementos .d-none.d-md-flex
+                    const flexElements =
+                        document.querySelectorAll(".d-none.d-md-flex");
+                    flexElements.forEach((element) => {
+                        element.style.setProperty(
+                            "display",
+                            "flex",
+                            "important"
+                        );
+                        element.style.setProperty(
+                            "align-items",
+                            "center",
+                            "important"
+                        );
+                    });
+
+                    console.log(
+                        `✅ NAVBAR: Tema ${temaAtual} aplicado em ${navbarElements.length} elementos`
+                    );
+                    return true;
+                } else {
+                    console.log(
+                        "⚠️ NAVBAR: Nenhum elemento de navbar encontrado"
+                    );
+                    return false;
+                }
+            } catch (error) {
+                console.error("❌ NAVBAR: Erro ao unificar estilos:", error);
+                return false;
+            }
         }
 
         // Função para verificar e aplicar tema salvo - SIMPLIFICADA
@@ -4375,16 +4536,44 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     "🎯 INSERÇÃO: Procurando local para inserir card..."
                 );
 
-                // Buscar local de inserção no eProc
+                // Buscar local de inserção no eProc - MÉTODO ESPECÍFICO PARA txtMagistrado
                 const txtMagistrado = document.getElementById("txtMagistrado");
                 if (txtMagistrado) {
-                    const container = txtMagistrado.closest(
-                        ".infraFieldset, .infraAreaDados, div"
+                    logCritical(
+                        "🎯 INSERÇÃO: txtMagistrado encontrado, posicionando ao lado direito..."
                     );
-                    if (container) {
-                        container.appendChild(card);
+
+                    // Criar wrapper para posicionamento lado a lado
+                    const wrapper = document.createElement("div");
+                    wrapper.style.cssText = `
+                        display: flex !important;
+                        align-items: center !important;
+                        gap: 12px !important;
+                        flex-wrap: wrap !important;
+                        width: 100% !important;
+                    `;
+
+                    // Encontrar o container do txtMagistrado
+                    const parentContainer = txtMagistrado.parentNode;
+                    if (parentContainer) {
+                        // Inserir o wrapper antes do txtMagistrado
+                        parentContainer.insertBefore(wrapper, txtMagistrado);
+
+                        // Mover o txtMagistrado para dentro do wrapper
+                        wrapper.appendChild(txtMagistrado);
+
+                        // Adicionar o card ao lado direito no wrapper
+                        wrapper.appendChild(card);
+
+                        // Garantir que o card tenha estilo inline adequado
+                        card.style.cssText += `
+                            margin-left: auto !important;
+                            flex-shrink: 0 !important;
+                            position: relative !important;
+                        `;
+
                         logCritical(
-                            "✅ INSERÇÃO: Card inserido próximo ao txtMagistrado"
+                            "✅ INSERÇÃO: Card posicionado ao lado direito do txtMagistrado"
                         );
                         return true;
                     }
@@ -4530,24 +4719,27 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 card.id = "eprobe-card-sessao-material";
                 card.className = "session-card";
 
-                // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA NÃO INTERFERIR
+                // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA POSICIONAMENTO
                 card.style.cssText = `
-                width: 190px;
-                height: 60px;
-                background: #FEF7FF;
-                border: 0.75px solid #CAC4D0;
-                border-radius: 9px;
-                box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
-                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                display: flex;
-                align-items: center;
-                padding: 8px 12px;
-                gap: 8px;
-                cursor: pointer;
-                transition: transform 0.2s ease;
-                margin: 0;
-                flex-shrink: 0;
-                position: relative;
+                width: 190px !important;
+                height: 60px !important;
+                background: #FEF7FF !important;
+                border: 0.75px solid #CAC4D0 !important;
+                border-radius: 9px !important;
+                box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15) !important;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+                display: flex !important;
+                align-items: center !important;
+                padding: 8px 12px !important;
+                gap: 8px !important;
+                cursor: pointer !important;
+                transition: transform 0.2s ease !important;
+                margin: 0 !important;
+                flex-shrink: 0 !important;
+                position: relative !important;
+                z-index: 1000 !important;
+                max-width: 190px !important;
+                min-width: 190px !important;
             `;
 
                 // Ícone de clock pequeno do Figma
@@ -8158,9 +8350,110 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return texto.trim();
             };
 
+            // 🔧 FUNÇÃO DE DEBUG PARA PDF DO EPROC - MOVIDA PARA ESCOPO CORRETO
+            function debugPDFExtracao() {
+                console.log("🔍 DEBUG PDF EPROC: Analisando página atual...");
+
+                const info = {
+                    url: window.location.href,
+                    isEprocDocument:
+                        window.location.href.includes("acessar_documento"),
+                    urlParams: Object.fromEntries(
+                        new URLSearchParams(window.location.search)
+                    ),
+
+                    // Elementos PDF na página
+                    elementos: {},
+
+                    // Estado do PDF.js
+                    pdfjs: {
+                        carregado: typeof pdfjsLib !== "undefined",
+                        versao:
+                            typeof pdfjsLib !== "undefined"
+                                ? pdfjsLib.version
+                                : null,
+                    },
+
+                    // Informações da página
+                    titulo: document.title,
+                    temIframes: document.querySelectorAll("iframe").length,
+                    temEmbeds: document.querySelectorAll("embed").length,
+                    temObjects: document.querySelectorAll("object").length,
+                };
+
+                // Analisar elementos PDF
+                const selectors = [
+                    'iframe[src*="pdf"]',
+                    'embed[type="application/pdf"]',
+                    'object[type="application/pdf"]',
+                    'iframe[src*="acessar_documento"]',
+                    "#plugin",
+                    'embed[type="application/x-google-chrome-pdf"]',
+                ];
+
+                selectors.forEach((selector) => {
+                    const elemento = document.querySelector(selector);
+                    info.elementos[selector] = elemento
+                        ? {
+                              encontrado: true,
+                              src: elemento.src || elemento.data || "N/A",
+                              type: elemento.type || "N/A",
+                              id: elemento.id || "N/A",
+                              className: elemento.className || "N/A",
+                          }
+                        : { encontrado: false };
+                });
+
+                // Listar todos os iframes para debug
+                info.todosIframes = Array.from(
+                    document.querySelectorAll("iframe")
+                ).map((iframe, i) => ({
+                    indice: i,
+                    src: iframe.src || "N/A",
+                    title: iframe.title || "N/A",
+                    id: iframe.id || "N/A",
+                    className: iframe.className || "N/A",
+                }));
+
+                console.log("📊 RELATÓRIO COMPLETO:", info);
+                return info;
+            }
+
             // 🎯 SOLUÇÃO AUTOMÁTICA PARA EXTRAÇÃO DE TEXTO DE PDF (Estratégias 1 + 3)
             async function extractTextFromPDF() {
                 console.log("📄 Iniciando extração automática de PDF...");
+
+                // 🧹 LIMPEZA CRÍTICA: Verificar e limpar clipboard se contém notificações eProbe
+                try {
+                    const clipboardContent =
+                        await navigator.clipboard.readText();
+                    if (clipboardContent) {
+                        const contentLower = clipboardContent.toLowerCase();
+                        const eProbeIndicators = [
+                            "resumir documento",
+                            "pdf detectado",
+                            "clique dentro do pdf",
+                            "aguarde o pdf carregar",
+                            "selecione todo o texto do pdf",
+                        ];
+
+                        const hasEProbeContent = eProbeIndicators.some(
+                            (indicator) => contentLower.includes(indicator)
+                        );
+
+                        if (hasEProbeContent) {
+                            console.log(
+                                "🧹 Limpando clipboard com conteúdo eProbe"
+                            );
+                            await navigator.clipboard.writeText("");
+                        }
+                    }
+                } catch (error) {
+                    console.log(
+                        "⚠️ Não foi possível verificar/limpar clipboard:",
+                        error.message
+                    );
+                }
 
                 // 🔍 VERIFICAÇÃO PRÉVIA: Só executar se estivermos em uma página de documento PDF
                 const pageType = detectPageType();
@@ -8249,24 +8542,44 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     }
                 }
 
-                // ESTRATÉGIA 2: Aguardar seleção manual do usuário
-                console.log("🎯 Estratégia de seleção manual ativada");
+                // ESTRATÉGIA 2: Automação COMPLETA de seleção (Ctrl+A + Ctrl+C automáticos)
+                console.log("🤖 Estratégia de automação COMPLETA ativada");
 
-                // Mostrar instruções claras e específicas
+                // Mostrar notificação informativa
                 showNotification(
-                    `
-                        📄 PDF detectado! Para extrair o texto CORRETAMENTE:
-                        
-                        🎯 CLIQUE DENTRO DO PDF primeiro
-                        1️⃣ Aguarde o PDF carregar completamente
-                        2️⃣ Selecione todo o texto DO PDF (Ctrl+A)
-                        3️⃣ Copie o texto DO PDF (Ctrl+C) 
-                        4️⃣ Clique novamente no botão eProbe
-                        
-                        ⚠️ IMPORTANTE: NÃO copie texto do console/logs!
-                        ✅ Copie apenas o texto do documento PDF!
-                    `.trim(),
+                    "🤖 Executando automação: selecionando e copiando texto do PDF automaticamente...",
                     "info",
+                    3000
+                );
+
+                const textoAutomatico = await tentarSelecaoAutomaticaCompleta();
+                if (textoAutomatico) {
+                    console.log(
+                        "✅ Texto extraído automaticamente com sucesso"
+                    );
+                    showNotification(
+                        "✅ Texto extraído automaticamente com sucesso!",
+                        "success",
+                        2000
+                    );
+                    return textoAutomatico.trim();
+                }
+
+                // ESTRATÉGIA 3: Fallback - Aguardar seleção manual se automação falhar
+                console.log("🎯 Fallback: Estratégia de seleção manual");
+
+                // Mostrar instruções apenas se automação falhar
+                showNotification(
+                    `Automação falhou. Faça manualmente:
+                    
+1. CLIQUE dentro da área do PDF
+2. Aguarde carregar completamente
+3. Pressione Ctrl+A para selecionar tudo
+4. Pressione Ctrl+C para copiar
+5. Clique no botão eProbe novamente
+
+IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
+                    "warning",
                     10000
                 );
 
@@ -8306,8 +8619,40 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             return null;
                         }
 
-                        // Verificar se é texto jurídico válido (não logs do console)
+                        // Verificar se é texto jurídico válido (não logs do console ou notificações eProbe)
                         const textLower = text.toLowerCase();
+
+                        // 🚨 CRÍTICO: Rejeitar notificações do eProbe
+                        const eProbeIndicators = [
+                            "resumir documento",
+                            "pdf detectado",
+                            "clique dentro do pdf",
+                            "aguarde o pdf carregar",
+                            "selecione todo o texto do pdf",
+                            "copie o texto do pdf",
+                            "clique novamente no botão eprobe",
+                            "não copie texto do console",
+                            "copie apenas o texto do documento pdf",
+                            "🎯 clique",
+                            "1️⃣ aguarde",
+                            "2️⃣ selecione",
+                            "3️⃣ copie",
+                            "4️⃣ clique",
+                            "⚠️ importante",
+                            "✅ copie apenas",
+                        ];
+
+                        // Verificar se contém notificações do eProbe
+                        const eProbeCount = eProbeIndicators.filter(
+                            (indicator) => textLower.includes(indicator)
+                        ).length;
+
+                        if (eProbeCount > 0) {
+                            console.log(
+                                "❌ Texto rejeitado: contém notificações do eProbe"
+                            );
+                            return null;
+                        }
 
                         // Rejeitar se contém muitos logs ou símbolos de debug
                         const logIndicators = [
@@ -8404,6 +8749,382 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     5000
                 );
                 return null;
+            }
+
+            // 🤖 FUNÇÃO DE AUTOMAÇÃO COMPLETA - Ctrl+A + Ctrl+C automáticos
+            async function tentarSelecaoAutomaticaCompleta() {
+                console.log("🤖 Iniciando automação completa de seleção...");
+
+                try {
+                    // 1. Encontrar elemento PDF
+                    const pdfElements = [
+                        document.querySelector(
+                            'iframe[src*="acessar_documento"]'
+                        ),
+                        document.querySelector('iframe[src*="pdf"]'),
+                        document.querySelector('embed[type="application/pdf"]'),
+                        document.querySelector(
+                            'object[type="application/pdf"]'
+                        ),
+                        document.querySelector("#plugin"),
+                        document.querySelector(
+                            'embed[type="application/x-google-chrome-pdf"]'
+                        ),
+                    ].filter((el) => el !== null);
+
+                    if (pdfElements.length === 0) {
+                        console.log("❌ Nenhum elemento PDF encontrado");
+                        return null;
+                    }
+
+                    const pdfElement = pdfElements[0];
+                    console.log(
+                        "📄 Elemento PDF encontrado:",
+                        pdfElement.tagName
+                    );
+
+                    // 2. Focar no elemento PDF - VERSÃO ROBUSTA PARA IFRAMES EPROC
+                    try {
+                        pdfElement.focus();
+                        pdfElement.click(); // Garantir foco
+
+                        // ESTRATÉGIA ESPECIAL PARA IFRAME EPROC
+                        if (
+                            pdfElement.tagName === "IFRAME" &&
+                            pdfElement.src.includes("acessar_documento")
+                        ) {
+                            console.log(
+                                "🎯 Iframe eProc detectado - aplicando estratégias especiais..."
+                            );
+
+                            // Múltiplos cliques para garantir foco
+                            pdfElement.click();
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 200)
+                            );
+                            pdfElement.click();
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 200)
+                            );
+
+                            // Tentar focar na janela do iframe se possível
+                            try {
+                                if (
+                                    pdfElement.contentWindow &&
+                                    !pdfElement.contentWindow.closed
+                                ) {
+                                    pdfElement.contentWindow.focus();
+                                    console.log(
+                                        "✅ Foco aplicado na janela do iframe"
+                                    );
+                                }
+                            } catch (corsError) {
+                                console.log(
+                                    "⚠️ CORS bloqueou acesso ao iframe - isso é normal para eProc"
+                                );
+                            }
+                        }
+
+                        console.log("✅ Foco aplicado no PDF");
+                    } catch (e) {
+                        console.log("⚠️ Erro ao focar no PDF:", e.message);
+                    }
+
+                    // 3. Aguardar um momento MAIOR para o PDF carregar completamente (iframes eProc demoram mais)
+                    console.log("⏳ Aguardando PDF carregar completamente...");
+                    await new Promise((resolve) => setTimeout(resolve, 3000)); // 3 segundos para eProc
+
+                    // 4. ESTRATÉGIA ESPECIAL: Tentar múltiplas abordagens para selecionar texto
+                    console.log(
+                        "🎯 Iniciando múltiplas estratégias de seleção..."
+                    );
+
+                    // ESTRATÉGIA A: KeyboardEvent padrão
+                    console.log("🎯 Estratégia A: KeyboardEvent padrão...");
+                    let textoSelecionado = await tentarSelecaoKeyboard(
+                        pdfElement
+                    );
+                    if (textoSelecionado) {
+                        console.log("✅ Sucesso com KeyboardEvent!");
+                        return textoSelecionado;
+                    }
+
+                    // ESTRATÉGIA B: execCommand (mais compatível com iframes)
+                    console.log("🎯 Estratégia B: execCommand...");
+                    textoSelecionado = await tentarSelecaoExecCommand(
+                        pdfElement
+                    );
+                    if (textoSelecionado) {
+                        console.log("✅ Sucesso com execCommand!");
+                        return textoSelecionado;
+                    }
+
+                    // ESTRATÉGIA C: Eventos nativos do browser
+                    console.log("🎯 Estratégia C: Eventos nativos...");
+                    textoSelecionado = await tentarSelecaoEventosNativos(
+                        pdfElement
+                    );
+                    if (textoSelecionado) {
+                        console.log("✅ Sucesso com eventos nativos!");
+                        return textoSelecionado;
+                    }
+
+                    console.log("❌ Todas as estratégias de seleção falharam");
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na automação completa:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // Função auxiliar para validar texto jurídico
+            async function validarTextoJuridico(texto) {
+                if (!texto || texto.length < 100) {
+                    return null;
+                }
+
+                const textLower = texto.toLowerCase();
+
+                // Rejeitar notificações do eProbe
+                const eProbeIndicators = [
+                    "resumir documento",
+                    "pdf detectado",
+                    "clique dentro do pdf",
+                    "aguarde o pdf carregar",
+                    "selecione todo o texto do pdf",
+                ];
+
+                const hasEProbeContent = eProbeIndicators.some((indicator) =>
+                    textLower.includes(indicator)
+                );
+
+                if (hasEProbeContent) {
+                    console.log(
+                        "❌ Texto rejeitado: contém notificações eProbe"
+                    );
+                    return null;
+                }
+
+                // Verificar termos jurídicos
+                const termosJuridicos = [
+                    "tribunal",
+                    "juiz",
+                    "processo",
+                    "sentença",
+                    "decisão",
+                    "despacho",
+                    "acórdão",
+                    "recurso",
+                    "requerente",
+                    "requerido",
+                ];
+
+                const termosEncontrados = termosJuridicos.filter((termo) =>
+                    textLower.includes(termo)
+                ).length;
+
+                if (termosEncontrados >= 2) {
+                    console.log(
+                        `✅ Texto jurídico validado (${termosEncontrados} termos)`
+                    );
+                    return texto;
+                }
+
+                console.log("⚠️ Texto não parece ser documento jurídico");
+                return null;
+            }
+
+            // ESTRATÉGIA A: KeyboardEvent padrão melhorado
+            async function tentarSelecaoKeyboard(pdfElement) {
+                try {
+                    // Re-focar antes de tentar
+                    pdfElement.focus();
+                    pdfElement.click();
+
+                    const selectAllEvent = new KeyboardEvent("keydown", {
+                        key: "a",
+                        code: "KeyA",
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                    });
+
+                    // Disparar em múltiplos alvos
+                    pdfElement.dispatchEvent(selectAllEvent);
+                    document.dispatchEvent(selectAllEvent);
+                    window.dispatchEvent(selectAllEvent);
+
+                    await new Promise((resolve) => setTimeout(resolve, 2000)); // Mais tempo
+
+                    // Verificar seleção
+                    const selection = window.getSelection();
+                    const selectedText = selection.toString();
+
+                    if (selectedText && selectedText.length > 100) {
+                        console.log(
+                            "✅ Texto selecionado via KeyboardEvent:",
+                            selectedText.length,
+                            "chars"
+                        );
+                        return await validarTextoJuridico(selectedText);
+                    }
+
+                    // Se não conseguiu via getSelection, tentar Ctrl+C
+                    const copyEvent = new KeyboardEvent("keydown", {
+                        key: "c",
+                        code: "KeyC",
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                    });
+
+                    pdfElement.dispatchEvent(copyEvent);
+                    document.dispatchEvent(copyEvent);
+                    window.dispatchEvent(copyEvent);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText && clipboardText.length > 100) {
+                        console.log(
+                            "✅ Texto do clipboard via KeyboardEvent:",
+                            clipboardText.length,
+                            "chars"
+                        );
+                        return await validarTextoJuridico(clipboardText);
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na seleção KeyboardEvent:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // ESTRATÉGIA B: execCommand (mais compatível)
+            async function tentarSelecaoExecCommand(pdfElement) {
+                try {
+                    pdfElement.focus();
+                    pdfElement.click();
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // Selecionar tudo
+                    const selectAllSuccess = document.execCommand("selectAll");
+                    console.log(
+                        "📋 execCommand selectAll resultado:",
+                        selectAllSuccess
+                    );
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // Verificar se há seleção
+                    const selection = window.getSelection();
+                    const selectedText = selection.toString();
+
+                    if (selectedText && selectedText.length > 100) {
+                        console.log(
+                            "✅ Texto selecionado via execCommand:",
+                            selectedText.length,
+                            "chars"
+                        );
+                        return await validarTextoJuridico(selectedText);
+                    }
+
+                    // Copiar
+                    const copySuccess = document.execCommand("copy");
+                    console.log("📋 execCommand copy resultado:", copySuccess);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText && clipboardText.length > 100) {
+                        console.log(
+                            "✅ Texto do clipboard via execCommand:",
+                            clipboardText.length,
+                            "chars"
+                        );
+                        return await validarTextoJuridico(clipboardText);
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na seleção execCommand:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // ESTRATÉGIA C: Eventos nativos do browser
+            async function tentarSelecaoEventosNativos(pdfElement) {
+                try {
+                    pdfElement.focus();
+                    pdfElement.click();
+
+                    // Simular clique triplo para seleção (funciona em muitos casos)
+                    const clickEvent = new MouseEvent("click", {
+                        detail: 3, // Triplo clique
+                        bubbles: true,
+                        cancelable: true,
+                    });
+
+                    pdfElement.dispatchEvent(clickEvent);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // Verificar seleção
+                    const selection = window.getSelection();
+                    const selectedText = selection.toString();
+
+                    if (selectedText && selectedText.length > 100) {
+                        console.log(
+                            "✅ Texto selecionado via eventos nativos:",
+                            selectedText.length,
+                            "chars"
+                        );
+                        return await validarTextoJuridico(selectedText);
+                    }
+
+                    // Tentar Range API para seleção manual de todo o documento
+                    try {
+                        const range = document.createRange();
+                        range.selectNodeContents(pdfElement);
+                        selection.removeAllRanges();
+                        selection.addRange(range);
+
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 500)
+                        );
+
+                        const rangeText = selection.toString();
+                        if (rangeText && rangeText.length > 100) {
+                            console.log(
+                                "✅ Texto selecionado via Range API:",
+                                rangeText.length,
+                                "chars"
+                            );
+                            return await validarTextoJuridico(rangeText);
+                        }
+                    } catch (rangeError) {
+                        console.log("⚠️ Range API falhou:", rangeError.message);
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na seleção com eventos nativos:",
+                        error.message
+                    );
+                    return null;
+                }
             }
 
             // Estratégia 1: Fetch direto do PDF com PDF.js local
@@ -8757,75 +9478,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     .replace(/[\u2028\u2029]/g, "\n") // Replace line/paragraph separators
                     .replace(/\s+/g, " ") // Normalize multiple spaces
                     .trim();
-            }
-
-            // 🔧 FUNÇÃO DE DEBUG PARA PDF DO EPROC
-            function debugPDFExtracao() {
-                console.log("🔍 DEBUG PDF EPROC: Analisando página atual...");
-
-                const info = {
-                    url: window.location.href,
-                    isEprocDocument:
-                        window.location.href.includes("acessar_documento"),
-                    urlParams: Object.fromEntries(
-                        new URLSearchParams(window.location.search)
-                    ),
-
-                    // Elementos PDF na página
-                    elementos: {},
-
-                    // Estado do PDF.js
-                    pdfjs: {
-                        carregado: typeof pdfjsLib !== "undefined",
-                        versao:
-                            typeof pdfjsLib !== "undefined"
-                                ? pdfjsLib.version
-                                : null,
-                    },
-
-                    // Informações da página
-                    titulo: document.title,
-                    temIframes: document.querySelectorAll("iframe").length,
-                    temEmbeds: document.querySelectorAll("embed").length,
-                    temObjects: document.querySelectorAll("object").length,
-                };
-
-                // Analisar elementos PDF
-                const selectors = [
-                    'iframe[src*="pdf"]',
-                    'embed[type="application/pdf"]',
-                    'object[type="application/pdf"]',
-                    'iframe[src*="acessar_documento"]',
-                    "#plugin",
-                    'embed[type="application/x-google-chrome-pdf"]',
-                ];
-
-                selectors.forEach((selector) => {
-                    const elemento = document.querySelector(selector);
-                    info.elementos[selector] = elemento
-                        ? {
-                              encontrado: true,
-                              src: elemento.src || elemento.data || "N/A",
-                              type: elemento.type || "N/A",
-                              id: elemento.id || "N/A",
-                              className: elemento.className || "N/A",
-                          }
-                        : { encontrado: false };
-                });
-
-                // Listar todos os iframes para debug
-                info.todosIframes = Array.from(
-                    document.querySelectorAll("iframe")
-                ).map((iframe, i) => ({
-                    indice: i,
-                    src: iframe.src || "N/A",
-                    title: iframe.title || "N/A",
-                    id: iframe.id || "N/A",
-                    className: iframe.className || "N/A",
-                }));
-
-                console.log("📊 RELATÓRIO COMPLETO:", info);
-                return info;
             }
 
             // 🔧 FUNÇÃO ALTERNATIVA PARA PDF (SEM PDF.JS EXTERNO - CSP SAFE)
@@ -15448,9 +16100,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     });
 
                     log(
-                        `\n📊 RESUMO: ${encontrados} padrão${
-                            encontrados !== 1 ? "ões" : ""
-                        } encontrado${encontrados !== 1 ? "s" : ""}`
+                        `\n📊 RESUMO: ${encontrados} ${
+                            encontrados === 1
+                                ? "padrão encontrado"
+                                : "padrões encontrados"
+                        }`
                     );
 
                     // Buscar por texto relacionado a sessão
@@ -17979,10 +18633,24 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             theme
                         );
 
-                        // Salvar tema - CSS instantâneo já aplicado
-                        localStorage.setItem("eprobe_selected_theme", theme);
+                        // APLICAR TEMA REALMENTE usando a função correta
+                        if (typeof applyThemeStyles === "function") {
+                            applyThemeStyles(theme);
+                            log("✅ MAIN: Tema aplicado via applyThemeStyles");
+                        } else if (
+                            typeof window.applyThemeStyles === "function"
+                        ) {
+                            window.applyThemeStyles(theme);
+                            log(
+                                "✅ MAIN: Tema aplicado via window.applyThemeStyles"
+                            );
+                        } else {
+                            log(
+                                "❌ MAIN: Função applyThemeStyles não encontrada"
+                            );
+                        }
 
-                        // CSS instantâneo já aplicado - resposta imediata
+                        // Resposta de sucesso
                         sendResponse({
                             success: true,
                             message: `Tema ${theme} aplicado com sucesso`,
