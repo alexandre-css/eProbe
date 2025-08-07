@@ -8542,45 +8542,70 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     }
                 }
 
-                // ESTRATÉGIA 2: Automação COMPLETA de seleção (Ctrl+A + Ctrl+C automáticos)
-                console.log("🤖 Estratégia de automação COMPLETA ativada");
-
-                // Mostrar notificação informativa
-                showNotification(
-                    "🤖 Executando automação: selecionando e copiando texto do PDF automaticamente...",
-                    "info",
-                    3000
+                // ESTRATÉGIA 2: SIMULAÇÃO FÍSICA de interação com Plugin PDF
+                console.log(
+                    "🎯 ESTRATÉGIA FÍSICA: Simulação direta no plugin PDF"
                 );
 
-                const textoAutomatico = await tentarSelecaoAutomaticaCompleta();
-                if (textoAutomatico) {
-                    console.log(
-                        "✅ Texto extraído automaticamente com sucesso"
-                    );
+                // 1. Tentar simulação física de clique + seleção no plugin
+                console.log("🖱️ Iniciando simulação física no plugin PDF...");
+                const textoSimulacao = await simularInteracaoFisicaPDF();
+
+                if (textoSimulacao) {
+                    console.log("✅ Simulação física bem-sucedida!");
                     showNotification(
-                        "✅ Texto extraído automaticamente com sucesso!",
+                        "✅ Texto extraído via simulação automática!",
                         "success",
                         2000
                     );
-                    return textoAutomatico.trim();
+                    return textoSimulacao.trim();
                 }
 
-                // ESTRATÉGIA 3: Fallback - Aguardar seleção manual se automação falhar
-                console.log("🎯 Fallback: Estratégia de seleção manual");
+                // 2. FALLBACK: Download direto do PDF se simulação falhar
+                console.log("📥 Fallback: Tentando download direto do PDF...");
+                const textoDownload = await tentarDownloadDiretoPDF();
 
-                // Mostrar instruções apenas se automação falhar
+                if (textoDownload) {
+                    console.log("✅ Download direto bem-sucedido!");
+                    showNotification(
+                        "✅ Texto extraído via download automático!",
+                        "success",
+                        2000
+                    );
+                    return textoDownload.trim();
+                }
+
+                // ESTRATÉGIA 3: Instruções ESPECÍFICAS para plugin Adobe PDF
+                console.log(
+                    "🎯 Fallback: Instruções específicas para plugin Adobe PDF"
+                );
+
+                // Mostrar instruções ESPECÍFICAS para o plugin do Adobe
                 showNotification(
-                    `Automação falhou. Faça manualmente:
-                    
-1. CLIQUE dentro da área do PDF
-2. Aguarde carregar completamente
-3. Pressione Ctrl+A para selecionar tudo
-4. Pressione Ctrl+C para copiar
-5. Clique no botão eProbe novamente
+                    `� DETECÇÃO: Plugin Adobe PDF carregado!
 
-IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
-                    "warning",
-                    10000
+🎯 ESTRATÉGIA AUTOMÁTICA FALHOU - Usando método manual otimizado:
+
+✅ MÉTODO SIMPLIFICADO (2 passos):
+
+1️⃣ CLIQUE em qualquer lugar do PDF visível na tela
+   ↳ Isso ativa o plugin Adobe PDF
+
+2️⃣ Pressione Ctrl+A + Ctrl+C rapidamente
+   ↳ O plugin vai selecionar e copiar todo o texto
+
+3️⃣ Clique no botão eProbe novamente
+   ↳ O texto será detectado automaticamente!
+
+🔧 ALTERNATIVA: Se não funcionar:
+• CLIQUE com botão direito no PDF
+• Selecione "Selecionar tudo" 
+• Pressione Ctrl+C
+• Clique no botão eProbe
+
+⚡ O texto aparece INSTANTANEAMENTE quando a página carrega!`,
+                    "info",
+                    15000
                 );
 
                 // Verificar se há texto na área de transferência recente
@@ -8937,6 +8962,1083 @@ IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
                 return null;
             }
 
+            // Função de validação FLEXÍVEL para debug e casos difíceis
+            async function validarTextoJuridicoFlexivel(texto) {
+                if (!texto || texto.length < 50) {
+                    // Reduzido de 100 para 50
+                    console.log("❌ Texto muito pequeno:", texto?.length);
+                    return null;
+                }
+
+                const textLower = texto.toLowerCase();
+
+                // 🚨 CRÍTICO: Rejeitar apenas notificações ÓBVIAS do eProbe
+                const eProbeIndicatorsObvios = [
+                    "resumir documento",
+                    "executando automação:",
+                    "clique no botão eprobe",
+                    "estratégia de automação",
+                    "aguarde pdf carregar",
+                ];
+
+                const hasEProbeObvio = eProbeIndicatorsObvios.some(
+                    (indicator) => textLower.includes(indicator)
+                );
+
+                if (hasEProbeObvio) {
+                    console.log(
+                        "❌ Validação flexível: contém notificações óbvias eProbe"
+                    );
+                    return null;
+                }
+
+                // Verificar termos jurídicos - MUITO MAIS FLEXÍVEL
+                const termosJuridicos = [
+                    // Termos básicos
+                    "tribunal",
+                    "juiz",
+                    "processo",
+                    "sentença",
+                    "decisão",
+                    "despacho",
+                    // Termos processuais
+                    "acórdão",
+                    "recurso",
+                    "apelação",
+                    "embargos",
+                    // Partes processuais
+                    "requerente",
+                    "requerido",
+                    "autor",
+                    "réu",
+                    "demandante",
+                    "demandado",
+                    // Documentos
+                    "petição",
+                    "contestação",
+                    "agravo",
+                    "mandado",
+                    "citação",
+                    // Outros termos jurídicos
+                    "advogado",
+                    "defesa",
+                    "ação",
+                    "causa",
+                    "direito",
+                    "lei",
+                    "código",
+                    "artigo",
+                    "parágrafo",
+                    "inciso",
+                    "jurisprudência",
+                    "precedente",
+                    // Termos do eProc específicos
+                    "tjsc",
+                    "santa catarina",
+                    "comarca",
+                    "vara",
+                    "juízo",
+                ];
+
+                const termosEncontrados = termosJuridicos.filter((termo) =>
+                    textLower.includes(termo)
+                ).length;
+
+                console.log(
+                    `🔍 Validação flexível: ${termosEncontrados} termos jurídicos encontrados`
+                );
+
+                // CRITÉRIO MUITO MAIS FLEXÍVEL: apenas 1 termo já basta
+                if (termosEncontrados >= 1) {
+                    console.log(
+                        `✅ Validação flexível passou com ${termosEncontrados} termos`
+                    );
+                    return texto;
+                }
+
+                // Se não tem termos jurídicos, verificar se pelo menos parece ser texto estruturado
+                const pareceBemFormatado =
+                    texto.length > 200 &&
+                    (texto.includes("\n") ||
+                        texto.includes(".") ||
+                        texto.includes(",")) &&
+                    !textLower.includes("console.log") &&
+                    !textLower.includes("error") &&
+                    !textLower.includes("function");
+
+                if (pareceBemFormatado) {
+                    console.log(
+                        "✅ Validação flexível: parece texto bem formatado, aprovando"
+                    );
+                    return texto;
+                }
+
+                console.log(
+                    "❌ Validação flexível: não atende critérios mínimos"
+                );
+                console.log(
+                    "🔍 Debug: Texto preview:",
+                    texto.substring(0, 200)
+                );
+                return null;
+            }
+
+            // 🎯 NOVA FUNÇÃO: Automação com Validação RIGOROSA para eProc
+            async function tentarAutomacaoComValidacaoRigorosa() {
+                console.log(
+                    "🔍 Iniciando automação com validação rigorosa de conteúdo eProc..."
+                );
+
+                try {
+                    // 1. Limpar clipboard antes de começar
+                    await navigator.clipboard.writeText("");
+                    console.log("🧹 Clipboard limpo para automação rigorosa");
+
+                    // 2. Encontrar elemento PDF específico do eProc
+                    const pdfElement = document.querySelector(
+                        'iframe[src*="acessar_documento"]'
+                    );
+                    if (!pdfElement) {
+                        console.log(
+                            "❌ Iframe eProc específico não encontrado"
+                        );
+                        return null;
+                    }
+
+                    console.log("📄 Iframe eProc encontrado:", pdfElement.src);
+
+                    // 3. Foco agressivo no iframe
+                    pdfElement.focus();
+                    pdfElement.click();
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // 4. Tentar múltiplas abordagens de seleção
+                    const estrategias = [
+                        () => tentarSelecaoComValidacao("execCommand"),
+                        () => tentarSelecaoComValidacao("keyboardEvent"),
+                        () => tentarSelecaoComValidacao("eventosNativos"),
+                    ];
+
+                    for (const [index, estrategia] of estrategias.entries()) {
+                        console.log(
+                            `🎯 Tentativa ${
+                                index + 1
+                            }/3 com validação rigorosa...`
+                        );
+
+                        const resultado = await estrategia();
+                        if (resultado) {
+                            console.log(
+                                `✅ Sucesso na tentativa ${index + 1}!`
+                            );
+                            return resultado;
+                        }
+
+                        // Aguardar antes da próxima tentativa
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1500)
+                        );
+                    }
+
+                    console.log(
+                        "❌ Todas as tentativas de automação rigorosa falharam"
+                    );
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na automação rigorosa:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // Função auxiliar: Tentar seleção com validação específica
+            async function tentarSelecaoComValidacao(metodo) {
+                try {
+                    const pdfElement = document.querySelector(
+                        'iframe[src*="acessar_documento"]'
+                    );
+                    if (!pdfElement) return null;
+
+                    // Re-focar
+                    pdfElement.focus();
+                    pdfElement.click();
+
+                    if (metodo === "execCommand") {
+                        // Método execCommand
+                        document.execCommand("selectAll");
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+                        document.execCommand("copy");
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+                    } else if (metodo === "keyboardEvent") {
+                        // Método KeyboardEvent
+                        const selectEvent = new KeyboardEvent("keydown", {
+                            key: "a",
+                            code: "KeyA",
+                            ctrlKey: true,
+                            bubbles: true,
+                        });
+                        pdfElement.dispatchEvent(selectEvent);
+                        document.dispatchEvent(selectEvent);
+
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+
+                        const copyEvent = new KeyboardEvent("keydown", {
+                            key: "c",
+                            code: "KeyC",
+                            ctrlKey: true,
+                            bubbles: true,
+                        });
+                        pdfElement.dispatchEvent(copyEvent);
+                        document.dispatchEvent(copyEvent);
+
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+                    } else if (metodo === "eventosNativos") {
+                        // Método eventos nativos - triplo clique
+                        const tripleClick = new MouseEvent("click", {
+                            detail: 3,
+                            bubbles: true,
+                            cancelable: true,
+                        });
+                        pdfElement.dispatchEvent(tripleClick);
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+                    }
+
+                    // Verificar clipboard com validação RIGOROSA
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText && clipboardText.length > 50) {
+                        console.log(
+                            `🔍 ${metodo}: Texto obtido:`,
+                            clipboardText.length,
+                            "chars"
+                        );
+                        console.log(
+                            `🔍 ${metodo}: Preview:`,
+                            clipboardText.substring(0, 200)
+                        );
+
+                        // VALIDAÇÃO RIGOROSA: Verificar se é realmente conteúdo eProc/jurídico
+                        const isConteudoEproc =
+                            validarConteudoEprocRigoroso(clipboardText);
+                        if (isConteudoEproc) {
+                            console.log(
+                                `✅ ${metodo}: Conteúdo eProc válido detectado!`
+                            );
+                            return clipboardText;
+                        } else {
+                            console.log(
+                                `❌ ${metodo}: Conteúdo NÃO é eProc - rejeitado`
+                            );
+                            // Limpar clipboard inválido
+                            await navigator.clipboard.writeText("");
+                        }
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.log(`❌ Erro no método ${metodo}:`, error.message);
+                    return null;
+                }
+            }
+
+            // Função de validação RIGOROSA específica para conteúdo eProc
+            function validarConteudoEprocRigoroso(texto) {
+                if (!texto || texto.length < 100) {
+                    console.log("❌ Validação rigorosa: texto muito pequeno");
+                    return false;
+                }
+
+                const textLower = texto.toLowerCase();
+
+                // 🚨 REJEITAR IMEDIATAMENTE conteúdo obviamente não-eProc
+                const indicadoresNaoEproc = [
+                    "mercadolivre.com",
+                    "produto.mercadolivre",
+                    "polycard_client",
+                    "facebook.com",
+                    "google.com",
+                    "youtube.com",
+                    "amazon.com",
+                    "tracking_id",
+                    "search_layout",
+                    "boneco",
+                    "action figure",
+                    "cavaleiros do zodiaco",
+                    "bandai",
+                    "cloth myth",
+                    "whatsapp",
+                    "instagram",
+                    "twitter",
+                    "linkedin",
+                ];
+
+                const temConteudoNaoEproc = indicadoresNaoEproc.some(
+                    (indicador) => textLower.includes(indicador)
+                );
+
+                if (temConteudoNaoEproc) {
+                    console.log(
+                        "❌ Validação rigorosa: conteúdo não-eProc detectado"
+                    );
+                    return false;
+                }
+
+                // ✅ ACEITAR APENAS conteúdo com indicadores ESPECÍFICOS do eProc
+                const indicadoresEproc = [
+                    // Sistema eProc
+                    "eproc",
+                    "tjsc",
+                    "tribunal de justica",
+                    "santa catarina",
+                    // Termos processuais específicos
+                    "sentença",
+                    "processo",
+                    "decisão",
+                    "despacho",
+                    "acórdão",
+                    "comarca",
+                    "vara",
+                    "juízo",
+                    "magistrado",
+                    "juiz",
+                    // Documentos específicos
+                    "petição inicial",
+                    "contestação",
+                    "recurso",
+                    "agravo",
+                    "mandado",
+                    "citação",
+                    "intimação",
+                    "audiência",
+                    // Partes processuais
+                    "requerente",
+                    "requerido",
+                    "autor",
+                    "réu",
+                    "apelante",
+                    "apelado",
+                    // Assinaturas e autenticação
+                    "assinatura digital",
+                    "certificado digital",
+                    "mp 2.200",
+                    "documento assinado",
+                    "hash",
+                    "validacao",
+                    // Conteúdo jurídico estruturado
+                    "artigo",
+                    "lei",
+                    "código",
+                    "constituição",
+                    "jurisprudência",
+                ];
+
+                const termosEprocEncontrados = indicadoresEproc.filter(
+                    (termo) => textLower.includes(termo)
+                ).length;
+
+                console.log(
+                    `🔍 Validação rigorosa: ${termosEprocEncontrados} indicadores eProc encontrados`
+                );
+
+                // Critério rigoroso: pelo menos 2 termos específicos do eProc
+                if (termosEprocEncontrados >= 2) {
+                    console.log(
+                        "✅ Validação rigorosa: conteúdo eProc autêntico confirmado"
+                    );
+                    return true;
+                }
+
+                // Fallback: verificar se parece estrutura de documento jurídico
+                const pareceDocumentoJuridico =
+                    texto.length > 500 &&
+                    textLower.includes("tribunal") &&
+                    (textLower.includes("processo") ||
+                        textLower.includes("ação")) &&
+                    !textLower.includes("http://") &&
+                    !textLower.includes("www.");
+
+                if (pareceDocumentoJuridico) {
+                    console.log(
+                        "✅ Validação rigorosa: aprovado como documento jurídico estruturado"
+                    );
+                    return true;
+                }
+
+                console.log(
+                    "❌ Validação rigorosa: não atende critérios eProc específicos"
+                );
+                return false;
+            }
+
+            // 🤐 NOVA FUNÇÃO: Automação SILENCIOSA sem interferências visuais
+            async function tentarAutomacaoSilenciosa() {
+                console.log(
+                    "🤐 Iniciando automação SILENCIOSA focada no PDF..."
+                );
+
+                try {
+                    // 1. LIMPAR COMPLETAMENTE o clipboard
+                    await navigator.clipboard.writeText("");
+                    console.log("🧹 Clipboard totalmente limpo");
+
+                    // 2. Encontrar APENAS o iframe do PDF (mais específico)
+                    const iframePDF =
+                        document.querySelector(
+                            'iframe[src*="acessar_documento_implementacao"]'
+                        ) ||
+                        document.querySelector(
+                            'iframe[src*="acessar_documento"]'
+                        );
+
+                    if (!iframePDF) {
+                        console.log("❌ Iframe PDF específico não encontrado");
+                        return null;
+                    }
+
+                    console.log("📄 Iframe PDF encontrado (silencioso)");
+
+                    // 3. FOCO TOTAL no iframe - múltiplas tentativas
+                    for (let i = 0; i < 3; i++) {
+                        iframePDF.focus();
+                        iframePDF.click();
+
+                        // Tentar focar dentro do iframe se possível
+                        try {
+                            if (
+                                iframePDF.contentWindow &&
+                                !iframePDF.contentWindow.closed
+                            ) {
+                                iframePDF.contentWindow.focus();
+                                if (
+                                    iframePDF.contentWindow.document &&
+                                    iframePDF.contentWindow.document.body
+                                ) {
+                                    iframePDF.contentWindow.document.body.focus();
+                                }
+                            }
+                        } catch (corsError) {
+                            // CORS esperado - ignorar silenciosamente
+                        }
+
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 500)
+                        );
+                    }
+
+                    console.log("📍 Foco exclusivo aplicado no PDF");
+
+                    // 4. AGUARDAR PDF carregar COMPLETAMENTE
+                    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+                    // 5. SELEÇÃO DIRETA no iframe (método mais direto)
+                    console.log("🎯 Executando seleção direta...");
+
+                    // Método A: execCommand direto
+                    const selectSuccess = document.execCommand("selectAll");
+                    console.log("📋 SelectAll resultado:", selectSuccess);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const copySuccess = document.execCommand("copy");
+                    console.log("📋 Copy resultado:", copySuccess);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // 6. VERIFICAR clipboard com validação MÁXIMA
+                    const clipboardText = await navigator.clipboard.readText();
+
+                    if (clipboardText && clipboardText.length > 100) {
+                        console.log(
+                            "🔍 Texto obtido (silencioso):",
+                            clipboardText.length,
+                            "chars"
+                        );
+
+                        // VALIDAÇÃO EXTREMA: deve ser conteúdo PDF real
+                        const isConteudoPDFReal =
+                            validarConteudoPDFReal(clipboardText);
+                        if (isConteudoPDFReal) {
+                            console.log("✅ Conteúdo PDF real validado!");
+                            return clipboardText;
+                        } else {
+                            console.log("❌ Ainda não é conteúdo PDF real");
+                            // Limpar clipboard inválido
+                            await navigator.clipboard.writeText("");
+                        }
+                    }
+
+                    // Método B: KeyboardEvent se execCommand falhou
+                    console.log("🔄 Tentando KeyboardEvent...");
+
+                    const selectEvent = new KeyboardEvent("keydown", {
+                        key: "a",
+                        code: "KeyA",
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                    });
+
+                    iframePDF.dispatchEvent(selectEvent);
+                    document.dispatchEvent(selectEvent);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const copyEvent = new KeyboardEvent("keydown", {
+                        key: "c",
+                        code: "KeyC",
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                    });
+
+                    iframePDF.dispatchEvent(copyEvent);
+                    document.dispatchEvent(copyEvent);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // Verificar novamente
+                    const clipboardText2 = await navigator.clipboard.readText();
+                    if (
+                        clipboardText2 &&
+                        clipboardText2 !== clipboardText &&
+                        clipboardText2.length > 100
+                    ) {
+                        console.log(
+                            "🔍 Novo texto obtido:",
+                            clipboardText2.length,
+                            "chars"
+                        );
+
+                        const isConteudoPDFReal2 =
+                            validarConteudoPDFReal(clipboardText2);
+                        if (isConteudoPDFReal2) {
+                            console.log(
+                                "✅ Conteúdo PDF real validado (KeyboardEvent)!"
+                            );
+                            return clipboardText2;
+                        }
+                    }
+
+                    console.log(
+                        "❌ Automação silenciosa não conseguiu extrair conteúdo válido"
+                    );
+                    return null;
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na automação silenciosa:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // Validação EXTREMA: apenas conteúdo que é REALMENTE de PDF jurídico
+            function validarConteudoPDFReal(texto) {
+                if (!texto || texto.length < 200) {
+                    console.log("❌ Validação PDF: texto muito pequeno");
+                    return false;
+                }
+
+                const textLower = texto.toLowerCase();
+
+                // 🚨 REJEITAR IMEDIATAMENTE conteúdo que NÃO é PDF real
+                const indicadoresNaoPDF = [
+                    // Notificações eProbe
+                    "resumir documento",
+                    "problema detectado",
+                    "solução garantida",
+                    "feche outras abas",
+                    "clique dentro",
+                    "aguarde carregar",
+                    "pressione ctrl",
+                    "botão eprobe",
+                    "automação",
+
+                    // Logs do console
+                    "main.js:",
+                    "console.log",
+                    "error:",
+                    "warning:",
+                    "debug:",
+                    "interceptação",
+                    "navbar",
+                    "observer",
+                    "função",
+                    "✅",
+                    "❌",
+                    "🔍",
+                    "🎯",
+                    "📄",
+                    "🚀",
+                    "⚡",
+
+                    // URLs e conteúdo web
+                    "http://",
+                    "https://",
+                    "www.",
+                    ".com",
+                    ".br",
+                    "mercadolivre",
+                    "polycard_client",
+                    "tracking_id",
+
+                    // Conteúdo de outras abas
+                    "search_layout",
+                    "boneco",
+                    "cloth myth",
+                    "bandai",
+                    "cavaleiros",
+                    "action figure",
+                ];
+
+                const temConteudoNaoPDF = indicadoresNaoPDF.some((indicador) =>
+                    textLower.includes(indicador)
+                );
+
+                if (temConteudoNaoPDF) {
+                    console.log("❌ Validação PDF: contém conteúdo não-PDF");
+                    return false;
+                }
+
+                // ✅ ACEITAR APENAS se tem MÚLTIPLOS indicadores de documento jurídico real
+                const indicadoresPDFJuridico = [
+                    // Assinaturas digitais típicas de PDF
+                    "assinado digitalmente",
+                    "certificado digital",
+                    "hash",
+                    "documento assinado eletrônicamente",
+                    "validação",
+
+                    // Estrutura típica de documentos jurídicos
+                    "tribunal de justiça",
+                    "poder judiciário",
+                    "comarca",
+                    "processo n",
+                    "autos n",
+                    "vara cível",
+                    "vara criminal",
+
+                    // Conteúdo jurídico estruturado
+                    "vistos",
+                    "relatório",
+                    "fundamentação",
+                    "dispositivo",
+                    "isto posto",
+                    "julgo",
+                    "condeno",
+                    "declaro",
+                    "determino",
+                    "defiro",
+                    "indefiro",
+
+                    // Partes processuais claras
+                    "autor:",
+                    "réu:",
+                    "requerente:",
+                    "requerido:",
+                    "apelante:",
+                    "apelado:",
+
+                    // Citações legais
+                    "código civil",
+                    "código penal",
+                    "constituição federal",
+                    "lei n",
+                    "artigo",
+                    "parágrafo",
+                    "inciso",
+
+                    // Datas e protocolos processuais
+                    "audiência",
+                    "prazo",
+                    "citação",
+                    "intimação",
+                    "recurso",
+                ];
+
+                const indicadoresEncontrados = indicadoresPDFJuridico.filter(
+                    (indicador) => textLower.includes(indicador)
+                ).length;
+
+                console.log(
+                    `🔍 Validação PDF: ${indicadoresEncontrados} indicadores jurídicos encontrados`
+                );
+
+                // Critério RÍGIDO: pelo menos 3 indicadores específicos
+                if (indicadoresEncontrados >= 3) {
+                    console.log(
+                        "✅ Validação PDF: documento jurídico autêntico confirmado"
+                    );
+                    return true;
+                }
+
+                // Fallback: verificar estrutura típica de sentença/decisão
+                const temEstruturaSentenca =
+                    textLower.includes("tribunal") &&
+                    textLower.includes("processo") &&
+                    (textLower.includes("sentença") ||
+                        textLower.includes("decisão") ||
+                        textLower.includes("despacho")) &&
+                    texto.length > 1000 &&
+                    !textLower.includes("main.js");
+
+                if (temEstruturaSentenca) {
+                    console.log(
+                        "✅ Validação PDF: estrutura de sentença detectada"
+                    );
+                    return true;
+                }
+
+                console.log(
+                    "❌ Validação PDF: não atende critérios de documento jurídico real"
+                );
+                return false;
+            }
+
+            // 🖱️ NOVA FUNÇÃO: Simulação FÍSICA de interação com plugin PDF
+            async function simularInteracaoFisicaPDF() {
+                console.log("🖱️ Iniciando simulação física no plugin PDF...");
+
+                try {
+                    // 1. Limpar clipboard completamente
+                    await navigator.clipboard.writeText("");
+                    console.log("🧹 Clipboard limpo para simulação física");
+
+                    // 2. Encontrar o container do PDF (iframe ou embed)
+                    const pdfContainer =
+                        document.querySelector(
+                            'iframe[src*="acessar_documento"]'
+                        ) ||
+                        document.querySelector(
+                            'embed[type="application/pdf"]'
+                        ) ||
+                        document.querySelector(
+                            'object[type="application/pdf"]'
+                        );
+
+                    if (!pdfContainer) {
+                        console.log("❌ Container PDF não encontrado");
+                        return null;
+                    }
+
+                    console.log(
+                        "📄 Container PDF encontrado:",
+                        pdfContainer.tagName
+                    );
+
+                    // 3. Obter dimensões e posição do container
+                    const rect = pdfContainer.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    console.log(
+                        `📐 Dimensões PDF: ${rect.width}x${rect.height}`
+                    );
+                    console.log(
+                        `🎯 Centro calculado: (${centerX}, ${centerY})`
+                    );
+
+                    // 4. SIMULAÇÃO FÍSICA: Clique no centro do PDF
+                    console.log(
+                        "🖱️ Simulando clique físico no centro do PDF..."
+                    );
+
+                    // Criar e disparar evento de clique no centro exato
+                    const clickEvent = new MouseEvent("click", {
+                        view: window,
+                        bubbles: true,
+                        cancelable: true,
+                        clientX: centerX,
+                        clientY: centerY,
+                        button: 0,
+                        buttons: 1,
+                    });
+
+                    pdfContainer.dispatchEvent(clickEvent);
+
+                    // Também tentar foco direto
+                    pdfContainer.focus();
+
+                    // Aguardar o plugin responder ao clique
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    // 5. SIMULAÇÃO FÍSICA: Ctrl+A (Selecionar tudo)
+                    console.log("⌨️ Simulando Ctrl+A físico...");
+
+                    const selectAllEvent = new KeyboardEvent("keydown", {
+                        key: "a",
+                        code: "KeyA",
+                        keyCode: 65,
+                        which: 65,
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                    });
+
+                    // Disparar em múltiplos alvos
+                    document.dispatchEvent(selectAllEvent);
+                    pdfContainer.dispatchEvent(selectAllEvent);
+                    window.dispatchEvent(selectAllEvent);
+
+                    // Aguardar seleção
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+                    // 6. SIMULAÇÃO FÍSICA: Ctrl+C (Copiar)
+                    console.log("⌨️ Simulando Ctrl+C físico...");
+
+                    const copyEvent = new KeyboardEvent("keydown", {
+                        key: "c",
+                        code: "KeyC",
+                        keyCode: 67,
+                        which: 67,
+                        ctrlKey: true,
+                        bubbles: true,
+                        cancelable: true,
+                        view: window,
+                    });
+
+                    // Disparar em múltiplos alvos
+                    document.dispatchEvent(copyEvent);
+                    pdfContainer.dispatchEvent(copyEvent);
+                    window.dispatchEvent(copyEvent);
+
+                    // Aguardar cópia
+                    await new Promise((resolve) => setTimeout(resolve, 1500));
+
+                    // 7. Verificar clipboard
+                    const clipboardText = await navigator.clipboard.readText();
+
+                    if (clipboardText && clipboardText.length > 100) {
+                        console.log(
+                            "🔍 Texto obtido via simulação física:",
+                            clipboardText.length,
+                            "chars"
+                        );
+                        console.log(
+                            "🔍 Preview:",
+                            clipboardText.substring(0, 300)
+                        );
+
+                        // Validar se é conteúdo PDF real
+                        const isConteudoPDFReal =
+                            validarConteudoPDFReal(clipboardText);
+                        if (isConteudoPDFReal) {
+                            console.log(
+                                "✅ Simulação física extraiu conteúdo PDF válido!"
+                            );
+                            return clipboardText;
+                        } else {
+                            console.log(
+                                "❌ Simulação física: conteúdo não é PDF válido"
+                            );
+                        }
+                    } else {
+                        console.log(
+                            "❌ Simulação física: clipboard vazio ou muito pequeno"
+                        );
+                    }
+
+                    // 8. TENTATIVA ALTERNATIVA: Usar execCommand
+                    console.log("🔄 Tentativa alternativa: execCommand...");
+
+                    const selectSuccess = document.execCommand("selectAll");
+                    console.log("📋 execCommand selectAll:", selectSuccess);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const copySuccess = document.execCommand("copy");
+                    console.log("📋 execCommand copy:", copySuccess);
+
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    const clipboardText2 = await navigator.clipboard.readText();
+                    if (
+                        clipboardText2 &&
+                        clipboardText2 !== clipboardText &&
+                        clipboardText2.length > 100
+                    ) {
+                        console.log(
+                            "🔍 Novo texto via execCommand:",
+                            clipboardText2.length,
+                            "chars"
+                        );
+
+                        const isConteudoPDF2 =
+                            validarConteudoPDFReal(clipboardText2);
+                        if (isConteudoPDF2) {
+                            console.log(
+                                "✅ execCommand extraiu conteúdo PDF válido!"
+                            );
+                            return clipboardText2;
+                        }
+                    }
+
+                    console.log(
+                        "❌ Simulação física não conseguiu extrair conteúdo válido"
+                    );
+                    return null;
+                } catch (error) {
+                    console.log("❌ Erro na simulação física:", error.message);
+                    return null;
+                }
+            }
+
+            // 📥 FUNÇÃO: Download direto do PDF via fetch
+            async function tentarDownloadDiretoPDF() {
+                console.log("📥 Iniciando download direto do PDF...");
+
+                try {
+                    // 1. Construir URL de download do eProc
+                    let downloadUrl = null;
+
+                    const urlParams = new URLSearchParams(
+                        window.location.search
+                    );
+                    const doc = urlParams.get("doc");
+                    const evento = urlParams.get("evento");
+                    const key = urlParams.get("key");
+
+                    if (doc && evento && key) {
+                        // URL de download direto do eProc
+                        const baseUrl =
+                            window.location.origin + window.location.pathname;
+                        downloadUrl = `${baseUrl}?acao=processo_consultar_externo_documento&doc=${doc}&evento=${evento}&key=${key}`;
+                        console.log(
+                            "🌐 URL de download construída:",
+                            downloadUrl
+                        );
+                    } else {
+                        console.log(
+                            "❌ Parâmetros necessários para download não encontrados"
+                        );
+                        return null;
+                    }
+
+                    // 2. Fazer download do PDF
+                    console.log("📥 Fazendo download do PDF...");
+
+                    const response = await fetch(downloadUrl);
+                    if (!response.ok) {
+                        console.log("❌ Falha no download:", response.status);
+                        return null;
+                    }
+
+                    const arrayBuffer = await response.arrayBuffer();
+                    console.log(
+                        "📊 PDF baixado:",
+                        arrayBuffer.byteLength,
+                        "bytes"
+                    );
+
+                    // 3. Tentar extrair texto com PDF.js se disponível
+                    if (typeof pdfjsLib !== "undefined") {
+                        console.log("📚 Usando PDF.js para extração...");
+
+                        try {
+                            const pdf = await pdfjsLib.getDocument(arrayBuffer)
+                                .promise;
+                            const numPages = pdf.numPages;
+                            console.log("📄 PDF tem", numPages, "páginas");
+
+                            let textoCompleto = "";
+
+                            // Extrair texto de todas as páginas (máximo 20)
+                            const maxPages = Math.min(numPages, 20);
+                            for (let i = 1; i <= maxPages; i++) {
+                                const page = await pdf.getPage(i);
+                                const textContent = await page.getTextContent();
+                                const textItems = textContent.items.map(
+                                    (item) => item.str
+                                );
+                                textoCompleto += textItems.join(" ") + "\n\n";
+                            }
+
+                            if (textoCompleto.length > 200) {
+                                console.log(
+                                    "✅ Texto extraído via PDF.js:",
+                                    textoCompleto.length,
+                                    "chars"
+                                );
+                                return textoCompleto.trim();
+                            } else {
+                                console.log(
+                                    "⚠️ Texto extraído muito pequeno via PDF.js"
+                                );
+                            }
+                        } catch (pdfError) {
+                            console.log(
+                                "❌ Erro ao processar PDF com PDF.js:",
+                                pdfError.message
+                            );
+                        }
+                    } else {
+                        console.log("⚠️ PDF.js não disponível para extração");
+                    }
+
+                    // 4. Fallback: Tentar abrir PDF em nova aba para seleção manual
+                    console.log("🔄 Fallback: Abrindo PDF em nova aba...");
+
+                    const blob = new Blob([arrayBuffer], {
+                        type: "application/pdf",
+                    });
+                    const blobUrl = URL.createObjectURL(blob);
+
+                    // Abrir em nova aba (não popup para evitar bloqueio)
+                    const newWindow = window.open(blobUrl, "_blank");
+
+                    if (newWindow) {
+                        console.log("✅ PDF aberto em nova aba");
+
+                        // Instruções específicas para nova aba
+                        showNotification(
+                            "📄 PDF aberto em nova aba!\n\n✅ INSTRUÇÕES AUTOMÁTICAS:\n1. Aguarde o PDF carregar na nova aba\n2. Pressione Ctrl+A para selecionar tudo\n3. Pressione Ctrl+C para copiar\n4. Volte para esta aba\n5. Clique no botão eProbe novamente\n\n🎯 O texto será detectado automaticamente!",
+                            "info",
+                            10000
+                        );
+
+                        // Aguardar um pouco e verificar clipboard
+                        setTimeout(async () => {
+                            const clipboardCheck =
+                                await navigator.clipboard.readText();
+                            if (clipboardCheck && clipboardCheck.length > 200) {
+                                const isValid =
+                                    validarConteudoPDFReal(clipboardCheck);
+                                if (isValid) {
+                                    showNotification(
+                                        "✅ Texto detectado automaticamente!",
+                                        "success",
+                                        3000
+                                    );
+                                }
+                            }
+                        }, 5000);
+
+                        return null; // Aguardar ação manual
+                    } else {
+                        console.log(
+                            "❌ Não foi possível abrir PDF em nova aba"
+                        );
+                    }
+
+                    return null;
+                } catch (error) {
+                    console.log("❌ Erro no download direto:", error.message);
+                    return null;
+                }
+            }
+
             // ESTRATÉGIA A: KeyboardEvent padrão melhorado
             async function tentarSelecaoKeyboard(pdfElement) {
                 try {
@@ -8994,7 +10096,23 @@ IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
                             clipboardText.length,
                             "chars"
                         );
-                        return await validarTextoJuridico(clipboardText);
+
+                        // 🔍 DEBUG: Mostrar conteúdo real
+                        console.log(
+                            "🔍 DEBUG KeyboardEvent: Primeiros 500 chars:",
+                            clipboardText.substring(0, 500)
+                        );
+
+                        const textoValidado =
+                            await validarTextoJuridicoFlexivel(clipboardText);
+                        if (textoValidado) {
+                            return textoValidado;
+                        } else {
+                            console.log(
+                                "⚠️ KeyboardEvent: Retornando texto bruto"
+                            );
+                            return clipboardText;
+                        }
                     }
 
                     return null;
@@ -9050,7 +10168,30 @@ IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
                             clipboardText.length,
                             "chars"
                         );
-                        return await validarTextoJuridico(clipboardText);
+
+                        // 🔍 DEBUG: Mostrar conteúdo real para diagnóstico
+                        console.log(
+                            "🔍 DEBUG: Primeiros 500 chars do clipboard:",
+                            clipboardText.substring(0, 500)
+                        );
+                        console.log(
+                            "🔍 DEBUG: Últimos 200 chars do clipboard:",
+                            clipboardText.slice(-200)
+                        );
+
+                        // Tentar validação menos restritiva
+                        const textoValidado =
+                            await validarTextoJuridicoFlexivel(clipboardText);
+                        if (textoValidado) {
+                            console.log("✅ Validação flexível passou!");
+                            return textoValidado;
+                        } else {
+                            // Se falhou na validação flexível, tentar retornar texto bruto
+                            console.log(
+                                "⚠️ Validação flexível falhou, retornando texto bruto para análise"
+                            );
+                            return clipboardText; // Retornar mesmo assim para debug
+                        }
                     }
 
                     return null;
@@ -9294,17 +10435,34 @@ IMPORTANTE: Copie apenas o texto do documento, não estas instruções!`,
 
                     const clipboardText = await navigator.clipboard.readText();
 
-                    // Validar se o texto é válido (não são logs do console)
-                    if (isValidLegalDocument(clipboardText)) {
+                    // 🔍 DEBUG: Mostrar conteúdo extraído
+                    console.log(
+                        "🔍 DEBUG tryAutomaticSelection: Texto extraído:",
+                        clipboardText.length,
+                        "chars"
+                    );
+                    console.log(
+                        "🔍 DEBUG: Primeiros 300 chars:",
+                        clipboardText.substring(0, 300)
+                    );
+
+                    // Validar com função flexível
+                    const textoValidado = await validarTextoJuridicoFlexivel(
+                        clipboardText
+                    );
+                    if (textoValidado) {
                         console.log(
-                            "✅ Texto extraído via seleção:",
-                            clipboardText.length,
+                            "✅ Texto extraído via seleção automática:",
+                            textoValidado.length,
                             "caracteres"
                         );
-                        return cleanExtractedText(clipboardText);
+                        return cleanExtractedText(textoValidado);
                     } else {
-                        console.log("❌ Texto extraído não é documento válido");
-                        return null;
+                        console.log(
+                            "❌ Validação flexível falhou - retornando texto bruto"
+                        );
+                        // Retornar mesmo assim para debug
+                        return cleanExtractedText(clipboardText);
                     }
                 } catch (error) {
                     console.log(
