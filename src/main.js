@@ -1,4 +1,4 @@
-// ===== SISTEMA DE LOGGING CONTROLADO =====
+﻿// ===== SISTEMA DE LOGGING CONTROLADO =====
 const DEBUG_MODE = false; // ⚡ ATIVA/DESATIVA DEBUG DE DETECÇÃO DE SESSÃO
 const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silenciosos por padrão
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
@@ -817,7 +817,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -843,7 +843,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -869,7 +869,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -895,7 +895,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -921,7 +921,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -947,7 +947,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -970,7 +970,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -993,7 +993,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -1016,7 +1016,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -1039,7 +1039,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
                 padding: 20px !important;
                 min-width: 315px !important;
-                min-height: 160px !important;
+                min-height: 140px !important;
                 transition: box-shadow 0.5s ease !important;
                 -webkit-font-smoothing: subpixel-antialiased !important;
                 visibility: visible !important;
@@ -1332,7 +1332,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             );
                             elemento.style.setProperty(
                                 "min-height",
-                                "160px",
+                                "140px",
                                 "important"
                             );
                             elemento.style.setProperty(
@@ -5428,7 +5428,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             opacity: 0 !important;
             position: relative !important;
             min-width: 315px !important;
-            min-height: 160px !important;
+            min-height: 140px !important;
         }
         
         /* 2. Mostrar apenas elementos processados */
@@ -5438,7 +5438,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             opacity: 1 !important;
             transition: opacity 0.2s ease-in-out !important;
             min-width: 315px !important;
-            min-height: 160px !important;
+            min-height: 140px !important;
         }
         
         /* 3. Pré-aplicar estilos ANTES do elemento aparecer */
@@ -5449,7 +5449,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             transition: box-shadow 0.5s ease !important;
             -webkit-font-smoothing: subpixel-antialiased !important;
             min-width: 315px !important;
-            min-height: 160px !important;
+            min-height: 140px !important;
 
 
         }
@@ -19961,7 +19961,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 );
                                 elemento.style.setProperty(
                                     "min-height",
-                                    "160px",
+                                    "140px",
                                     "important"
                                 );
                                 elemento.style.setProperty(
@@ -20330,7 +20330,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                     // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
                     elemento.style.minWidth = "315px";
-                    elemento.style.minHeight = "160px";
+                    elemento.style.minHeight = "140px";
                     elemento.style.fontSize = "1rem";
                     elemento.style.lineHeight = "1.5";
                     elemento.style.margin = "0";
@@ -20442,7 +20442,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                     // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
                     elemento.style.minWidth = "315px";
-                    elemento.style.minHeight = "160px";
+                    elemento.style.minHeight = "140px";
                     elemento.style.fontSize = "1rem";
                     elemento.style.lineHeight = "1.5";
                     elemento.style.margin = "0";
@@ -20548,7 +20548,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                     // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
                     elemento.style.minWidth = "315px";
-                    elemento.style.minHeight = "160px";
+                    elemento.style.minHeight = "140px";
                     elemento.style.fontSize = "1rem";
                     elemento.style.lineHeight = "1.5";
                     elemento.style.margin = "0";
@@ -20655,7 +20655,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                     // CORREÇÃO: Garantir mesmo tamanho visual de todos os lembretes
                     elemento.style.minWidth = "315px";
-                    elemento.style.minHeight = "160px";
+                    elemento.style.minHeight = "140px";
                     elemento.style.fontSize = "1rem";
                     elemento.style.lineHeight = "1.5";
                     elemento.style.margin = "0";
@@ -20762,7 +20762,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                     // CORREÇÃO CRÍTICA: Garantir mesmo tamanho visual dos outros lembretes
                     elemento.style.minWidth = "315px";
-                    elemento.style.minHeight = "160px";
+                    elemento.style.minHeight = "140px";
                     elemento.style.fontSize = "1rem";
                     elemento.style.lineHeight = "1.5";
                     elemento.style.margin = "0";
