@@ -8419,11 +8419,13 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return info;
             }
 
-            // 🎯 SOLUÇÃO AUTOMÁTICA PARA EXTRAÇÃO DE TEXTO DE PDF (Estratégias 1 + 3)
+            // Solucao automatica para extracao de texto de PDF (SEM DOWNLOADS)
             async function extractTextFromPDF() {
-                console.log("📄 Iniciando extração automática de PDF...");
+                console.log(
+                    "Iniciando extracao automatica de PDF (sem downloads)..."
+                );
 
-                // 🧹 LIMPEZA CRÍTICA: Verificar e limpar clipboard se contém notificações eProbe
+                // Limpeza de clipboard se contem notificacoes eProbe
                 try {
                     const clipboardContent =
                         await navigator.clipboard.readText();
@@ -8436,85 +8438,44 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             "aguarde o pdf carregar",
                             "selecione todo o texto do pdf",
                         ];
-
                         const hasEProbeContent = eProbeIndicators.some(
                             (indicator) => contentLower.includes(indicator)
                         );
-
                         if (hasEProbeContent) {
                             console.log(
-                                "🧹 Limpando clipboard com conteúdo eProbe"
+                                "Limpando clipboard com conteudo eProbe"
                             );
                             await navigator.clipboard.writeText("");
                         }
                     }
                 } catch (error) {
                     console.log(
-                        "⚠️ Não foi possível verificar/limpar clipboard:",
+                        "Aviso: Nao foi possivel verificar/limpar clipboard:",
                         error.message
                     );
                 }
 
-                // 🔍 VERIFICAÇÃO PRÉVIA: Só executar se estivermos em uma página de documento PDF
+                // Verificacao de pagina
                 const pageType = detectPageType();
                 if (pageType !== "documento_pdf") {
-                    throw new Error("Não é uma página de documento PDF");
+                    throw new Error("Nao e uma pagina de documento PDF");
                 }
 
-                // 🔍 DECLARAÇÕES PARA DETECÇÃO DE PDF
-                let pdfUrl = null;
+                // Detectar elemento PDF apenas para validar existencia
                 const pdfElement = document.querySelector(
                     'iframe[src*="pdf"], embed[type="application/pdf"], object[type="application/pdf"]'
                 );
-
-                if (pdfElement && (pdfElement.src || pdfElement.data)) {
-                    pdfUrl = pdfElement.src || pdfElement.data;
-                    console.log("📄 Usando URL do elemento PDF:", pdfUrl);
+                if (!pdfElement) {
+                    console.log("Elemento PDF nao encontrado no DOM");
                 }
 
-                // 2. FALLBACK: Usar URL atual se for documento do eProc
-                if (
-                    !pdfUrl &&
-                    window.location.href.includes("acessar_documento")
-                ) {
-                    // Extrair informações da URL do eProc para construir URL de download
-                    const urlParams = new URLSearchParams(
-                        window.location.search
-                    );
-                    const doc = urlParams.get("doc");
-                    const evento = urlParams.get("evento");
-                    const key = urlParams.get("key");
+                console.log(
+                    "Usando estrategias nativas (sem qualquer download)..."
+                );
 
-                    if (doc && evento && key) {
-                        // Construir URL de download direto do eProc
-                        pdfUrl = window.location.href.replace(
-                            "acessar_documento",
-                            "processo_consultar_externo_documento"
-                        );
-                        console.log(
-                            "🌐 Construída URL de download eProc:",
-                            pdfUrl
-                        );
-                    } else {
-                        pdfUrl = window.location.href;
-                        console.log(
-                            "🌐 Usando URL atual como fallback:",
-                            pdfUrl
-                        );
-                    }
-                }
-
-                // 3. VERIFICAÇÃO FINAL
-                if (!pdfUrl) {
-                    throw new Error("URL do PDF não encontrada na página");
-                }
-
-                // 3. ESTRATÉGIAS NATIVAS (SEM PDF.JS - CSP SAFE)
-                console.log("📦 Usando estratégias nativas (CSP safe)...");
-
-                // ESTRATÉGIA 1: Tentar buscar texto já renderizado na página
+                // Estrategia 1: texto ja renderizado em iframes acessiveis
                 const iframes = document.querySelectorAll(
-                    'iframe[src*="acessar_documento"]'
+                    'iframe[src*="acessar_documento"], iframe[src*="pdf"]'
                 );
                 for (const iframe of iframes) {
                     try {
@@ -8527,7 +8488,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 iframeDoc.body.textContent;
                             if (textoIframe && textoIframe.length > 100) {
                                 console.log(
-                                    "✅ Texto extraído do iframe:",
+                                    "Texto extraido de iframe:",
                                     textoIframe.length,
                                     "caracteres"
                                 );
@@ -8535,119 +8496,61 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             }
                         }
                     } catch (e) {
-                        console.log(
-                            "⚠️ Iframe não acessível (CORS):",
-                            e.message
-                        );
+                        console.log("Iframe inacessivel (CORS):", e.message);
                     }
                 }
 
-                // ESTRATÉGIA 2: SIMULAÇÃO FÍSICA de interação com Plugin PDF
-                console.log(
-                    "🎯 ESTRATÉGIA FÍSICA: Simulação direta no plugin PDF"
-                );
-
-                // 1. Tentar simulação física de clique + seleção no plugin
-                console.log("🖱️ Iniciando simulação física no plugin PDF...");
+                // Estrategia 2: Simulacao fisica
+                console.log("Iniciando simulacao fisica no plugin PDF...");
                 const textoSimulacao = await simularInteracaoFisicaPDF();
-
                 if (textoSimulacao) {
-                    console.log("✅ Simulação física bem-sucedida!");
+                    console.log("Simulacao fisica bem sucedida");
                     showNotification(
-                        "✅ Texto extraído via simulação automática!",
+                        "Texto extraido via simulacao automatica",
                         "success",
                         2000
                     );
                     return textoSimulacao.trim();
                 }
 
-                // 2. FALLBACK: Download direto do PDF se simulação falhar
-                console.log("📥 Fallback: Tentando download direto do PDF...");
-                const textoDownload = await tentarDownloadDiretoPDF();
-
-                if (textoDownload) {
-                    console.log("✅ Download direto bem-sucedido!");
-                    showNotification(
-                        "✅ Texto extraído via download automático!",
-                        "success",
-                        2000
-                    );
-                    return textoDownload.trim();
-                }
-
-                // ESTRATÉGIA 3: Instruções ESPECÍFICAS para plugin Adobe PDF
-                console.log(
-                    "🎯 Fallback: Instruções específicas para plugin Adobe PDF"
-                );
-
-                // Mostrar instruções ESPECÍFICAS para o plugin do Adobe
+                // Instrucoes manuais (ASCII apenas)
+                console.log("Fallback: instrucoes manuais para copia do PDF");
                 showNotification(
-                    `� DETECÇÃO: Plugin Adobe PDF carregado!
-
-🎯 ESTRATÉGIA AUTOMÁTICA FALHOU - Usando método manual otimizado:
-
-✅ MÉTODO SIMPLIFICADO (2 passos):
-
-1️⃣ CLIQUE em qualquer lugar do PDF visível na tela
-   ↳ Isso ativa o plugin Adobe PDF
-
-2️⃣ Pressione Ctrl+A + Ctrl+C rapidamente
-   ↳ O plugin vai selecionar e copiar todo o texto
-
-3️⃣ Clique no botão eProbe novamente
-   ↳ O texto será detectado automaticamente!
-
-🔧 ALTERNATIVA: Se não funcionar:
-• CLIQUE com botão direito no PDF
-• Selecione "Selecionar tudo" 
-• Pressione Ctrl+C
-• Clique no botão eProbe
-
-⚡ O texto aparece INSTANTANEAMENTE quando a página carrega!`,
+                    "Instrucao manual:\n1) Clique dentro do PDF\n2) Pressione Ctrl+A e depois Ctrl+C\n3) Clique novamente no botao eProbe para validar o texto",
                     "info",
-                    15000
+                    12000
                 );
 
-                // Verificar se há texto na área de transferência recente
+                // Verificar clipboard (usuario pode ja ter copiado)
                 try {
                     const clipboardText = await navigator.clipboard.readText();
                     if (clipboardText && clipboardText.length > 100) {
                         console.log(
-                            "  Texto encontrado no clipboard:",
+                            "Texto encontrado no clipboard:",
                             clipboardText.length,
                             "caracteres"
                         );
-
-                        // 🚨 USAR A FUNÇÃO DE VERIFICAÇÃO APRIMORADA
                         const textoValidado = await checkClipboardForPDFText();
                         if (textoValidado) {
-                            console.log("✅ Texto jurídico validado do PDF");
+                            console.log("Texto juridico validado do PDF");
                             return textoValidado.trim();
                         } else {
-                            console.log(
-                                "❌ Texto do clipboard rejeitado (não é documento jurídico ou são logs)"
-                            );
+                            console.log("Texto do clipboard rejeitado");
                         }
                     }
                 } catch (clipError) {
                     console.log(
-                        "⚠️ Não foi possível acessar clipboard:",
+                        "Aviso: Nao foi possivel acessar clipboard:",
                         clipError.message
                     );
                 }
 
-                // 🔧 FUNÇÃO PARA VERIFICAR TEXTO DO CLIPBOARD
+                // Funcao interna para validar clipboard (sem emojis)
                 async function checkClipboardForPDFText() {
                     try {
                         const text = await navigator.clipboard.readText();
-                        if (!text || text.length < 100) {
-                            return null;
-                        }
-
-                        // Verificar se é texto jurídico válido (não logs do console ou notificações eProbe)
+                        if (!text || text.length < 100) return null;
                         const textLower = text.toLowerCase();
-
-                        // 🚨 CRÍTICO: Rejeitar notificações do eProbe
                         const eProbeIndicators = [
                             "resumir documento",
                             "pdf detectado",
@@ -8655,121 +8558,90 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             "aguarde o pdf carregar",
                             "selecione todo o texto do pdf",
                             "copie o texto do pdf",
-                            "clique novamente no botão eprobe",
-                            "não copie texto do console",
+                            "clique novamente no botao eprobe",
+                            "nao copie texto do console",
                             "copie apenas o texto do documento pdf",
-                            "🎯 clique",
-                            "1️⃣ aguarde",
-                            "2️⃣ selecione",
-                            "3️⃣ copie",
-                            "4️⃣ clique",
-                            "⚠️ importante",
-                            "✅ copie apenas",
                         ];
-
-                        // Verificar se contém notificações do eProbe
-                        const eProbeCount = eProbeIndicators.filter(
-                            (indicator) => textLower.includes(indicator)
+                        const eProbeCount = eProbeIndicators.filter((i) =>
+                            textLower.includes(i)
                         ).length;
-
                         if (eProbeCount > 0) {
                             console.log(
-                                "❌ Texto rejeitado: contém notificações do eProbe"
+                                "Texto rejeitado: contem notificacoes eProbe"
                             );
                             return null;
                         }
-
-                        // Rejeitar se contém muitos logs ou símbolos de debug
                         const logIndicators = [
                             "console.log",
-                            "❌",
-                            "✅",
-                            "🔍",
-                            "main.js:",
                             "error:",
                             "warning:",
                             "debug:",
                         ];
-                        const logCount = logIndicators.filter((indicator) =>
-                            textLower.includes(indicator)
+                        const logCount = logIndicators.filter((i) =>
+                            textLower.includes(i)
                         ).length;
-
                         if (logCount > 2) {
                             console.log(
-                                "❌ Texto rejeitado: contém logs de debug"
+                                "Texto rejeitado: contem logs de debug"
                             );
                             return null;
                         }
-
-                        // Verificar se contém termos jurídicos típicos
                         const termosJuridicos = [
                             "tribunal",
                             "juiz",
                             "processo",
-                            "sentença",
-                            "decisão",
+                            "sentenca",
+                            "decisao",
                             "despacho",
-                            "acórdão",
+                            "acordao",
                             "recurso",
-                            "apelação",
+                            "apelacao",
                             "embargos",
                             "requerente",
                             "requerido",
                             "autor",
-                            "réu",
+                            "reu",
                             "defesa",
-                            "petição",
-                            "contestação",
+                            "peticao",
+                            "contestacao",
                             "agravo",
                             "mandado",
-                            "citação",
+                            "citacao",
                         ];
-
-                        const termosEncontrados = termosJuridicos.filter(
-                            (termo) => textLower.includes(termo)
+                        const termosEncontrados = termosJuridicos.filter((t) =>
+                            textLower.includes(t)
                         ).length;
-
                         if (termosEncontrados >= 2) {
                             console.log(
-                                `✅ Texto jurídico validado (${termosEncontrados} termos encontrados)`
+                                "Texto juridico validado (",
+                                termosEncontrados,
+                                "termos)"
                             );
                             return text;
                         }
-
-                        console.log(
-                            "⚠️ Texto não parece ser documento jurídico"
-                        );
                         return null;
                     } catch (error) {
                         console.log(
-                            "❌ Erro ao verificar clipboard:",
+                            "Erro ao verificar clipboard:",
                             error.message
                         );
                         return null;
                     }
                 }
 
-                // Estratégia 1: Tentar fetch direto + PDF.js
-                const textFromFetch = await tryFetchPDFExtraction();
-
-                if (textFromFetch) {
-                    console.log("✅ Extração via fetch bem-sucedida");
-                    return textFromFetch;
-                }
-
-                // Estratégia 3: Automação de seleção
-                console.log("🔄 Tentando automação de seleção...");
+                // Selecionar automaticamente (nao faz download)
+                console.log("Tentando automacao de selecao...");
                 const textFromSelection = await tryAutomaticSelection();
                 if (textFromSelection) {
-                    console.log(
-                        "✅ Extração via seleção automática bem-sucedida"
-                    );
+                    console.log("Extracao via selecao automatica bem sucedida");
                     return textFromSelection;
                 }
 
-                console.log("❌ Todas as estratégias automáticas falharam");
+                console.log(
+                    "Falha: nenhuma estrategia sem download obteve texto"
+                );
                 showNotification(
-                    "❌ Não foi possível extrair texto automaticamente. Aguarde o PDF carregar e tente novamente.",
+                    "Nao foi possivel extrair texto automaticamente. Tente copiar manualmente e repetir.",
                     "warning",
                     5000
                 );
@@ -10328,142 +10200,128 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
             }
 
-            // Estratégia 3: Automação de seleção
+            // Estratégia 3: Automação de seleção FOCADA NO PDF
             async function tryAutomaticSelection() {
                 try {
-                    console.log("🤖 Iniciando seleção automática...");
+                    console.log(
+                        "🤖 Iniciando seleção automática FOCADA no PDF..."
+                    );
 
-                    // Encontrar o elemento que contém o PDF
+                    // 1. Encontrar elemento PDF específico
                     const pdfContainer = findPDFContainer();
                     if (!pdfContainer) {
-                        console.log("❌ Container do PDF não encontrado");
+                        console.log(
+                            "❌ Container do PDF não encontrado - abortando seleção automática"
+                        );
                         return null;
                     }
 
                     console.log(
                         "📍 Container do PDF encontrado:",
-                        pdfContainer.tagName
+                        pdfContainer.tagName,
+                        pdfContainer.className || pdfContainer.id
                     );
 
-                    // Focar no container
-                    pdfContainer.focus();
-
-                    // Aguardar um momento para garantir que o foco foi estabelecido
-                    await new Promise((resolve) => setTimeout(resolve, 200));
-
-                    // Selecionar todo o conteúdo
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-
-                    // Tentar diferentes estratégias de seleção
-                    let selectionSuccess = false;
-
-                    // Estratégia 1: execCommand
-                    try {
-                        pdfContainer.focus();
-                        selectionSuccess = document.execCommand("selectAll");
+                    // 2. ESTRATÉGIA ESPECÍFICA PARA IFRAME EPROC
+                    if (
+                        pdfContainer.tagName === "IFRAME" &&
+                        pdfContainer.src.includes("acessar_documento")
+                    ) {
                         console.log(
-                            "📋 execCommand selectAll:",
-                            selectionSuccess
+                            "🎯 IFRAME eProc detectado - usando estratégia específica"
                         );
-                    } catch (e) {
-                        console.log("⚠️ execCommand falhou:", e.message);
-                    }
 
-                    // Estratégia 2: Range + Selection API
-                    if (!selectionSuccess) {
                         try {
-                            const range = document.createRange();
-                            range.selectNodeContents(pdfContainer);
-                            selection.removeAllRanges();
-                            selection.addRange(range);
-                            selectionSuccess = selection.toString().length > 0;
-                            console.log(
-                                "📋 Range selection:",
-                                selectionSuccess
-                            );
-                        } catch (e) {
-                            console.log(
-                                "⚠️ Range selection falhou:",
-                                e.message
-                            );
-                        }
-                    }
-
-                    if (!selectionSuccess) {
-                        console.log(
-                            "❌ Nenhuma estratégia de seleção funcionou"
-                        );
-                        return null;
-                    }
-
-                    // Aguardar um momento para a seleção
-                    await new Promise((resolve) => setTimeout(resolve, 300));
-
-                    // Copiar para clipboard
-                    let copySuccess = false;
-
-                    try {
-                        copySuccess = document.execCommand("copy");
-                    } catch (e) {
-                        console.log("⚠️ execCommand copy falhou:", e.message);
-                    }
-
-                    // Fallback: usar clipboard API moderna
-                    if (!copySuccess) {
-                        try {
-                            const selectedText = selection.toString();
-                            if (selectedText) {
-                                await navigator.clipboard.writeText(
-                                    selectedText
+                            // Tentar acessar conteúdo do iframe
+                            const iframeDoc =
+                                pdfContainer.contentDocument ||
+                                pdfContainer.contentWindow.document;
+                            if (iframeDoc) {
+                                console.log(
+                                    "✅ Iframe acessível - tentando seleção interna"
                                 );
-                                copySuccess = true;
-                                console.log("📋 Clipboard API copy success");
+
+                                // Focar no iframe primeiro
+                                pdfContainer.focus();
+                                await new Promise((resolve) =>
+                                    setTimeout(resolve, 300)
+                                );
+
+                                // Selecionar conteúdo do iframe
+                                const iframeSelection =
+                                    iframeDoc.getSelection();
+                                iframeSelection.removeAllRanges();
+
+                                const range = iframeDoc.createRange();
+                                range.selectNodeContents(
+                                    iframeDoc.body || iframeDoc.documentElement
+                                );
+                                iframeSelection.addRange(range);
+
+                                await new Promise((resolve) =>
+                                    setTimeout(resolve, 500)
+                                );
+
+                                // Tentar copiar conteúdo do iframe
+                                let copySuccess = false;
+                                try {
+                                    copySuccess = iframeDoc.execCommand("copy");
+                                } catch (e) {
+                                    console.log(
+                                        "⚠️ execCommand no iframe falhou:",
+                                        e.message
+                                    );
+                                }
+
+                                if (copySuccess) {
+                                    await new Promise((resolve) =>
+                                        setTimeout(resolve, 500)
+                                    );
+                                    const clipboardText =
+                                        await navigator.clipboard.readText();
+                                    if (
+                                        clipboardText &&
+                                        clipboardText.length > 100
+                                    ) {
+                                        console.log(
+                                            "✅ Texto extraído do iframe:",
+                                            clipboardText.length,
+                                            "chars"
+                                        );
+                                        return await validarTextoJuridicoFlexivel(
+                                            clipboardText
+                                        );
+                                    }
+                                }
                             }
-                        } catch (e) {
-                            console.log("⚠️ Clipboard API falhou:", e.message);
+                        } catch (iframeError) {
+                            console.log(
+                                "⚠️ Iframe não acessível (CORS):",
+                                iframeError.message
+                            );
                         }
-                    }
 
-                    if (!copySuccess) {
-                        console.log("❌ Falha ao copiar texto");
-                        return null;
-                    }
-
-                    // Aguardar e ler o clipboard
-                    await new Promise((resolve) => setTimeout(resolve, 200));
-
-                    const clipboardText = await navigator.clipboard.readText();
-
-                    // 🔍 DEBUG: Mostrar conteúdo extraído
-                    console.log(
-                        "🔍 DEBUG tryAutomaticSelection: Texto extraído:",
-                        clipboardText.length,
-                        "chars"
-                    );
-                    console.log(
-                        "🔍 DEBUG: Primeiros 300 chars:",
-                        clipboardText.substring(0, 300)
-                    );
-
-                    // Validar com função flexível
-                    const textoValidado = await validarTextoJuridicoFlexivel(
-                        clipboardText
-                    );
-                    if (textoValidado) {
+                        // Fallback para iframe: simular teclas diretamente no iframe
                         console.log(
-                            "✅ Texto extraído via seleção automática:",
-                            textoValidado.length,
-                            "caracteres"
+                            "🔄 Fallback: simulação de teclas no iframe"
                         );
-                        return cleanExtractedText(textoValidado);
-                    } else {
-                        console.log(
-                            "❌ Validação flexível falhou - retornando texto bruto"
-                        );
-                        // Retornar mesmo assim para debug
-                        return cleanExtractedText(clipboardText);
+                        return await simularTeclasNoElemento(pdfContainer);
                     }
+
+                    // 3. ESTRATÉGIA PARA ELEMENTOS EMBED/OBJECT
+                    if (
+                        pdfContainer.tagName === "EMBED" ||
+                        pdfContainer.tagName === "OBJECT"
+                    ) {
+                        console.log(
+                            "🎯 Elemento EMBED/OBJECT detectado - usando estratégia de plugin"
+                        );
+                        return await simularTeclasNoElemento(pdfContainer);
+                    }
+
+                    // 4. FALLBACK: Tentar seleção no container geral
+                    console.log("� Usando estratégia geral para container");
+                    return await simularTeclasNoElemento(pdfContainer);
                 } catch (error) {
                     console.log(
                         "❌ Erro na seleção automática:",
@@ -10471,6 +10329,265 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     );
                     return null;
                 }
+            }
+
+            // Função auxiliar: Simular teclas Ctrl+A e Ctrl+C em elemento específico
+            async function simularTeclasNoElemento(elemento) {
+                try {
+                    console.log(
+                        "⌨️ Simulando teclas no elemento:",
+                        elemento.tagName
+                    );
+
+                    // ESTRATÉGIA ESPECIAL PARA IFRAME EPROC
+                    if (
+                        elemento.tagName === "IFRAME" &&
+                        elemento.src.includes("acessar_documento")
+                    ) {
+                        console.log(
+                            "🎯 IFRAME eProc - usando estratégia especializada"
+                        );
+
+                        // 1. Múltiplos focos para garantir ativação
+                        for (let i = 0; i < 3; i++) {
+                            elemento.focus();
+                            elemento.click();
+                            await new Promise((resolve) =>
+                                setTimeout(resolve, 200)
+                            );
+                        }
+
+                        // 2. Tentar estratégias múltiplas de seleção
+                        let resultado = await tentarSelecaoViaEventos(elemento);
+                        if (resultado) return resultado;
+
+                        resultado = await tentarSelecaoViaExecCommand(elemento);
+                        if (resultado) return resultado;
+
+                        // 3. Fallback: Aguardar ação manual com instruções específicas
+                        return await aguardarAcaoManualEproc(elemento);
+                    }
+
+                    // ESTRATÉGIA PADRÃO PARA OUTROS ELEMENTOS
+                    return await simularTeclasPadrao(elemento);
+                } catch (error) {
+                    console.log(
+                        "❌ Erro na simulação de teclas:",
+                        error.message
+                    );
+                    return null;
+                }
+            }
+
+            // Estratégia 1: Eventos de teclado diretos no iframe
+            async function tentarSelecaoViaEventos(iframe) {
+                console.log("🔄 Tentando seleção via eventos de teclado...");
+
+                // Focar iframe
+                iframe.focus();
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Simular Ctrl+A no iframe
+                const selectEvent = new KeyboardEvent("keydown", {
+                    key: "a",
+                    code: "KeyA",
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                iframe.dispatchEvent(selectEvent);
+                document.dispatchEvent(selectEvent);
+
+                await new Promise((resolve) => setTimeout(resolve, 800));
+
+                // Simular Ctrl+C no iframe
+                const copyEvent = new KeyboardEvent("keydown", {
+                    key: "c",
+                    code: "KeyC",
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                iframe.dispatchEvent(copyEvent);
+                document.dispatchEvent(copyEvent);
+
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                // Verificar clipboard
+                const texto = await navigator.clipboard.readText();
+                if (texto && texto.length > 200) {
+                    console.log(
+                        "✅ Texto obtido via eventos:",
+                        texto.length,
+                        "chars"
+                    );
+                    const textoValidado = await validarTextoJuridicoFlexivel(
+                        texto
+                    );
+                    if (textoValidado) {
+                        return cleanExtractedText(textoValidado);
+                    }
+                }
+
+                console.log("❌ Seleção via eventos falhou");
+                return null;
+            }
+
+            // Estratégia 2: execCommand no contexto global
+            async function tentarSelecaoViaExecCommand(iframe) {
+                console.log("🔄 Tentando seleção via execCommand...");
+
+                iframe.focus();
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Tentar selectAll global
+                const selectSuccess = document.execCommand("selectAll");
+                console.log("📋 execCommand selectAll:", selectSuccess);
+
+                if (selectSuccess) {
+                    await new Promise((resolve) => setTimeout(resolve, 800));
+
+                    const copySuccess = document.execCommand("copy");
+                    console.log("📋 execCommand copy:", copySuccess);
+
+                    if (copySuccess) {
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 1000)
+                        );
+
+                        const texto = await navigator.clipboard.readText();
+                        if (texto && texto.length > 200) {
+                            console.log(
+                                "✅ Texto obtido via execCommand:",
+                                texto.length,
+                                "chars"
+                            );
+                            const textoValidado =
+                                await validarTextoJuridicoFlexivel(texto);
+                            if (textoValidado) {
+                                return cleanExtractedText(textoValidado);
+                            }
+                        }
+                    }
+                }
+
+                console.log("❌ Seleção via execCommand falhou");
+                return null;
+            }
+
+            // Estratégia 3: Aguardar ação manual específica para eProc
+            async function aguardarAcaoManualEproc(iframe) {
+                console.log(
+                    "🔄 Iniciando aguardo de ação manual para eProc..."
+                );
+
+                // Instruções específicas para PDF do eProc
+                showNotification(
+                    "INSTRUCOES PARA PDF EPROC:\n\n" +
+                        "1. CLIQUE dentro da area do PDF (documento azul)\n" +
+                        "2. Pressione CTRL+A (selecionar tudo)\n" +
+                        "3. Pressione CTRL+C (copiar)\n" +
+                        "4. Clique no botao eProbe novamente\n\n" +
+                        "O sistema detectara automaticamente o texto copiado!",
+                    "info",
+                    15000
+                );
+
+                // Aguardar e verificar clipboard periodicamente
+                for (let i = 0; i < 20; i++) {
+                    // 20 segundos max
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                    try {
+                        const texto = await navigator.clipboard.readText();
+                        if (texto && texto.length > 200) {
+                            console.log(
+                                "🔍 Verificando texto do clipboard:",
+                                texto.length,
+                                "chars"
+                            );
+
+                            const textoValidado =
+                                await validarTextoJuridicoFlexivel(texto);
+                            if (textoValidado) {
+                                console.log(
+                                    "✅ Texto jurídico válido detectado!"
+                                );
+                                showNotification(
+                                    "Texto extraido com sucesso!",
+                                    "success",
+                                    3000
+                                );
+                                return cleanExtractedText(textoValidado);
+                            }
+                        }
+                    } catch (e) {
+                        // Continuar tentando
+                    }
+                }
+
+                console.log("⏰ Timeout: aguardo de ação manual expirou");
+                return null;
+            }
+
+            // Estratégia padrão para elementos não-iframe
+            async function simularTeclasPadrao(elemento) {
+                console.log(
+                    "⌨️ Usando simulação padrão para:",
+                    elemento.tagName
+                );
+
+                // 1. Focar elemento e aguardar
+                elemento.focus();
+                elemento.click();
+                await new Promise((resolve) => setTimeout(resolve, 300));
+
+                // 2. Simular Ctrl+A
+                const selectAllEvent = new KeyboardEvent("keydown", {
+                    key: "a",
+                    code: "KeyA",
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                elemento.dispatchEvent(selectAllEvent);
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // 3. Simular Ctrl+C
+                const copyEvent = new KeyboardEvent("keydown", {
+                    key: "c",
+                    code: "KeyC",
+                    ctrlKey: true,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                elemento.dispatchEvent(copyEvent);
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // 4. Verificar clipboard
+                const clipboardText = await navigator.clipboard.readText();
+                if (clipboardText && clipboardText.length > 100) {
+                    console.log(
+                        "✅ Texto extraído via simulação:",
+                        clipboardText.length,
+                        "chars"
+                    );
+
+                    // Validar se é conteúdo jurídico válido
+                    const textoValidado = await validarTextoJuridicoFlexivel(
+                        clipboardText
+                    );
+                    if (textoValidado) {
+                        return cleanExtractedText(textoValidado);
+                    }
+                }
+
+                console.log("❌ Simulação padrão não obteve texto válido");
+                return null;
             }
 
             // Função auxiliar: Detectar URL do PDF
@@ -10500,28 +10617,51 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return null;
             }
 
-            // Função auxiliar: Encontrar container do PDF
+            // Função auxiliar: Encontrar container do PDF com foco preciso
             function findPDFContainer() {
-                const containers = [
+                // 1. PRIORIDADE: Elementos PDF diretos (não body como fallback)
+                const pdfElements = [
                     'iframe[src*="acessar_documento"]',
                     'embed[type="application/pdf"]',
                     'object[type="application/pdf"]',
-                    "#plugin",
                     'iframe[src*="pdf"]',
                     'embed[type="application/x-google-chrome-pdf"]',
-                    'div[id*="pdf"]',
-                    'div[class*="pdf"]',
+                    "#plugin",
                 ];
 
-                for (const selector of containers) {
+                for (const selector of pdfElements) {
                     const element = document.querySelector(selector);
                     if (element) {
+                        console.log(
+                            "📍 Container PDF específico encontrado:",
+                            selector
+                        );
                         return element;
                     }
                 }
 
-                // Fallback: usar body se nada for encontrado
-                return document.body;
+                // 2. Buscar por divs que podem conter PDF
+                const pdfContainerSelectors = [
+                    'div[class*="pdf"]',
+                    'div[id*="pdf"]',
+                    'div[class*="document"]',
+                    'div[id*="document"]',
+                ];
+
+                for (const selector of pdfContainerSelectors) {
+                    const element = document.querySelector(selector);
+                    if (element && element.offsetHeight > 400) {
+                        // Garantir que é um container significativo
+                        console.log(
+                            "📍 Container documento encontrado:",
+                            selector
+                        );
+                        return element;
+                    }
+                }
+
+                console.log("❌ Nenhum container PDF específico encontrado");
+                return null; // NUNCA usar body como fallback
             }
 
             // Função auxiliar: Extrair texto com PDF.js
@@ -27462,7 +27602,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 cleanInvisibleChars: nsCleanInvisibleChars,
                 debugEventStructure: nsDebugEventStructure,
                 extractTextFromPDF: extractTextFromPDF,
-                tryFetchPDFExtraction: tryFetchPDFExtraction,
                 tryAutomaticSelection: tryAutomaticSelection,
                 isValidLegalDocument: isValidLegalDocument,
                 cleanExtractedText: cleanExtractedText,
