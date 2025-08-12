@@ -15874,7 +15874,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
                             // ✨ NOVO: Aplicar também substituição de ícones de lembretes
                             if (
-                                typeof substituirIconesLembretes === "function"
+                                typeof substituirIconesLembretes ===
+                                    "function" &&
+                                isCapaProcessoPage()
                             ) {
                                 const iconesSubstituidos =
                                     substituirIconesLembretes();
@@ -15883,6 +15885,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                         `🔄 OBSERVER: ${iconesSubstituidos} ícones de lembretes substituídos após mudança no DOM`
                                     );
                                 }
+                            } else if (
+                                typeof substituirIconesLembretes === "function"
+                            ) {
+                                log(
+                                    "⛔ OBSERVER: Personalização de ícones restrita - página atual não é capa do processo"
+                                );
                             }
                         }, debounceDelay + 100); // Pequeno delay adicional para lembretes
                     }
@@ -16805,6 +16813,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
              * Remove marcações existentes e executa novamente
              */
             function forcarReaplicacaoIcones() {
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Forçar reaplicação de ícones restrito apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", window.location.href);
+                    return {
+                        fieldsetAcoes: 0,
+                        ferramentas: 0,
+                        erros: [],
+                        bloqueado: true,
+                        motivo: "url_nao_permitida",
+                    };
+                }
+
                 log("🔄 ÍCONES: Forçando reaplicação de ícones...");
 
                 // Remover marcações existentes
@@ -16903,6 +16926,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
              * Função principal que coordena toda a substituição
              */
             function inicializarSubstituicaoIcones() {
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Sistema de personalização de ícones restrito apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", window.location.href);
+                    return {
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                        execucoes: [],
+                        totalSubstituicoes: 0,
+                        bloqueado: true,
+                        motivo: "url_nao_permitida",
+                    };
+                }
+
                 log("🎨 ÍCONES: Inicializando sistema de substituição...");
 
                 if (MODO_ULTRA_PERFORMANCE) {
@@ -21360,6 +21398,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
              * Versão ultra-rápida da substituição de ícones para eliminar flash
              */
             function substituirIconesLembretesImediato() {
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    return false; // Retorno silencioso para não gerar logs excessivos
+                }
+
                 try {
                     // 1. Substituir ícones de editar
                     const iconesEditar = document.querySelectorAll(
@@ -23369,8 +23412,14 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         cardExistente.remove();
                     }
 
-                    // Forçar reaplicação do CSS
-                    forcarReaplicacaoIcones();
+                    // Forçar reaplicação do CSS (apenas em páginas permitidas)
+                    if (isCapaProcessoPage()) {
+                        forcarReaplicacaoIcones();
+                    } else {
+                        log(
+                            "⛔ CORREÇÃO: Reaplicação de ícones bloqueada - página não é capa do processo"
+                        );
+                    }
 
                     // Aguardar um frame para garantir que o CSS foi aplicado
                     requestAnimationFrame(() => {
@@ -24431,10 +24480,35 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 return null;
             }
 
+            // 🔍 FUNÇÃO AUXILIAR: Verificar se estamos numa página de capa do processo
+            function isCapaProcessoPage() {
+                const currentUrl = window.location.href;
+
+                // Verificar se a URL contém o padrão de capa do processo
+                const capaProcessoPatterns = [
+                    "eproc1g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&",
+                    "eproc2g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&",
+                ];
+
+                return capaProcessoPatterns.some((pattern) =>
+                    currentUrl.includes(pattern)
+                );
+            }
+
             // Função para substituir ícones no fieldset de ações
             function substituirIconesFieldsetAcoes() {
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 const currentUrl = window.location.href;
+
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Personalização de ícones restrita apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", currentUrl);
+                    return false;
+                }
+
+                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 if (currentUrl.includes("minuta_cadastrar")) {
                     log(
                         "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições"
@@ -24931,8 +25005,18 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             // Função adicional para substituição global de ícones específicos
             function substituirIconesGlobalmente() {
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 const currentUrl = window.location.href;
+
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Personalização de ícones globais restrita apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", currentUrl);
+                    return false;
+                }
+
+                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 if (currentUrl.includes("minuta_cadastrar")) {
                     log(
                         "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições globais"
@@ -25497,6 +25581,15 @@ const logError = console.error.bind(console); // Erros sempre visíveis
              * PRESERVA 100% das funcionalidades originais
              */
             function substituirIconesLembretes() {
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Personalização de ícones de lembretes restrita apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", window.location.href);
+                    return 0;
+                }
+
                 log(
                     "🎨 LEMBRETES: Iniciando substituição específica de ícones dos lembretes..."
                 );
@@ -25744,8 +25837,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             // Função para substituir ícones de ferramentas em toda a página
             function substituirIconesFerramentas() {
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 const currentUrl = window.location.href;
+
+                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "⛔ ÍCONES: Personalização de ícones restrita apenas à página de capa do processo - URL atual não permitida"
+                    );
+                    log("📍 URL atual:", currentUrl);
+                    return {
+                        ignorado: true,
+                        motivo: "url_nao_permitida",
+                    };
+                }
+
+                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
                 if (currentUrl.includes("minuta_cadastrar")) {
                     log(
                         "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições"
@@ -26388,8 +26494,18 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             setTimeout(() => {
                 log("🎨 ÍCONES: Iniciando sistema automaticamente...");
                 try {
-                    inicializarSubstituicaoIcones();
-                    logCritical("✅ ÍCONES: Sistema inicializado com sucesso");
+                    // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                    if (isCapaProcessoPage()) {
+                        inicializarSubstituicaoIcones();
+                        logCritical(
+                            "✅ ÍCONES: Sistema inicializado com sucesso"
+                        );
+                    } else {
+                        log(
+                            "⛔ ÍCONES: Inicialização automática bloqueada - página atual não é capa do processo"
+                        );
+                        log("📍 URL atual:", window.location.href);
+                    }
                 } catch (error) {
                     console.error("❌ ÍCONES: Erro na inicialização:", error);
                 }
@@ -26501,8 +26617,15 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 "🔧 ROBUSTA: Ícones não foram substituídos - executando correção..."
                             );
                             try {
-                                substituirIconesFieldsetAcoes();
-                                substituirIconesFerramentas();
+                                // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                                if (isCapaProcessoPage()) {
+                                    substituirIconesFieldsetAcoes();
+                                    substituirIconesFerramentas();
+                                } else {
+                                    log(
+                                        "⛔ ROBUSTA: Correção de ícones bloqueada - página não é capa do processo"
+                                    );
+                                }
                                 log("✅ ROBUSTA: Correção de ícones executada");
                             } catch (error) {
                                 console.error(
@@ -28525,6 +28648,52 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 inicializarSubstituicaoIcones: inicializarSubstituicaoIcones, // Implementação real
                 diagnosticarIconesCSS:
                     debugInterfaceFunctions.diagnosticarIconesCSS,
+
+                // Função de teste para verificar restrições de personalização
+                testarRestricaoPersonalizacaoIcones: () => {
+                    const urlAtual = window.location.href;
+                    const isCapaProcesso = isCapaProcessoPage();
+
+                    console.log("🔍 TESTE RESTRIÇÃO PERSONALIZAÇÃO:");
+                    console.log("📍 URL atual:", urlAtual);
+                    console.log(
+                        "🏠 É página de capa do processo:",
+                        isCapaProcesso
+                    );
+
+                    if (isCapaProcesso) {
+                        console.log(
+                            "✅ PERMITIDO: Personalização de ícones habilitada"
+                        );
+                        console.log("🎨 Testando inicialização de ícones...");
+                        if (
+                            typeof inicializarSubstituicaoIcones === "function"
+                        ) {
+                            const resultado = inicializarSubstituicaoIcones();
+                            console.log("📊 Resultado:", resultado);
+                        }
+                    } else {
+                        console.log(
+                            "⛔ BLOQUEADO: Personalização restrita a páginas de capa"
+                        );
+                        console.log(
+                            "💡 Para testar, navegue para uma página que contenha:"
+                        );
+                        console.log(
+                            "   • eproc1g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&"
+                        );
+                        console.log(
+                            "   • eproc2g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&"
+                        );
+                    }
+
+                    return {
+                        urlAtual,
+                        isCapaProcesso,
+                        personalizacaoPermitida: isCapaProcesso,
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                    };
+                },
 
                 // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
                 debugButtonCreation:
@@ -31402,6 +31571,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 typeof obterCorPorStatus === "function"
                     ? obterCorPorStatus
                     : () => console.log("obterCorPorStatus não disponível"),
+
+            // Função para verificar se é página de capa do processo
+            isCapaProcessoPage:
+                typeof isCapaProcessoPage === "function"
+                    ? isCapaProcessoPage
+                    : () => console.log("isCapaProcessoPage não disponível"),
 
             // Funções específicas do teste
             detectarCardSessaoSimplificado: () => {
