@@ -10,6 +10,131 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         "🚨 INTERCEPTAÇÃO ULTRA-PRECOCE: Bloqueando switchRelevanciaDocumento E switchRelevanciaEvento..."
     );
 
+    // �️ FUNÇÃO ULTRA-SEGURA PARA EVENTO - DEFINIDA PRIMEIRO
+    function switchRelevanciaEventoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        console.log(
+            "🔥 FUNÇÃO SEGURA EXECUTADA: switchRelevanciaEvento interceptada"
+        );
+
+        // Validação extrema de parâmetros
+        if (
+            idEvento === undefined ||
+            idEvento === null ||
+            urlAjax === undefined ||
+            urlAjax === null
+        ) {
+            console.error(
+                "❌ PARÂMETROS INVÁLIDOS: idEvento ou urlAjax são undefined/null"
+            );
+            return false;
+        }
+
+        // Conversão segura para string
+        const idEventoStr = String(idEvento);
+        const urlAjaxStr = String(urlAjax);
+
+        // Construir URL segura
+        try {
+            let fullUrl = urlAjaxStr;
+            const separator = fullUrl.includes("?") ? "&" : "?";
+            const params = `idEvento=${encodeURIComponent(
+                idEventoStr
+            )}&relevancia=${encodeURIComponent(
+                String(relevancia || "")
+            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
+            fullUrl += separator + params;
+
+            // AJAX seguro
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", fullUrl, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(
+                        "✅ switchRelevanciaEvento: Requisição bem-sucedida"
+                    );
+
+                    // MANTER FUNCIONALIDADE ORIGINAL: Atualizar visual da estrela
+                    try {
+                        const estrelaElement = document.querySelector(
+                            `a[onclick*="${idEventoStr}"]`
+                        );
+                        if (estrelaElement) {
+                            const icon =
+                                estrelaElement.querySelector(".material-icons");
+                            if (icon) {
+                                // Alternar entre estrela vazia e cheia
+                                icon.textContent =
+                                    relevancia === "1" ? "star" : "star_border";
+                                console.log(
+                                    "✅ Visual da estrela atualizado:",
+                                    relevancia === "1"
+                                        ? "ativada"
+                                        : "desativada"
+                                );
+                            }
+                        }
+                    } catch (updateError) {
+                        console.warn(
+                            "⚠️ Não foi possível atualizar visual da estrela:",
+                            updateError
+                        );
+                    }
+                }
+            };
+            xhr.send();
+
+            console.log("✅ switchRelevanciaEvento: Executada com segurança");
+            return true;
+        } catch (error) {
+            console.error(
+                "❌ switchRelevanciaEvento: Erro na execução:",
+                error
+            );
+            return false;
+        }
+    }
+
+    // �🔥 FORÇA BRUTAL: Redefinir switchRelevanciaEvento IMEDIATAMENTE
+    const forcarInterceptacaoEvento = () => {
+        if (typeof window.switchRelevanciaEvento === "function") {
+            const codigo = window.switchRelevanciaEvento.toString();
+            if (
+                codigo.includes("substring") ||
+                codigo.includes("controlador.php")
+            ) {
+                logCritical(
+                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA! Substituindo imediatamente..."
+                );
+                window.switchRelevanciaEvento = function (
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax
+                ) {
+                    console.log(
+                        "🛡️ INTERCEPTAÇÃO FORÇADA: switchRelevanciaEvento redirecionada para função segura"
+                    );
+                    return switchRelevanciaEventoUltraSegura(
+                        idEvento,
+                        relevancia,
+                        tipo,
+                        urlAjax
+                    );
+                };
+            }
+        }
+        // Repetir verificação
+        setTimeout(forcarInterceptacaoEvento, 100);
+    };
+
+    // Iniciar força brutal
+    forcarInterceptacaoEvento();
+
     // Criar nossa função robusta para switchRelevanciaDocumento
     function switchRelevanciaDocumentoUltraSegura(
         idEvento,
@@ -28,24 +153,36 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
             );
 
-            // Validação extremamente robusta
-            if (!idEvento) {
-                console.error("❌ ID do evento não fornecido");
+            // 🚨 CORREÇÃO CRÍTICA: Validação mais robusta dos parâmetros
+            if (idEvento === undefined || idEvento === null) {
+                console.error("❌ ERRO: idEvento é undefined ou null");
                 return false;
             }
 
-            if (!urlAjax) {
-                console.error("❌ URL AJAX não fornecida");
+            if (urlAjax === undefined || urlAjax === null) {
+                console.error("❌ ERRO: urlAjax é undefined ou null");
                 return false;
             }
 
-            // Construir URL com máxima segurança
-            let fullUrl = String(urlAjax);
+            // Converter para string de forma segura
+            const idEventoStr = String(idEvento);
+            const urlAjaxStr = String(urlAjax);
+
+            // Verificar se a conversão foi bem-sucedida
+            if (idEventoStr === "undefined" || urlAjaxStr === "undefined") {
+                console.error(
+                    "❌ ERRO: Parâmetros convertidos resultaram em 'undefined'"
+                );
+                return false;
+            }
+
+            // Construir URL com máxima segurança usando as strings validadas
+            let fullUrl = urlAjaxStr;
             const separator = fullUrl.includes("?") ? "&" : "?";
             const params = `idEvento=${encodeURIComponent(
-                String(idEvento)
+                idEventoStr
             )}&relevancia=${encodeURIComponent(
-                String(relevancia)
+                String(relevancia || "")
             )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
             fullUrl += separator + params;
 
@@ -63,9 +200,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             xhr.responseText
                         );
 
-                        // Atualizar ícone após sucesso
+                        // Atualizar ícone após sucesso usando ID validado
                         setTimeout(() => {
-                            atualizarIconeUltraSeguro(idEvento, relevancia);
+                            atualizarIconeUltraSeguro(idEventoStr, relevancia);
                         }, 50);
 
                         // Verificar se deve recarregar
@@ -179,6 +316,20 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         tipo,
         urlAjax
     ) {
+        console.log(
+            "🔥 INTERCEPTAÇÃO CONFIRMADA: switchRelevanciaEvento chamada com parâmetros:",
+            {
+                idEvento: typeof idEvento + " = " + idEvento,
+                relevancia: typeof relevancia + " = " + relevancia,
+                tipo: typeof tipo + " = " + tipo,
+                urlAjax:
+                    typeof urlAjax +
+                    " = " +
+                    String(urlAjax).substring(0, 50) +
+                    "...",
+            }
+        );
+
         try {
             logCritical(
                 "🛡️ ULTRA-SEGURA: switchRelevanciaEvento interceptada:",
@@ -190,28 +341,36 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
             );
 
-            // Validação extremamente robusta - MESMA LÓGICA
-            if (!idEvento) {
+            // 🚨 CORREÇÃO CRÍTICA: Validação mais robusta dos parâmetros
+            if (idEvento === undefined || idEvento === null) {
+                console.error("❌ ERRO: idEvento é undefined ou null");
+                return false;
+            }
+
+            if (urlAjax === undefined || urlAjax === null) {
+                console.error("❌ ERRO: urlAjax é undefined ou null");
+                return false;
+            }
+
+            // Converter para string de forma segura
+            const idEventoStr = String(idEvento);
+            const urlAjaxStr = String(urlAjax);
+
+            // Verificar se a conversão foi bem-sucedida
+            if (idEventoStr === "undefined" || urlAjaxStr === "undefined") {
                 console.error(
-                    "❌ switchRelevanciaEvento: ID do evento não fornecido"
+                    "❌ ERRO: Parâmetros convertidos resultaram em 'undefined'"
                 );
                 return false;
             }
 
-            if (!urlAjax) {
-                console.error(
-                    "❌ switchRelevanciaEvento: URL AJAX não fornecida"
-                );
-                return false;
-            }
-
-            // Construir URL com máxima segurança - MESMA LÓGICA
-            let fullUrl = String(urlAjax);
+            // Construir URL com máxima segurança usando as strings validadas
+            let fullUrl = urlAjaxStr;
             const separator = fullUrl.includes("?") ? "&" : "?";
             const params = `idEvento=${encodeURIComponent(
-                String(idEvento)
+                idEventoStr
             )}&relevancia=${encodeURIComponent(
-                String(relevancia)
+                String(relevancia || "")
             )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
             fullUrl += separator + params;
 
@@ -229,9 +388,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             xhr.responseText
                         );
 
-                        // Atualizar ícone após sucesso
+                        // Atualizar ícone após sucesso usando ID validado
                         setTimeout(() => {
-                            atualizarIconeUltraSeguro(idEvento, relevancia);
+                            atualizarIconeUltraSeguro(idEventoStr, relevancia);
                         }, 50);
 
                         // Verificar se deve recarregar
@@ -270,8 +429,56 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         }
     }
 
-    // 🔒 INTERCEPTAÇÃO COM Object.defineProperty - BLOQUEIA QUALQUER TENTATIVA DE DEFINIÇÃO
-    let funcaoInterceptada = switchRelevanciaDocumentoUltraSegura;
+    // 🔒 INTERCEPTAÇÃO MAIS INTELIGENTE - Fallback para função original
+    let funcaoOriginalEproc = null; // Armazenar a função original do eProc se existir
+    let interceptacaoAtiva = true; // Circuit breaker para parar loops infinitos
+    let contadorTentativas = 0; // Contador de tentativas de redefinição
+    const maxTentativas = 10; // Máximo de tentativas permitidas
+
+    let funcaoInterceptada = function (idEvento, relevancia, tipo, urlAjax) {
+        try {
+            // Tentar nossa função ultra-segura primeiro
+            const resultado = switchRelevanciaDocumentoUltraSegura(
+                idEvento,
+                relevancia,
+                tipo,
+                urlAjax
+            );
+            if (resultado === true) {
+                return true;
+            }
+        } catch (error) {
+            console.warn(
+                "⚠️ Função ultra-segura falhou, tentando fallback:",
+                error
+            );
+        }
+
+        // Se nossa função falhou, tentar função original do eProc (se segura)
+        if (funcaoOriginalEproc && typeof funcaoOriginalEproc === "function") {
+            try {
+                console.log(
+                    "🔄 Tentando função original do eProc como fallback..."
+                );
+                return funcaoOriginalEproc.call(
+                    this,
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax
+                );
+            } catch (error) {
+                console.error("❌ Função original também falhou:", error);
+                return false;
+            }
+        }
+
+        console.error("❌ Todas as tentativas falharam");
+        return false;
+    };
+
+    // Marcar nossa função para identificação
+    funcaoInterceptada.__eprobeInterceptada = true;
     let tentativasRedefinicao = 0;
 
     Object.defineProperty(window, "switchRelevanciaDocumento", {
@@ -279,20 +486,68 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             return funcaoInterceptada;
         },
         set: function (novaFuncao) {
-            tentativasRedefinicao++;
+            contadorTentativas++;
+
+            // 🚨 CIRCUIT BREAKER: Parar loop infinito
+            if (contadorTentativas > maxTentativas) {
+                console.warn(
+                    `⚠️ CIRCUIT BREAKER: Máximo de ${maxTentativas} tentativas atingido. Parando interceptação.`
+                );
+                interceptacaoAtiva = false;
+                return;
+            }
+
+            if (!interceptacaoAtiva) {
+                console.log(
+                    "⏸️ INTERCEPTAÇÃO DESABILITADA: Permitindo redefinição direta"
+                );
+                funcaoInterceptada = novaFuncao;
+                return;
+            }
+
             logCritical(
-                `🚨 TENTATIVA ${tentativasRedefinicao} DE REDEFINIÇÃO BLOQUEADA!`
+                `🚨 TENTATIVA ${contadorTentativas} DE REDEFINIÇÃO INTERCEPTADA!`
             );
 
             // Analisar a função que está tentando ser definida
             if (typeof novaFuncao === "function") {
                 const codigoFuncao = novaFuncao.toString();
                 logCritical(
-                    "🔍 Código da função bloqueada:",
+                    "🔍 Analisando função:",
                     codigoFuncao.substring(0, 200) + "..."
                 );
 
-                // Se for a função problemática do eProc, mantenha nossa versão
+                // Se parece ser a função original do eProc (mas não problemática), armazenar como fallback
+                if (
+                    codigoFuncao.includes("controlador.php") &&
+                    !codigoFuncao.includes("ULTRA-SEGURA") &&
+                    codigoFuncao.length > 100 // Parece ser uma função real
+                ) {
+                    console.log(
+                        "💾 Armazenando função original do eProc como fallback"
+                    );
+                    funcaoOriginalEproc = novaFuncao;
+
+                    // Ainda manter nossa função como principal, mas agora com fallback
+                    logCritical(
+                        "🛡️ Função original armazenada, mantendo interceptação ativa"
+                    );
+                    return;
+                }
+
+                // Se for nossa própria função sendo redefinida, permitir
+                if (
+                    codigoFuncao.includes("ULTRA-SEGURA") ||
+                    codigoFuncao.includes(
+                        "switchRelevanciaDocumentoUltraSegura"
+                    )
+                ) {
+                    console.log(
+                        "✅ Permitindo redefinição da nossa própria função"
+                    );
+                    funcaoInterceptada = novaFuncao;
+                    return;
+                }
                 if (
                     codigoFuncao.includes("substring") ||
                     codigoFuncao.includes("controlador.php")
@@ -310,8 +565,41 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         enumerable: true,
     });
 
-    // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento
-    let funcaoEventoInterceptada = switchRelevanciaEventoUltraSegura;
+    // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento com sistema híbrido
+    let funcaoOriginalEprocEvento = null; // Armazenar a função original do eProc se existir
+    let interceptacaoAtivaEvento = true; // Circuit breaker para switchRelevanciaEvento
+    let contadorTentativasEvento = 0; // Contador de tentativas para evento
+
+    let funcaoEventoInterceptada = function (
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        try {
+            // Tentar nossa função ultra-segura primeiro
+            const resultado = switchRelevanciaEventoUltraSegura(
+                idEvento,
+                relevancia,
+                tipo,
+                urlAjax
+            );
+            if (resultado === true) {
+                return true;
+            }
+        } catch (error) {
+            console.warn("⚠️ switchRelevanciaEvento falhou:", error);
+        }
+
+        // 🚨 NUNCA USAR FALLBACK - A função original do eProc é problemática!
+        console.error(
+            "❌ switchRelevanciaEvento: Todas as tentativas falharam, retornando false para segurança"
+        );
+        return false; // Sempre retornar false em vez de tentar função problemática
+    };
+
+    // Marcar nossa função de evento para identificação
+    funcaoEventoInterceptada.__eprobeInterceptadaEvento = true;
     let tentativasRedefinicaoEvento = 0;
 
     Object.defineProperty(window, "switchRelevanciaEvento", {
@@ -319,22 +607,67 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             return funcaoEventoInterceptada;
         },
         set: function (novaFuncao) {
-            tentativasRedefinicaoEvento++;
+            contadorTentativasEvento++;
+
+            // 🚨 CIRCUIT BREAKER: Parar loop infinito para evento
+            if (contadorTentativasEvento > maxTentativas) {
+                console.warn(
+                    `⚠️ CIRCUIT BREAKER EVENTO: Máximo de ${maxTentativas} tentativas atingido. Parando interceptação.`
+                );
+                interceptacaoAtivaEvento = false;
+                return;
+            }
+
+            if (!interceptacaoAtivaEvento) {
+                console.log(
+                    "⏸️ INTERCEPTAÇÃO EVENTO DESABILITADA: Permitindo redefinição direta"
+                );
+                funcaoEventoInterceptada = novaFuncao;
+                return;
+            }
+
             logCritical(
-                `🚨 switchRelevanciaEvento: TENTATIVA ${tentativasRedefinicaoEvento} DE REDEFINIÇÃO BLOQUEADA!`
+                `🚨 switchRelevanciaEvento: TENTATIVA ${contadorTentativasEvento} DE REDEFINIÇÃO BLOQUEADA!`
             );
 
             // Analisar a função que está tentando ser definida
             if (typeof novaFuncao === "function") {
                 const codigoFuncao = novaFuncao.toString();
                 logCritical(
-                    "🔍 switchRelevanciaEvento código bloqueado:",
+                    "🔍 switchRelevanciaEvento código analisando:",
                     codigoFuncao.substring(0, 200) + "..."
                 );
 
-                // Se for a função problemática do eProc, mantenha nossa versão
+                // 🚨 NUNCA ARMAZENAR função original - é problemática!
                 if (
-                    codigoFuncao.includes("substring") ||
+                    codigoFuncao.includes("controlador.php") &&
+                    !codigoFuncao.includes("ULTRA-SEGURA") &&
+                    codigoFuncao.length > 100 // Parece ser uma função real
+                ) {
+                    logCritical(
+                        "� FUNÇÃO ORIGINAL DO EPROC DETECTADA E BLOQUEADA - contém bugs!"
+                    );
+                    logCritical(
+                        "🛡️ Mantendo nossa função segura, nunca usando fallback problemático"
+                    );
+                    return; // Bloquear e nunca armazenar
+                }
+
+                // Se for nossa própria função sendo redefinida, permitir
+                if (
+                    codigoFuncao.includes("ULTRA-SEGURA") ||
+                    codigoFuncao.includes("__eprobeInterceptadaEvento")
+                ) {
+                    console.log(
+                        "✅ Permitindo redefinição da nossa própria função de evento"
+                    );
+                    funcaoEventoInterceptada = novaFuncao;
+                    return;
+                }
+
+                // Se for a função problemática do eProc, bloquear
+                if (
+                    codigoFuncao.includes("substring") &&
                     codigoFuncao.includes("controlador.php")
                 ) {
                     logCritical(
@@ -352,6 +685,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
     // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - AMBAS AS FUNÇÕES
     let verificacaoAtiva = true;
+    let totalVerificacoes = 0; // Contador total de verificações
 
     const verificarIntegridade = () => {
         if (!verificacaoAtiva) return;
@@ -387,32 +721,86 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             // Verificar se as funções existem e são nossas
             const funcaoDocumento = window.switchRelevanciaDocumento;
-            if (typeof funcaoDocumento === "function") {
-                const codigo = funcaoDocumento.toString();
-                if (!codigo.includes("ULTRA-SEGURA")) {
+            if (typeof funcaoDocumento === "function" && interceptacaoAtiva) {
+                // Verificar se é nossa função usando marcação
+                if (
+                    !funcaoDocumento.__eprobeInterceptada &&
+                    !funcaoDocumento.toString().includes("ULTRA-SEGURA")
+                ) {
                     logCritical(
                         "🚨 switchRelevanciaDocumento ESTRANHA DETECTADA! Substituindo..."
                     );
                     window.switchRelevanciaDocumento = funcaoInterceptada;
+                } else {
+                    // É nossa função, não fazer nada
+                    if (funcaoDocumento.__eprobeInterceptada) {
+                        console.log(
+                            "✅ switchRelevanciaDocumento é nossa função (marcada)"
+                        );
+                    }
                 }
             }
 
             const funcaoEvento = window.switchRelevanciaEvento;
-            if (typeof funcaoEvento === "function") {
-                const codigo = funcaoEvento.toString();
-                if (!codigo.includes("ULTRA-SEGURA")) {
+            if (
+                typeof funcaoEvento === "function" &&
+                interceptacaoAtivaEvento
+            ) {
+                // Verificar se é nossa função usando marcação
+                if (
+                    !funcaoEvento.__eprobeInterceptadaEvento &&
+                    !funcaoEvento.toString().includes("ULTRA-SEGURA")
+                ) {
                     logCritical(
                         "🚨 switchRelevanciaEvento ESTRANHA DETECTADA! Substituindo..."
                     );
                     window.switchRelevanciaEvento = funcaoEventoInterceptada;
+                } else {
+                    // É nossa função, não fazer nada
+                    if (funcaoEvento.__eprobeInterceptadaEvento) {
+                        console.log(
+                            "✅ switchRelevanciaEvento é nossa função (marcada)"
+                        );
+                    }
                 }
             }
         } catch (error) {
             console.warn("⚠️ Erro na verificação de integridade:", error);
         }
 
-        // Continuar verificação
-        setTimeout(verificarIntegridade, 100);
+        // 🚨 CIRCUIT BREAKER DEFINITIVO: Parar verificações após período inicial
+        totalVerificacoes++;
+
+        // Dar tempo inicial para estabilizar (50 verificações = ~5 segundos)
+        if (totalVerificacoes > 50) {
+            console.log(
+                "⏹️ VERIFICAÇÃO PERIÓDICA FINALIZADA: Sistema estabilizado após 50 verificações"
+            );
+            verificacaoAtiva = false;
+            return; // Para definitivamente as verificações
+        }
+
+        // Verificar se ambas as funções estão estáveis (são nossas)
+        const funcaoDocumentoAtual = window.switchRelevanciaDocumento;
+        const funcaoEventoAtual = window.switchRelevanciaEvento;
+
+        const documentoEstavel =
+            funcaoDocumentoAtual && funcaoDocumentoAtual.__eprobeInterceptada;
+        const eventoEstavel =
+            funcaoEventoAtual && funcaoEventoAtual.__eprobeInterceptadaEvento;
+
+        if (documentoEstavel && eventoEstavel && totalVerificacoes > 10) {
+            console.log(
+                "✅ SISTEMA ESTÁVEL: Ambas funções são nossas, parando verificações periódicas"
+            );
+            verificacaoAtiva = false;
+            return; // Para as verificações quando tudo está estável
+        }
+
+        // Continuar verificações apenas se necessário
+        if (totalVerificacoes <= 50 && verificacaoAtiva) {
+            setTimeout(verificarIntegridade, 200); // Verificar menos frequentemente
+        }
     };
 
     // Iniciar verificação imediata
@@ -790,6 +1178,227 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     });
 })();
 
+// ===== SISTEMA ANTI-FLASH UNIFICADO - SIMPLES E EFICIENTE =====
+(function sistemaAntiFlashUnificado() {
+    // Função única para aplicar personalizações sem flash
+    window.eprobeAntiFlash = {
+        aplicado: false,
+
+        // Aplicar CSS crítico uma única vez
+        aplicarCSS: function () {
+            if (this.aplicado) return;
+
+            // CSS já está no ultraAntiFlash acima - apenas marcar como aplicado
+            this.aplicado = true;
+            console.log("✅ ANTI-FLASH UNIFICADO: Sistema ativado");
+        },
+
+        // Revelar ícone personalizado
+        revelarIcone: function (elemento) {
+            if (elemento && elemento.tagName) {
+                elemento.setAttribute("data-eprobe-icon-replaced", "true");
+                elemento.style.setProperty(
+                    "display",
+                    "inline-block",
+                    "important"
+                );
+                elemento.style.setProperty("opacity", "1", "important");
+                elemento.style.setProperty(
+                    "visibility",
+                    "visible",
+                    "important"
+                );
+            }
+        },
+
+        // Ocultar ícone original
+        ocultarIcone: function (elemento) {
+            if (
+                elemento &&
+                elemento.classList &&
+                elemento.classList.contains("material-icons")
+            ) {
+                elemento.style.setProperty("display", "none", "important");
+                elemento.style.setProperty("opacity", "0", "important");
+                elemento.style.setProperty("visibility", "hidden", "important");
+            }
+        },
+
+        // ⚡ NOVO: Revelar elemento personalizado (navbar, botões, etc.)
+        revelarElemento: function (elemento) {
+            if (elemento && elemento.tagName) {
+                elemento.setAttribute("data-eprobe-processed", "true");
+                elemento.style.setProperty("opacity", "1", "important");
+                elemento.style.setProperty(
+                    "visibility",
+                    "visible",
+                    "important"
+                );
+                elemento.style.removeProperty("transition");
+            }
+        },
+
+        // ⚡ NOVO: Ocultar elemento temporariamente
+        ocultarElemento: function (elemento) {
+            if (elemento && elemento.tagName) {
+                elemento.style.setProperty("opacity", "0.5", "important");
+                elemento.style.setProperty("transition", "none", "important");
+            }
+        },
+
+        // ⚡ NOVO: Aplicar anti-flash a navbar
+        stabilizarNavbar: function () {
+            const navbars = document.querySelectorAll(
+                ".navbar, #navbar, .navbar-nav, .navbar-collapse"
+            );
+            navbars.forEach((navbar) => {
+                navbar.style.setProperty("transition", "none", "important");
+                navbar.style.setProperty("will-change", "auto", "important");
+                navbar.style.setProperty(
+                    "backface-visibility",
+                    "hidden",
+                    "important"
+                );
+                navbar.style.setProperty(
+                    "transform",
+                    "translateZ(0)",
+                    "important"
+                );
+            });
+        },
+
+        // ⚡ NOVO: Aplicar anti-flash a botões
+        stabilizarBotoes: function () {
+            const botoes = document.querySelectorAll(
+                '.btn, button, .botaoLerMais, input[type="button"], input[type="submit"]'
+            );
+            botoes.forEach((botao) => {
+                botao.style.setProperty("transition", "none", "important");
+                botao.style.setProperty("will-change", "auto", "important");
+            });
+        },
+
+        // ⚡ NOVO: Detectar página de processo e marcar body
+        detectarPaginaProcesso: function () {
+            const url = window.location.href;
+            const isPaginaProcesso =
+                url.includes("consultar_processo") ||
+                url.includes("processo_selecionar") ||
+                url.includes("acessar_documento") ||
+                document.querySelector("#legMinutas") ||
+                document.querySelector(".infraFieldset") ||
+                document.querySelector('a[aria-label*="Lembrete"]');
+
+            if (isPaginaProcesso) {
+                document.body.setAttribute("data-eprobe-processo-page", "true");
+                console.log(
+                    "🎯 PÁGINA DE PROCESSO DETECTADA: Anti-flash aplicado"
+                );
+                return true;
+            } else {
+                document.body.removeAttribute("data-eprobe-processo-page");
+                console.log(
+                    "📄 Página não é de processo: Ícones normais preservados"
+                );
+                return false;
+            }
+        },
+
+        // ⚡ NOVO: Anti-flash total
+        aplicarAntiFlashTotal: function () {
+            // Detectar página de processo primeiro
+            const isPaginaProcesso = this.detectarPaginaProcesso();
+
+            if (isPaginaProcesso) {
+                this.aplicarCSS();
+                this.stabilizarNavbar();
+                this.stabilizarBotoes();
+
+                // Forçar estabilidade visual geral apenas em páginas de processo
+                document.documentElement.style.setProperty(
+                    "backface-visibility",
+                    "hidden",
+                    "important"
+                );
+
+                console.log(
+                    "🚀 ANTI-FLASH TOTAL: Aplicado apenas em página de processo"
+                );
+            } else {
+                console.log(
+                    "⏸️ ANTI-FLASH: Não aplicado - página não é de processo"
+                );
+            }
+        },
+    };
+
+    // Aplicar anti-flash total imediatamente
+    window.eprobeAntiFlash.aplicarAntiFlashTotal();
+})();
+
+// ===== INTERCEPTAÇÃO PRECOCE DE FLASH - APLICAR ANTES DO DOM =====
+(function antiFlashPrecoce() {
+    // Executar no momento mais precoce possível
+    const aplicarAntiFlashImediato = () => {
+        // Verificar se é página de processo antes de aplicar
+        const url = window.location.href;
+        const isPaginaProcesso =
+            url.includes("consultar_processo") ||
+            url.includes("processo_selecionar") ||
+            url.includes("acessar_documento");
+
+        // Só aplicar anti-flash se for página de processo
+        if (!isPaginaProcesso) {
+            console.log(
+                "📄 Página não é de processo: Anti-flash precoce não aplicado"
+            );
+            return;
+        }
+
+        console.log(
+            "🎯 Página de processo detectada: Aplicando anti-flash precoce"
+        );
+
+        // 1. Ocultar elementos que podem causar flash APENAS em páginas de processo
+        const style = document.createElement("style");
+        style.id = "eprobe-precoce-anti-flash";
+        style.textContent = `
+            /* ANTI-FLASH PRECOCE - REMOVER regras problemáticas */
+            
+            .navbar, #navbar, .navbar-nav { 
+                transition: none !important; 
+                backface-visibility: hidden !important; 
+            }
+            
+            .btn, button, .botaoLerMais { 
+                transition: none !important; 
+                will-change: auto !important; 
+            }
+            
+            * { 
+                backface-visibility: hidden !important; 
+            }
+        `;
+
+        // Inserir no head como primeiro elemento
+        if (document.head) {
+            document.head.insertBefore(style, document.head.firstChild);
+        } else {
+            document.documentElement.appendChild(style);
+        }
+    };
+
+    // Aplicar imediatamente se DOM já existir
+    if (document.documentElement) {
+        aplicarAntiFlashImediato();
+    }
+
+    // Também aplicar quando DOM for criado
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", aplicarAntiFlashImediato);
+    }
+})();
+
 // ===== ULTRA ANTI-FLASH - EXECUÇÃO IMEDIATA ANTES DE QUALQUER RENDERIZAÇÃO =====
 (function ultraAntiFlash() {
     // Executar IMEDIATAMENTE - antes mesmo do DOM começar
@@ -1148,6 +1757,72 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 visibility: visible !important;
                 opacity: 1 !important;
             }
+            
+            /* ===== SISTEMA ANTI-FLASH ESPECÍFICO PARA PÁGINAS DE PROCESSO ===== */
+            
+            /* NOVA ABORDAGEM: APENAS ocultar ícones em div.divLembrete */
+            .divLembrete .material-icons:not([data-eprobe-icon-replaced="true"]),
+            .lista-lembretes .lembrete .material-icons:not([data-eprobe-icon-replaced="true"]) {
+                display: none !important;
+            }
+            
+            /* GARANTIR: Todos os outros Material Icons permanecem visíveis */
+            .material-icons {
+                display: inline-block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+            
+            /* ===== ANTI-FLASH TOTAL PARA TODOS OS ELEMENTOS ===== */
+            
+            /* NAVBAR: Evitar flash da barra de navegação */
+            .navbar,
+            #navbar,
+            .navbar-nav,
+            .navbar-collapse,
+            .navbar-brand {
+                transition: none !important;
+                will-change: auto !important;
+                backface-visibility: hidden !important;
+                transform: translateZ(0) !important;
+            }
+            
+            /* BOTÕES: Evitar flash de botões que serão customizados */
+            .botaoLerMais,
+            .btn,
+            button,
+            input[type="button"],
+            input[type="submit"] {
+                transition: none !important;
+                will-change: auto !important;
+            }
+            
+            /* BOTÕES ESPECÍFICOS: Ocultar botões que serão substituídos */
+            .botaoLerMais:not([data-eprobe-processed]) {
+                opacity: 0.8 !important;
+                transition: none !important;
+            }
+            
+            /* ELEMENTOS EPROBE: Revelar apenas elementos processados */
+            [data-eprobe-processed],
+            [data-eprobe-personalized],
+            .eprobe-custom-element {
+                opacity: 1 !important;
+                visibility: visible !important;
+                transition: opacity 0.2s ease !important;
+            }
+            
+            /* GERAL: Forçar estabilidade visual */
+            * {
+                backface-visibility: hidden !important;
+            }
+            
+            /* ESPECÍFICO: Elementos do eProc que causam flash */
+            .infraFieldset,
+            .infraLegendObrigatorio,
+            #divInfraAreaGlobal {
+                transition: none !important;
+            }
         `;
 
         // Inserir no head IMEDIATAMENTE
@@ -1448,6 +2123,27 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');
+        
+        /* 🎨 ALINHAMENTO PADRONIZADO DE ÍCONES SVG - eProbe */
+        span[data-eprobe-icon-container] {
+            display: inline-flex !important;
+            align-items: center !important;
+            vertical-align: middle !important;
+            margin-right: 4px !important;
+        }
+        
+        span[data-eprobe-icon-container] svg {
+            flex-shrink: 0 !important;
+            vertical-align: middle !important;
+        }
+        
+        /* Alinhamento específico para ícones de ação */
+        .iconeAcao,
+        span:has(> svg.iconeAcao) {
+            display: inline-flex !important;
+            align-items: center !important;
+            vertical-align: middle !important;
+        }
         
         /* Cards de sessão unificados */
         .session-card {
@@ -5361,6 +6057,51 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             pointer-events: auto !important;
         }
 
+        /* 📏 DIMENSIONAMENTO ESPECÍFICO: Ícones em divListaRecursosMinuta devem ter 17.59x17.59 */
+        #divListaRecursosMinuta svg[data-eprobe-icon-replaced="true"],
+        #divListaRecursosMinuta [data-eprobe-recursos-minuta-sized="true"] {
+            width: 17.59px !important;
+            height: 17.59px !important;
+            min-width: 17.59px !important;
+            min-height: 17.59px !important;
+            max-width: 17.59px !important;
+            max-height: 17.59px !important;
+            vertical-align: middle !important;
+            display: inline-block !important;
+        }
+        
+        /* ALINHAMENTO CRÍTICO: Garantir que containers estejam perfeitamente alinhados */
+        #divListaRecursosMinuta span:has(svg[data-eprobe-icon-replaced="true"]) {
+            width: 17.59px !important;
+            height: 17.59px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            vertical-align: middle !important;
+            line-height: 1 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* CORREÇÃO DE ALINHAMENTO: Ícones originais e personalizados na mesma linha */
+        #divListaRecursosMinuta img,
+        #divListaRecursosMinuta svg[data-eprobe-icon-replaced="true"] {
+            vertical-align: middle !important;
+            display: inline-block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* GARANTIR consistência com ícones nativos do eProc */
+        #divListaRecursosMinuta a,
+        #divListaRecursosMinuta a img,
+        #divListaRecursosMinuta a svg {
+            vertical-align: middle !important;
+            line-height: 1 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+        }
+
         /* Estilos para SVGs inline - permitir customização */
         .eprobe-svg-icon {
             pointer-events: none !important;
@@ -5454,10 +6195,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
         }
         
-        /* 4. Garantir que Material Icons sejam substituídos instantaneamente */
-        .eprobe-lembrete-processado .material-icons:not([data-eprobe-icon-replaced]) {
-            display: none !important;
-        }
+        /* 4. Material Icons são tratados pela regra global posterior */
         
         /* Botões de abertura otimizados */
         .eprobe-open-button:hover {
@@ -17023,6 +17761,32 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
 
                 log("🎨 ÍCONES: Inicialização concluída:", resultados);
+
+                // 📏 CORREÇÃO FINAL: Aplicar correção de alinhamento em divListaRecursosMinuta
+                try {
+                    if (
+                        typeof corrigirAlinhamentoRecursosMinuta === "function"
+                    ) {
+                        setTimeout(() => {
+                            const correcaoAlinhamento =
+                                corrigirAlinhamentoRecursosMinuta();
+                            if (
+                                correcaoAlinhamento.encontrado &&
+                                correcaoAlinhamento.iconesCorrigidos > 0
+                            ) {
+                                log(
+                                    `📏 ÍCONES: Alinhamento corrigido em divListaRecursosMinuta - ${correcaoAlinhamento.iconesCorrigidos} ícones processados`
+                                );
+                            }
+                        }, 100); // Pequeno delay para garantir que os ícones foram renderizados
+                    }
+                } catch (error) {
+                    console.warn(
+                        "⚠️ ÍCONES: Erro na correção de alinhamento:",
+                        error
+                    );
+                }
+
                 return resultados;
             }
 
@@ -19531,6 +20295,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     "⚡ INICIALIZAÇÃO: Aplicando estilos e elementos imediatamente..."
                 );
 
+                // 0. ⚡ APLICAR ANTI-FLASH CRÍTICO PRIMEIRO
+                aplicarAntiFlashIcones();
+
                 // 1. CSS Instantâneo já aplicado no início do arquivo - sem ação necessária
                 try {
                     const tema =
@@ -21433,6 +22200,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 "data-eprobe-icon-replaced",
                                 "true"
                             );
+
+                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                            aplicarDimensionamentoRecursosMinuta(svg);
+
                             icone.parentNode.replaceChild(svg, icone);
                         }
                     });
@@ -21478,6 +22249,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 "data-eprobe-icon-replaced",
                                 "true"
                             );
+
+                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                            aplicarDimensionamentoRecursosMinuta(svg);
+
                             icone.parentNode.replaceChild(svg, icone);
                         }
                     });
@@ -24199,6 +24974,24 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 },
             };
 
+            // 🎨 FUNÇÃO UTILITÁRIA: Aplicar estilos padronizados aos containers de ícones
+            function applyStandardIconStyles(container) {
+                container.style.display = "inline-flex";
+                container.style.alignItems = "center";
+                container.style.marginRight = "4px";
+                container.style.verticalAlign = "middle";
+
+                // Marcar como container de ícone eProbe para CSS
+                container.setAttribute("data-eprobe-icon-container", "true");
+
+                // Aplicar estilos aos SVGs dentro do container
+                const svg = container.querySelector("svg");
+                if (svg) {
+                    svg.style.flexShrink = "0";
+                    svg.style.verticalAlign = "middle";
+                }
+            }
+
             // Função para verificar se um elemento é seguro para implementar alternância
             function isElementSafeForToggle(imgElement) {
                 try {
@@ -24495,6 +25288,981 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 );
             }
 
+            // 📏 FUNÇÃO AUXILIAR: Aplicar dimensionamento específico para ícones em divListaRecursosMinuta
+            function aplicarDimensionamentoRecursosMinuta(svg) {
+                try {
+                    // Verificar se o SVG está dentro de divListaRecursosMinuta
+                    const divListaRecursos = svg.closest(
+                        "#divListaRecursosMinuta"
+                    );
+
+                    if (divListaRecursos) {
+                        // Aplicar tamanho específico de 17.59x17.59
+                        svg.setAttribute("width", "17.59px");
+                        svg.setAttribute("height", "17.59px");
+
+                        // Aplicar via style também para garantir
+                        svg.style.width = "17.59px";
+                        svg.style.height = "17.59px";
+
+                        // CORREÇÃO DE ALINHAMENTO: Aplicar propriedades de alinhamento vertical
+                        svg.style.verticalAlign = "middle";
+                        svg.style.display = "inline-block";
+                        svg.style.margin = "0";
+                        svg.style.padding = "0";
+                        svg.style.lineHeight = "1";
+
+                        // Verificar e corrigir o container pai também
+                        const container = svg.parentElement;
+                        if (container && container.tagName === "SPAN") {
+                            container.style.display = "inline-flex";
+                            container.style.alignItems = "center";
+                            container.style.justifyContent = "center";
+                            container.style.verticalAlign = "middle";
+                            container.style.lineHeight = "1";
+                            container.style.width = "17.59px";
+                            container.style.height = "17.59px";
+                            container.style.margin = "0";
+                            container.style.padding = "0";
+                        }
+
+                        // Marcar como redimensionado
+                        svg.setAttribute(
+                            "data-eprobe-recursos-minuta-sized",
+                            "true"
+                        );
+
+                        log(
+                            `📏 RECURSOS: Ícone redimensionado e alinhado para 17.59x17.59 em divListaRecursosMinuta`
+                        );
+                        return true;
+                    }
+                } catch (error) {
+                    console.warn(
+                        "⚠️ RECURSOS: Erro ao aplicar dimensionamento:",
+                        error
+                    );
+                }
+                return false;
+            }
+
+            // 🔧 FUNÇÃO ESPECÍFICA: Corrigir alinhamento de todos os ícones em divListaRecursosMinuta
+            function corrigirAlinhamentoRecursosMinuta() {
+                try {
+                    const divListaRecursos = document.getElementById(
+                        "divListaRecursosMinuta"
+                    );
+
+                    if (!divListaRecursos) {
+                        log(
+                            "⚠️ RECURSOS: divListaRecursosMinuta não encontrado"
+                        );
+                        return {
+                            encontrado: false,
+                            icones: 0,
+                            iconesCorrigidos: 0,
+                        };
+                    }
+
+                    log("🔧 RECURSOS: Iniciando correção de alinhamento...");
+
+                    // Corrigir todos os ícones SVG personalizados
+                    const iconesSvg = divListaRecursos.querySelectorAll(
+                        'svg[data-eprobe-icon-replaced="true"]'
+                    );
+                    let iconesCorrigidos = 0;
+
+                    iconesSvg.forEach((svg, index) => {
+                        if (aplicarDimensionamentoRecursosMinuta(svg)) {
+                            iconesCorrigidos++;
+                        }
+                    });
+
+                    // Corrigir todos os links e containers também
+                    const links = divListaRecursos.querySelectorAll("a");
+                    links.forEach((link) => {
+                        link.style.display = "inline-flex";
+                        link.style.alignItems = "center";
+                        link.style.verticalAlign = "middle";
+                        link.style.lineHeight = "1";
+                    });
+
+                    // Aplicar CSS global para normalizar todos os elementos da div
+                    const style = document.createElement("style");
+                    style.id = "eprobe-recursos-minuta-fix";
+
+                    // Remover estilo anterior se existir
+                    const oldStyle = document.getElementById(
+                        "eprobe-recursos-minuta-fix"
+                    );
+                    if (oldStyle) oldStyle.remove();
+
+                    style.textContent = `
+                        /* CORREÇÃO CRÍTICA DE ALINHAMENTO PARA divListaRecursosMinuta */
+                        #divListaRecursosMinuta {
+                            line-height: 1 !important;
+                        }
+                        
+                        #divListaRecursosMinuta * {
+                            vertical-align: middle !important;
+                            line-height: 1 !important;
+                        }
+                        
+                        #divListaRecursosMinuta a {
+                            display: inline-flex !important;
+                            align-items: center !important;
+                            vertical-align: middle !important;
+                            line-height: 1 !important;
+                        }
+                        
+                        #divListaRecursosMinuta img,
+                        #divListaRecursosMinuta svg {
+                            vertical-align: middle !important;
+                            display: inline-block !important;
+                            line-height: 1 !important;
+                        }
+                    `;
+
+                    document.head.appendChild(style);
+
+                    const resultado = {
+                        encontrado: true,
+                        icones: iconesSvg.length,
+                        iconesCorrigidos,
+                        linksCorrigidos: links.length,
+                        cssAplicado: true,
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                    };
+
+                    log(
+                        "✅ RECURSOS: Correção de alinhamento concluída:",
+                        resultado
+                    );
+
+                    return resultado;
+                } catch (error) {
+                    console.error(
+                        "❌ RECURSOS: Erro na correção de alinhamento:",
+                        error
+                    );
+                    return {
+                        encontrado: false,
+                        erro: error.message,
+                    };
+                }
+            }
+
+            // 👁️ OBSERVADOR ESPECÍFICO: Monitorar mudanças em divListaRecursosMinuta
+            function setupObservadorRecursosMinuta() {
+                try {
+                    const divListaRecursos = document.getElementById(
+                        "divListaRecursosMinuta"
+                    );
+
+                    if (!divListaRecursos) {
+                        log(
+                            "📏 RECURSOS: divListaRecursosMinuta não encontrado - observer não configurado"
+                        );
+                        return false;
+                    }
+
+                    log(
+                        "👁️ RECURSOS: Configurando observador para divListaRecursosMinuta"
+                    );
+
+                    const observer = new MutationObserver((mutations) => {
+                        let needsProcessing = false;
+
+                        mutations.forEach((mutation) => {
+                            // Verificar se novos ícones SVG foram adicionados
+                            if (mutation.type === "childList") {
+                                mutation.addedNodes.forEach((node) => {
+                                    if (node.nodeType === Node.ELEMENT_NODE) {
+                                        // Verificar se é um SVG ou contém SVGs
+                                        const svgs =
+                                            node.tagName === "SVG"
+                                                ? [node]
+                                                : (node.querySelectorAll &&
+                                                      node.querySelectorAll(
+                                                          'svg[data-eprobe-icon-replaced="true"]'
+                                                      )) ||
+                                                  [];
+
+                                        if (svgs.length > 0) {
+                                            needsProcessing = true;
+                                        }
+                                    }
+                                });
+                            }
+
+                            // Verificar se atributos de SVGs existentes mudaram
+                            if (
+                                mutation.type === "attributes" &&
+                                mutation.target.tagName === "SVG" &&
+                                mutation.target.hasAttribute(
+                                    "data-eprobe-icon-replaced"
+                                ) &&
+                                (mutation.attributeName === "width" ||
+                                    mutation.attributeName === "height" ||
+                                    mutation.attributeName === "style")
+                            ) {
+                                needsProcessing = true;
+                            }
+                        });
+
+                        if (needsProcessing) {
+                            // Debounce para evitar múltiplas execuções
+                            clearTimeout(observer.debounceTimer);
+                            observer.debounceTimer = setTimeout(() => {
+                                log(
+                                    "🔧 RECURSOS: Aplicando dimensionamento após mudança no DOM"
+                                );
+
+                                // Processar todos os ícones SVG na div
+                                const iconesSvg =
+                                    divListaRecursos.querySelectorAll(
+                                        'svg[data-eprobe-icon-replaced="true"]'
+                                    );
+                                let processados = 0;
+
+                                iconesSvg.forEach((svg) => {
+                                    if (
+                                        aplicarDimensionamentoRecursosMinuta(
+                                            svg
+                                        )
+                                    ) {
+                                        processados++;
+                                    }
+                                });
+
+                                if (processados > 0) {
+                                    log(
+                                        `📏 RECURSOS: ${processados} ícones redimensionados automaticamente`
+                                    );
+                                }
+                            }, 100);
+                        }
+                    });
+
+                    // Observar mudanças na div específica
+                    observer.observe(divListaRecursos, {
+                        childList: true,
+                        subtree: true,
+                        attributes: true,
+                        attributeFilter: [
+                            "width",
+                            "height",
+                            "style",
+                            "data-eprobe-icon-replaced",
+                        ],
+                    });
+
+                    log(
+                        "✅ RECURSOS: Observador configurado com sucesso para divListaRecursosMinuta"
+                    );
+                    return observer;
+                } catch (error) {
+                    console.error(
+                        "❌ RECURSOS: Erro ao configurar observador:",
+                        error
+                    );
+                    return false;
+                }
+            }
+
+            // 🔄 OBSERVADOR ESPECÍFICO: Monitorar atualizações na seção legMinutas
+            function setupObservadorLegendMinutas() {
+                try {
+                    const legMinutas = document.getElementById("legMinutas");
+
+                    if (!legMinutas) {
+                        log(
+                            "📋 MINUTAS: legMinutas não encontrado - observer não configurado"
+                        );
+                        return false;
+                    }
+
+                    log(
+                        "👁️ MINUTAS: Configurando observador para legMinutas (Histórico)"
+                    );
+
+                    const observer = new MutationObserver((mutations) => {
+                        let needsReprocessing = false;
+
+                        mutations.forEach((mutation) => {
+                            // Detectar quando conteúdo é atualizado (botão "Atualizar Minutas")
+                            if (mutation.type === "childList") {
+                                // Verificar se novos elementos foram adicionados ou se conteúdo foi modificado
+                                if (
+                                    mutation.addedNodes.length > 0 ||
+                                    mutation.removedNodes.length > 0
+                                ) {
+                                    needsReprocessing = true;
+                                    log(
+                                        "🔄 MINUTAS: Conteúdo da seção legMinutas foi atualizado - reprocessando ícones..."
+                                    );
+                                }
+                            }
+
+                            // Detectar mudanças no innerHTML (via AJAX)
+                            if (mutation.type === "characterData") {
+                                needsReprocessing = true;
+                                log(
+                                    "🔄 MINUTAS: Texto da seção legMinutas foi modificado - reprocessando..."
+                                );
+                            }
+                        });
+
+                        if (needsReprocessing) {
+                            // Debounce para evitar múltiplas execuções simultâneas
+                            clearTimeout(observer.debounceTimer);
+                            observer.debounceTimer = setTimeout(() => {
+                                log(
+                                    "🎨 MINUTAS: Reaplicando personalizações de ícones após atualização..."
+                                );
+
+                                try {
+                                    let totalReaplicados = 0;
+
+                                    // 1. Reaplicar ícones de ferramentas
+                                    if (
+                                        typeof substituirIconesFerramentas ===
+                                        "function"
+                                    ) {
+                                        const antes =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        substituirIconesFerramentas();
+                                        const depois =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        totalReaplicados += depois - antes;
+                                    }
+
+                                    // 2. Reaplicar ícones de lembretes
+                                    if (
+                                        typeof substituirIconesLembretes ===
+                                        "function"
+                                    ) {
+                                        const antes =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        substituirIconesLembretes();
+                                        const depois =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        totalReaplicados += depois - antes;
+                                    }
+
+                                    // 3. Reaplicar ícones globais
+                                    if (
+                                        typeof substituirIconesGlobalmente ===
+                                        "function"
+                                    ) {
+                                        const antes =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        substituirIconesGlobalmente();
+                                        const depois =
+                                            legMinutas.querySelectorAll(
+                                                '[data-eprobe-icon-replaced="true"]'
+                                            ).length;
+                                        totalReaplicados += depois - antes;
+                                    }
+
+                                    // 4. Corrigir alinhamento se necessário
+                                    if (
+                                        typeof corrigirAlinhamentoRecursosMinuta ===
+                                        "function"
+                                    ) {
+                                        const divListaRecursos =
+                                            legMinutas.querySelector(
+                                                "#divListaRecursosMinuta"
+                                            );
+                                        if (divListaRecursos) {
+                                            corrigirAlinhamentoRecursosMinuta();
+                                        }
+                                    }
+
+                                    if (totalReaplicados > 0) {
+                                        log(
+                                            `✅ MINUTAS: ${totalReaplicados} ícones reaplicados com sucesso após atualização`
+                                        );
+                                    } else {
+                                        log(
+                                            "⚠️ MINUTAS: Nenhum ícone foi reaplicado - possível problema na detecção"
+                                        );
+                                    }
+                                } catch (error) {
+                                    console.error(
+                                        "❌ MINUTAS: Erro na reaplicação de ícones:",
+                                        error
+                                    );
+                                }
+                            }, 500); // 500ms de delay para garantir que a atualização AJAX foi concluída
+                        }
+                    });
+
+                    // Observar mudanças na seção legMinutas completa
+                    observer.observe(legMinutas, {
+                        childList: true,
+                        subtree: true,
+                        characterData: true,
+                        attributes: false, // Não precisamos de atributos, só conteúdo
+                    });
+
+                    log(
+                        "✅ MINUTAS: Observador configurado com sucesso para legMinutas"
+                    );
+                    return observer;
+                } catch (error) {
+                    console.error(
+                        "❌ MINUTAS: Erro ao configurar observador:",
+                        error
+                    );
+                    return false;
+                }
+            }
+
+            // � ANTI-FLASH CRÍTICO: Ocultar ícones originais IMEDIATAMENTE e mostrar apenas personalizados
+            function aplicarAntiFlashIcones() {
+                try {
+                    // Aplicar anti-flash total (ícones + navbar + botões)
+                    if (window.eprobeAntiFlash) {
+                        window.eprobeAntiFlash.aplicarAntiFlashTotal();
+                        log(
+                            "⚡ ANTI-FLASH TOTAL: Sistema ativo para todos os elementos"
+                        );
+                        return true;
+                    } else {
+                        log("⚠️ ANTI-FLASH: Sistema não inicializado");
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("❌ ANTI-FLASH: Erro:", error);
+                    return false;
+                }
+            }
+
+            // �🔄 REAPLICAR ÍCONES: Força a reaplicação de ícones após atualização AJAX
+            function reaplicarIconesAposAtualizacao(containerElement) {
+                log(
+                    "🔄 REAPLICAÇÃO: Iniciando reaplicação forçada de ícones após atualização..."
+                );
+
+                if (!containerElement) {
+                    console.warn("⚠️ REAPLICAÇÃO: Container não fornecido");
+                    return 0;
+                }
+
+                let totalReaplicados = 0;
+
+                try {
+                    // 1. Reaplicar ícones de lembretes (forçando bypass da restrição de URL)
+                    if (typeof substituirIconesLembretes === "function") {
+                        // Guardar verificação original e criar bypass temporário
+                        const originalIsCapaProcessoPage =
+                            window.isCapaProcessoPage;
+                        window.isCapaProcessoPage = () => true; // Bypass temporário
+
+                        try {
+                            const iconesLembretes = substituirIconesLembretes();
+                            totalReaplicados += iconesLembretes;
+                            log(
+                                `🎨 REAPLICAÇÃO: ${iconesLembretes} ícones de lembretes reaplicados`
+                            );
+                        } finally {
+                            // Restaurar verificação original
+                            window.isCapaProcessoPage =
+                                originalIsCapaProcessoPage;
+                        }
+                    }
+
+                    // 2. Reaplicar ícones de ferramentas globalmente
+                    if (typeof substituirIconesGlobalmente === "function") {
+                        const iconesGlobais = substituirIconesGlobalmente();
+                        totalReaplicados += iconesGlobais;
+                        log(
+                            `🔧 REAPLICAÇÃO: ${iconesGlobais} ícones globais reaplicados`
+                        );
+                    }
+
+                    // 3. Reaplicar ícones específicos do fieldset de ações
+                    if (typeof substituirIconesFieldsetAcoes === "function") {
+                        const originalIsCapaProcessoPage =
+                            window.isCapaProcessoPage;
+                        window.isCapaProcessoPage = () => true; // Bypass temporário
+
+                        try {
+                            const iconesFieldset =
+                                substituirIconesFieldsetAcoes();
+                            if (iconesFieldset) {
+                                totalReaplicados += 1; // função retorna boolean
+                                log(
+                                    "🏗️ REAPLICAÇÃO: Ícones do fieldset de ações reaplicados"
+                                );
+                            }
+                        } finally {
+                            window.isCapaProcessoPage =
+                                originalIsCapaProcessoPage;
+                        }
+                    }
+
+                    // 4. Verificar especificamente por ícones que precisam ser substituídos no container
+                    const iconesOriginais = containerElement.querySelectorAll(
+                        'span.material-icons:not([data-eprobe-icon-replaced="true"])'
+                    );
+                    iconesOriginais.forEach((icone) => {
+                        // Tentar detectar e substituir ícones que voltaram ao estado original
+                        const textoIcone = icone.textContent.trim();
+                        const parentElement = icone.parentElement;
+
+                        // Verificar se é um ícone de lembrete que precisa ser resubstituído
+                        if (
+                            textoIcone === "edit" &&
+                            parentElement &&
+                            (parentElement
+                                .getAttribute("aria-label")
+                                ?.includes("Alterar Lembrete") ||
+                                parentElement.href?.includes(
+                                    "processo_lembrete_destino_alterar"
+                                ))
+                        ) {
+                            log(
+                                "🔍 REAPLICAÇÃO: Ícone 'edit' de lembrete detectado para resubstituição"
+                            );
+                        }
+
+                        if (
+                            textoIcone === "delete" &&
+                            parentElement &&
+                            (parentElement
+                                .getAttribute("aria-label")
+                                ?.includes("Desativar Lembrete") ||
+                                parentElement.onclick
+                                    ?.toString()
+                                    .includes("desativarLembrete"))
+                        ) {
+                            log(
+                                "🔍 REAPLICAÇÃO: Ícone 'delete' de lembrete detectado para resubstituição"
+                            );
+                        }
+                    });
+
+                    log(
+                        `✅ REAPLICAÇÃO: Total de ${totalReaplicados} ícones reaplicados com sucesso`
+                    );
+                    return totalReaplicados;
+                } catch (error) {
+                    console.error(
+                        "❌ REAPLICAÇÃO: Erro durante reaplicação de ícones:",
+                        error
+                    );
+                    return 0;
+                }
+            }
+
+            // 🔄 INTERCEPTOR MÚLTIPLO: Interceptar TODOS os botões "Atualizar Minutas" (individuais por minuta)
+            function setupInterceptorTodosBotoesAtualizar() {
+                try {
+                    // Buscar todos os botões de atualizar minutas (principal + individuais)
+                    const botoesAtualizar = document.querySelectorAll(
+                        'a[aria-label="Atualizar Minutas"]'
+                    );
+
+                    if (botoesAtualizar.length === 0) {
+                        log(
+                            "🔄 MINUTAS MÚLTIPLAS: Nenhum botão de atualizar minutas encontrado"
+                        );
+                        return 0;
+                    }
+
+                    let interceptadosCount = 0;
+
+                    botoesAtualizar.forEach((botao, index) => {
+                        // Verificar se já foi interceptado
+                        if (botao.hasAttribute("data-eprobe-intercepted")) {
+                            log(
+                                `🔄 MINUTAS MÚLTIPLAS: Botão ${index} já interceptado`
+                            );
+                            return;
+                        }
+
+                        log(
+                            `🎯 MINUTAS MÚLTIPLAS: Configurando interceptor para botão ${index}`
+                        );
+
+                        // Guardar função/atributo onclick original
+                        const onclickOriginal = botao.onclick;
+                        const onclickAttrOriginal =
+                            botao.getAttribute("onclick");
+
+                        // Criar função interceptora
+                        botao.onclick = function (event) {
+                            log(
+                                `🔄 MINUTAS MÚLTIPLAS: Botão ${index} clicado - preparando reaplicação...`
+                            );
+
+                            try {
+                                // Executar função original primeiro
+                                if (onclickOriginal) {
+                                    onclickOriginal.call(this, event);
+                                } else if (onclickAttrOriginal) {
+                                    // CSP-safe: executar atualizaMinutas diretamente
+                                    log(
+                                        "🔄 MINUTAS MÚLTIPLAS: Executando função original (CSP-safe)..."
+                                    );
+
+                                    try {
+                                        if (
+                                            typeof window.atualizaMinutas ===
+                                            "function"
+                                        ) {
+                                            // Extrair parâmetros do onclick original
+                                            const params =
+                                                onclickAttrOriginal.match(
+                                                    /atualizaMinutas\(([^)]+)\)/
+                                                );
+                                            if (params && params[1]) {
+                                                const cleanParams = params[1]
+                                                    .split(",")
+                                                    .map((p) =>
+                                                        p
+                                                            .trim()
+                                                            .replace(
+                                                                /['"]/g,
+                                                                ""
+                                                            )
+                                                    );
+                                                log(
+                                                    `🎯 MINUTAS MÚLTIPLAS: Executando atualizaMinutas com parâmetros:`,
+                                                    cleanParams
+                                                );
+                                                window.atualizaMinutas.apply(
+                                                    this,
+                                                    cleanParams
+                                                );
+                                            } else {
+                                                window.atualizaMinutas();
+                                            }
+                                        } else {
+                                            console.warn(
+                                                "⚠️ MINUTAS MÚLTIPLAS: Função atualizaMinutas não encontrada"
+                                            );
+                                        }
+                                    } catch (originalError) {
+                                        console.warn(
+                                            "⚠️ MINUTAS MÚLTIPLAS: Erro ao executar função original:",
+                                            originalError
+                                        );
+                                    }
+                                }
+
+                                // Aguardar AJAX completar e reaplicar ícones
+                                setTimeout(() => {
+                                    log(
+                                        `🎨 MINUTAS MÚLTIPLAS: Reaplicando ícones após botão ${index}...`
+                                    );
+
+                                    // ⚡ APLICAR ANTI-FLASH ANTES da reaplicação
+                                    aplicarAntiFlashIcones();
+
+                                    const legMinutas =
+                                        document.getElementById("legMinutas");
+                                    if (!legMinutas) {
+                                        console.warn(
+                                            "⚠️ MINUTAS MÚLTIPLAS: legMinutas não encontrado"
+                                        );
+                                        return;
+                                    }
+
+                                    // Reaplicar ícones
+                                    const iconesReaplicados =
+                                        reaplicarIconesAposAtualizacao(
+                                            legMinutas
+                                        );
+
+                                    if (iconesReaplicados > 0) {
+                                        log(
+                                            `✅ MINUTAS MÚLTIPLAS: ${iconesReaplicados} ícones reaplicados após botão ${index}`
+                                        );
+                                    } else {
+                                        log(
+                                            `⚠️ MINUTAS MÚLTIPLAS: Nenhum ícone reaplicado após botão ${index}`
+                                        );
+                                    }
+
+                                    // Corrigir alinhamento se necessário
+                                    const divListaRecursos =
+                                        legMinutas.querySelector(
+                                            "#divListaRecursosMinuta"
+                                        );
+                                    if (
+                                        divListaRecursos &&
+                                        typeof corrigirAlinhamentoRecursosMinuta ===
+                                            "function"
+                                    ) {
+                                        const resultado =
+                                            corrigirAlinhamentoRecursosMinuta();
+                                        if (
+                                            resultado.encontrado &&
+                                            resultado.iconesCorrigidos > 0
+                                        ) {
+                                            log(
+                                                `📏 MINUTAS MÚLTIPLAS: Alinhamento corrigido - ${resultado.iconesCorrigidos} ícones`
+                                            );
+                                        }
+                                    }
+                                }, 1000); // 1 segundo para AJAX completar
+                            } catch (error) {
+                                console.error(
+                                    `❌ MINUTAS MÚLTIPLAS: Erro no interceptor ${index}:`,
+                                    error
+                                );
+                            }
+                        };
+
+                        // Marcar como interceptado
+                        botao.setAttribute("data-eprobe-intercepted", "true");
+                        botao.setAttribute(
+                            "data-eprobe-interceptor-index",
+                            index
+                        );
+                        botao.setAttribute(
+                            "title",
+                            (botao.title || "Atualizar") +
+                                " (eProbe: Ícones reaplicados automaticamente)"
+                        );
+
+                        interceptadosCount++;
+                        log(
+                            `✅ MINUTAS MÚLTIPLAS: Botão ${index} interceptado com sucesso`
+                        );
+                    });
+
+                    log(
+                        `🎯 MINUTAS MÚLTIPLAS: ${interceptadosCount} botões interceptados de ${botoesAtualizar.length} encontrados`
+                    );
+                    return interceptadosCount;
+                } catch (error) {
+                    console.error(
+                        "❌ MINUTAS MÚLTIPLAS: Erro ao configurar interceptors:",
+                        error
+                    );
+                    return 0;
+                }
+            }
+
+            // 🔄 INTERCEPTOR ESPECÍFICO: Interceptar clique no botão "Atualizar Minutas" PRINCIPAL
+            function setupInterceptorAtualizarMinutas() {
+                try {
+                    const botaoAtualizar =
+                        document.getElementById("atualizaMinutas");
+
+                    if (!botaoAtualizar) {
+                        log(
+                            "🔄 MINUTAS: Botão atualizaMinutas não encontrado - interceptor não configurado"
+                        );
+                        return false;
+                    }
+
+                    // Verificar se já foi interceptado para evitar duplicação
+                    if (
+                        botaoAtualizar.hasAttribute("data-eprobe-intercepted")
+                    ) {
+                        log(
+                            "🔄 MINUTAS: Botão atualizaMinutas já interceptado"
+                        );
+                        return true;
+                    }
+
+                    log(
+                        "🎯 MINUTAS: Configurando interceptor para botão atualizaMinutas"
+                    );
+
+                    // Guardar a função onclick original
+                    const onclickOriginal = botaoAtualizar.onclick;
+                    const onclickAttrOriginal =
+                        botaoAtualizar.getAttribute("onclick");
+
+                    // Criar nova função que inclui reaplicação de ícones
+                    botaoAtualizar.onclick = function (event) {
+                        log(
+                            '🔄 MINUTAS: Botão "Atualizar Minutas" clicado - preparando reaplicação de ícones...'
+                        );
+
+                        try {
+                            // Executar a função original primeiro
+                            if (onclickOriginal) {
+                                onclickOriginal.call(this, event);
+                            } else if (onclickAttrOriginal) {
+                                // ✅ CSP COMPLIANCE: Em vez de eval(), simular o clique no botão original
+                                log(
+                                    "🔄 MINUTAS: Simulando clique original (CSP-safe)..."
+                                );
+
+                                // Criar evento de clique sintético
+                                const syntheticEvent = new MouseEvent("click", {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    view: window,
+                                });
+
+                                // Temporariamente remover nosso interceptor
+                                const tempOnclick = this.onclick;
+                                this.onclick = null;
+
+                                // Tentar executar a função original do atributo onclick de forma segura
+                                try {
+                                    // Buscar pela função atualizaMinutas no escopo global
+                                    if (
+                                        typeof window.atualizaMinutas ===
+                                        "function"
+                                    ) {
+                                        // Extrair os parâmetros do onclick original
+                                        const params =
+                                            onclickAttrOriginal.match(
+                                                /atualizaMinutas\(([^)]+)\)/
+                                            );
+                                        if (params && params[1]) {
+                                            // Limpar as aspas dos parâmetros
+                                            const cleanParams = params[1]
+                                                .split(",")
+                                                .map((p) =>
+                                                    p
+                                                        .trim()
+                                                        .replace(/['"]/g, "")
+                                                );
+                                            log(
+                                                "🎯 MINUTAS: Executando atualizaMinutas com parâmetros:",
+                                                cleanParams
+                                            );
+                                            window.atualizaMinutas.apply(
+                                                this,
+                                                cleanParams
+                                            );
+                                        } else {
+                                            window.atualizaMinutas();
+                                        }
+                                    } else {
+                                        console.warn(
+                                            "⚠️ MINUTAS: Função atualizaMinutas não encontrada no escopo global"
+                                        );
+                                    }
+                                } catch (originalError) {
+                                    console.warn(
+                                        "⚠️ MINUTAS: Erro ao executar função original (continuando):",
+                                        originalError
+                                    );
+                                } finally {
+                                    // Restaurar nosso interceptor
+                                    this.onclick = tempOnclick;
+                                }
+                            }
+
+                            // Aguardar um pouco para a requisição AJAX completar, então reaplicar ícones
+                            setTimeout(() => {
+                                log(
+                                    "🎨 MINUTAS: Reaplicando ícones personalizados após atualização..."
+                                );
+
+                                // ⚡ APLICAR ANTI-FLASH ANTES da reaplicação
+                                aplicarAntiFlashIcones();
+
+                                const legMinutas =
+                                    document.getElementById("legMinutas");
+                                if (!legMinutas) {
+                                    console.warn(
+                                        "⚠️ MINUTAS: legMinutas não encontrado após atualização"
+                                    );
+                                    return;
+                                }
+
+                                let totalReaplicados = 0;
+
+                                // 1. Reaplicar ícones de ferramentas (FORÇADO após atualização)
+                                const antesTotal = legMinutas.querySelectorAll(
+                                    '[data-eprobe-icon-replaced="true"]'
+                                ).length;
+
+                                // Reaplicar diretamente no legMinutas sem restrições de URL
+                                const iconesReaplicados =
+                                    reaplicarIconesAposAtualizacao(legMinutas);
+                                totalReaplicados += iconesReaplicados;
+
+                                const depoisTotal = legMinutas.querySelectorAll(
+                                    '[data-eprobe-icon-replaced="true"]'
+                                ).length;
+
+                                // 4. Corrigir alinhamento em divListaRecursosMinuta se existir
+                                const divListaRecursos =
+                                    legMinutas.querySelector(
+                                        "#divListaRecursosMinuta"
+                                    );
+                                if (
+                                    divListaRecursos &&
+                                    typeof corrigirAlinhamentoRecursosMinuta ===
+                                        "function"
+                                ) {
+                                    const resultado =
+                                        corrigirAlinhamentoRecursosMinuta();
+                                    if (
+                                        resultado.encontrado &&
+                                        resultado.iconesCorrigidos > 0
+                                    ) {
+                                        log(
+                                            `📏 MINUTAS: Alinhamento corrigido - ${resultado.iconesCorrigidos} ícones processados`
+                                        );
+                                    }
+                                }
+
+                                if (totalReaplicados > 0) {
+                                    log(
+                                        `✅ MINUTAS: ${totalReaplicados} ícones reaplicados com sucesso após "Atualizar Minutas"`
+                                    );
+                                } else {
+                                    log(
+                                        "⚠️ MINUTAS: Nenhum ícone foi reaplicado - possível problema na detecção"
+                                    );
+                                }
+                            }, 1000); // 1 segundo de delay para garantir que a atualização AJAX foi completada
+                        } catch (error) {
+                            console.error(
+                                "❌ MINUTAS: Erro durante interceptação:",
+                                error
+                            );
+                        }
+                    };
+
+                    // Marcar como interceptado
+                    botaoAtualizar.setAttribute(
+                        "data-eprobe-intercepted",
+                        "true"
+                    );
+                    botaoAtualizar.setAttribute(
+                        "title",
+                        (botaoAtualizar.title || "Atualizar") +
+                            " (eProbe: Ícones serão reaplicados automaticamente)"
+                    );
+
+                    log(
+                        "✅ MINUTAS: Interceptor configurado com sucesso para botão atualizaMinutas"
+                    );
+                    return true;
+                } catch (error) {
+                    console.error(
+                        "❌ MINUTAS: Erro ao configurar interceptor:",
+                        error
+                    );
+                    return false;
+                }
+            }
+
             // Função para substituir ícones no fieldset de ações
             function substituirIconesFieldsetAcoes() {
                 const currentUrl = window.location.href;
@@ -24554,9 +26322,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         try {
                             const container = document.createElement("span");
                             container.innerHTML = replacement.newSvg;
-                            container.style.display = "inline-flex";
-                            container.style.alignItems = "center";
-                            container.style.marginRight = "4px";
+
+                            // 🎨 APLICAR ESTILOS PADRONIZADOS
+                            applyStandardIconStyles(container);
 
                             // 🛡️ PROTEÇÃO: Marcar container como modificado pela extensão
                             container.setAttribute(
@@ -24679,6 +26447,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                             svg.setAttribute(
                                                 "data-original-text",
                                                 text
+                                            );
+
+                                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                            aplicarDimensionamentoRecursosMinuta(
+                                                svg
                                             );
                                         }
 
@@ -24878,9 +26651,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     if (img) {
                         const container = document.createElement("span");
                         container.innerHTML = newSvg;
-                        container.style.display = "inline-flex";
-                        container.style.alignItems = "center";
-                        container.style.marginRight = "4px";
+
+                        // 🎨 APLICAR ESTILOS PADRONIZADOS
+                        applyStandardIconStyles(container);
 
                         const svg = container.firstElementChild;
                         if (svg) {
@@ -25305,9 +27078,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 const container =
                                     document.createElement("span");
                                 container.innerHTML = icone.newSvg;
-                                container.style.display = "inline-flex";
-                                container.style.alignItems = "center";
-                                container.style.verticalAlign = "middle";
+
+                                // 🎨 APLICAR ESTILOS PADRONIZADOS
+                                applyStandardIconStyles(container);
 
                                 const svg = container.firstElementChild;
                                 if (svg) {
@@ -25359,6 +27132,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                         "data-original-selector",
                                         selector
                                     );
+
+                                    // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                    aplicarDimensionamentoRecursosMinuta(svg);
 
                                     // Preservar eventos
                                     if (img.onclick) {
@@ -25443,6 +27219,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         // Preservar classes e atributos do ícone original
                         svg.classList.add("material-icons"); // Manter compatibilidade
                         svg.setAttribute("data-eprobe-icon-replaced", "true");
+
+                        // ⚡ SISTEMA ANTI-FLASH: Revelar ícone personalizado
+                        if (window.eprobeAntiFlash) {
+                            window.eprobeAntiFlash.revelarIcone(svg);
+                        }
+
                         svg.setAttribute("data-original-icon", "delete");
                         svg.setAttribute(
                             "data-new-icon",
@@ -25581,6 +27363,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
              * PRESERVA 100% das funcionalidades originais
              */
             function substituirIconesLembretes() {
+                // ⚡ ANTI-FLASH: Aplicar CSS crítico ANTES de qualquer processamento
+                aplicarAntiFlashIcones();
+
                 // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
                 if (!isCapaProcessoPage()) {
                     log(
@@ -25635,12 +27420,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                     "data-eprobe-icon-replaced",
                                     "true"
                                 );
+
+                                // ⚡ SISTEMA ANTI-FLASH: Revelar ícone personalizado
+                                if (window.eprobeAntiFlash) {
+                                    window.eprobeAntiFlash.revelarIcone(svg);
+                                }
+
                                 svg.setAttribute("data-original-icon", "edit");
                                 svg.setAttribute("data-new-icon", "ink_pen");
                                 svg.setAttribute(
                                     "data-icon-type",
                                     "lembrete-editar"
                                 );
+
+                                // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                aplicarDimensionamentoRecursosMinuta(svg);
 
                                 // Substituir o ícone mantendo o link funcional
                                 icone.parentNode.replaceChild(svg, icone);
@@ -25721,6 +27515,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                     "data-icon-type",
                                     "lembrete-excluir"
                                 );
+
+                                // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                aplicarDimensionamentoRecursosMinuta(svg);
 
                                 // Substituir o ícone mantendo o link funcional
                                 icone.parentNode.replaceChild(svg, icone);
@@ -26137,9 +27934,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                         const container =
                                             document.createElement("span");
                                         container.innerHTML = config.newSvg;
-                                        container.style.display = "inline-flex";
-                                        container.style.alignItems = "center";
-                                        container.style.marginRight = "4px";
+
+                                        // 🎨 APLICAR ESTILOS PADRONIZADOS
+                                        applyStandardIconStyles(container);
 
                                         // ⚡ OTIMIZAÇÃO PERFORMANCE: Aplicar pointer-events de forma eficiente
                                         if (isClickableElement) {
@@ -26199,6 +27996,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                             svg.setAttribute(
                                                 "data-eprobe-icon-replaced",
                                                 "true"
+                                            );
+
+                                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                            aplicarDimensionamentoRecursosMinuta(
+                                                svg
                                             );
 
                                             // ⚡ CORREÇÃO: SVG não pode ter className - usar classList.add
@@ -26528,7 +28330,189 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 } catch (error) {
                     console.error("❌ OBSERVER: Erro na inicialização:", error);
                 }
-            }, 500);
+            }, 2100);
+
+            // 📏 EXECUÇÃO AUTOMÁTICA - Inicializar observer específico para divListaRecursosMinuta
+            setTimeout(() => {
+                // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                if (isCapaProcessoPage()) {
+                    log(
+                        "📏 RECURSOS: Iniciando observer específico para divListaRecursosMinuta..."
+                    );
+                    try {
+                        if (
+                            typeof setupObservadorRecursosMinuta === "function"
+                        ) {
+                            const observer = setupObservadorRecursosMinuta();
+                            if (observer) {
+                                log(
+                                    "✅ RECURSOS: Observer específico inicializado com sucesso"
+                                );
+                            } else {
+                                log(
+                                    "⚠️ RECURSOS: Observer não configurado - divListaRecursosMinuta não encontrado"
+                                );
+                            }
+                        } else {
+                            console.warn(
+                                "⚠️ RECURSOS: Função setupObservadorRecursosMinuta não encontrada"
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ RECURSOS: Erro na inicialização do observer:",
+                            error
+                        );
+                    }
+                } else {
+                    log(
+                        "⛔ RECURSOS: Observer específico bloqueado - página atual não é capa do processo"
+                    );
+                }
+            }, 2200);
+
+            // 🔧 EXECUÇÃO AUTOMÁTICA - Corrigir alinhamento de ícones em divListaRecursosMinuta
+            setTimeout(() => {
+                // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                if (isCapaProcessoPage()) {
+                    log(
+                        "🔧 RECURSOS: Iniciando correção automática de alinhamento..."
+                    );
+                    try {
+                        if (
+                            typeof corrigirAlinhamentoRecursosMinuta ===
+                            "function"
+                        ) {
+                            const resultado =
+                                corrigirAlinhamentoRecursosMinuta();
+                            if (resultado.encontrado) {
+                                log(
+                                    `✅ RECURSOS: Alinhamento corrigido - ${resultado.iconesCorrigidos} ícones processados`
+                                );
+                            } else {
+                                log(
+                                    "⚠️ RECURSOS: divListaRecursosMinuta não encontrado para correção"
+                                );
+                            }
+                        } else {
+                            console.warn(
+                                "⚠️ RECURSOS: Função corrigirAlinhamentoRecursosMinuta não encontrada"
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ RECURSOS: Erro na correção de alinhamento:",
+                            error
+                        );
+                    }
+                } else {
+                    log(
+                        "⛔ RECURSOS: Correção de alinhamento bloqueada - página atual não é capa do processo"
+                    );
+                }
+            }, 2300);
+
+            // 🔄 EXECUÇÃO AUTOMÁTICA - Inicializar observer para legMinutas (Histórico)
+            setTimeout(() => {
+                // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                if (isCapaProcessoPage()) {
+                    log(
+                        "🔄 MINUTAS: Iniciando observer para legMinutas (detectar atualizações)..."
+                    );
+                    try {
+                        if (
+                            typeof setupObservadorLegendMinutas === "function"
+                        ) {
+                            const observer = setupObservadorLegendMinutas();
+                            if (observer) {
+                                log(
+                                    "✅ MINUTAS: Observer para legMinutas inicializado com sucesso"
+                                );
+                            } else {
+                                log(
+                                    "⚠️ MINUTAS: Observer não configurado - legMinutas não encontrado"
+                                );
+                            }
+                        } else {
+                            console.warn(
+                                "⚠️ MINUTAS: Função setupObservadorLegendMinutas não encontrada"
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ MINUTAS: Erro na inicialização do observer:",
+                            error
+                        );
+                    }
+                } else {
+                    log(
+                        "⛔ MINUTAS: Observer legMinutas bloqueado - página atual não é capa do processo"
+                    );
+                }
+            }, 2400);
+
+            // 🎯 EXECUÇÃO AUTOMÁTICA - Inicializar interceptor para botão "Atualizar Minutas"
+            setTimeout(() => {
+                // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
+                if (isCapaProcessoPage()) {
+                    log(
+                        "🎯 MINUTAS: Iniciando interceptor para botão 'Atualizar Minutas'..."
+                    );
+                    try {
+                        if (
+                            typeof setupInterceptorAtualizarMinutas ===
+                            "function"
+                        ) {
+                            const interceptorAtivo =
+                                setupInterceptorAtualizarMinutas();
+                            if (interceptorAtivo) {
+                                log(
+                                    "✅ MINUTAS: Interceptor configurado com sucesso para botão 'Atualizar Minutas' principal"
+                                );
+                            } else {
+                                log(
+                                    "⚠️ MINUTAS: Interceptor não configurado - botão 'atualizaMinutas' principal não encontrado"
+                                );
+                            }
+                        } else {
+                            console.warn(
+                                "⚠️ MINUTAS: Função setupInterceptorAtualizarMinutas não está disponível"
+                            );
+                        }
+
+                        // 🔄 NOVO: Configurar interceptor para TODOS os botões de minutas individuais
+                        if (
+                            typeof setupInterceptorTodosBotoesAtualizar ===
+                            "function"
+                        ) {
+                            const botoesInterceptados =
+                                setupInterceptorTodosBotoesAtualizar();
+                            if (botoesInterceptados > 0) {
+                                log(
+                                    `✅ MINUTAS MÚLTIPLAS: ${botoesInterceptados} botões individuais interceptados com sucesso`
+                                );
+                            } else {
+                                log(
+                                    "⚠️ MINUTAS MÚLTIPLAS: Nenhum botão individual encontrado ou interceptado"
+                                );
+                            }
+                        } else {
+                            console.warn(
+                                "⚠️ MINUTAS: Função setupInterceptorTodosBotoesAtualizar não está disponível"
+                            );
+                        }
+                    } catch (error) {
+                        console.error(
+                            "❌ MINUTAS: Erro na configuração do interceptor:",
+                            error
+                        );
+                    }
+                } else {
+                    log(
+                        "⛔ MINUTAS: Interceptor bloqueado - página atual não é capa do processo"
+                    );
+                }
+            }, 2500);
 
             // 🔧 EXECUÇÃO AUTOMÁTICA - Corrigir pointer-events de botões críticos
             setTimeout(() => {
@@ -28620,6 +30604,13 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     allMissingFunctions.substituirIconesGlobalmente,
                 // ✨ NOVO: Funções específicas para ícones de lembretes
                 substituirIconesLembretes: substituirIconesLembretes,
+                // 🔄 NOVO: Reaplicação forçada de ícones após atualização AJAX
+                reaplicarIconesAposAtualizacao: reaplicarIconesAposAtualizacao,
+                // ⚡ NOVO: Anti-flash crítico para ícones
+                aplicarAntiFlashIcones: aplicarAntiFlashIcones,
+                // 🔄 NOVO: Interceptor para múltiplos botões de atualizar minutas
+                setupInterceptorTodosBotoesAtualizar:
+                    setupInterceptorTodosBotoesAtualizar,
                 testarIconesLembretes: testarIconesLembretes,
                 // ⚡ NOVO: Funções para eliminar flash visual
                 aplicarEstilizacaoImediataLembretes:
@@ -28695,7 +30686,469 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     };
                 },
 
-                // 🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
+                // 📏 Função de teste para verificar dimensionamento em divListaRecursosMinuta
+                testarDimensionamentoRecursosMinuta: () => {
+                    console.log("📏 TESTE DIMENSIONAMENTO RECURSOS MINUTA:");
+
+                    const divListaRecursos = document.getElementById(
+                        "divListaRecursosMinuta"
+                    );
+
+                    if (!divListaRecursos) {
+                        console.log(
+                            "⚠️ divListaRecursosMinuta não encontrado na página atual"
+                        );
+                        return {
+                            encontrado: false,
+                            icones: 0,
+                            iconesCorretos: 0,
+                            timestamp: new Date().toLocaleString("pt-BR"),
+                        };
+                    }
+
+                    console.log(
+                        "✅ divListaRecursosMinuta encontrado:",
+                        divListaRecursos
+                    );
+
+                    // Buscar todos os ícones SVG dentro da div
+                    const iconesSvg = divListaRecursos.querySelectorAll(
+                        'svg[data-eprobe-icon-replaced="true"]'
+                    );
+                    console.log(
+                        `📊 Total de ícones SVG eProbe encontrados: ${iconesSvg.length}`
+                    );
+
+                    let iconesCorretos = 0;
+                    const detalhes = [];
+
+                    iconesSvg.forEach((svg, index) => {
+                        const width =
+                            svg.style.width ||
+                            svg.getAttribute("width") ||
+                            "não definido";
+                        const height =
+                            svg.style.height ||
+                            svg.getAttribute("height") ||
+                            "não definido";
+                        const isCorreto =
+                            width === "17.59px" && height === "17.59px";
+
+                        if (isCorreto) iconesCorretos++;
+
+                        const detalhe = {
+                            indice: index + 1,
+                            width,
+                            height,
+                            tamanhoCorreto: isCorreto,
+                            temMarcacao: svg.hasAttribute(
+                                "data-eprobe-recursos-minuta-sized"
+                            ),
+                            originalType:
+                                svg.getAttribute("data-original-name") ||
+                                "desconhecido",
+                        };
+
+                        detalhes.push(detalhe);
+
+                        console.log(`📐 Ícone ${index + 1}:`, detalhe);
+
+                        // Se não estiver no tamanho correto, aplicar correção
+                        if (!isCorreto) {
+                            console.log(
+                                `🔧 Corrigindo dimensão do ícone ${
+                                    index + 1
+                                }...`
+                            );
+                            aplicarDimensionamentoRecursosMinuta(svg);
+                        }
+                    });
+
+                    const resultado = {
+                        encontrado: true,
+                        divId: "divListaRecursosMinuta",
+                        icones: iconesSvg.length,
+                        iconesCorretos,
+                        porcentagemCorretos:
+                            iconesSvg.length > 0
+                                ? (
+                                      (iconesCorretos / iconesSvg.length) *
+                                      100
+                                  ).toFixed(1) + "%"
+                                : "0%",
+                        detalhes,
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                    };
+
+                    console.log("📊 RESULTADO FINAL:", resultado);
+
+                    if (
+                        iconesCorretos === iconesSvg.length &&
+                        iconesSvg.length > 0
+                    ) {
+                        console.log(
+                            "✅ Todos os ícones estão no tamanho correto (17.59x17.59)!"
+                        );
+                    } else if (iconesSvg.length === 0) {
+                        console.log(
+                            "⚠️ Nenhum ícone eProbe encontrado em divListaRecursosMinuta"
+                        );
+                    } else {
+                        console.log(
+                            `⚠️ ${
+                                iconesSvg.length - iconesCorretos
+                            } ícones precisam de correção`
+                        );
+
+                        // Aplicar correção automática de alinhamento se necessário
+                        console.log(
+                            "🔧 Aplicando correção automática de alinhamento..."
+                        );
+                        if (
+                            typeof corrigirAlinhamentoRecursosMinuta ===
+                            "function"
+                        ) {
+                            const correcao =
+                                corrigirAlinhamentoRecursosMinuta();
+                            resultado.correcaoAlinhamento = correcao;
+                            console.log("📊 Resultado da correção:", correcao);
+                        }
+                    }
+
+                    return resultado;
+                },
+
+                // 🔧 Função para corrigir alinhamento em divListaRecursosMinuta
+                corrigirAlinhamentoRecursosMinuta: () => {
+                    console.log("🔧 CORREÇÃO ALINHAMENTO RECURSOS MINUTA:");
+
+                    if (
+                        typeof corrigirAlinhamentoRecursosMinuta === "function"
+                    ) {
+                        const resultado = corrigirAlinhamentoRecursosMinuta();
+                        console.log("📊 Resultado da correção:", resultado);
+
+                        if (resultado.encontrado) {
+                            console.log(
+                                `✅ Correção aplicada: ${resultado.iconesCorrigidos} ícones processados`
+                            );
+                            console.log(
+                                `🔗 Links corrigidos: ${resultado.linksCorrigidos}`
+                            );
+                            console.log(
+                                `💅 CSS aplicado: ${resultado.cssAplicado}`
+                            );
+                        } else {
+                            console.log(
+                                "⚠️ divListaRecursosMinuta não encontrado"
+                            );
+                        }
+
+                        return resultado;
+                    } else {
+                        console.log(
+                            "❌ Função corrigirAlinhamentoRecursosMinuta não disponível"
+                        );
+                        return { erro: "função não disponível" };
+                    }
+                },
+
+                // 👁️ Função para diagnóstico visual de alinhamento em divListaRecursosMinuta
+                diagnosticarAlinhamentoVisual: () => {
+                    console.log("👁️ DIAGNÓSTICO VISUAL RECURSOS MINUTA:");
+
+                    const divListaRecursos = document.getElementById(
+                        "divListaRecursosMinuta"
+                    );
+
+                    if (!divListaRecursos) {
+                        console.log(
+                            "⚠️ divListaRecursosMinuta não encontrado na página atual"
+                        );
+                        return { encontrado: false };
+                    }
+
+                    // Aplicar estilos visuais temporários para debug
+                    const diagnosticStyle = document.createElement("style");
+                    diagnosticStyle.id = "eprobe-diagnostic-style";
+
+                    // Remover estilo anterior se existir
+                    const oldDiagnostic = document.getElementById(
+                        "eprobe-diagnostic-style"
+                    );
+                    if (oldDiagnostic) oldDiagnostic.remove();
+
+                    diagnosticStyle.textContent = `
+                        /* DIAGNÓSTICO VISUAL TEMPORÁRIO */
+                        #divListaRecursosMinuta {
+                            background: rgba(255, 255, 0, 0.1) !important;
+                            border: 2px dashed orange !important;
+                            padding: 5px !important;
+                        }
+                        
+                        #divListaRecursosMinuta * {
+                            outline: 1px solid rgba(255, 0, 0, 0.3) !important;
+                        }
+                        
+                        #divListaRecursosMinuta img {
+                            background: rgba(0, 255, 0, 0.3) !important;
+                            outline: 2px solid green !important;
+                        }
+                        
+                        #divListaRecursosMinuta svg[data-eprobe-icon-replaced="true"] {
+                            background: rgba(0, 0, 255, 0.3) !important;
+                            outline: 2px solid blue !important;
+                        }
+                        
+                        #divListaRecursosMinuta a {
+                            background: rgba(255, 0, 255, 0.2) !important;
+                        }
+                    `;
+
+                    document.head.appendChild(diagnosticStyle);
+
+                    // Coletar informações detalhadas
+                    const icones =
+                        divListaRecursos.querySelectorAll("img, svg");
+                    const links = divListaRecursos.querySelectorAll("a");
+                    const iconesPersonalizados =
+                        divListaRecursos.querySelectorAll(
+                            'svg[data-eprobe-icon-replaced="true"]'
+                        );
+
+                    const detalhes = {
+                        totalIcones: icones.length,
+                        iconesPersonalizados: iconesPersonalizados.length,
+                        iconesOriginais:
+                            icones.length - iconesPersonalizados.length,
+                        totalLinks: links.length,
+                    };
+
+                    console.log("📊 Estrutura encontrada:");
+                    console.log("🟡 Fundo amarelo: divListaRecursosMinuta");
+                    console.log("🟢 Contorno verde: Ícones originais (IMG)");
+                    console.log(
+                        "🔵 Contorno azul: Ícones personalizados (SVG eProbe)"
+                    );
+                    console.log("🟣 Fundo roxo: Links (A)");
+                    console.log("🔴 Contorno vermelho: Todos os elementos");
+
+                    console.table(detalhes);
+
+                    // Análise individual dos ícones
+                    iconesPersonalizados.forEach((svg, index) => {
+                        const rect = svg.getBoundingClientRect();
+                        const computed = getComputedStyle(svg);
+
+                        console.log(`🔵 Ícone personalizado ${index + 1}:`, {
+                            width:
+                                svg.style.width ||
+                                svg.getAttribute("width") ||
+                                "não definido",
+                            height:
+                                svg.style.height ||
+                                svg.getAttribute("height") ||
+                                "não definido",
+                            computedWidth: computed.width,
+                            computedHeight: computed.height,
+                            verticalAlign: computed.verticalAlign,
+                            display: computed.display,
+                            boundingRect: {
+                                width: rect.width,
+                                height: rect.height,
+                                x: Math.round(rect.x),
+                                y: Math.round(rect.y),
+                            },
+                        });
+                    });
+
+                    // Auto-remover o estilo após 10 segundos
+                    setTimeout(() => {
+                        const styleToRemove = document.getElementById(
+                            "eprobe-diagnostic-style"
+                        );
+                        if (styleToRemove) {
+                            styleToRemove.remove();
+                            console.log(
+                                "👁️ Diagnóstico visual removido automaticamente"
+                            );
+                        }
+                    }, 10000);
+
+                    console.log("⏰ Diagnóstico visual ativo por 10 segundos");
+                    console.log(
+                        "🔧 Para corrigir problemas encontrados, execute: window.SENT1_AUTO.corrigirAlinhamentoRecursosMinuta()"
+                    );
+
+                    return {
+                        encontrado: true,
+                        ...detalhes,
+                        diagnosticoAtivo: true,
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                    };
+                },
+
+                // � Função para testar reaplicação de ícones em legMinutas
+                testarReaplicacaoIconesMinutas: () => {
+                    console.log("🔄 TESTE REAPLICAÇÃO ÍCONES MINUTAS:");
+
+                    const legMinutas = document.getElementById("legMinutas");
+
+                    if (!legMinutas) {
+                        console.log(
+                            "⚠️ legMinutas não encontrado na página atual"
+                        );
+                        return {
+                            encontrado: false,
+                            erro: "legMinutas não encontrado",
+                        };
+                    }
+
+                    console.log("✅ legMinutas encontrado:", legMinutas);
+
+                    // Verificar estado atual dos ícones
+                    const iconesOriginais = legMinutas.querySelectorAll(
+                        "img:not([data-eprobe-protected])"
+                    );
+                    const iconesPersonalizados = legMinutas.querySelectorAll(
+                        'svg[data-eprobe-icon-replaced="true"]'
+                    );
+                    const divListaRecursos = legMinutas.querySelector(
+                        "#divListaRecursosMinuta"
+                    );
+
+                    const estadoAntes = {
+                        iconesOriginais: iconesOriginais.length,
+                        iconesPersonalizados: iconesPersonalizados.length,
+                        temDivListaRecursos: !!divListaRecursos,
+                    };
+
+                    console.log("📊 Estado ANTES da reaplicação:", estadoAntes);
+
+                    // Forçar reaplicação de todas as substituições
+                    let totalReaplicados = 0;
+
+                    try {
+                        // 1. Reaplicar ícones de ferramentas
+                        if (typeof substituirIconesFerramentas === "function") {
+                            const antes = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            substituirIconesFerramentas();
+                            const depois = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            const novos = depois - antes;
+                            totalReaplicados += novos;
+                            console.log(
+                                `🔧 Ícones de ferramentas: +${novos} aplicados`
+                            );
+                        }
+
+                        // 2. Reaplicar ícones de lembretes
+                        if (typeof substituirIconesLembretes === "function") {
+                            const antes = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            substituirIconesLembretes();
+                            const depois = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            const novos = depois - antes;
+                            totalReaplicados += novos;
+                            console.log(
+                                `📝 Ícones de lembretes: +${novos} aplicados`
+                            );
+                        }
+
+                        // 3. Reaplicar ícones globais
+                        if (typeof substituirIconesGlobalmente === "function") {
+                            const antes = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            substituirIconesGlobalmente();
+                            const depois = legMinutas.querySelectorAll(
+                                '[data-eprobe-icon-replaced="true"]'
+                            ).length;
+                            const novos = depois - antes;
+                            totalReaplicados += novos;
+                            console.log(
+                                `🌐 Ícones globais: +${novos} aplicados`
+                            );
+                        }
+
+                        // 4. Corrigir alinhamento se necessário
+                        if (
+                            divListaRecursos &&
+                            typeof corrigirAlinhamentoRecursosMinuta ===
+                                "function"
+                        ) {
+                            const resultado =
+                                corrigirAlinhamentoRecursosMinuta();
+                            console.log(
+                                "📏 Correção de alinhamento:",
+                                resultado
+                            );
+                        }
+                    } catch (error) {
+                        console.error("❌ Erro durante reaplicação:", error);
+                    }
+
+                    // Verificar estado final
+                    const iconesOriginaisDepois = legMinutas.querySelectorAll(
+                        "img:not([data-eprobe-protected])"
+                    );
+                    const iconesPersonalizadosDepois =
+                        legMinutas.querySelectorAll(
+                            'svg[data-eprobe-icon-replaced="true"]'
+                        );
+
+                    const estadoDepois = {
+                        iconesOriginais: iconesOriginaisDepois.length,
+                        iconesPersonalizados: iconesPersonalizadosDepois.length,
+                        temDivListaRecursos: !!divListaRecursos,
+                    };
+
+                    console.log(
+                        "📊 Estado DEPOIS da reaplicação:",
+                        estadoDepois
+                    );
+
+                    const resultado = {
+                        encontrado: true,
+                        estadoAntes,
+                        estadoDepois,
+                        totalReaplicados,
+                        diferencaPersonalizados:
+                            estadoDepois.iconesPersonalizados -
+                            estadoAntes.iconesPersonalizados,
+                        diferencaOriginais:
+                            estadoAntes.iconesOriginais -
+                            estadoDepois.iconesOriginais,
+                        sucesso: totalReaplicados > 0,
+                        timestamp: new Date().toLocaleString("pt-BR"),
+                    };
+
+                    if (resultado.sucesso) {
+                        console.log(
+                            `✅ Reaplicação concluída com sucesso! ${totalReaplicados} ícones processados`
+                        );
+                        console.log(
+                            `📈 Ícones personalizados: ${estadoAntes.iconesPersonalizados} → ${estadoDepois.iconesPersonalizados}`
+                        );
+                        console.log(
+                            `📉 Ícones originais: ${estadoAntes.iconesOriginais} → ${estadoDepois.iconesOriginais}`
+                        );
+                    } else {
+                        console.log(
+                            "⚠️ Nenhum ícone foi reaplicado - possível problema na detecção ou nenhum ícone original encontrado"
+                        );
+                    }
+
+                    return resultado;
+                },
+
+                // �🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
                 debugButtonCreation:
                     debugInterfaceFunctions.debugButtonCreation,
                 forceCreateButton: debugInterfaceFunctions.forceCreateButton,
@@ -31578,6 +34031,42 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     ? isCapaProcessoPage
                     : () => console.log("isCapaProcessoPage não disponível"),
 
+            // 📏 Função para aplicar dimensionamento específico em divListaRecursosMinuta
+            aplicarDimensionamentoRecursosMinuta:
+                typeof aplicarDimensionamentoRecursosMinuta === "function"
+                    ? aplicarDimensionamentoRecursosMinuta
+                    : () =>
+                          console.log(
+                              "aplicarDimensionamentoRecursosMinuta não disponível"
+                          ),
+
+            // 👁️ Função para configurar observador específico de divListaRecursosMinuta
+            setupObservadorRecursosMinuta:
+                typeof setupObservadorRecursosMinuta === "function"
+                    ? setupObservadorRecursosMinuta
+                    : () =>
+                          console.log(
+                              "setupObservadorRecursosMinuta não disponível"
+                          ),
+
+            // � Função para configurar observador de legMinutas (Histórico)
+            setupObservadorLegendMinutas:
+                typeof setupObservadorLegendMinutas === "function"
+                    ? setupObservadorLegendMinutas
+                    : () =>
+                          console.log(
+                              "setupObservadorLegendMinutas não disponível"
+                          ),
+
+            // �🔧 Função para corrigir alinhamento em divListaRecursosMinuta
+            corrigirAlinhamentoRecursosMinuta:
+                typeof corrigirAlinhamentoRecursosMinuta === "function"
+                    ? corrigirAlinhamentoRecursosMinuta
+                    : () =>
+                          console.log(
+                              "corrigirAlinhamentoRecursosMinuta não disponível"
+                          ),
+
             // Funções específicas do teste
             detectarCardSessaoSimplificado: () => {
                 console.log(
@@ -31900,3 +34389,208 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         );
     }
 });
+
+// 🚨 INTERCEPTAÇÃO FINAL BRUTAL - ÚLTIMA LINHA DE DEFESA
+(function interceptacaoFinalBrutal() {
+    console.log(
+        "🔥 INTERCEPTAÇÃO FINAL: Substituição brutal de switchRelevanciaEvento"
+    );
+
+    // Função ultra-segura local
+    function switchRelevanciaEventoSegura(idEvento, relevancia, tipo, urlAjax) {
+        console.log(
+            "✅ FUNÇÃO SEGURA FINAL: switchRelevanciaEvento executada sem erros"
+        );
+
+        // Validação extrema
+        if (!idEvento || !urlAjax) {
+            console.warn("⚠️ Parâmetros inválidos, abortando operação segura");
+            return false;
+        }
+
+        try {
+            // Construir URL segura
+            const url =
+                String(urlAjax) +
+                (String(urlAjax).includes("?") ? "&" : "?") +
+                `idEvento=${encodeURIComponent(String(idEvento))}&` +
+                `relevancia=${encodeURIComponent(String(relevancia || ""))}&` +
+                `tipo=${encodeURIComponent(String(tipo || ""))}`;
+
+            // AJAX seguro
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(
+                        "✅ Requisição switchRelevanciaEvento bem-sucedida"
+                    );
+
+                    // MANTER FUNCIONALIDADE ORIGINAL: Atualizar visual da estrela
+                    try {
+                        const estrelaElement = document.querySelector(
+                            `a[onclick*="${idEvento}"]`
+                        );
+                        if (estrelaElement) {
+                            const icon =
+                                estrelaElement.querySelector(".material-icons");
+                            if (icon) {
+                                // Alternar entre estrela vazia e cheia
+                                icon.textContent =
+                                    relevancia === "1" ? "star" : "star_border";
+                                console.log(
+                                    "✅ Visual da estrela atualizado:",
+                                    relevancia === "1"
+                                        ? "ativada"
+                                        : "desativada"
+                                );
+                            }
+                        }
+                    } catch (updateError) {
+                        console.warn(
+                            "⚠️ Não foi possível atualizar visual da estrela:",
+                            updateError
+                        );
+                    }
+                }
+            };
+            xhr.send();
+
+            return true;
+        } catch (error) {
+            console.error("❌ Erro na função segura final:", error);
+            return false;
+        }
+    }
+
+    // SUBSTITUIR COM CONTROLE DE TEMPO - SEM LOOP INFINITO
+    let tentativasSubstituicao = 0;
+    const maxTentativas = 50; // Máximo 50 tentativas = ~250ms total
+
+    const substituirComControle = () => {
+        tentativasSubstituicao++;
+
+        // PARAR após limite de tentativas
+        if (tentativasSubstituicao > maxTentativas) {
+            console.log("✅ INTERCEPTAÇÃO FINAL: Parada após 50 tentativas");
+            return; // PARAR definitivamente
+        }
+
+        window.switchRelevanciaEvento = switchRelevanciaEventoSegura;
+        window.switchRelevanciaEvento.__eprobeSeguraFinal = true;
+
+        // Log apenas nas primeiras 5 tentativas
+        if (tentativasSubstituicao <= 5) {
+            console.log(
+                "🔄 switchRelevanciaEvento substituída pela função segura final"
+            );
+        }
+
+        // Continuar apenas se dentro do limite
+        if (tentativasSubstituicao <= maxTentativas) {
+            setTimeout(substituirComControle, 5);
+        }
+    };
+
+    // INICIAR UMA VEZ
+    substituirComControle();
+
+    console.log(
+        "🛡️ INTERCEPTAÇÃO FINAL ATIVADA: switchRelevanciaEvento protegida continuamente"
+    );
+})();
+
+// 🚨 INTERCEPTAÇÃO DEFINITIVA VIA Object.defineProperty - IMPOSSÍVEL DE QUEBRAR
+(function interceptacaoDefinitiva() {
+    console.log(
+        "🔥 INTERCEPTAÇÃO DEFINITIVA: Object.defineProperty para switchRelevanciaEvento"
+    );
+
+    // Função ultra-segura
+    function switchRelevanciaEventoDefinitiva(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        console.log(
+            "✅ FUNÇÃO DEFINITIVA: switchRelevanciaEvento executada via defineProperty"
+        );
+
+        // Validação extrema
+        if (!idEvento || !urlAjax) {
+            console.warn("⚠️ Parâmetros inválidos na função definitiva");
+            return false;
+        }
+
+        try {
+            // Construir URL segura
+            const url =
+                String(urlAjax) +
+                (String(urlAjax).includes("?") ? "&" : "?") +
+                `idEvento=${encodeURIComponent(String(idEvento))}&` +
+                `relevancia=${encodeURIComponent(String(relevancia || ""))}&` +
+                `tipo=${encodeURIComponent(String(tipo || ""))}`;
+
+            // AJAX seguro
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log("✅ AJAX definitivo bem-sucedido");
+
+                    // Atualizar visual da estrela
+                    try {
+                        const estrelaElement = document.querySelector(
+                            `a[onclick*="${idEvento}"]`
+                        );
+                        if (estrelaElement) {
+                            const icon =
+                                estrelaElement.querySelector(".material-icons");
+                            if (icon) {
+                                icon.textContent =
+                                    relevancia === "1" ? "star" : "star_border";
+                                console.log(
+                                    "✅ Estrela atualizada:",
+                                    relevancia === "1"
+                                        ? "ativada"
+                                        : "desativada"
+                                );
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("⚠️ Erro ao atualizar estrela:", err);
+                    }
+                }
+            };
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error("❌ Erro na função definitiva:", error);
+            return false;
+        }
+    }
+
+    // REDEFINIR via defineProperty - FORÇA MÁXIMA
+    try {
+        // Deletar se existir
+        delete window.switchRelevanciaEvento;
+
+        // Redefinir com nossa função
+        Object.defineProperty(window, "switchRelevanciaEvento", {
+            value: switchRelevanciaEventoDefinitiva,
+            writable: false, // NÃO pode ser sobrescrita
+            configurable: false, // NÃO pode ser redefinida
+            enumerable: true,
+        });
+
+        console.log(
+            "🛡️ INTERCEPTAÇÃO DEFINITIVA APLICADA: switchRelevanciaEvento PERMANENTEMENTE protegida"
+        );
+    } catch (error) {
+        console.error("❌ Erro ao aplicar defineProperty:", error);
+        // Fallback: substituição simples
+        window.switchRelevanciaEvento = switchRelevanciaEventoDefinitiva;
+        console.log("🔄 Fallback aplicado: substituição simples");
+    }
+})();
