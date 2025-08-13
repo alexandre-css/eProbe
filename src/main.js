@@ -7,7 +7,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 // 🚨 INTERCEPTAÇÃO ULTRA-PRECOCE - CAPTURA AMBAS AS FUNÇÕES PROBLEMÁTICAS
 (function interceptacaoUltraPrecoce() {
     logCritical(
-        "🚨 INTERCEPTAÇÃO ULTRA-PRECOCE: Bloqueando switchRelevanciaDocumento E switchRelevanciaEvento..."
+        "🎨 PERSONALIZAÇÃO: Customizando apenas aparência das estrelas (SEM interceptar funções)..."
     );
 
     // �️ FUNÇÃO ULTRA-SEGURA PARA EVENTO - DEFINIDA PRIMEIRO
@@ -108,8 +108,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 codigo.includes("controlador.php")
             ) {
                 logCritical(
-                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA! Substituindo imediatamente..."
+                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA! Mas não interceptaremos mais..."
                 );
+                // REMOVIDA: Interceptação completa de switchRelevanciaEvento
+                /*
                 window.switchRelevanciaEvento = function (
                     idEvento,
                     relevancia,
@@ -126,14 +128,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         urlAjax
                     );
                 };
+                */
             }
         }
         // Repetir verificação
         setTimeout(forcarInterceptacaoEvento, 100);
     };
-
-    // Iniciar força brutal
-    forcarInterceptacaoEvento();
 
     // Criar nossa função robusta para switchRelevanciaDocumento
     function switchRelevanciaDocumentoUltraSegura(
@@ -325,7 +325,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 urlAjax:
                     typeof urlAjax +
                     " = " +
-                    String(urlAjax).substring(0, 50) +
+                    (urlAjax ? String(urlAjax).substring(0, 50) : "undefined") +
                     "...",
             }
         );
@@ -567,6 +567,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
     // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento com sistema híbrido
     let funcaoOriginalEprocEvento = null; // Armazenar a função original do eProc se existir
+    // REMOVIDO: Interceptação completa de switchRelevanciaEvento
+    /*
     let interceptacaoAtivaEvento = true; // Circuit breaker para switchRelevanciaEvento
     let contadorTentativasEvento = 0; // Contador de tentativas para evento
 
@@ -601,22 +603,18 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     // Marcar nossa função de evento para identificação
     funcaoEventoInterceptada.__eprobeInterceptadaEvento = true;
     let tentativasRedefinicaoEvento = 0;
+    */
 
+    // REMOVIDO: Object.defineProperty para switchRelevanciaEvento (causava erro)
+    /*
     Object.defineProperty(window, "switchRelevanciaEvento", {
         get: function () {
-            return funcaoEventoInterceptada;
+            // DESABILITADO: return funcaoEventoInterceptada;
+            return undefined; // Permitir que função original funcione
         },
         set: function (novaFuncao) {
-            contadorTentativasEvento++;
-
-            // 🚨 CIRCUIT BREAKER: Parar loop infinito para evento
-            if (contadorTentativasEvento > maxTentativas) {
-                console.warn(
-                    `⚠️ CIRCUIT BREAKER EVENTO: Máximo de ${maxTentativas} tentativas atingido. Parando interceptação.`
-                );
-                interceptacaoAtivaEvento = false;
-                return;
-            }
+            // DESABILITADO: Não interceptar mais, permitir definição normal
+            // A função original do eProc pode ser definida sem interferência
 
             if (!interceptacaoAtivaEvento) {
                 console.log(
@@ -682,6 +680,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         configurable: false,
         enumerable: true,
     });
+    */
 
     // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - AMBAS AS FUNÇÕES
     let verificacaoAtiva = true;
@@ -703,20 +702,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 } catch (e) {}
 
                 window.switchRelevanciaDocumento = funcaoInterceptada;
-            }
-
-            // Verificar switchRelevanciaEvento
-            if (window.switchRelevanciaEvento !== funcaoEventoInterceptada) {
-                logCritical(
-                    "🚨 switchRelevanciaEvento ALTERADA! Forçando restore..."
-                );
-
-                // Tentar forçar nossa função de volta
-                try {
-                    delete window.switchRelevanciaEvento;
-                } catch (e) {}
-
-                window.switchRelevanciaEvento = funcaoEventoInterceptada;
             }
 
             // Verificar se as funções existem e são nossas
@@ -752,9 +737,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     !funcaoEvento.toString().includes("ULTRA-SEGURA")
                 ) {
                     logCritical(
-                        "🚨 switchRelevanciaEvento ESTRANHA DETECTADA! Substituindo..."
+                        "🚨 switchRelevanciaEvento ESTRANHA DETECTADA! Mas não substituiremos mais..."
                     );
-                    window.switchRelevanciaEvento = funcaoEventoInterceptada;
+                    // REMOVIDO: window.switchRelevanciaEvento = funcaoEventoInterceptada;
                 } else {
                     // É nossa função, não fazer nada
                     if (funcaoEvento.__eprobeInterceptadaEvento) {
@@ -970,20 +955,17 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     monitorarPropriedadesWindow();
 
     logCritical(
-        "🔒 INTERCEPTAÇÃO ULTRA-PRECOCE ATIVADA: switchRelevanciaDocumento E switchRelevanciaEvento TOTALMENTE BLINDADAS!"
+        "🔒 INTERCEPTAÇÃO ATIVADA: switchRelevanciaDocumento protegida (switchRelevanciaEvento REMOVIDA)!"
     );
     logCritical(
         "✅ switchRelevanciaDocumento substituída:",
         typeof window.switchRelevanciaDocumento
     );
-    logCritical(
-        "✅ switchRelevanciaEvento substituída:",
-        typeof window.switchRelevanciaEvento
-    );
+    // REMOVIDO: verificação de switchRelevanciaEvento
 
-    // Testar imediatamente AMBAS
+    // Testar apenas switchRelevanciaDocumento
     setTimeout(() => {
-        logCritical("🧪 TESTE IMEDIATO DA INTERCEPTAÇÃO DUPLA:");
+        logCritical("🧪 TESTE IMEDIATO DA INTERCEPTAÇÃO DE DOCUMENTO:");
         logCritical(
             "  - switchRelevanciaDocumento existe:",
             typeof window.switchRelevanciaDocumento === "function"
@@ -992,22 +974,16 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             "  - switchRelevanciaDocumento é nossa:",
             window.switchRelevanciaDocumento.toString().includes("ULTRA-SEGURA")
         );
-        logCritical(
-            "  - switchRelevanciaEvento existe:",
-            typeof window.switchRelevanciaEvento === "function"
-        );
-        logCritical(
-            "  - switchRelevanciaEvento é nossa:",
-            window.switchRelevanciaEvento.toString().includes("ULTRA-SEGURA")
-        );
+        // REMOVIDO: testes de switchRelevanciaEvento
         logCritical(
             "  - Tentativas bloqueadas (Documento):",
             tentativasRedefinicao
         );
-        logCritical(
-            "  - Tentativas bloqueadas (Evento):",
-            tentativasRedefinicaoEvento
-        );
+        // COMENTADO: Tentativas de evento (variável não existe mais)
+        // logCritical(
+        //     "  - Tentativas bloqueadas (Evento):",
+        //     tentativasRedefinicaoEvento
+        // );
 
         // 🔍 VERIFICAÇÃO ADICIONAL - Detectar funções problemáticas que podem ter escapado
         setTimeout(() => {
@@ -1042,6 +1018,111 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             }
         }, 100);
     }, 10);
+})();
+
+// ===== PERSONALIZAÇÃO VISUAL DAS ESTRELAS - SEM INTERFERIR NAS FUNÇÕES =====
+(function personalizarEstrelasEventos() {
+    logCritical(
+        "🎨 PERSONALIZAÇÃO: Iniciando customização das estrelas de eventos..."
+    );
+
+    function aplicarPersonalizacaoEstrelas() {
+        try {
+            // Buscar fieldset de eventos especificamente
+            const fieldsetEventos = document.querySelector(
+                'fieldset.infraFieldset[aria-label="Eventos"]'
+            );
+            if (!fieldsetEventos) {
+                log(
+                    "⚠️ Fieldset de eventos não encontrado ainda, tentando novamente..."
+                );
+                return false;
+            }
+
+            logCritical("✅ FIELDSET: Fieldset de eventos encontrado");
+
+            // Buscar todas as imagens de estrela dentro do fieldset
+            const estrelas =
+                fieldsetEventos.querySelectorAll('img[src*="star"]');
+            logCritical(
+                `🌟 ESTRELAS: Encontradas ${estrelas.length} estrelas para personalizar`
+            );
+
+            if (estrelas.length === 0) {
+                log("⚠️ Nenhuma estrela encontrada no fieldset");
+                return false;
+            }
+
+            let personalizadas = 0;
+            estrelas.forEach((estrela, index) => {
+                try {
+                    // Personalizar apenas a aparência visual - SEM TOCAR NA FUNCIONALIDADE
+                    estrela.style.filter = "brightness(1.3) contrast(1.2)";
+                    estrela.style.transition = "all 0.2s ease";
+                    estrela.style.cursor = "pointer";
+
+                    // Adicionar efeitos hover APENAS VISUAIS
+                    estrela.addEventListener(
+                        "mouseenter",
+                        function () {
+                            this.style.transform = "scale(1.1)";
+                            this.style.filter =
+                                "brightness(1.5) contrast(1.3) drop-shadow(0 0 3px gold)";
+                        },
+                        { passive: true }
+                    );
+
+                    estrela.addEventListener(
+                        "mouseleave",
+                        function () {
+                            this.style.transform = "scale(1.0)";
+                            this.style.filter = "brightness(1.3) contrast(1.2)";
+                        },
+                        { passive: true }
+                    );
+
+                    personalizadas++;
+                    log(`✅ Estrela ${index + 1} personalizada`);
+                } catch (err) {
+                    logError(
+                        `❌ Erro ao personalizar estrela ${index + 1}:`,
+                        err
+                    );
+                }
+            });
+
+            logCritical(
+                `✅ PERSONALIZAÇÃO: ${personalizadas} estrelas personalizadas com sucesso`
+            );
+            return true;
+        } catch (error) {
+            logError("❌ Erro na personalização das estrelas:", error);
+            return false;
+        }
+    }
+
+    // Tentar aplicar personalização quando DOM estiver pronto
+    let tentativas = 0;
+    const maxTentativas = 10;
+
+    function tentarPersonalizar() {
+        if (aplicarPersonalizacaoEstrelas() || tentativas >= maxTentativas) {
+            if (tentativas >= maxTentativas) {
+                logCritical("⚠️ PERSONALIZAÇÃO: Limite de tentativas atingido");
+            }
+            return;
+        }
+
+        tentativas++;
+        setTimeout(tentarPersonalizar, 1000);
+    }
+
+    // Executar quando DOM estiver pronto
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", tentarPersonalizar);
+    } else {
+        setTimeout(tentarPersonalizar, 500);
+    }
 })();
 
 // ===== APLICAÇÃO INSTANTÂNEA DA NAVBAR - ANTES DE QUALQUER FLASH =====
@@ -1766,8 +1847,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 display: none !important;
             }
             
-            /* GARANTIR: Todos os outros Material Icons permanecem visíveis */
-            .material-icons {
+            /* GARANTIR: Apenas ícones específicos do eProbe permanecem visíveis */
+            .material-icons[data-eprobe-icon],
+            .eprobe-icon .material-icons,
+            [data-eprobe-container] .material-icons {
                 display: inline-block !important;
                 visibility: visible !important;
                 opacity: 1 !important;
@@ -34463,6 +34546,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         }
     }
 
+    // REMOVIDO: Interceptação final de switchRelevanciaEvento (causava erro)
+    console.log("✅ INTERCEPTAÇÃO FINAL: Desabilitada para evitar erros");
+    /*
     // SUBSTITUIR COM CONTROLE DE TEMPO - SEM LOOP INFINITO
     let tentativasSubstituicao = 0;
     const maxTentativas = 50; // Máximo 50 tentativas = ~250ms total
@@ -34476,8 +34562,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             return; // PARAR definitivamente
         }
 
-        window.switchRelevanciaEvento = switchRelevanciaEventoSegura;
-        window.switchRelevanciaEvento.__eprobeSeguraFinal = true;
+        // REMOVIDO: window.switchRelevanciaEvento = switchRelevanciaEventoSegura;
+        // REMOVIDO: window.switchRelevanciaEvento.__eprobeSeguraFinal = true;
 
         // Log apenas nas primeiras 5 tentativas
         if (tentativasSubstituicao <= 5) {
@@ -34498,12 +34584,13 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     console.log(
         "🛡️ INTERCEPTAÇÃO FINAL ATIVADA: switchRelevanciaEvento protegida continuamente"
     );
+    */
 })();
 
 // 🚨 INTERCEPTAÇÃO DEFINITIVA VIA Object.defineProperty - IMPOSSÍVEL DE QUEBRAR
 (function interceptacaoDefinitiva() {
     console.log(
-        "🔥 INTERCEPTAÇÃO DEFINITIVA: Object.defineProperty para switchRelevanciaEvento"
+        "� INTERCEPTAÇÃO REMOVIDA: switchRelevanciaEvento não será mais interceptada"
     );
 
     // Função ultra-segura
@@ -34577,20 +34664,21 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         delete window.switchRelevanciaEvento;
 
         // Redefinir com nossa função
+        // REMOVIDO: Object.defineProperty para switchRelevanciaEvento
+        /*
         Object.defineProperty(window, "switchRelevanciaEvento", {
             value: switchRelevanciaEventoDefinitiva,
             writable: false, // NÃO pode ser sobrescrita
             configurable: false, // NÃO pode ser redefinida
             enumerable: true,
         });
+        */
 
         console.log(
-            "🛡️ INTERCEPTAÇÃO DEFINITIVA APLICADA: switchRelevanciaEvento PERMANENTEMENTE protegida"
+            "✅ PERSONALIZAÇÃO: Apenas aparência das estrelas será customizada"
         );
     } catch (error) {
         console.error("❌ Erro ao aplicar defineProperty:", error);
-        // Fallback: substituição simples
-        window.switchRelevanciaEvento = switchRelevanciaEventoDefinitiva;
-        console.log("🔄 Fallback aplicado: substituição simples");
+        // REMOVIDO: Fallback de switchRelevanciaEvento (não mais necessário)
     }
 })();

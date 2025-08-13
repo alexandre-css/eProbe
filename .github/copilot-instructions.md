@@ -1,29 +1,104 @@
 # eProbe - AI Coding Instructions
 
-## 🚨 REGRAS CRÍTICAS ABSOLITAS - NUNCA MAIS ESQUECER
+## 🚨 REGRAS CRÍTICAS ABSOLUTAS - NUNCA MAIS ESQUECER
 
-### 🔴 CODIFICAÇÃO UTF-8 OBRIGATÓRIA - REGRA CRÍTICA ABSOLUTA
+### 🔴 SINTAXE OBRIGATÓRIA - REGRA CRÍTICA NÚMERO 1
 
-**REGRA CRÍTICA ABSOLUTA**: SEMPRE usar APENAS caracteres compatíveis com UTF-8. NUNCA usar emojis, símbolos especiais ou caracteres não-ASCII em código JavaScript.
+**REGRA CRÍTICA ABSOLUTA**: SEMPRE verificar sintaxe antes de propor qualquer mudança. NUNCA deixar erros de sintaxe que impeçam o funcionamento da extensão.
+
+**CHECKLIST OBRIGATÓRIO antes de QUALQUER edição:**
+
+1. ✅ Parênteses, colchetes e chaves estão balanceados?
+2. ✅ Todas as funções têm fechamento correto?
+3. ✅ Strings estão devidamente fechadas?
+4. ✅ Ponto e vírgula onde necessário?
+5. ✅ Try-catch têm estrutura completa (não órfãos)?
+6. ✅ IIFEs estão corretamente fechadas?
+7. ✅ Não há código órfão sem contexto?
+8. ✅ Object.assign() usado corretamente?
+
+**PADRÃO DE VERIFICAÇÃO OBRIGATÓRIO:**
+
+```javascript
+// ANTES de qualquer edição, SEMPRE verificar:
+// 1. Estrutura de fechamento
+function minhaFuncao() {
+    // implementação
+} // ✅ Fechamento correto
+
+// 2. Try-catch completo
+try {
+    // código
+} catch (error) {
+    // tratamento - NUNCA deixar catch órfão!
+}
+
+// 3. IIFE correta
+(function () {
+    // código
+})(); // ✅ Fechamento correto
+```
+
+**❌ ERROS FATAIS QUE NUNCA MAIS PODEM ACONTECER:**
+
+-   Catch órfão sem try correspondente
+-   Funções sem fechamento
+-   Código órfão que quebra a estrutura
+-   Múltiplas chamadas init() duplicadas
+-   Namespace criado depois do timeout de fallback
+
+### 🔴 PRINCÍPIO DA MUDANÇA MÍNIMA - REGRA CRÍTICA NÚMERO 2
+
+**REGRA ABSOLUTA**: Fazer APENAS mudanças mínimas e cirúrgicas. NUNCA refatorar código que já funciona.
+
+**CHECKLIST OBRIGATÓRIO:**
+
+1. ✅ A mudança resolve APENAS o problema específico relatado?
+2. ✅ Preserva toda funcionalidade existente?
+3. ✅ Não adiciona complexidade desnecessária?
+4. ✅ Perguntei antes de fazer alterações grandes?
+5. ✅ Testei a sintaxe antes de sugerir?
+
+**PADRÃO CORRETO:**
+
+```javascript
+// ❌ ERRADO - Refatorar tudo:
+// Reescrever função inteira que já funciona
+
+// ✅ CORRETO - Mudança cirúrgica:
+// Adicionar apenas a linha necessária para corrigir o bug específico
+```
+
+### 🔴 CODIFICAÇÃO UTF-8 OBRIGATÓRIA - REGRA CRÍTICA NÚMERO 3
+
+**REGRA CRÍTICA ABSOLUTA**: SEMPRE usar APENAS caracteres compatíveis com UTF-8. NUNCA usar emojis ou símbolos especiais em código JavaScript.
 
 **CARACTERES PROIBIDOS (JAMAIS USAR):**
-- ❌ ✅ 📄 🎯 ⚠️ 📋 🔄 🚀 📅 🎨 🔧 🌐 📊 💥 🆘 🛡️ 
-- Qualquer emoji ou símbolo Unicode especial
-- Caracteres acentuados em strings de código
-- Símbolos decorativos não-ASCII
+
+-   Emojis: ❌ ✅ 📄 🎯 ⚠️ 📋 🔄 🚀 📅 🎨 🔧 🌐 📊 💥 🆘 🛡️
+-   Qualquer símbolo Unicode especial em código
+-   Caracteres acentuados em variáveis ou strings de código
+-   Símbolos decorativos não-ASCII
 
 **CARACTERES PERMITIDOS (APENAS ESTES):**
-- Letras: a-z, A-Z
-- Números: 0-9  
-- Pontuação básica: . , ; : ! ? " ' ( ) [ ] { } + - * / = < > % & | ^ ~ _ $ # @
-- Espaços e quebras de linha padrão
 
-**CHECKLIST OBRIGATÓRIO antes de qualquer edição:**
-1. ✅ Código usa APENAS caracteres ASCII básicos?
-2. ✅ Strings não contêm emojis ou símbolos especiais?
-3. ✅ Comentários usam apenas texto simples?
-4. ✅ Mensagens de log são ASCII-compatíveis?
-5. ✅ NUNCA assumiu que caracteres especiais funcionarão?
+-   Letras: a-z, A-Z
+-   Números: 0-9
+-   Pontuação básica: . , ; : ! ? " ' ( ) [ ] { } + - \* / = < > % & | ^ ~ \_ $ # @
+-   Espaços e quebras de linha padrão
+
+### 🔴 RESPEITO AO CÓDIGO EXISTENTE - REGRA CRÍTICA NÚMERO 4
+
+**REGRA ABSOLUTA**: NUNCA modificar extensivamente código que já funciona. SEMPRE preservar arquiteturas existentes.
+
+**APRENDIZADOS CRÍTICOS:**
+
+-   ❌ NUNCA fazer modificações massivas sem necessidade
+-   ❌ NUNCA complicar sistemas que já funcionam
+-   ❌ NUNCA adicionar complexidade desnecessária
+-   ✅ SEMPRE fazer mudanças cirúrgicas e mínimas
+-   ✅ SEMPRE perguntar antes de mudanças grandes
+-   ✅ SEMPRE testar sintaxe antes de sugerir
 
 ### 🔴 VERIFICAÇÃO OBRIGATÓRIA DO NAMESPACE ANTES DE QUALQUER SUGESTÃO
 
@@ -36,7 +111,10 @@ console.log("🔍 Funções disponíveis:", Object.keys(window.SENT1_AUTO));
 // ✅ VERIFICAR SE FUNÇÃO EXISTE ANTES DE SUGERIR:
 if (!window.SENT1_AUTO.testarSistemaCompleto) {
     console.error("❌ Função não existe no namespace");
-    console.log("💡 Use alternativa que EXISTE:", Object.keys(window.SENT1_AUTO).filter(f => f.includes('testar')));
+    console.log(
+        "💡 Use alternativa que EXISTE:",
+        Object.keys(window.SENT1_AUTO).filter((f) => f.includes("testar"))
+    );
 }
 ```
 
@@ -49,17 +127,19 @@ if (!window.SENT1_AUTO.testarSistemaCompleto) {
 5. ✅ NUNCA assumiu que uma função existe sem verificar?
 
 **FUNÇÕES QUE REALMENTE EXISTEM (confirmadas):**
-- ✅ `detectarCardSessaoSimplificado()`
-- ✅ `testarDeteccaoRobusta()`
-- ✅ `diagnosticarEstruturaDOMMinutas()`
-- ✅ `testarDeteccaoComLogsCompletos()`
-- ✅ `resetarSistemaCard()`
-- ✅ `forcarCriacaoCardTeste()`
+
+-   ✅ `detectarCardSessaoSimplificado()`
+-   ✅ `testarDeteccaoRobusta()`
+-   ✅ `diagnosticarEstruturaDOMMinutas()`
+-   ✅ `testarDeteccaoComLogsCompletos()`
+-   ✅ `resetarSistemaCard()`
+-   ✅ `forcarCriacaoCardTeste()`
 
 **❌ NUNCA MAIS FAZER:**
-- Sugerir `testarSistemaCompleto()` sem verificar se existe
-- Assumir que funções estão no namespace
-- Dar erro "Cannot read properties of undefined"
+
+-   Sugerir `testarSistemaCompleto()` sem verificar se existe
+-   Assumir que funções estão no namespace
+-   Dar erro "Cannot read properties of undefined"
 
 ### 🔴 DECLARAÇÃO OBRIGATÓRIA DE VARIÁVEIS E FUNÇÕES
 
@@ -177,6 +257,7 @@ window.SENT1_AUTO = {
 **REGRA ABSOLUTA**: SEMPRE otimizar para performance seguindo padrões estabelecidos.
 
 #### Event Listeners Otimizados
+
 ```javascript
 // ❌ ERRO - Event listener sem otimização:
 button.addEventListener("mouseenter", handler);
@@ -186,6 +267,7 @@ button.addEventListener("mouseenter", handler, { passive: true });
 ```
 
 #### Debounce Obrigatório
+
 ```javascript
 // ❌ ERRO - setTimeout direto:
 setTimeout(minhaFuncao, 200);
@@ -196,10 +278,11 @@ debouncedFunction();
 ```
 
 #### MutationObserver Eficiente
+
 ```javascript
 // ❌ ERRO - Observer sem debounce:
 const observer = new MutationObserver((mutations) => {
-    mutations.forEach(mutation => processarMutacao(mutation));
+    mutations.forEach((mutation) => processarMutacao(mutation));
 });
 
 // ✅ CORRETO - Observer com debounce e early exit:
@@ -218,6 +301,7 @@ const observer = new MutationObserver((mutations) => {
 ```
 
 #### Backoff Exponencial
+
 ```javascript
 // ❌ ERRO - Timeouts fixos repetidos:
 setTimeout(tentarNovamente, 1000);
@@ -229,32 +313,37 @@ setTimeout(tentarNovamente, delay);
 ```
 
 **PADRÕES DE PERFORMANCE OBRIGATÓRIOS**:
+
 1. ✅ Event listeners sempre com `{ passive: true }` para scroll/hover
 2. ✅ MutationObserver sempre com debounce de 50ms mínimo
 3. ✅ setTimeout repetidos sempre com backoff exponencial
 4. ✅ Loops sempre com early exit quando possível
 5. ✅ Timer cleanup obrigatório (clearTimeout/clearInterval)
 
-## 🛡️ COMPROMISSO DE VERIFICAÇÃO - NUNCA MAIS FALHAR
+## 🛡️ COMPROMISSO DE QUALIDADE - NUNCA MAIS FALHAR
 
 ### **PROMESSA ABSOLUTA DO ASSISTENTE:**
 
 **EU VOU SEMPRE:**
-1. ✅ Executar `Object.keys(window.SENT1_AUTO)` mentalmente antes de sugerir funções
-2. ✅ Usar APENAS funções confirmadas no namespace atual
-3. ✅ Mostrar alternativas quando a função desejada não existir
-4. ✅ Incluir verificação de existência em todos os códigos
-5. ✅ Lembrar que `testarDeteccaoComLogsCompletos()` EXISTE e funciona
+
+1. ✅ Verificar sintaxe ANTES de sugerir qualquer mudança
+2. ✅ Fazer APENAS mudanças mínimas e cirúrgicas
+3. ✅ Preservar todo código que já funciona
+4. ✅ Perguntar antes de fazer alterações grandes
+5. ✅ Respeitar a arquitetura existente do projeto
+6. ✅ Testar logicamente as mudanças antes de sugerir
 
 **EU NUNCA MAIS VOU:**
-1. ❌ Assumir que uma função existe sem verificar
-2. ❌ Sugerir `testarSistemaCompleto()` se ela não estiver no namespace
-3. ❌ Causar erro "Cannot read properties of undefined (reading 'funcao')"
-4. ❌ Dar soluções sem verificar o estado atual do namespace
-5. ❌ Esquecer que o usuário já teve esse problema antes
+
+1. ❌ Deixar erros de sintaxe que quebrem a extensão
+2. ❌ Refatorar extensivamente código funcional
+3. ❌ Adicionar complexidade desnecessária
+4. ❌ Modificar múltiplos arquivos sem necessidade
+5. ❌ Assumir que mudanças massivas são necessárias
+6. ❌ Ignorar as regras de mudança mínima
 
 **FRASE LEMBRETE:**
-"ANTES DE SUGERIR QUALQUER `window.SENT1_AUTO.funcao()`, SEMPRE VERIFICAR SE ELA EXISTE!"
+"SINTAXE PRIMEIRO, MUDANÇA MÍNIMA SEMPRE!"
 
 ## Project Overview
 
@@ -277,39 +366,100 @@ eProbe is a Chrome extension that automates document detection and text extracti
 
 #### Global Namespace Design
 
-**NAMESPACE ÚNICO CONSOLIDADO**: Todas as funções públicas são expostas via `window.SENT1_AUTO` em um único local no arquivo `src/main.js`:
+## Core Workflows & Current Status
+
+### Estado Atual do Sistema (Agosto 2025)
+
+**✅ Funcionando:**
+
+-   Interceptação de funções problemáticas do eProc
+-   Sistema anti-flash multicamadas
+-   Aplicação instantânea de temas
+-   Namespace principal com fallback de emergência
+-   Funções de teste essenciais disponíveis
+
+**🔧 Funções Principais Confirmadas:**
 
 ```javascript
-// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-window.SENT1_AUTO = {
-    // 🚀 AUTOMAÇÃO PRINCIPAL
-    runFullAutomation, // Orquestrador principal do workflow
-    autoOpenDocumentoRelevante, // Navegação automática para documentos
-    autoExtractText, // Extração de texto com múltiplas estratégias
-
-    // 📅 DETECÇÃO DE DATA DE SESSÃO
-    detectarDataSessao, // Detecção de data de sessão nas atas do tribunal
-    getDadosCompletosMinutas, // Extração completa de dados de sessão
-
-    // 🔧 DEBUG E TESTES
-    debugTextoMinutas, // Função de debug para análise de texto
-    testarSistemaCompleto, // Testes abrangentes do sistema
-
-    // ... 50+ outras funções organizadas por categoria
-};
-// ##### FIM DO NAMESPACE CONSOLIDADO #####
+// Estas funções EXISTEM e funcionam no namespace atual:
+window.SENT1_AUTO.detectarCardSessaoSimplificado();
+window.SENT1_AUTO.testarDeteccaoRobusta();
+window.SENT1_AUTO.diagnosticarEstruturaDOMMinutas();
 ```
 
-**LOCALIZAÇÃO**: Aproximadamente linha ~19100 no arquivo `src/main.js`
+### Document Processing Pipeline
 
-**ORGANIZAÇÃO**: Funções agrupadas por categoria:
+1. **Detection**: Sistema detecta páginas do eProc
+2. **Interceptation**: Substitui funções problemáticas antes do DOM
+3. **Namespace Creation**: Cria namespace principal ou fallback
+4. **Theme Application**: Aplica tema instantaneamente
+5. **Anti-Flash**: Elimina flash visual durante carregamento
 
--   🚀 Automação Principal
--   📅 Detecção de Sessão
--   🎨 Interface Material Design
--   🔧 Debug e Testes
--   🌐 API e Dados Globais
--   📋 Localizadores (sub-namespace)
+## Development Conventions & Critical Rules
+
+### 🚨 PRÁTICAS OBRIGATÓRIAS DE CODIFICAÇÃO
+
+#### Declaração de Variáveis e Funções
+
+```javascript
+// ❌ ERRO COMUM - NÃO FAZER:
+if (jQueryDetected) { ... } // ReferenceError se não declarada
+
+// ✅ PADRÃO CORRETO - SEMPRE FAZER:
+let jQueryDetected = false; // Declarar no escopo correto
+let interceptAttempts = 0;
+const maxAttempts = 5;
+
+// Função deve ser declarada antes de usar
+const optimizedIntercept = () => {
+    interceptAttempts++;
+    const success = interceptJQueryMegaAggressive();
+
+    // Sempre atualizar variáveis de controle
+    if (success) {
+        jQueryDetected = true;
+    }
+
+    // Sempre retornar valor consistente
+    return success;
+};
+```
+
+#### Controle de Escopo e Inicialização
+
+```javascript
+// Variáveis globais no topo do arquivo
+let dataSessaoPautado = null;
+let processoComDataSessao = null;
+let jQueryIntercepted = false;
+
+// Verificação antes de usar variáveis globais
+if (typeof window.jQuery !== "undefined") {
+    // usar apenas se existir
+}
+
+// Funções devem ter valores de retorno consistentes
+function detectarAlgo() {
+    // ...implementação...
+    return resultado || false; // sempre retornar algo
+}
+```
+
+### Critical Testing & Debugging
+
+#### Verificação de Namespace Obrigatória
+
+```javascript
+// ✅ SEMPRE fazer antes de sugerir funções:
+console.log("Funções disponíveis:", Object.keys(window.SENT1_AUTO));
+
+// ✅ Verificar existência antes de usar:
+if (window.SENT1_AUTO.minhaFuncao) {
+    window.SENT1_AUTO.minhaFuncao();
+} else {
+    console.error("Função não encontrada no namespace");
+}
+```
 
 #### Theme System Architecture
 
@@ -726,51 +876,88 @@ let processoComDadosCompletos = null; // Process with complete data
 -   Store theme preferences in chrome.storage.sync
 -   Expose theme functions globally (window.applyThemeStyles)
 
-**❌ Don't:**
+## Recent Updates & Lessons Learned (Agosto 2025)
 
--   Use inline scripts in HTML (CSP violation)
--   Reference non-existent DOM elements without checking
--   Mix theme logic with other functionality
--   Hardcode theme values without fallbacks
+### 🔧 Problemas Resolvidos Recentemente
 
-### Critical Coding Patterns
+1. **Erros de Sintaxe Fatais**: Múltiplas correções de estruturas órfãs e fechamentos incorretos
+2. **Namespace Fallback**: Sistema implementado para garantir funcionalidade mesmo com erros
+3. **Interceptação Ultra-Precoce**: Sistema robusto para substituir funções problemáticas do eProc
+4. **Anti-Flash Multicamadas**: Eliminação completa de flash visual durante carregamento
 
-**✅ ALWAYS Do:**
+### 📚 Lições Críticas Aprendidas
 
-```javascript
-// 1. Declare variables before using
-let myVariable = false;
-let attempts = 0;
-const maxAttempts = 5;
+**❌ NUNCA MAIS FAZER:**
+
+-   Modificações extensivas em código que já funciona
+-   Adicionar complexidade desnecessária a sistemas simples
+-   Ignorar erros de sintaxe durante desenvolvimento
+-   Assumir que funções existem sem verificar
+
+**✅ SEMPRE FAZER:**
+
+-   Mudanças cirúrgicas e mínimas
+-   Verificar sintaxe antes de cada commit
+-   Preservar arquiteturas funcionais existentes
+-   Testar funções do namespace antes de sugerir
+
+### 🎯 Foco Atual do Projeto
+
+**Prioridades:**
+
+1. Manter estabilidade da interceptação de funções
+2. Garantir que namespace principal funcione sem fallback
+3. Preservar sistema anti-flash existente
+4. Manter compatibilidade com todas as páginas do eProc
+
+**Funcionalidades Estáveis:**
+
+-   Sistema de interceptação ultra-precoce
+-   Aplicação de temas instantânea
+-   Detecção robusta de páginas do eProc
+-   Namespace com fallback de emergência
+
+### 📋 Status de Desenvolvimento
+
+-   **Extensão**: ✅ Totalmente funcional
+-   **Sintaxe**: ✅ Sem erros críticos
+-   **Performance**: ✅ Otimizada com debounce e anti-flash
+-   **Compatibilidade**: ✅ eProc1g e eProc2g
+-   **Temas**: ✅ 4 temas disponíveis (blue, dark, light, violet)
+    // 1. Declare variables before using
+    let myVariable = false;
+    let attempts = 0;
+    const maxAttempts = 5;
 
 // 2. Initialize function variables properly
 const myFunction = () => {
-    let localVar = null; // Always declare
-    // ...implementation...
-    return localVar || false; // Always return something
+let localVar = null; // Always declare
+// ...implementation...
+return localVar || false; // Always return something
 };
 
 // 3. Check existence before using
 if (typeof window.jQuery !== "undefined") {
-    // safe to use jQuery
+// safe to use jQuery
 }
 
 // 4. Use consistent return values
 function detectSomething() {
-    let detected = false;
-    // ...logic...
-    return detected; // Always boolean
+let detected = false;
+// ...logic...
+return detected; // Always boolean
 }
 
 // 5. Always update consolidated namespace when creating public functions
 // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 window.SENT1_AUTO = {
-    // ... existing functions...
-    detectSomething, // <- ADD NEW FUNCTIONS HERE
-    // ... rest of functions...
+// ... existing functions...
+detectSomething, // <- ADD NEW FUNCTIONS HERE
+// ... rest of functions...
 };
 // ##### FIM DO NAMESPACE CONSOLIDADO #####
-```
+
+````
 
 **❌ NEVER Do:**
 
@@ -795,4 +982,4 @@ $.ready(() => { ... }); // jQuery might not exist!
 
 // 5. DON'T create scattered namespace assignments
 window.SENT1_AUTO.newFunction = newFunction; // WRONG! Use consolidated namespace only!
-```
+````
