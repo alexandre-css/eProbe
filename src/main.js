@@ -4,102 +4,30 @@ const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silencios
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
 
+// 🚨 FLAG GLOBAL - DESABILITAR SUBSTITUIÇÃO DE ESTRELAS
+const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição de estrelas
+
 // 🚨 INTERCEPTAÇÃO ULTRA-PRECOCE - CAPTURA AMBAS AS FUNÇÕES PROBLEMÁTICAS
 (function interceptacaoUltraPrecoce() {
     logCritical(
         "🎨 PERSONALIZAÇÃO: Customizando apenas aparência das estrelas (SEM interceptar funções)..."
     );
 
-    // �️ FUNÇÃO ULTRA-SEGURA PARA EVENTO - DEFINIDA PRIMEIRO
+    //   FUNÇÃO ULTRA-SEGURA PARA EVENTO - COMPLETAMENTE DESABILITADA
     function switchRelevanciaEventoUltraSegura(
         idEvento,
         relevancia,
         tipo,
         urlAjax
     ) {
+        // COMPLETAMENTE DESABILITADO para preservar funcionalidade do eProc
         console.log(
-            "🔥 FUNÇÃO SEGURA EXECUTADA: switchRelevanciaEvento interceptada"
+            "⚠️ INTERCEPTAÇÃO DESABILITADA: switchRelevanciaEvento não será interceptada"
         );
-
-        // Validação extrema de parâmetros
-        if (
-            idEvento === undefined ||
-            idEvento === null ||
-            urlAjax === undefined ||
-            urlAjax === null
-        ) {
-            console.error(
-                "❌ PARÂMETROS INVÁLIDOS: idEvento ou urlAjax são undefined/null"
-            );
-            return false;
-        }
-
-        // Conversão segura para string
-        const idEventoStr = String(idEvento);
-        const urlAjaxStr = String(urlAjax);
-
-        // Construir URL segura
-        try {
-            let fullUrl = urlAjaxStr;
-            const separator = fullUrl.includes("?") ? "&" : "?";
-            const params = `idEvento=${encodeURIComponent(
-                idEventoStr
-            )}&relevancia=${encodeURIComponent(
-                String(relevancia || "")
-            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
-            fullUrl += separator + params;
-
-            // AJAX seguro
-            const xhr = new XMLHttpRequest();
-            xhr.open("GET", fullUrl, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    console.log(
-                        "✅ switchRelevanciaEvento: Requisição bem-sucedida"
-                    );
-
-                    // MANTER FUNCIONALIDADE ORIGINAL: Atualizar visual da estrela
-                    try {
-                        const estrelaElement = document.querySelector(
-                            `a[onclick*="${idEventoStr}"]`
-                        );
-                        if (estrelaElement) {
-                            const icon =
-                                estrelaElement.querySelector(".material-icons");
-                            if (icon) {
-                                // Alternar entre estrela vazia e cheia
-                                icon.textContent =
-                                    relevancia === "1" ? "star" : "star_border";
-                                console.log(
-                                    "✅ Visual da estrela atualizado:",
-                                    relevancia === "1"
-                                        ? "ativada"
-                                        : "desativada"
-                                );
-                            }
-                        }
-                    } catch (updateError) {
-                        console.warn(
-                            "⚠️ Não foi possível atualizar visual da estrela:",
-                            updateError
-                        );
-                    }
-                }
-            };
-            xhr.send();
-
-            console.log("✅ switchRelevanciaEvento: Executada com segurança");
-            return true;
-        } catch (error) {
-            console.error(
-                "❌ switchRelevanciaEvento: Erro na execução:",
-                error
-            );
-            return false;
-        }
+        return false; // Não fazer nada
     }
 
-    // �🔥 FORÇA BRUTAL: Redefinir switchRelevanciaEvento IMEDIATAMENTE
+    //  🔥 FORÇA BRUTAL: Redefinir switchRelevanciaEvento IMEDIATAMENTE - DESABILITADO
     const forcarInterceptacaoEvento = () => {
         if (typeof window.switchRelevanciaEvento === "function") {
             const codigo = window.switchRelevanciaEvento.toString();
@@ -131,17 +59,24 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 */
             }
         }
-        // Repetir verificação
-        setTimeout(forcarInterceptacaoEvento, 100);
+        // DESABILITADO: Não repetir verificação para switchRelevanciaEvento
+        // setTimeout(forcarInterceptacaoEvento, 100);
     };
 
-    // Criar nossa função robusta para switchRelevanciaDocumento
+    // Criar nossa função robusta para switchRelevanciaDocumento - DESABILITADA
     function switchRelevanciaDocumentoUltraSegura(
         idEvento,
         relevancia,
         tipo,
         urlAjax
     ) {
+        // COMPLETAMENTE DESABILITADO para preservar funcionalidade do eProc
+        console.log(
+            "⚠️ INTERCEPTAÇÃO DESABILITADA: switchRelevanciaDocumento não será interceptada"
+        );
+        return false; // Não fazer nada
+
+        /* CÓDIGO ORIGINAL DESABILITADO:
         try {
             logCritical(
                 "🛡️ ULTRA-SEGURA: switchRelevanciaDocumento interceptada:",
@@ -231,10 +166,19 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             console.error("❌ ERRO CRÍTICO na função ultra-segura:", error);
             return false;
         }
+        */ // FIM DO CÓDIGO DESABILITADO
     }
 
-    // Função ultra-segura para atualizar ícones
+    // DESABILITADO: Função ultra-segura para atualizar ícones (interferindo com eProc)
     function atualizarIconeUltraSeguro(idEvento, relevancia) {
+        // COMPLETAMENTE DESABILITADO para não interferir com switchRelevanciaEvento do eProc
+        logCritical(
+            `⚠️ ATUALIZAÇÃO DE ÍCONE DESABILITADA: ${idEvento} -> ${relevancia} (preservando funcionalidade original)`
+        );
+        return true; // Retornar sucesso sem fazer modificações
+
+        // Código original comentado para preservar funcionalidade do eProc:
+        /*
         try {
             logCritical(`🌟 ATUALIZANDO ÍCONE: ${idEvento} -> ${relevancia}`);
 
@@ -307,6 +251,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         } catch (error) {
             console.error("❌ Erro ao atualizar ícones:", error);
         }
+        */
+        // FIM DA FUNÇÃO COMENTADA
     }
 
     // ️ FUNÇÃO ULTRA-SEGURA PARA switchRelevanciaEvento
@@ -481,6 +427,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     funcaoInterceptada.__eprobeInterceptada = true;
     let tentativasRedefinicao = 0;
 
+    // DESABILITADO: Object.defineProperty(window, "switchRelevanciaDocumento", {
+    /*
     Object.defineProperty(window, "switchRelevanciaDocumento", {
         get: function () {
             return funcaoInterceptada;
@@ -564,12 +512,14 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         configurable: false,
         enumerable: true,
     });
+    */ // FIM DA INTERCEPTAÇÃO DESABILITADA
 
     // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento com sistema híbrido
     let funcaoOriginalEprocEvento = null; // Armazenar a função original do eProc se existir
     // REMOVIDO: Interceptação completa de switchRelevanciaEvento
     /*
-    let interceptacaoAtivaEvento = true; // Circuit breaker para switchRelevanciaEvento
+    // DESABILITADO: Circuit breaker para switchRelevanciaEvento
+    let interceptacaoAtivaEvento = false; // Desabilitado para preservar funcionalidade original
     let contadorTentativasEvento = 0; // Contador de tentativas para evento
 
     let funcaoEventoInterceptada = function (
@@ -643,7 +593,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     codigoFuncao.length > 100 // Parece ser uma função real
                 ) {
                     logCritical(
-                        "� FUNÇÃO ORIGINAL DO EPROC DETECTADA E BLOQUEADA - contém bugs!"
+                        "  FUNÇÃO ORIGINAL DO EPROC DETECTADA E BLOQUEADA - contém bugs!"
                     );
                     logCritical(
                         "🛡️ Mantendo nossa função segura, nunca usando fallback problemático"
@@ -682,8 +632,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     });
     */
 
-    // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - AMBAS AS FUNÇÕES
-    let verificacaoAtiva = true;
+    // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - DESABILITADA
+    let verificacaoAtiva = false; // ⛔ DESABILITADO para preservar funcionalidade do eProc
     let totalVerificacoes = 0; // Contador total de verificações
 
     const verificarIntegridade = () => {
@@ -791,40 +741,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
     // Iniciar verificação imediata
     setTimeout(verificarIntegridade, 50);
 
-    // 🎯 INTERCEPTAÇÃO ADICIONAL - Window.prototype
+    // 🎯 INTERCEPTAÇÃO ADICIONAL - Window.prototype - DESABILITADA
     const originalDefineProperty = Object.defineProperty;
-    Object.defineProperty = function (obj, prop, descriptor) {
-        if (obj === window && prop === "switchRelevanciaDocumento") {
-            logCritical(
-                "🚨 switchRelevanciaDocumento: TENTATIVA VIA Object.defineProperty BLOQUEADA!"
-            );
-            return; // Bloquear
-        }
-        if (obj === window && prop === "switchRelevanciaEvento") {
-            logCritical(
-                "🚨 switchRelevanciaEvento: TENTATIVA VIA Object.defineProperty BLOQUEADA!"
-            );
-            return; // Bloquear
-        }
-        return originalDefineProperty.call(this, obj, prop, descriptor);
-    };
 
-    // ️ INTERCEPTAÇÃO DE EVAL E NEW FUNCTION
+    // ️ INTERCEPTAÇÃO DE EVAL E NEW FUNCTION - DESABILITADA
     const originalEval = window.eval;
-    window.eval = function (code) {
-        if (
-            code &&
-            code.includes &&
-            (code.includes("switchRelevanciaDocumento") ||
-                code.includes("switchRelevanciaEvento"))
-        ) {
-            logCritical(
-                "🚨 TENTATIVA DE REDEFINIÇÃO VIA EVAL BLOQUEADA! (AMBAS FUNÇÕES)"
-            );
-            return;
-        }
-        return originalEval.call(this, code);
-    };
 
     // 🔍 INTERCEPTAÇÃO ADICIONAL - QUALQUER FUNÇÃO COM 'switchRelevancia'
     // Interceptar QUALQUER definição de função que contenha 'switchRelevancia'
@@ -863,8 +784,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         };
     };
 
-    // Ativar monitoramento
-    monitorarDefinicoesFuncoes();
+    // DESABILITADO: Não monitorar definições de funções para switchRelevanciaEvento
+    // monitorarDefinicoesFuncoes();
 
     // 🕷️ INTERCEPTAÇÃO DE SCRIPT TAGS - Última linha de defesa
     const observarScripts = new MutationObserver((mutations) => {
@@ -888,14 +809,6 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         });
     });
 
-    // Observar document para novos scripts
-    if (document.documentElement) {
-        observarScripts.observe(document.documentElement, {
-            childList: true,
-            subtree: true,
-        });
-    }
-
     // 🎯 INTERCEPTAÇÃO ULTRA-AGRESSIVA - Monitorar TODA criação de propriedade no window
     const monitorarPropriedadesWindow = () => {
         const todasPropriedades = Object.getOwnPropertyNames(window);
@@ -918,12 +831,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                                 `🚨 FUNÇÃO PROBLEMÁTICA DETECTADA DINAMICAMENTE: ${prop}`
                             );
 
-                            // Substituir imediatamente
+                            // DESABILITADO: Não substituir switchRelevanciaEvento
                             if (prop.includes("Evento")) {
-                                window[prop] =
-                                    switchRelevanciaEventoUltraSegura;
+                                // NÃO substituir - deixar função original funcionar
                                 logCritical(
-                                    `✅ ${prop} substituída por versão segura!`
+                                    `⚠️ ${prop} detectada, mas NÃO substituída para preservar funcionalidade`
                                 );
                             } else {
                                 window[prop] =
@@ -951,8 +863,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         }, 5000);
     };
 
-    // Ativar monitoramento de propriedades
-    monitorarPropriedadesWindow();
+    // DESABILITADO: Não monitorar propriedades para switchRelevanciaEvento
+    // monitorarPropriedadesWindow();
 
     logCritical(
         "🔒 INTERCEPTAÇÃO ATIVADA: switchRelevanciaDocumento protegida (switchRelevanciaEvento REMOVIDA)!"
@@ -1005,7 +917,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         logCritical("🔧 Substituindo por versão segura...");
 
                         if (prop.includes("Evento")) {
-                            window[prop] = switchRelevanciaEventoUltraSegura;
+                            // DESABILITADO: Não substituir switchRelevanciaEvento
+                            logCritical(
+                                `⚠️ ${prop} detectada, mas NÃO substituída - preservando funcionalidade original`
+                            );
                         } else {
                             window[prop] = switchRelevanciaDocumentoUltraSegura;
                         }
@@ -1041,60 +956,11 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 
             logCritical("✅ FIELDSET: Fieldset de eventos encontrado");
 
-            // Buscar todas as imagens de estrela dentro do fieldset
-            const estrelas =
-                fieldsetEventos.querySelectorAll('img[src*="star"]');
+            // DESABILITADO: Personalização de estrelas para não interferir na funcionalidade do eProc
             logCritical(
-                `🌟 ESTRELAS: Encontradas ${estrelas.length} estrelas para personalizar`
+                "⚠️ PERSONALIZAÇÃO: Desabilitada para preservar funcionalidade das estrelas do eProc"
             );
-
-            if (estrelas.length === 0) {
-                log("⚠️ Nenhuma estrela encontrada no fieldset");
-                return false;
-            }
-
-            let personalizadas = 0;
-            estrelas.forEach((estrela, index) => {
-                try {
-                    // Personalizar apenas a aparência visual - SEM TOCAR NA FUNCIONALIDADE
-                    estrela.style.filter = "brightness(1.3) contrast(1.2)";
-                    estrela.style.transition = "all 0.2s ease";
-                    estrela.style.cursor = "pointer";
-
-                    // Adicionar efeitos hover APENAS VISUAIS
-                    estrela.addEventListener(
-                        "mouseenter",
-                        function () {
-                            this.style.transform = "scale(1.1)";
-                            this.style.filter =
-                                "brightness(1.5) contrast(1.3) drop-shadow(0 0 3px gold)";
-                        },
-                        { passive: true }
-                    );
-
-                    estrela.addEventListener(
-                        "mouseleave",
-                        function () {
-                            this.style.transform = "scale(1.0)";
-                            this.style.filter = "brightness(1.3) contrast(1.2)";
-                        },
-                        { passive: true }
-                    );
-
-                    personalizadas++;
-                    log(`✅ Estrela ${index + 1} personalizada`);
-                } catch (err) {
-                    logError(
-                        `❌ Erro ao personalizar estrela ${index + 1}:`,
-                        err
-                    );
-                }
-            });
-
-            logCritical(
-                `✅ PERSONALIZAÇÃO: ${personalizadas} estrelas personalizadas com sucesso`
-            );
-            return true;
+            return true; // Retornar sucesso sem fazer modificações
         } catch (error) {
             logError("❌ Erro na personalização das estrelas:", error);
             return false;
@@ -1274,8 +1140,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             console.log("✅ ANTI-FLASH UNIFICADO: Sistema ativado");
         },
 
-        // Revelar ícone personalizado
+        // DESABILITADO: Revelar ícone personalizado (pode interferir com IDs do eProc)
         revelarIcone: function (elemento) {
+            // DESABILITADO: Não modificar elementos para preservar funcionalidade do eProc
+            /*
             if (elemento && elemento.tagName) {
                 elemento.setAttribute("data-eprobe-icon-replaced", "true");
                 elemento.style.setProperty(
@@ -1290,10 +1158,14 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     "important"
                 );
             }
+            */
+            // FUNÇÃO DESABILITADA
         },
 
-        // Ocultar ícone original
+        // DESABILITADO: Ocultar ícone original (pode interferir com IDs do eProc)
         ocultarIcone: function (elemento) {
+            // DESABILITADO: Não modificar elementos para preservar funcionalidade do eProc
+            /*
             if (
                 elemento &&
                 elemento.classList &&
@@ -1303,6 +1175,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 elemento.style.setProperty("opacity", "0", "important");
                 elemento.style.setProperty("visibility", "hidden", "important");
             }
+            */
+            // FUNÇÃO DESABILITADA
         },
 
         // ⚡ NOVO: Revelar elemento personalizado (navbar, botões, etc.)
@@ -2325,6 +2199,12 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         .eprobe-notification {
             opacity: 0;
             animation: fadeInElement 0.3s ease-out forwards;
+        }
+        
+        /* ===== ESTILOS PARA ESTRELAS PERSONALIZADAS (SEM INTERFERIR NA FUNCIONALIDADE) ===== */
+        .eprobe-estrela-personalizada:hover {
+            transform: scale(1.1) !important;
+            filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 3px gold) !important;
         }
         
         /* ===== ESTILOS PARA LEMBRETES ===== */
@@ -11141,7 +11021,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     }
 
                     // 4. FALLBACK: Tentar seleção no container geral
-                    console.log("� Usando estratégia geral para container");
+                    console.log("  Usando estratégia geral para container");
                     return await simularTeclasNoElemento(pdfContainer);
                 } catch (error) {
                     console.log(
@@ -17630,8 +17510,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             }
 
             /**
-             * Força a reaplicação dos ícones em caso de falha
-             * Remove marcações existentes e executa novamente
+             * DESABILITADO: Força a reaplicação dos ícones em caso de falha
+             * Esta função pode estar interferindo com os ícones de estrela do eProc
              */
             function forcarReaplicacaoIcones() {
                 // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
@@ -25812,7 +25692,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
             }
 
-            // � ANTI-FLASH CRÍTICO: Ocultar ícones originais IMEDIATAMENTE e mostrar apenas personalizados
+            //   ANTI-FLASH CRÍTICO: Ocultar ícones originais IMEDIATAMENTE e mostrar apenas personalizados
             function aplicarAntiFlashIcones() {
                 try {
                     // Aplicar anti-flash total (ícones + navbar + botões)
@@ -25832,7 +25712,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 }
             }
 
-            // �🔄 REAPLICAR ÍCONES: Força a reaplicação de ícones após atualização AJAX
+            //  🔄 REAPLICAR ÍCONES: Força a reaplicação de ícones após atualização AJAX
             function reaplicarIconesAposAtualizacao(containerElement) {
                 log(
                     "🔄 REAPLICAÇÃO: Iniciando reaplicação forçada de ícones após atualização..."
@@ -26709,6 +26589,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         selector: 'img[src*="lupa.gif"]',
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
                     },
+                    // DESABILITADO: Substituições de estrelas para preservar funcionalidade do eProc
+                    /*
                     {
                         selector: 'img[src*="EstrelaAcesa.gif"]',
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
@@ -26717,6 +26599,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         selector: 'img[src*="EstrelaApagada.gif"]',
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
                     },
+                    */
                     {
                         selector: 'img[src*="oral_video.png"]',
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
@@ -26730,8 +26613,36 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                 ];
 
                 imgsBySrc.forEach(({ selector, newSvg }) => {
+                    // 🚨 PROTEÇÃO CRÍTICA: NUNCA substituir ícones de estrela
+                    if (
+                        selector &&
+                        (selector.includes("Estrela") ||
+                            selector.includes("star"))
+                    ) {
+                        console.log(
+                            "🛡️ PROTEÇÃO: Bloqueando substituição de estrela:",
+                            selector
+                        );
+                        return; // Pular esta substituição
+                    }
+
                     const img = fieldset.querySelector(selector);
                     if (img) {
+                        // 🚨 VERIFICAÇÃO ADICIONAL: Verificar se é ícone de estrela
+                        if (
+                            (img.src &&
+                                (img.src.includes("Estrela") ||
+                                    img.src.includes("star"))) ||
+                            (img.alt &&
+                                (img.alt.includes("Evento relevante") ||
+                                    img.alt.includes("relevante")))
+                        ) {
+                            console.log(
+                                "🛡️ PROTEÇÃO: Bloqueando substituição de elemento estrela encontrado"
+                            );
+                            return; // Pular esta substituição
+                        }
+
                         const container = document.createElement("span");
                         container.innerHTML = newSvg;
 
@@ -27049,6 +26960,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
                         name: "Lupa",
                     },
+                    // DESABILITADO: Ícones de estrela para preservar funcionalidade do eProc
+                    /*
                     {
                         // Ícones de estrela acesa (preenchida)
                         selectors: [
@@ -27069,6 +26982,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
                         name: "Estrela Apagada",
                     },
+                    */ // FIM DAS SUBSTITUIÇÕES DE ESTRELA DESABILITADAS
                     {
                         // Ícones de vídeo/televisão
                         selectors: [
@@ -27939,6 +27853,8 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             ],
                             newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>`,
                         },
+                        // DESABILITADO: Ícones de estrela para preservar funcionalidade do eProc
+                        /*
                         // Ícones de estrela acesa (preenchida)
                         "Estrela Acesa": {
                             selectors: [
@@ -27957,6 +27873,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                             ],
                             newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
                         },
+                        */ // FIM DAS SUBSTITUIÇÕES DE ESTRELA DESABILITADAS
                         // Ícones de vídeo/televisão
                         Vídeo: {
                             selectors: [
@@ -28632,11 +28549,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                         typeof corrigirSwitchRelevanciaDocumentoRobusta ===
                         "function"
                     ) {
-                        const resultado =
-                            corrigirSwitchRelevanciaDocumentoRobusta();
+                        // DESABILITADO: const resultado = corrigirSwitchRelevanciaDocumentoRobusta();
                         log(
-                            "✅ CORREÇÃO ROBUSTA: switchRelevanciaDocumento corrigida automaticamente:",
-                            resultado
+                            "⚠️ CORREÇÃO DESABILITADA: switchRelevanciaDocumento NÃO corrigida para preservar funcionalidade"
                         );
                     } else if (
                         typeof corrigirSwitchRelevanciaDocumento === "function"
@@ -31071,7 +30986,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     };
                 },
 
-                // � Função para testar reaplicação de ícones em legMinutas
+                //   Função para testar reaplicação de ícones em legMinutas
                 testarReaplicacaoIconesMinutas: () => {
                     console.log("🔄 TESTE REAPLICAÇÃO ÍCONES MINUTAS:");
 
@@ -31231,7 +31146,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     return resultado;
                 },
 
-                // �🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
+                //  🔧 FUNÇÕES DE DEBUG PARA CRIAÇÃO DE BOTÃO
                 debugButtonCreation:
                     debugInterfaceFunctions.debugButtonCreation,
                 forceCreateButton: debugInterfaceFunctions.forceCreateButton,
@@ -34132,7 +34047,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                               "setupObservadorRecursosMinuta não disponível"
                           ),
 
-            // � Função para configurar observador de legMinutas (Histórico)
+            //   Função para configurar observador de legMinutas (Histórico)
             setupObservadorLegendMinutas:
                 typeof setupObservadorLegendMinutas === "function"
                     ? setupObservadorLegendMinutas
@@ -34141,7 +34056,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                               "setupObservadorLegendMinutas não disponível"
                           ),
 
-            // �🔧 Função para corrigir alinhamento em divListaRecursosMinuta
+            //  🔧 Função para corrigir alinhamento em divListaRecursosMinuta
             corrigirAlinhamentoRecursosMinuta:
                 typeof corrigirAlinhamentoRecursosMinuta === "function"
                     ? corrigirAlinhamentoRecursosMinuta
@@ -34316,11 +34231,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
             if (
                 typeof corrigirSwitchRelevanciaDocumentoRobusta === "function"
             ) {
-                const resultadoSwitch =
-                    corrigirSwitchRelevanciaDocumentoRobusta();
+                // DESABILITADO: const resultadoSwitch = corrigirSwitchRelevanciaDocumentoRobusta();
                 logCritical(
-                    "✅ CORREÇÃO IMEDIATA ROBUSTA: switchRelevanciaDocumento corrigido:",
-                    resultadoSwitch
+                    "⚠️ CORREÇÃO DESABILITADA: switchRelevanciaDocumento NÃO corrigido para preservar funcionalidade"
                 );
             } else if (
                 typeof corrigirSwitchRelevanciaDocumento === "function"
@@ -34348,11 +34261,9 @@ const logError = console.error.bind(console); // Erros sempre visíveis
                     typeof corrigirSwitchRelevanciaDocumentoRobusta ===
                     "function"
                 ) {
-                    const resultado =
-                        corrigirSwitchRelevanciaDocumentoRobusta();
+                    // DESABILITADO: const resultado = corrigirSwitchRelevanciaDocumentoRobusta();
                     logCritical(
-                        "✅ SEGUNDA TENTATIVA ROBUSTA: switchRelevanciaDocumento re-corrigido:",
-                        resultado
+                        "⚠️ SEGUNDA TENTATIVA DESABILITADA: switchRelevanciaDocumento NÃO re-corrigido para preservar funcionalidade"
                     );
                 } else if (
                     typeof corrigirSwitchRelevanciaDocumento === "function"
@@ -34590,7 +34501,7 @@ const logError = console.error.bind(console); // Erros sempre visíveis
 // 🚨 INTERCEPTAÇÃO DEFINITIVA VIA Object.defineProperty - IMPOSSÍVEL DE QUEBRAR
 (function interceptacaoDefinitiva() {
     console.log(
-        "� INTERCEPTAÇÃO REMOVIDA: switchRelevanciaEvento não será mais interceptada"
+        "  INTERCEPTAÇÃO REMOVIDA: switchRelevanciaEvento não será mais interceptada"
     );
 
     // Função ultra-segura
@@ -34658,10 +34569,10 @@ const logError = console.error.bind(console); // Erros sempre visíveis
         }
     }
 
-    // REDEFINIR via defineProperty - FORÇA MÁXIMA
+    // DESABILITADO: Não redefinir switchRelevanciaEvento para preservar funcionalidade
     try {
-        // Deletar se existir
-        delete window.switchRelevanciaEvento;
+        // DESABILITADO: Não deletar função original do eProc
+        // delete window.switchRelevanciaEvento;
 
         // Redefinir com nossa função
         // REMOVIDO: Object.defineProperty para switchRelevanciaEvento
