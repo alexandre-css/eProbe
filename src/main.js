@@ -2746,6 +2746,11 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         status: "Incluído",
                     },
                     {
+                        nome: "Incluído em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Incluído em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Incluído",
+                    },
+                    {
                         nome: "Pedido de Vista em Pauta",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Vista",
@@ -2800,6 +2805,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             "Agravo",
                             "Apelação",
                             "Recurso",
+                            "Juízo de Retratação",
                         ];
 
                         // Tentar encontrar um tipo válido no final da string capturada
@@ -2976,6 +2982,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 "Preliminar (Incluído em Pauta em 15/08/2025 - CAMCIV2)",
                 "Cautelar (Convertido em Diligência em Pauta em 30/06/2025 - CAMCOM1)",
                 "1. Recurso Especial (Retirado em Pauta em 10/09/2025 - SORGESP)",
+                "Juízo de Retratação (Incluído em Mesa em 21/08/2025 - CAMPUB5)",
             ];
 
             exemplos.forEach((exemplo, index) => {
@@ -5426,7 +5433,6 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 card.innerHTML = `
                 <style>
                     .session-card:hover {
-                        transform: translateY(-1px);
                         box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
                     }
                 </style>
@@ -8292,24 +8298,111 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                     // Estratégias múltiplas para extrair o texto do magistrado
                                     let magistradoEncontrado = false;
 
-                                    // Estratégia 1: Texto entre aspas simples ou duplas
-                                    const magistradoMatch1 =
-                                        onmouseoverAttr.match(
-                                            /['"]([^'"]+)['"]/
-                                        );
+                                    // Estratégia 1 ESPECÍFICA: carregarInfoUsuarioOutroGrau com estrutura HTML
                                     if (
-                                        magistradoMatch1 &&
-                                        magistradoMatch1[1]
+                                        onmouseoverAttr.includes(
+                                            "carregarInfoUsuarioOutroGrau"
+                                        )
                                     ) {
-                                        eventoMagistrado =
-                                            magistradoMatch1[1].trim();
-                                        magistradoEncontrado = true;
-                                        log(
-                                            `🔍 Estratégia 1 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
-                                        );
+                                        const carregarMatch =
+                                            onmouseoverAttr.match(
+                                                /carregarInfoUsuarioOutroGrau\(['"]([^'"]+)['"][\)\;]/
+                                            );
+                                        if (carregarMatch && carregarMatch[1]) {
+                                            let textoCompleto =
+                                                carregarMatch[1];
+
+                                            // Decodificar HTML entities
+                                            textoCompleto =
+                                                textoCompleto.replace(
+                                                    /&lt;/g,
+                                                    "<"
+                                                );
+                                            textoCompleto =
+                                                textoCompleto.replace(
+                                                    /&gt;/g,
+                                                    ">"
+                                                );
+                                            textoCompleto =
+                                                textoCompleto.replace(
+                                                    /&amp;/g,
+                                                    "&"
+                                                );
+
+                                            // Dividir por <br/> para obter partes estruturadas
+                                            const partes = textoCompleto
+                                                .split(/<br\s*\/?>/i)
+                                                .map((p) => p.trim())
+                                                .filter((p) => p);
+
+                                            log(
+                                                `🔍 Estratégia 1 ESPECÍFICA - Partes encontradas: ${JSON.stringify(
+                                                    partes
+                                                )}`
+                                            );
+
+                                            // Estrutura típica: [NOME, TIPO, VARA]
+                                            if (partes.length >= 3) {
+                                                const nome = partes[0].trim();
+                                                const tipo = partes[1].trim();
+                                                const vara = partes[2].trim();
+
+                                                // Criar objeto estruturado com informações corretas
+                                                eventoMagistrado = {
+                                                    nome: nome,
+                                                    tipo: tipo.toLowerCase(), // ✅ Normalizar para minúsculo
+                                                    vara: vara,
+                                                    textoCompleto: `${nome} (${tipo}) - ${vara}`,
+                                                };
+
+                                                magistradoEncontrado = true;
+                                                log(
+                                                    `🔍 Estratégia 1 ESPECÍFICA - Magistrado estruturado: ${JSON.stringify(
+                                                        eventoMagistrado
+                                                    )}`
+                                                );
+                                            } else if (partes.length >= 2) {
+                                                // Fallback: pelo menos nome e uma informação adicional
+                                                eventoMagistrado = {
+                                                    nome: partes[0].trim(),
+                                                    tipo: partes[1]
+                                                        .trim()
+                                                        .toLowerCase(), // ✅ Normalizar para minúsculo
+                                                    vara: null,
+                                                    textoCompleto:
+                                                        partes.join(" - "),
+                                                };
+                                                magistradoEncontrado = true;
+                                                log(
+                                                    `🔍 Estratégia 1 ESPECÍFICA - Magistrado parcial: ${JSON.stringify(
+                                                        eventoMagistrado
+                                                    )}`
+                                                );
+                                            }
+                                        }
                                     }
 
-                                    // Estratégia 2: Texto após "infraTooltipMostrar"
+                                    // Estratégia 2: Texto entre aspas simples ou duplas (fallback)
+                                    if (!magistradoEncontrado) {
+                                        const magistradoMatch1 =
+                                            onmouseoverAttr.match(
+                                                /['"]([^'"]+)['"]/
+                                            );
+                                        if (
+                                            magistradoMatch1 &&
+                                            magistradoMatch1[1]
+                                        ) {
+                                            eventoMagistrado =
+                                                magistradoMatch1[1].trim();
+                                            magistradoEncontrado = true;
+                                            log(
+                                                `🔍 Estratégia 2 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                            );
+                                        }
+                                    }
+
+                                    // Estratégia 3: Texto após "infraTooltipMostrar"
+                                    // Estratégia 3: Texto após "infraTooltipMostrar"
                                     if (!magistradoEncontrado) {
                                         const magistradoMatch2 =
                                             onmouseoverAttr.match(
@@ -8323,12 +8416,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                                 magistradoMatch2[1].trim();
                                             magistradoEncontrado = true;
                                             log(
-                                                `🔍 Estratégia 2 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                                `🔍 Estratégia 3 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
                                             );
                                         }
                                     }
 
-                                    // Estratégia 3: Qualquer texto que pareça nome/cargo entre parênteses ou tags
+                                    // Estratégia 4: Qualquer texto que pareça nome/cargo entre parênteses ou tags
+                                    // Estratégia 4: Qualquer texto que pareça nome/cargo entre parênteses ou tags
                                     if (!magistradoEncontrado) {
                                         const magistradoMatch3 =
                                             onmouseoverAttr.match(
@@ -8342,12 +8436,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                                 magistradoMatch3[1].trim();
                                             magistradoEncontrado = true;
                                             log(
-                                                `🔍 Estratégia 3 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                                `🔍 Estratégia 4 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
                                             );
                                         }
                                     }
 
-                                    // Estratégia 4: Fallback - qualquer texto substancial
+                                    // Estratégia 5: Fallback - qualquer texto substancial
+                                    // Estratégia 5: Fallback - qualquer texto substancial
                                     if (!magistradoEncontrado) {
                                         const magistradoMatch4 =
                                             onmouseoverAttr.match(
@@ -8361,7 +8456,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                                 magistradoMatch4[1].trim();
                                             magistradoEncontrado = true;
                                             log(
-                                                `🔍 Estratégia 4 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
+                                                `🔍 Estratégia 5 - Magistrado/Vara encontrado: "${eventoMagistrado}"`
                                             );
                                         }
                                     }
@@ -8417,26 +8512,50 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                                 // Formatar informações do magistrado/advogado
                                 if (eventoMagistrado) {
-                                    const magistradoFormatado =
-                                        formatarMagistradoAdvogado(
-                                            eventoMagistrado
-                                        );
+                                    // Verificar se já temos dados estruturados da nova estratégia
                                     if (
-                                        typeof magistradoFormatado ===
-                                            "object" &&
-                                        magistradoFormatado.tipo
+                                        typeof eventoMagistrado === "object" &&
+                                        eventoMagistrado.nome
                                     ) {
-                                        // Armazenar informações estruturadas
-                                        linkData.magistradoInfo =
-                                            magistradoFormatado;
-                                        eventoMagistrado =
-                                            magistradoFormatado.nome;
+                                        // Dados já estruturados da estratégia específica
+                                        linkData.magistradoInfo = {
+                                            tipo:
+                                                eventoMagistrado.tipo ||
+                                                "magistrado",
+                                            nome: eventoMagistrado.nome,
+                                            vara: eventoMagistrado.vara,
+                                        };
+                                        linkData.eventoMagistrado =
+                                            eventoMagistrado.nome; // Para compatibilidade
+
+                                        log(
+                                            `✅ Magistrado estruturado: Nome="${eventoMagistrado.nome}", Tipo="${eventoMagistrado.tipo}", Vara="${eventoMagistrado.vara}"`
+                                        );
                                     } else {
-                                        eventoMagistrado = magistradoFormatado;
+                                        // Formato antigo - processar com a função existente
+                                        const magistradoFormatado =
+                                            formatarMagistradoAdvogado(
+                                                eventoMagistrado
+                                            );
+                                        if (
+                                            typeof magistradoFormatado ===
+                                                "object" &&
+                                            magistradoFormatado.tipo
+                                        ) {
+                                            // Armazenar informações estruturadas
+                                            linkData.magistradoInfo =
+                                                magistradoFormatado;
+                                            eventoMagistrado =
+                                                magistradoFormatado.nome;
+                                        } else {
+                                            eventoMagistrado =
+                                                magistradoFormatado;
+                                        }
+
+                                        log(
+                                            `🔍 Informações formatadas (método antigo): "${eventoMagistrado}"`
+                                        );
                                     }
-                                    log(
-                                        `🔍 Informações formatadas: "${eventoMagistrado}"`
-                                    );
                                 }
 
                                 if (!eventoMagistrado) {
@@ -8528,7 +8647,19 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         linkData.eventoDescricao =
                             eventoDescricao || linkData.tipo.descricao;
                         linkData.eventoData = eventoData || "";
-                        linkData.eventoMagistrado = eventoMagistrado || "";
+
+                        // Tratar eventoMagistrado corretamente (pode ser string ou objeto)
+                        if (
+                            typeof eventoMagistrado === "object" &&
+                            eventoMagistrado.nome
+                        ) {
+                            // Se é objeto estruturado, usar o nome
+                            linkData.eventoMagistrado = eventoMagistrado.nome;
+                        } else {
+                            // Se é string, usar diretamente
+                            linkData.eventoMagistrado = eventoMagistrado || "";
+                        }
+
                         log(
                             `📋 Dados finais para documento #${
                                 index + 1
@@ -10467,146 +10598,40 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
-            // 📥 FUNÇÃO: Download direto do PDF via fetch
-            async function tentarDownloadDiretoPDF() {
-                console.log("📥 Iniciando download direto do PDF...");
+            // � FUNÇÃO: Instrução para seleção manual do PDF (SEM DOWNLOADS)
+            async function instruirSelecaoManualPDF() {
+                console.log(
+                    "📄 Instruindo seleção manual do PDF (sem downloads)..."
+                );
 
                 try {
-                    // 1. Construir URL de download do eProc
-                    let downloadUrl = null;
-
-                    const urlParams = new URLSearchParams(
-                        window.location.search
-                    );
-                    const doc = urlParams.get("doc");
-                    const evento = urlParams.get("evento");
-                    const key = urlParams.get("key");
-
-                    if (doc && evento && key) {
-                        // URL de download direto do eProc
-                        const baseUrl =
-                            window.location.origin + window.location.pathname;
-                        downloadUrl = `${baseUrl}?acao=processo_consultar_externo_documento&doc=${doc}&evento=${evento}&key=${key}`;
-                        console.log(
-                            "🌐 URL de download construída:",
-                            downloadUrl
-                        );
-                    } else {
-                        console.log(
-                            "❌ Parâmetros necessários para download não encontrados"
-                        );
-                        return null;
-                    }
-
-                    // 2. Fazer download do PDF
-                    console.log("📥 Fazendo download do PDF...");
-
-                    const response = await fetch(downloadUrl);
-                    if (!response.ok) {
-                        console.log("❌ Falha no download:", response.status);
-                        return null;
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    console.log(
-                        "📊 PDF baixado:",
-                        arrayBuffer.byteLength,
-                        "bytes"
+                    // Instruções para seleção manual
+                    showNotification(
+                        "📄 Para extrair texto do PDF:\n\n✅ INSTRUÇÕES:\n1. Pressione Ctrl+A para selecionar todo o texto\n2. Pressione Ctrl+C para copiar\n3. Clique no botão eProbe novamente\n\n🎯 O texto será detectado automaticamente!",
+                        "info",
+                        8000
                     );
 
-                    // 3. Tentar extrair texto com PDF.js se disponível
-                    if (typeof pdfjsLib !== "undefined") {
-                        console.log("📚 Usando PDF.js para extração...");
-
-                        try {
-                            const pdf = await pdfjsLib.getDocument(arrayBuffer)
-                                .promise;
-                            const numPages = pdf.numPages;
-                            console.log("📄 PDF tem", numPages, "páginas");
-
-                            let textoCompleto = "";
-
-                            // Extrair texto de todas as páginas (máximo 20)
-                            const maxPages = Math.min(numPages, 20);
-                            for (let i = 1; i <= maxPages; i++) {
-                                const page = await pdf.getPage(i);
-                                const textContent = await page.getTextContent();
-                                const textItems = textContent.items.map(
-                                    (item) => item.str
-                                );
-                                textoCompleto += textItems.join(" ") + "\n\n";
-                            }
-
-                            if (textoCompleto.length > 200) {
-                                console.log(
-                                    "✅ Texto extraído via PDF.js:",
-                                    textoCompleto.length,
-                                    "chars"
-                                );
-                                return textoCompleto.trim();
-                            } else {
-                                console.log(
-                                    "⚠️ Texto extraído muito pequeno via PDF.js"
+                    // Aguardar um pouco e verificar clipboard
+                    setTimeout(async () => {
+                        const clipboardCheck =
+                            await navigator.clipboard.readText();
+                        if (clipboardCheck && clipboardCheck.length > 200) {
+                            const isValid =
+                                validarConteudoPDFReal(clipboardCheck);
+                            if (isValid) {
+                                showNotification(
+                                    "✅ Texto detectado automaticamente!",
+                                    "success",
+                                    3000
                                 );
                             }
-                        } catch (pdfError) {
-                            console.log(
-                                "❌ Erro ao processar PDF com PDF.js:",
-                                pdfError.message
-                            );
                         }
-                    } else {
-                        console.log("⚠️ PDF.js não disponível para extração");
-                    }
+                    }, 5000);
 
-                    // 4. Fallback: Tentar abrir PDF em nova aba para seleção manual
-                    console.log("🔄 Fallback: Abrindo PDF em nova aba...");
-
-                    const blob = new Blob([arrayBuffer], {
-                        type: "application/pdf",
-                    });
-                    const blobUrl = URL.createObjectURL(blob);
-
-                    // Abrir em nova aba (não popup para evitar bloqueio)
-                    const newWindow = window.open(blobUrl, "_blank");
-
-                    if (newWindow) {
-                        console.log("✅ PDF aberto em nova aba");
-
-                        // Instruções específicas para nova aba
-                        showNotification(
-                            "📄 PDF aberto em nova aba!\n\n✅ INSTRUÇÕES AUTOMÁTICAS:\n1. Aguarde o PDF carregar na nova aba\n2. Pressione Ctrl+A para selecionar tudo\n3. Pressione Ctrl+C para copiar\n4. Volte para esta aba\n5. Clique no botão eProbe novamente\n\n🎯 O texto será detectado automaticamente!",
-                            "info",
-                            10000
-                        );
-
-                        // Aguardar um pouco e verificar clipboard
-                        setTimeout(async () => {
-                            const clipboardCheck =
-                                await navigator.clipboard.readText();
-                            if (clipboardCheck && clipboardCheck.length > 200) {
-                                const isValid =
-                                    validarConteudoPDFReal(clipboardCheck);
-                                if (isValid) {
-                                    showNotification(
-                                        "✅ Texto detectado automaticamente!",
-                                        "success",
-                                        3000
-                                    );
-                                }
-                            }
-                        }, 5000);
-
-                        return null; // Aguardar ação manual
-                    } else {
-                        console.log(
-                            "❌ Não foi possível abrir PDF em nova aba"
-                        );
-                    }
-
-                    return null;
+                    return null; // Aguardar ação manual
                 } catch (error) {
-                    console.log("❌ Erro no download direto:", error.message);
+                    console.log("❌ Erro na instrução manual:", error.message);
                     return null;
                 }
             }
@@ -10840,64 +10865,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
-            // Estratégia 1: Fetch direto do PDF com PDF.js local
+            // ❌ FUNÇÃO DESABILITADA: Fetch direto do PDF (violava políticas do eProc)
             async function tryFetchPDFExtraction() {
-                try {
-                    console.log("🔍 Tentando extração via fetch + PDF.js...");
-
-                    // Detectar URL do PDF
-                    const pdfUrl = getPDFUrl();
-                    if (!pdfUrl) {
-                        console.log("⚠️ URL do PDF não encontrada");
-                        return null;
-                    }
-
-                    console.log("📄 URL do PDF detectada:", pdfUrl);
-
-                    // Fazer fetch do PDF
-                    const response = await fetch(pdfUrl, {
-                        credentials: "same-origin",
-                        headers: {
-                            Accept: "application/pdf,*/*",
-                        },
-                    });
-
-                    if (!response.ok) {
-                        console.log(
-                            "❌ Erro no fetch:",
-                            response.status,
-                            response.statusText
-                        );
-                        return null;
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    console.log(
-                        "📊 PDF carregado:",
-                        arrayBuffer.byteLength,
-                        "bytes"
-                    );
-
-                    // Usar PDF.js local (se disponível)
-                    if (typeof pdfjsLib !== "undefined") {
-                        return await extractWithPDFJS(arrayBuffer);
-                    }
-
-                    // Tentar carregar PDF.js dinamicamente (CSP-safe)
-                    const pdfLibLoaded = await loadLocalPDFJS();
-                    if (pdfLibLoaded && typeof pdfjsLib !== "undefined") {
-                        return await extractWithPDFJS(arrayBuffer);
-                    }
-
-                    console.log("⚠️ PDF.js não disponível");
-                    return null;
-                } catch (error) {
-                    console.log(
-                        "❌ Erro na extração via fetch:",
-                        error.message
-                    );
-                    return null;
-                }
+                console.log(
+                    "❌ FETCH PDF DESABILITADO: Esta função foi desabilitada por violação às políticas do eProc"
+                );
+                return null; // Sempre retorna null
             }
 
             // Estratégia 3: Automação de seleção FOCADA NO PDF
@@ -14738,6 +14711,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             eventoDesc,
                             tamanhoInfo,
                             eventoMagistrado: documento.eventoMagistrado, // Debug magistrado
+                            magistradoInfo: documento.magistradoInfo, // ✅ NOVO: Debug magistradoInfo estruturado
+                            magistradoInfoTipo: documento.magistradoInfo?.tipo, // ✅ Debug específico do tipo
+                            magistradoInfoNome: documento.magistradoInfo?.nome, // ✅ Debug específico do nome
+                            magistradoInfoVara: documento.magistradoInfo?.vara, // ✅ Debug específico da vara
                             original_eventoDescricao: documento.eventoDescricao,
                         });
 
@@ -14767,18 +14744,34 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 </svg>
                                 Documento: ${documento.texto}${tamanhoInfo}
                                 </div>${
-                                    documento.magistradoInfo &&
-                                    documento.magistradoInfo.tipo ===
-                                        "magistrado"
+                                    // ✅ DEBUG: Log direto no modal para diagnosticar
+                                    console.log(
+                                        `🔍 MODAL DEBUG ${index}: magistradoInfo =`,
+                                        documento.magistradoInfo,
+                                        `eventoMagistrado =`,
+                                        documento.eventoMagistrado
+                                    ) ||
+                                    // ✅ CONDIÇÃO FLEXÍVEL: Aceitar qualquer magistradoInfo com nome
+                                    (documento.magistradoInfo &&
+                                        documento.magistradoInfo.nome)
                                         ? `
                                 <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                 <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
-                                <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
+                                <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a .5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
                                 <circle cx="10" cy="7" r="4"/>
                                 </svg>
-                                ${documento.magistradoInfo.nome}
+                                ${
+                                    documento.magistradoInfo.tipo?.toLowerCase() ===
+                                    "magistrado"
+                                        ? "Magistrado(a)"
+                                        : documento.magistradoInfo.tipo?.toLowerCase() ===
+                                          "advogado"
+                                        ? "Advogado(a)"
+                                        : "Usuário"
+                                }: ${documento.magistradoInfo.nome}
                                 </div>${
+                                    // Mostrar vara apenas se existir
                                     documento.magistradoInfo.vara
                                         ? `
             <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -14794,19 +14787,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             </div>`
                                         : ""
                                 }`
-                                        : documento.magistradoInfo &&
-                                          documento.magistradoInfo.tipo ===
-                                              "advogado"
-                                        ? `
-            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
-            <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
-            <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
-            <circle cx="10" cy="7" r="4"/>
-            </svg>
-            ${documento.magistradoInfo.nome}
-            </div>`
-                                        : documento.eventoMagistrado
+                                        : // FALLBACK: Se não há dados estruturados mas há eventoMagistrado simples
+                                        documento.eventoMagistrado
                                         ? `
             <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
@@ -18108,7 +18090,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     const padroes = [
                         {
                             nome: "Incluído em Pauta",
-                            regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                            regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Retratação))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
+                            status: "Pautado",
+                        },
+                        {
+                            nome: "Incluído em Mesa",
+                            regex: /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar|Retratação))\s*\(Incluído em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi,
                             status: "Pautado",
                         },
                         {
@@ -18863,90 +18850,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
 
             /**
-             * ESTRATÉGIA 3: Fetch direto do PDF
+             * ❌ ESTRATÉGIA DESABILITADA: Fetch direto do PDF (violava políticas do eProc)
              */
             async function tryExtractTextViaFetch(pdfElement) {
-                try {
-                    log(" Tentando extração via fetch direto...");
-
-                    const pdfUrl = pdfElement.src;
-                    if (
-                        !pdfUrl ||
-                        pdfUrl.startsWith("blob:") ||
-                        pdfUrl.startsWith("data:")
-                    ) {
-                        log(" URL do PDF não é adequada para fetch");
-                        return null;
-                    }
-
-                    // Carregar PDF.js se necessário
-                    if (typeof pdfjsLib === "undefined") {
-                        await loadPdfJsLibrary();
-                    }
-
-                    showNotification(" Baixando PDF...", "info");
-
-                    // Fetch do PDF com timeout
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(
-                        () => controller.abort(),
-                        30000
-                    ); // 30s timeout
-
-                    const response = await fetch(pdfUrl, {
-                        signal: controller.signal,
-                        headers: {
-                            Accept: "application/pdf",
-                        },
-                    });
-
-                    clearTimeout(timeoutId);
-
-                    if (!response.ok) {
-                        throw new Error(
-                            `HTTP ${response.status}: ${response.statusText}`
-                        );
-                    }
-
-                    const arrayBuffer = await response.arrayBuffer();
-                    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
-
-                    let fullText = "";
-                    const numPages = Math.min(pdf.numPages, 15); // Limite maior para fetch direto
-
-                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-                        const page = await pdf.getPage(pageNum);
-                        const textContent = await page.getTextContent();
-
-                        const pageText = textContent.items
-                            .filter(
-                                (item) => item.str && item.str.trim().length > 0
-                            )
-                            .map((item) => item.str)
-                            .join(" ");
-
-                        if (pageText.trim()) {
-                            fullText += pageText + "\n\n";
-                        }
-
-                        showNotification(
-                            ` Processando página ${pageNum}/${numPages}...`,
-                            "info"
-                        );
-                    }
-
-                    if (fullText.trim().length > 50) {
-                        log(
-                            ` Fetch extraiu ${fullText.length} caracteres de ${numPages} páginas`
-                        );
-                        return fullText.trim();
-                    }
-
-                    return null;
-                } catch (error) {
-                    log(` Erro no fetch: ${error.message}`);
-                    return null;
-                }
+                console.log(
+                    "❌ FETCH PDF DESABILITADO: Esta função foi desabilitada por violação às políticas do eProc"
+                );
+                return null; // Sempre retorna null
             }
 
             /**
@@ -28746,7 +28656,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // Padrões para extrair informações
                 const padraoData = /(\d{2}\/\d{2}\/\d{4})/;
                 const padraoStatus =
-                    /(Incluído em Pauta|Retirado de Pauta|Pedido de Vista|Julgado em Pauta|Adiado|Sobrestado)/i;
+                    /(Incluído em Pauta|Incluído em Mesa|Retirado de Pauta|Pedido de Vista|Julgado em Pauta|Adiado|Sobrestado)/i;
                 const padraoTipo = /(Apelação|Agravo|Embargos|Recurso)[^,]*/i;
 
                 const data = texto.match(padraoData)?.[1];
@@ -34077,6 +33987,48 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     );
                     return null;
                 }
+            },
+            testarPadraoInclusoMesa: () => {
+                console.log("🧪 TESTE: Validando padrão 'Incluído em Mesa'...");
+
+                const exemplosMesa = [
+                    "Juízo de Retratação (Incluído em Mesa em 21/08/2025 - CAMPUB5)",
+                    "Mérito (Incluído em Mesa em 15/09/2025 - CAMCIV2)",
+                    "Preliminar (Incluído em Mesa em 10/10/2025 - SORGESP)",
+                ];
+
+                const padraoMesa =
+                    /^([A-Za-zÀ-ÿ\s]+?)\s*\(Incluído em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi;
+
+                let testesPassaram = 0;
+
+                exemplosMesa.forEach((exemplo, index) => {
+                    padraoMesa.lastIndex = 0; // Reset regex
+                    const match = padraoMesa.exec(exemplo);
+
+                    if (match) {
+                        console.log(`✅ Teste ${index + 1}: PASSOU`);
+                        console.log(`   Tipo: "${match[1]}"`);
+                        console.log(`   Data: "${match[2]}"`);
+                        console.log(`   Órgão: "${match[3]}"`);
+                        testesPassaram++;
+                    } else {
+                        console.log(
+                            `❌ Teste ${index + 1}: FALHOU - ${exemplo}`
+                        );
+                    }
+                });
+
+                const resultado = {
+                    totalTestes: exemplosMesa.length,
+                    testesPassaram: testesPassaram,
+                    sucesso: testesPassaram === exemplosMesa.length,
+                };
+
+                console.log(
+                    `🎯 RESULTADO: ${testesPassaram}/${exemplosMesa.length} testes passaram`
+                );
+                return resultado;
             },
             testarDeteccaoRobusta: () => {
                 console.log(
