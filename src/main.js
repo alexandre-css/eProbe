@@ -1772,11 +1772,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 transition: opacity 0.2s ease !important;
             }
             
-            /* GERAL: Forçar estabilidade visual */
-            * {
-                backface-visibility: hidden !important;
-            }
-            
+          
             /* ESPECÍFICO: Elementos do eProc que causam flash */
             .infraFieldset,
             .infraLegendObrigatorio,
