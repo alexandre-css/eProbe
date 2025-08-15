@@ -25712,6 +25712,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     log(
                         `🎉 CONCLUÍDO: ${processados}/${elementosLegMinutas.length} elementos processados`
                     );
+
+                    // Configurar observer automaticamente na primeira execução
+                    if (
+                        processados > 0 &&
+                        typeof setupObservadorLegendMinutas === "function"
+                    ) {
+                        setupObservadorLegendMinutas();
+                    }
+
                     return {
                         sucesso: processados > 0,
                         processados: processados,
@@ -25724,6 +25733,146 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         erro: error.message,
                     };
                 }
+            }
+
+            /**
+             * 🔄 OBSERVER PARA REAPLICAR GRADIENTES AUTOMATICAMENTE
+             * Monitora mudanças no DOM das minutas e reaplica gradientes
+             */
+            function setupObservadorLegendMinutas() {
+                log(
+                    "🔍 OBSERVER ANTI-FLASH: Configurando observer otimizado para legendas..."
+                );
+
+                const containerMinutas =
+                    document.querySelector("#conteudoMinutas");
+
+                if (!containerMinutas) {
+                    log(
+                        "⚠️ OBSERVER: Container #conteudoMinutas não encontrado"
+                    );
+                    return false;
+                }
+
+                // Função de reaplicação otimizada com anti-flash
+                function reaplicarGradientesAntiFlash() {
+                    const elementos = document.querySelectorAll(
+                        'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
+                    );
+
+                    if (elementos.length === 0) return;
+
+                    const cores = {
+                        "rgb(152, 245, 255)":
+                            "linear-gradient(#AFCFFA, #8DC0F7)",
+                        "rgb(255, 160, 122)":
+                            "linear-gradient(#FFB8AF, #FF9C8D)",
+                        "rgb(255, 211, 155)":
+                            "linear-gradient(#FAD3AF, #F7C68D)",
+                        "rgb(255, 193, 37)":
+                            "linear-gradient(#FFDE8F, #FFB84D)",
+                        "rgb(205, 181, 205)":
+                            "linear-gradient(#D8C7D8, #C4A5C4)",
+                        "rgb(211, 211, 211)":
+                            "linear-gradient(#B5C9CF, #9CB0B7)",
+                        "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)",
+                        "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)",
+                        "rgb(255, 187, 255)":
+                            "linear-gradient(#FFC9FF, #FF9CFF)",
+                        "rgb(255, 246, 143)":
+                            "linear-gradient(#F9EFAF, #F7E98D)",
+                        "rgb(144, 238, 144)":
+                            "linear-gradient(#AFFAB6, #8DF792)",
+                    };
+
+                    let reaplicados = 0;
+                    elementos.forEach((el, i) => {
+                        const bgColor =
+                            window.getComputedStyle(el).backgroundColor;
+
+                        // Aplicar gradiente se cor sólida detectada ou forçar padrão
+                        if (bgColor !== "rgba(0, 0, 0, 0)") {
+                            const gradiente =
+                                cores[bgColor] ||
+                                "linear-gradient(#FFDE8F, #FFB84D)"; // Padrão dourado
+                            el.style.setProperty(
+                                "background",
+                                gradiente,
+                                "important"
+                            );
+                            reaplicados++;
+                        }
+                    });
+
+                    if (reaplicados > 0) {
+                        log(
+                            `🎨 OBSERVER: ${reaplicados} gradientes reaplicados (anti-flash)`
+                        );
+                    }
+                }
+
+                // Múltiplas tentativas com delays otimizados para anti-flash
+                function reaplicarComBackoff() {
+                    reaplicarGradientesAntiFlash(); // Imediato
+                    setTimeout(reaplicarGradientesAntiFlash, 25);
+                    setTimeout(reaplicarGradientesAntiFlash, 75);
+                    setTimeout(reaplicarGradientesAntiFlash, 150);
+                }
+
+                // Observer otimizado com debounce mínimo
+                const observer = new MutationObserver(
+                    window.debounce(() => {
+                        log(
+                            "🔄 OBSERVER: Mudança detectada, reaplicando gradientes (anti-flash)..."
+                        );
+                        reaplicarComBackoff();
+                    }, 10)
+                ); // Debounce mínimo
+
+                // Observer agressivo
+                observer.observe(containerMinutas, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: ["style", "class"],
+                    characterData: true,
+                });
+
+                // Click listener preventivo
+                document.addEventListener("click", (e) => {
+                    if (
+                        e.target.closest(
+                            'input[type="image"][title*="Atualizar"]'
+                        ) ||
+                        e.target.closest(
+                            'input[type="button"][value*="Expandir"]'
+                        ) ||
+                        e.target.closest('input[title*="Expandir"]') ||
+                        e.target.closest('input[onclick*="atualizaMinutas"]')
+                    ) {
+                        log(
+                            "🖱️ CLICK: Botão detectado, aplicação preventiva..."
+                        );
+                        reaplicarGradientesAntiFlash(); // Preventivo
+                        setTimeout(reaplicarGradientesAntiFlash, 10);
+                        setTimeout(reaplicarGradientesAntiFlash, 50);
+                        setTimeout(reaplicarGradientesAntiFlash, 100);
+                        setTimeout(reaplicarGradientesAntiFlash, 200);
+                    }
+                });
+
+                // CSS preventivo para transição suave
+                const stylePreventivo = document.createElement("style");
+                stylePreventivo.id = "eprobe-anti-flash-gradientes";
+                stylePreventivo.textContent = `
+                    legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio {
+                        transition: background 0.1s ease-out !important;
+                    }
+                `;
+                document.head.appendChild(stylePreventivo);
+
+                log("✅ OBSERVER ANTI-FLASH: Configurado com sucesso!");
+                return true;
             }
 
             /**
@@ -35869,3 +36018,170 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         // REMOVIDO: Fallback de switchRelevanciaEvento (não mais necessário)
     }
 })();
+
+// 🎨 SISTEMA FUNCIONAL DE GRADIENTES - VERSÃO QUE FUNCIONA
+(function criarSistemaGradientesCompleto() {
+    console.log("🎨 SISTEMA FUNCIONAL: Iniciando gradientes + observer...");
+
+    function aplicarGradientes() {
+        const elementos = document.querySelectorAll(
+            'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
+        );
+        if (elementos.length === 0) return 0;
+
+        const cores = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)",
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)",
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)",
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)",
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)",
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)",
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)",
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)",
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)",
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)",
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)",
+        };
+
+        let processados = 0;
+        elementos.forEach((el, i) => {
+            const cor = window.getComputedStyle(el).backgroundColor;
+            if (cor !== "rgba(0, 0, 0, 0)") {
+                const gradiente =
+                    cores[cor] || "linear-gradient(#FFDE8F, #FFB84D)";
+                el.style.setProperty("background", gradiente, "important");
+                console.log(
+                    `✅ eProbe GRADIENTE: legMinutas ${i + 1} aplicado!`
+                );
+                processados++;
+            }
+        });
+
+        if (processados > 0) {
+            console.log(
+                `🎉 eProbe GRADIENTES: ${processados} elementos processados!`
+            );
+        }
+        return processados;
+    }
+
+    // Aplicar imediatamente
+    aplicarGradientes();
+
+    // Observer funcional
+    const container = document.querySelector("#conteudoMinutas");
+    if (container) {
+        const observer = new MutationObserver(() => {
+            console.log(
+                "🔄 eProbe OBSERVER: Mudança detectada, reaplicando..."
+            );
+            aplicarGradientes();
+            setTimeout(aplicarGradientes, 50);
+            setTimeout(aplicarGradientes, 150);
+        });
+
+        observer.observe(container, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+        });
+
+        // Click listener
+        document.addEventListener("click", (e) => {
+            if (
+                e.target.closest('input[type="image"][title*="Atualizar"]') ||
+                e.target.closest('input[onclick*="atualizaMinutas"]')
+            ) {
+                console.log("🖱️ eProbe CLICK: Reaplicando preventivamente...");
+                aplicarGradientes();
+                setTimeout(aplicarGradientes, 25);
+                setTimeout(aplicarGradientes, 100);
+            }
+        });
+
+        console.log("✅ eProbe GRADIENTES: Sistema completo configurado!");
+        window.eProbeGradientesFuncional = {
+            aplicar: aplicarGradientes,
+            observer: observer,
+        };
+    }
+
+    console.log("🚀 eProbe GRADIENTES: Sistema inicializado com sucesso!");
+})();
+
+// 🚀 FUNÇÃO GLOBAL INDEPENDENTE - SEMPRE DISPONÍVEL
+// Esta função funciona independentemente do namespace SENT1_AUTO
+window.aplicarGradientesLegMinutasGlobal = function () {
+    console.log("🎨 GRADIENTES GLOBAL: Iniciando aplicação independente...");
+
+    try {
+        // Buscar TODOS os elementos legMinutas
+        const elementosLegMinutas = document.querySelectorAll(
+            'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
+        );
+
+        console.log(
+            `🔍 GLOBAL: Encontrados ${elementosLegMinutas.length} elementos legMinutas`
+        );
+
+        if (elementosLegMinutas.length === 0) {
+            console.log("❌ GLOBAL: Nenhum elemento legMinutas encontrado");
+            return { sucesso: false, processados: 0 };
+        }
+
+        // Mapa de cores RGB para gradientes
+        const cores = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL #98F5FF
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO #FFA07A
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO #FFD39B
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO #FFC125
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS #CDB5CD
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA #D3D3D3
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA #EE6363
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO #FFFF00
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO #FFBBFF
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA #FFF68F
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)", // VERDE #90EE90
+        };
+
+        let processados = 0;
+
+        // Processar cada elemento
+        elementosLegMinutas.forEach((legMinutas, index) => {
+            const corAtual =
+                window.getComputedStyle(legMinutas).backgroundColor;
+
+            if (cores[corAtual]) {
+                legMinutas.style.setProperty(
+                    "background",
+                    cores[corAtual],
+                    "important"
+                );
+                console.log(
+                    `✅ GLOBAL: legMinutas ${
+                        index + 1
+                    } - Gradiente aplicado para ${corAtual}!`
+                );
+                processados++;
+            } else {
+                console.log(
+                    `⚠️ GLOBAL: legMinutas ${
+                        index + 1
+                    } - Cor não mapeada: ${corAtual}`
+                );
+            }
+        });
+
+        console.log(
+            `🎉 GLOBAL: ${processados}/${elementosLegMinutas.length} elementos processados com sucesso!`
+        );
+        return { sucesso: processados > 0, processados: processados };
+    } catch (error) {
+        console.error("❌ GLOBAL: Erro:", error);
+        return { sucesso: false, processados: 0, erro: error.message };
+    }
+};
+
+console.log(
+    "🚀 FUNÇÃO GLOBAL CRIADA: window.aplicarGradientesLegMinutasGlobal disponível!"
+);
