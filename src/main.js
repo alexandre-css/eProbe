@@ -2855,6 +2855,27 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             minutaId: minutaId,
                         };
 
+                        // 🎯 EXTRAIR DADOS DE PAUTA/MESA PARA SESSÕES "Incluído em Pauta"
+                        if (padrao.status.toLowerCase().includes("incluído")) {
+                            console.log(
+                                "🔍 PAUTA/MESA: Sessão 'Incluído' detectada, buscando dados de pauta/mesa..."
+                            );
+                            const dadosPautaMesa = extrairDadosPautaMesa(
+                                data.trim()
+                            );
+                            if (dadosPautaMesa) {
+                                sessao.dadosPauta = dadosPautaMesa;
+                                console.log(
+                                    "✅ PAUTA/MESA: Dados integrados à sessão:",
+                                    dadosPautaMesa
+                                );
+                            } else {
+                                console.log(
+                                    "❌ PAUTA/MESA: Nenhum dado de pauta/mesa encontrado para esta data"
+                                );
+                            }
+                        }
+
                         console.log(
                             `   ✅ SESSÃO DETECTADA (${padrao.nome}):`,
                             sessao
@@ -3195,6 +3216,166 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             console.log(`✅ EXTRAIR TIPO: Resultado final: "${tipoFormatado}"`);
 
             return tipoFormatado;
+        }
+
+        /**
+         * 🎯 FUNÇÃO PARA EXTRAIR DADOS DE PAUTA/MESA DOS EVENTOS
+         * Busca na tabela de eventos do eProc informações sobre inclusão em pauta/mesa
+         * @param {string} dataSessao - Data da sessão para comparar (formato DD/MM/YYYY)
+         * @returns {Object|null} - Dados da pauta/mesa ou null se não encontrado
+         */
+        function extrairDadosPautaMesa(dataSessao) {
+            console.log(
+                "🔍 PAUTA/MESA: Iniciando extração de dados de pauta/mesa..."
+            );
+            console.log(
+                "📅 PAUTA/MESA: Data da sessão para comparar:",
+                dataSessao
+            );
+
+            // Buscar tabela de eventos
+            const tabelaEventos = document.querySelector("#tblEventos");
+            if (!tabelaEventos) {
+                console.log("❌ PAUTA/MESA: Tabela #tblEventos não encontrada");
+                return null;
+            }
+
+            console.log("✅ PAUTA/MESA: Tabela de eventos encontrada");
+
+            // Buscar todas as linhas de evento com ID trEvento + número
+            const linhasEvento =
+                tabelaEventos.querySelectorAll('tr[id^="trEvento"]');
+            console.log(
+                `🔢 PAUTA/MESA: ${linhasEvento.length} eventos encontrados`
+            );
+
+            for (let i = 0; i < linhasEvento.length; i++) {
+                const linha = linhasEvento[i];
+                const eventoId = linha.id;
+
+                console.log(`🔍 PAUTA/MESA: Analisando evento ${eventoId}...`);
+
+                // Buscar label com descrição do evento
+                const labelDescricao = linha.querySelector(
+                    "label.infraEventoDescricao"
+                );
+                if (!labelDescricao) {
+                    console.log(
+                        `⚠️ PAUTA/MESA: ${eventoId} - Label de descrição não encontrado`
+                    );
+                    continue;
+                }
+
+                const textoEvento = labelDescricao.textContent || "";
+                console.log(
+                    `📝 PAUTA/MESA: ${eventoId} - Texto: "${textoEvento}"`
+                );
+
+                // Verificar se é um evento de inclusão em pauta ou mesa
+                const isInclusaoPauta = textoEvento.includes(
+                    "Inclusão em pauta de julgamento pelo relator"
+                );
+                const isInclusaoMesa = textoEvento.includes(
+                    "Incluído em mesa para julgamento"
+                );
+
+                if (!isInclusaoPauta && !isInclusaoMesa) {
+                    console.log(
+                        `⏭️ PAUTA/MESA: ${eventoId} - Não é evento de pauta/mesa, continuando...`
+                    );
+                    continue;
+                }
+
+                console.log(
+                    `🎯 PAUTA/MESA: ${eventoId} - Evento de ${
+                        isInclusaoPauta ? "PAUTA" : "MESA"
+                    } encontrado!`
+                );
+
+                // Extrair o HTML completo do evento para análise
+                const htmlCompleto = linha.innerHTML;
+
+                // Padrões regex para extração
+                const padroes = {
+                    // Sessão Ordinária Física - Data da sessão: 21/08/2025 14:00
+                    sessaoFisica:
+                        /<b>Sessão Ordinária Física<\/b><br>Data da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                    // Sessão Virtual - Período da sessão: 19/08/2025 00:00 a 19/08/2025 18:00
+                    sessaoVirtual:
+                        /<b>Sessão Virtual[^<]*<\/b><br>Período da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                    // Sequencial: 18
+                    sequencial: /Sequencial:\s*(\d+)/i,
+                };
+
+                let modalidade = null;
+                let dataEncontrada = null;
+                let sequencial = null;
+
+                // Verificar modalidade física
+                const matchFisica = htmlCompleto.match(padroes.sessaoFisica);
+                if (matchFisica) {
+                    modalidade = "física";
+                    dataEncontrada = matchFisica[1];
+                    console.log(
+                        `🏛️ PAUTA/MESA: ${eventoId} - Sessão FÍSICA detectada, data: ${dataEncontrada}`
+                    );
+                }
+
+                // Verificar modalidade virtual
+                const matchVirtual = htmlCompleto.match(padroes.sessaoVirtual);
+                if (matchVirtual && !modalidade) {
+                    // só se não encontrou física
+                    modalidade = "virtual";
+                    dataEncontrada = matchVirtual[1];
+                    console.log(
+                        `💻 PAUTA/MESA: ${eventoId} - Sessão VIRTUAL detectada, data: ${dataEncontrada}`
+                    );
+                }
+
+                // Extrair sequencial
+                const matchSequencial = htmlCompleto.match(padroes.sequencial);
+                if (matchSequencial) {
+                    sequencial = parseInt(matchSequencial[1]);
+                    console.log(
+                        `🔢 PAUTA/MESA: ${eventoId} - Sequencial: ${sequencial}`
+                    );
+                }
+
+                // Verificar se a data coincide
+                const dataCoincide =
+                    dataEncontrada && dataEncontrada === dataSessao;
+                console.log(
+                    `📅 PAUTA/MESA: ${eventoId} - Comparação de datas:`
+                );
+                console.log(`   Data encontrada: "${dataEncontrada}"`);
+                console.log(`   Data da sessão: "${dataSessao}"`);
+                console.log(`   Coincidem: ${dataCoincide ? "✅" : "❌"}`);
+
+                if (dataCoincide && modalidade && sequencial !== null) {
+                    const tipoInclusao = isInclusaoPauta
+                        ? "Incluído em pauta"
+                        : "Incluído em mesa";
+
+                    const resultado = {
+                        tipoInclusao,
+                        modalidade,
+                        sequencial,
+                        dataEncontrada,
+                        eventoId,
+                    };
+
+                    console.log(
+                        `🎉 PAUTA/MESA: Dados completos encontrados:`,
+                        resultado
+                    );
+                    return resultado;
+                }
+            }
+
+            console.log(
+                "❌ PAUTA/MESA: Nenhum evento de pauta/mesa com data coincidente encontrado"
+            );
+            return null;
         }
 
         /**
@@ -3998,7 +4179,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         gap: 12px;
                     ">
                         <span class="material-symbols-outlined" style="
-                            font-size: 28px;
+                            font-size: 28px !important;
                             vertical-align: middle;
                             flex-shrink: 0;
                         ">event_repeat</span>
@@ -4190,6 +4371,74 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             }</span>
                         </div>
                         
+                        ${
+                            sessao.dadosPauta
+                                ? `
+                        <!-- Modalidade da Sessão -->
+                        <div style="
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 8px;
+                            color: #64748B;
+                            font-size: 12px;
+                            margin-bottom: 8px;
+                            line-height: 1.4;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 16px !important;
+                                vertical-align: middle;
+                                color: #64748B;
+                                flex-shrink: 0;
+                                margin-top: 1px;
+                            ">${
+                                sessao.dadosPauta.modalidade === "virtual"
+                                    ? "dvr"
+                                    : "groups"
+                            }</span>
+                            <span style="
+                                font-weight: 500;
+                                word-break: break-word;
+                            ">
+                                ${
+                                    sessao.dadosPauta.modalidade === "virtual"
+                                        ? "Sessão virtual"
+                                        : "Sessão física"
+                                }
+                            </span>
+                        </div>
+                        
+                        <!-- Tipo de Inclusão + Sequencial -->
+                        <div style="
+                            display: flex;
+                            align-items: flex-start;
+                            gap: 8px;
+                            color: #64748B;
+                            font-size: 12px;
+                            margin-bottom: 8px;
+                            line-height: 1.4;
+                        ">
+                            <span class="material-symbols-outlined" style="
+                                font-size: 16px !important;
+                                vertical-align: middle;
+                                color: #64748B;
+                                flex-shrink: 0;
+                                margin-top: 1px;
+                            ">format_list_numbered_rtl</span>
+                            <span style="
+                                font-weight: 500;
+                                word-break: break-word;
+                            ">
+                                ${
+                                    sessao.dadosPauta.tipoInclusao ===
+                                    "Incluído em mesa"
+                                        ? "Mesa"
+                                        : "Pauta"
+                                } ${sessao.dadosPauta.sequencial}
+                            </span>
+                        </div>
+                        `
+                                : ""
+                        }
 
                         ${
                             sessao.observacoes
@@ -14731,7 +14980,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 </svg>
                                 ${tipoInfo} - ${seqEvento}
                                 </div>
-                                <div style="font-size: 13px; color: rgb(243, 246, 249); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
+                                <div style="font-size: 12px; color: rgb(136, 152, 181); margin-bottom: 6px; font-weight: 500; display: flex; align-items: center; gap: 8px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                 <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
                                 <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
@@ -14755,7 +15004,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                     (documento.magistradoInfo &&
                                         documento.magistradoInfo.nome)
                                         ? `
-                                <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                                <div style="font-size: 12px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
                                 <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
                                 <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a .5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
@@ -14774,7 +15023,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                     // Mostrar vara apenas se existir
                                     documento.magistradoInfo.vara
                                         ? `
-            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="font-size: 12px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
             <path d="M10 18v-7"/>
             <path d="M11.12 2.198a2 2 0 0 1 1.76.006l7.866 3.847c.476.233.31.949-.22.949H3.474c-.53 0-.695-.716-.22-.949z"/>
@@ -14790,7 +15039,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                         : // FALLBACK: Se não há dados estruturados mas há eventoMagistrado simples
                                         documento.eventoMagistrado
                                         ? `
-            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+            <div style="font-size: 12px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
             <path d="M11.5 15H7a4 4 0 0 0-4 4v2"/>
             <path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/>
@@ -14802,7 +15051,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 }${
                             documento.eventoData
                                 ? `
-            <div style="font-size: 11px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
+            <div style="font-size: 12px; color: rgb(136, 152, 181); opacity: 0.9; display: flex; align-items: center; gap: 8px;">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
             <path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/>
             <path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/>
@@ -14830,7 +15079,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 </svg>
                                 Múltiplos Documentos Encontrados
                                 </h2>
-                                <p style="margin: 8px 0 0 0; color: rgb(136, 152, 181); font-size: 13px; font-weight: 400;">
+                                <p style="margin: 8px 0 0 0; color: rgb(243, 246, 249); font-size: 13px; font-weight: 400;">
                                 Foram encontrados ${documentosRelevantes.length} documentos relevantes neste processo. Selecione qual deseja processar:
                                 </p>
                                 </div>
@@ -30179,6 +30428,99 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 aplicarTooltipUnificado: aplicarTooltipUnificado,
                 diagnosticarSistemaCompleto: diagnosticarSistemaCompleto,
                 obterCorPorStatus: obterCorPorStatus,
+                extrairDadosPautaMesa: extrairDadosPautaMesa, // 🎯 NOVA: Extração de dados de pauta/mesa
+
+                // 🧪 TESTE ESPECÍFICO PARA DADOS DE PAUTA/MESA
+                testarExtracaoPautaMesa: function (dataTeste = "21/08/2025") {
+                    console.log(
+                        "🧪 TESTE PAUTA/MESA: Iniciando teste de extração..."
+                    );
+                    console.log(
+                        `📅 TESTE PAUTA/MESA: Data para teste: ${dataTeste}`
+                    );
+
+                    // Verificar se estamos na página correta
+                    const tabelaEventos = document.querySelector("#tblEventos");
+                    if (!tabelaEventos) {
+                        console.log(
+                            "❌ TESTE PAUTA/MESA: Tabela #tblEventos não encontrada"
+                        );
+                        console.log(
+                            "💡 TESTE PAUTA/MESA: Este teste deve ser executado na página de detalhes do processo"
+                        );
+                        return { erro: "Tabela de eventos não encontrada" };
+                    }
+
+                    console.log(
+                        "✅ TESTE PAUTA/MESA: Tabela de eventos encontrada"
+                    );
+
+                    // Executar extração
+                    const resultado = extrairDadosPautaMesa(dataTeste);
+
+                    if (resultado) {
+                        console.log(
+                            "🎉 TESTE PAUTA/MESA: Dados extraídos com sucesso!"
+                        );
+                        console.table(resultado);
+
+                        // Verificar estrutura dos dados
+                        const estruturaCorreta = {
+                            temTipoInclusao:
+                                resultado.hasOwnProperty("tipoInclusao"),
+                            temModalidade:
+                                resultado.hasOwnProperty("modalidade"),
+                            temSequencial:
+                                resultado.hasOwnProperty("sequencial"),
+                            temDataEncontrada:
+                                resultado.hasOwnProperty("dataEncontrada"),
+                            temEventoId: resultado.hasOwnProperty("eventoId"),
+                        };
+
+                        console.log(
+                            "🔍 TESTE PAUTA/MESA: Verificação de estrutura:",
+                            estruturaCorreta
+                        );
+
+                        return {
+                            sucesso: true,
+                            dados: resultado,
+                            estrutura: estruturaCorreta,
+                        };
+                    } else {
+                        console.log(
+                            "❌ TESTE PAUTA/MESA: Nenhum dado encontrado para a data especificada"
+                        );
+
+                        // Listar todos os eventos para debug
+                        const linhasEvento =
+                            tabelaEventos.querySelectorAll(
+                                'tr[id^="trEvento"]'
+                            );
+                        console.log(
+                            `🔍 TESTE PAUTA/MESA: ${linhasEvento.length} eventos encontrados na tabela:`
+                        );
+
+                        linhasEvento.forEach((linha, index) => {
+                            const labelDescricao = linha.querySelector(
+                                "label.infraEventoDescricao"
+                            );
+                            const texto = labelDescricao
+                                ? labelDescricao.textContent
+                                : "N/A";
+                            console.log(
+                                `   ${index + 1}. ${
+                                    linha.id
+                                }: ${texto.substring(0, 100)}...`
+                            );
+                        });
+
+                        return {
+                            sucesso: false,
+                            totalEventos: linhasEvento.length,
+                        };
+                    }
+                },
 
                 // 🧪 FUNÇÃO DE TESTE PARA PADRÃO ESPECÍFICO
                 testarPadraoEspecifico: function () {
