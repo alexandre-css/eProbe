@@ -2460,61 +2460,71 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         try {
             console.log("🆘 EMERGÊNCIA: Criando namespace de fallback...");
 
-            // Namespace mínimo mas funcional
-            window.SENT1_AUTO = window.SENT1_AUTO || {
-                // Funções essenciais que sempre devem existir
-                detectarCardSessaoSimplificado: () => {
-                    return detectarSessoesUnificado();
-                },
-                testarDeteccaoRobusta: () => {
-                    console.log(
-                        "🧪 TESTE: Função de emergência - sistema em modo degradado"
-                    );
-                },
-                forcarFlexboxNavbar: () => {
-                    const elementosNavbar =
-                        document.querySelectorAll(".d-none.d-md-flex");
-                    elementosNavbar.forEach((elemento) => {
-                        elemento.style.setProperty(
-                            "display",
-                            "flex",
-                            "important"
-                        );
-                        elemento.style.setProperty(
-                            "align-items",
-                            "center",
-                            "important"
-                        );
-                        elemento.style.setProperty(
-                            "visibility",
-                            "visible",
-                            "important"
-                        );
-                        elemento.style.setProperty("opacity", "1", "important");
-                    });
-
-                    if (elementosNavbar.length > 0) {
+            // Namespace mínimo mas funcional - APENAS SE NÃO EXISTIR
+            if (typeof window.SENT1_AUTO === "undefined") {
+                window.SENT1_AUTO = {
+                    // Funções essenciais que sempre devem existir
+                    detectarCardSessaoSimplificado: () => {
+                        return detectarSessoesUnificado();
+                    },
+                    testarDeteccaoRobusta: () => {
                         console.log(
-                            `🎯 NAVBAR CRÍTICO: Flexbox forçado em ${elementosNavbar.length} elementos via namespace`
+                            "🧪 TESTE: Função de emergência - sistema em modo degradado"
                         );
-                    }
-                    return elementosNavbar.length;
-                },
+                    },
+                    forcarFlexboxNavbar: () => {
+                        const elementosNavbar =
+                            document.querySelectorAll(".d-none.d-md-flex");
+                        elementosNavbar.forEach((elemento) => {
+                            elemento.style.setProperty(
+                                "display",
+                                "flex",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "align-items",
+                                "center",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "visibility",
+                                "visible",
+                                "important"
+                            );
+                            elemento.style.setProperty(
+                                "opacity",
+                                "1",
+                                "important"
+                            );
+                        });
 
-                // Metadados de status
-                status: "namespace-emergencia",
-                versao: "1.0.0-emergencia",
-                erro: "Script principal não completou, usando namespace de emergência",
-                timestamp: new Date().toISOString(),
-                totalFuncoes: 5,
-            };
+                        if (elementosNavbar.length > 0) {
+                            console.log(
+                                `🎯 NAVBAR CRÍTICO: Flexbox forçado em ${elementosNavbar.length} elementos via namespace`
+                            );
+                        }
+                        return elementosNavbar.length;
+                    },
 
-            namespaceCreated = true;
-            console.log(
-                "✅ EMERGÊNCIA: Namespace de fallback criado com",
-                Object.keys(window.SENT1_AUTO).length,
-                "propriedades"
-            );
+                    // Metadados de status
+                    status: "namespace-emergencia",
+                    versao: "1.0.0-emergencia",
+                    erro: "Script principal não completou, usando namespace de emergência",
+                    timestamp: new Date().toISOString(),
+                    totalFuncoes: 5,
+                };
+
+                namespaceCreated = true;
+                console.log(
+                    "✅ EMERGÊNCIA: Namespace de fallback criado com",
+                    Object.keys(window.SENT1_AUTO).length,
+                    "propriedades"
+                );
+            } else {
+                console.log(
+                    "✅ EMERGÊNCIA: Namespace já existe, mantendo o atual"
+                );
+            }
         } catch (e) {
             console.error(
                 "💥 CRÍTICO: Falha até mesmo no namespace de emergência:",
@@ -12726,18 +12736,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 menu.className = "eprobe-menu";
                 menu.setAttribute("role", "menu");
                 menu.style.cssText = `
- position: fixed !important;
- right: 20px !important;
- top: 154px !important;
- z-index: 10001;
- min-width: 200px;
- border-radius: 8px;
- border: 1px solid rgb(19 67 119);
- background: #134377;
- padding: 6px;
- box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
- font-family: "Roboto", -apple-system, system-ui, sans-serif;
- `;
+                        position: fixed !important;
+                        right: 20px !important;
+                        top: 154px !important;
+                        z-index: 10001;
+                        min-width: 200px;
+                        border-radius: 8px;
+                        border: 1px solid rgb(19 67 119);
+                        background: #134377;
+                        padding: 6px;
+                        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+                        font-family: "Roboto", -apple-system, system-ui, sans-serif;
+                        `;
 
                 const pageType = detectPageType();
 
@@ -12766,31 +12776,31 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     }
 
                     menu.innerHTML = `
- <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
- ${titleIcon}
- ${menuTitle}
- </li>
- <li id="open-documento-btn" role="menuitem" style="cursor: ${
-     documentCount === 0 ? "not-allowed" : "pointer"
- }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
+                        <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgb(148 163 184); margin-bottom: 6px;">
+                        ${titleIcon}
+                        ${menuTitle}
+                        </li>
+                        <li id="open-documento-btn" role="menuitem" style="cursor: ${
+                            documentCount === 0 ? "not-allowed" : "pointer"
+                        }; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; ${
                         documentCount === 0 ? "opacity: 0.5;" : ""
                     }" ${documentCount === 0 ? 'data-disabled="true"' : ""}>
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- ${
-     documentCount === 0
-         ? "Nenhum documento encontrado"
-         : documentCount === 1
-         ? `Processar ${documentosRelevantes[0].tipo.descricao}`
-         : `Escolher entre ${documentCount} documentos`
- }
- </li>
- `;
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${buttonColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        ${
+                            documentCount === 0
+                                ? "Nenhum documento encontrado"
+                                : documentCount === 1
+                                ? `Processar ${documentosRelevantes[0].tipo.descricao}`
+                                : `Escolher entre ${documentCount} documentos`
+                        }
+                        </li>
+                        `;
 
                     const openBtn = menu.querySelector("#open-documento-btn");
                     if (documentCount > 0) {
@@ -12812,50 +12822,50 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     // Menu para páginas de documento específico
                     log(" Mostrando menu para documento específico");
                     menu.innerHTML = `
- <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
- Processar Documento
- </li>
- <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
- <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
- </svg>
- Resumir com Perplexity
- </li>
- <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
- <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
- </svg>
- Escolher IA
- </li>
- <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
- <circle cx="12" cy="12" r="3"/>
- </svg>
- Configurar API
- </li>
- <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m14.5 9.5 1 1"/>
- <path d="m15.5 8.5-4 4"/>
- <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
- <path d="M3 3v5h5"/>
- <circle cx="10" cy="14" r="2"/>
- </svg>
- Testar API Key
- </li>
- <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
- <line x1="9" y1="9" x2="15" y2="9"/>
- <line x1="9" y1="13" x2="15" y2="13"/>
- <line x1="9" y1="17" x2="13" y2="17"/>
- </svg>
- Ver Logs de Erro
- </li>
- `;
+                                        <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
+                                        Processar Documento
+                                        </li>
+                                        <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                                        <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                                        </svg>
+                                        Resumir com Perplexity
+                                        </li>
+                                        <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
+                                        <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
+                                        </svg>
+                                        Escolher IA
+                                        </li>
+                                        <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                        </svg>
+                                        Configurar API
+                                        </li>
+                                        <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="m14.5 9.5 1 1"/>
+                                        <path d="m15.5 8.5-4 4"/>
+                                        <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
+                                        <path d="M3 3v5h5"/>
+                                        <circle cx="10" cy="14" r="2"/>
+                                        </svg>
+                                        Testar API Key
+                                        </li>
+                                        <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                                        <line x1="9" y1="9" x2="15" y2="9"/>
+                                        <line x1="9" y1="13" x2="15" y2="13"/>
+                                        <line x1="9" y1="17" x2="13" y2="17"/>
+                                        </svg>
+                                        Ver Logs de Erro
+                                        </li>
+                                    `;
 
                     // Adicionar eventos de hover e click para todos os botões
                     const menuItems = menu.querySelectorAll("li[id]");
@@ -20554,6 +20564,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 );
                             }
 
+                            // Aplicar gradientes nas minutas
+                            if (
+                                typeof aplicarGradientesLegMinutasRobusta ===
+                                "function"
+                            ) {
+                                aplicarGradientesLegMinutasRobusta();
+                                log(
+                                    "✅ INICIALIZAÇÃO: Gradientes robustos nas minutas iniciados"
+                                );
+                            }
+
                             // ⚡ NOVO: Aplicar estilização IMEDIATA para eliminar flash
                             if (
                                 typeof aplicarEstilizacaoImediataLembretes ===
@@ -24682,7 +24703,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                 // Adicionar proteção específica para botões de pesquisa, navbar E infraLegendObrigatorio
                 css +=
-                    '\n\n    /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX - ALTA PRIORIDADE */\n    .d-none.d-md-flex,\n    div.d-none.d-md-flex,\n    .navbar .d-none.d-md-flex,\n    #navbar .d-none.d-md-flex,\n    .navbar-nav .d-none.d-md-flex,\n    .navbar-collapse .d-none.d-md-flex {\n        display: flex !important;\n        align-items: center !important;\n        visibility: visible !important;\n        opacity: 1 !important;\n        height: auto !important;\n        width: auto !important;\n    }\n\n    /* 🛡️ PROTEÇÃO: Manter aparência original para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        /* Preservar estilos originais sem resetar tudo */\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original */\n    .infraLegendObrigatorio, legend.infraLegendObrigatorio {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n ';
+                    '\n\n    /* 🎯 REGRA CRÍTICA OBRIGATÓRIA: .d-none.d-md-flex SEMPRE FLEX - ALTA PRIORIDADE */\n    .d-none.d-md-flex,\n    div.d-none.d-md-flex,\n    .navbar .d-none.d-md-flex,\n    #navbar .d-none.d-md-flex,\n    .navbar-nav .d-none.d-md-flex,\n    .navbar-collapse .d-none.d-md-flex {\n        display: flex !important;\n        align-items: center !important;\n        visibility: visible !important;\n        opacity: 1 !important;\n        height: auto !important;\n        width: auto !important;\n    }\n\n    /* 🛡️ PROTEÇÃO: Manter aparência original para elementos excluídos */\n    .btn-pesquisar, .btn-pesquisar-nova-janela, .search-button,\n    button[class*="btn-pesquisar"], .input-group-btn .btn,\n    .btn-pesquisar::before, .btn-pesquisar::after,\n    .btn-pesquisar-nova-janela::before, .btn-pesquisar-nova-janela::after,\n    .search-button::before, .search-button::after,\n    .infraLegendObrigatorio, .infraLegendObrigatorio *,\n    legend.infraLegendObrigatorio, legend.infraLegendObrigatorio * {\n        /* Preservar estilos originais sem resetar tudo */\n    }\n\n    /* 🛡️ INFRALEGEND: Garantir que infraLegendObrigatorio mantenha aparência original (EXCETO legMinutas) */\n    .infraLegendObrigatorio:not(#legMinutas), legend.infraLegendObrigatorio:not(#legMinutas) {\n        background: initial !important;\n        color: initial !important;\n        border: initial !important;\n        border-radius: initial !important;\n        box-shadow: initial !important;\n        transition: initial !important;\n        font-weight: initial !important;\n        cursor: initial !important;\n    }\n\n ';
 
                 estiloElemento.textContent = css;
                 document.head.appendChild(estiloElemento);
@@ -25608,6 +25629,167 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         coresSuportadas: Object.keys(mapeamentoCores),
                     };
                 }
+            }
+
+            /**
+             * 🎨 FUNÇÃO PARA PERSONALIZAR LEGMINUTAS E TABELAS
+             * Substitui cores sólidas por gradientes suaves nos elementos de minutas
+             * Baseado na documentação "cores legMinutas.md"
+             */
+            function aplicarGradientesLegMinutas() {
+                log(
+                    "🎨 GRADIENTES: Iniciando aplicação em TODOS os legMinutas..."
+                );
+
+                try {
+                    // Buscar TODOS os elementos legMinutas com aria-label="Histórico"
+                    const elementosLegMinutas = document.querySelectorAll(
+                        'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
+                    );
+
+                    log(
+                        `🔍 Encontrados ${elementosLegMinutas.length} elementos legMinutas`
+                    );
+
+                    if (elementosLegMinutas.length === 0) {
+                        log("❌ Nenhum elemento legMinutas encontrado");
+                        return { sucesso: false, processados: 0 };
+                    }
+
+                    // Mapa de cores completo
+                    const cores = {
+                        "rgb(152, 245, 255)":
+                            "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL #98F5FF
+                        "rgb(255, 160, 122)":
+                            "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO #FFA07A
+                        "rgb(255, 211, 155)":
+                            "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO #FFD39B
+                        "rgb(255, 193, 37)":
+                            "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO #FFC125
+                        "rgb(205, 181, 205)":
+                            "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS #CDB5CD
+                        "rgb(211, 211, 211)":
+                            "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA #D3D3D3
+                        "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA #EE6363
+                        "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO #FFFF00
+                        "rgb(255, 187, 255)":
+                            "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO #FFBBFF
+                        "rgb(255, 246, 143)":
+                            "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA #FFF68F
+                        "rgb(144, 238, 144)":
+                            "linear-gradient(#AFFAB6, #8DF792)", // VERDE #90EE90
+                    };
+
+                    let processados = 0;
+
+                    // Processar CADA elemento legMinutas
+                    elementosLegMinutas.forEach((legMinutas, index) => {
+                        const corAtual =
+                            window.getComputedStyle(legMinutas).backgroundColor;
+
+                        // Aplicar gradiente se encontrar cor correspondente
+                        if (cores[corAtual]) {
+                            legMinutas.style.setProperty(
+                                "background",
+                                cores[corAtual],
+                                "important"
+                            );
+                            log(
+                                `✅ SUCESSO: legMinutas ${
+                                    index + 1
+                                } - Gradiente aplicado para ${corAtual}!`
+                            );
+                            processados++;
+                        } else {
+                            log(
+                                `⚠️ legMinutas ${
+                                    index + 1
+                                } - Cor não mapeada: ${corAtual}`
+                            );
+                        }
+                    });
+
+                    log(
+                        `🎉 CONCLUÍDO: ${processados}/${elementosLegMinutas.length} elementos processados`
+                    );
+                    return {
+                        sucesso: processados > 0,
+                        processados: processados,
+                    };
+                } catch (error) {
+                    logError("❌ ERRO:", error);
+                    return {
+                        sucesso: false,
+                        processados: 0,
+                        erro: error.message,
+                    };
+                }
+            }
+
+            /**
+             * 🔄 FUNÇÃO DE APLICAÇÃO ROBUSTA DE GRADIENTES MINUTAS - Com retry automático
+             */
+            function aplicarGradientesLegMinutasRobusta() {
+                log(
+                    "🔄 GRADIENTES MINUTAS ROBUSTA: Iniciando aplicação robusta de gradientes nas minutas..."
+                );
+
+                // Verificar se estamos na página correta primeiro
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "ℹ️ GRADIENTES MINUTAS ROBUSTA: Não é uma página de capa de processo"
+                    );
+                    return false;
+                }
+
+                let tentativas = 0;
+                const maxTentativas = 3;
+                const intervalTentativas = 800; // 800ms entre tentativas
+
+                const tentarAplicarGradientes = () => {
+                    tentativas++;
+                    log(
+                        `🎯 GRADIENTES MINUTAS: Tentativa ${tentativas}/${maxTentativas}`
+                    );
+
+                    const resultado = aplicarGradientesLegMinutas();
+                    const sucesso = resultado && resultado.sucesso;
+
+                    if (sucesso) {
+                        log(
+                            `✅ GRADIENTES MINUTAS ROBUSTA: Aplicação bem-sucedida na tentativa ${tentativas}!`
+                        );
+                        log(
+                            `📊 GRADIENTES MINUTAS: ${resultado.processados} elementos processados`
+                        );
+                        return true;
+                    } else {
+                        log(
+                            `❌ GRADIENTES MINUTAS: Tentativa ${tentativas} falhou`
+                        );
+                        if (resultado?.motivo) {
+                            log(`   Motivo: ${resultado.motivo}`);
+                        }
+
+                        if (tentativas < maxTentativas) {
+                            log(
+                                `🔄 GRADIENTES MINUTAS: Reagendando tentativa em ${intervalTentativas}ms...`
+                            );
+                            setTimeout(
+                                tentarAplicarGradientes,
+                                intervalTentativas
+                            );
+                        } else {
+                            log(
+                                "❌ GRADIENTES MINUTAS ROBUSTA: Todas as tentativas falharam - desistindo"
+                            );
+                            return false;
+                        }
+                    }
+                };
+
+                // Executar primeira tentativa imediatamente
+                return tentarAplicarGradientes();
             }
 
             /**
@@ -30903,6 +31085,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // 🎨 GRADIENTES PARA CAPA DO PROCESSO
                 aplicarGradientesCapaProcesso, // 🎯 NOVA: Aplica gradientes na capa do processo
                 aplicarGradientesCapaProcessoRobusta, // 🔄 NOVA: Aplicação robusta com retry automático
+                aplicarGradientesLegMinutas, // 🎯 NOVA: Aplica gradientes nas legendas e tabelas de minutas
+                aplicarGradientesLegMinutasRobusta, // 🔄 NOVA: Aplicação robusta com retry para minutas
 
                 // 🧠 NOVA DETECÇÃO INTELIGENTE DE LEMBRETES
                 detectarTiposLembretesNaPagina,
@@ -34423,6 +34607,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         })(); // ← FECHAMENTO DA FUNÇÃO ASYNC INTERNA
 
         // 🎨 DEFINIR FUNÇÕES DE GRADIENTES ANTES DO NAMESPACE
+
+        // 🔍 FUNÇÃO AUXILIAR: Verificar se estamos numa página de capa do processo
+        function isCapaProcessoPage() {
+            const url = window.location.href;
+            // Verificar se a URL contém o padrão de capa do processo
+            return (
+                url.includes("acao=processo_selecionar") &&
+                (url.includes("eproc1g.tjsc.jus.br") ||
+                    url.includes("eproc2g.tjsc.jus.br"))
+            );
+        }
+
         /**
          * 🎨 FUNÇÃO PARA APLICAR GRADIENTES NA CAPA DO PROCESSO
          * Substitui cores sólidas de background por gradientes suaves no fieldset da capa
@@ -34629,6 +34825,285 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             return true;
         }
 
+        /**
+         * 🎨 FUNÇÃO PARA PERSONALIZAR LEGMINUTAS E TABELAS
+         * Substitui cores sólidas por gradientes suaves nos elementos de minutas
+         * Baseado na documentação "cores legMinutas.md"
+         */
+        function aplicarGradientesLegMinutas() {
+            log(
+                "🎨 GRADIENTES MINUTAS: Iniciando aplicação de gradientes nas minutas..."
+            );
+
+            // Verificar se estamos na página correta
+            if (!isCapaProcessoPage()) {
+                log(
+                    "⛔ GRADIENTES MINUTAS: Função restrita à capa do processo"
+                );
+                return { sucesso: false, motivo: "página não permitida" };
+            }
+
+            // Mapeamento de cores para gradientes - legMinutas
+            const mapeamentoCoresLegendas = {
+                "#98F5FF": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL
+                "#FFA07A": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO
+                "#FFD39B": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO
+                "#FFC125": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO
+                "#CDB5CD": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS
+                "#D3D3D3": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA
+                "#EE6363": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA
+                "#FFFF00": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO
+                "#FFBBFF": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO
+                "#FFF68F": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA
+                "#90EE90": "linear-gradient(#AFFAB6, #8DF792)", // VERDE
+            };
+
+            // Mapeamento de cores para tabelas - infraTrClara (tons claros)
+            const mapeamentoCoresInfraClara = {
+                "#98F5FF": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL
+                "#FFA07A": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO
+                "#FFD39B": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO
+                "#FFC125": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO
+                "#CDB5CD": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS
+                "#D3D3D3": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA
+                "#EE6363": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA
+                "#FFFF00": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO
+                "#FFBBFF": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO
+                "#FFF68F": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA
+                "#90EE90": "linear-gradient(#AFFAB6, #8DF792)", // VERDE
+            };
+
+            // Mapeamento de cores para tabelas - infraTrEscura (tons escuros)
+            const mapeamentoCoresInfraEscura = {
+                "#98F5FF": "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL
+                "#FFA07A": "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO
+                "#FFD39B": "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO
+                "#FFC125": "linear-gradient(#FFA93A, #FF9520)", // DOURADO
+                "#CDB5CD": "linear-gradient(#B593B5, #A082A0)", // LILÁS
+                "#D3D3D3": "linear-gradient(#8A9EA5, #778C93)", // CINZA
+                "#EE6363": "linear-gradient(#F47A7A, #F15858)", // VERMELHA
+                "#FFFF00": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMÃO
+                "#FFBBFF": "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO
+                "#FFF68F": "linear-gradient(#F5DC7A, #F3D058)", // AMARELA
+                "#90EE90": "linear-gradient(#7AF381, #58EF5F)", // VERDE
+            };
+
+            let processados = 0;
+
+            // Função para converter RGB para hex
+            function rgbParaHex(rgb) {
+                if (rgb.startsWith("#")) return rgb.toLowerCase();
+
+                const rgbMatch = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                if (rgbMatch) {
+                    const r = parseInt(rgbMatch[1])
+                        .toString(16)
+                        .padStart(2, "0");
+                    const g = parseInt(rgbMatch[2])
+                        .toString(16)
+                        .padStart(2, "0");
+                    const b = parseInt(rgbMatch[3])
+                        .toString(16)
+                        .padStart(2, "0");
+                    return `#${r}${g}${b}`;
+                }
+
+                return rgb;
+            }
+
+            try {
+                // 1. PROCESSAR LEGENDA MINUTAS - USAR QUERYSELECTORALL PARA TODOS OS ELEMENTOS
+                const elementosLegMinutas = document.querySelectorAll(
+                    'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
+                );
+
+                log(
+                    `🔍 GRADIENTES MINUTAS: Encontrados ${elementosLegMinutas.length} elementos legMinutas`
+                );
+
+                elementosLegMinutas.forEach((legMinutas, index) => {
+                    const corAtual = rgbParaHex(
+                        window.getComputedStyle(legMinutas).backgroundColor
+                    );
+                    if (
+                        corAtual &&
+                        mapeamentoCoresLegendas[corAtual.toUpperCase()]
+                    ) {
+                        const novoGradiente =
+                            mapeamentoCoresLegendas[corAtual.toUpperCase()];
+                        legMinutas.style.setProperty(
+                            "background",
+                            novoGradiente,
+                            "important"
+                        );
+                        log(
+                            `✅ GRADIENTES MINUTAS: legMinutas ${
+                                index + 1
+                            } ${corAtual} → ${novoGradiente}`
+                        );
+                        processados++;
+                    } else {
+                        log(
+                            `⚠️ GRADIENTES MINUTAS: legMinutas ${
+                                index + 1
+                            } cor não mapeada: ${corAtual}`
+                        );
+                    }
+                });
+
+                // 2. PROCESSAR TABELAS DENTRO DOS CONTAINERS DE MINUTAS
+                const containersMinutas = document.querySelectorAll(
+                    '[id^="conteudoInternoMinutas_"]'
+                );
+                containersMinutas.forEach((container, index) => {
+                    log(
+                        `🔍 GRADIENTES MINUTAS: Processando container ${
+                            index + 1
+                        }: ${container.id}`
+                    );
+
+                    // Processar linhas claras (infraTrClara)
+                    const linhasClaras =
+                        container.querySelectorAll("tr.infraTrClara");
+                    linhasClaras.forEach((linha, linhaIndex) => {
+                        const corAtual = rgbParaHex(
+                            window.getComputedStyle(linha).backgroundColor
+                        );
+                        if (
+                            corAtual &&
+                            mapeamentoCoresInfraClara[corAtual.toUpperCase()]
+                        ) {
+                            const novoGradiente =
+                                mapeamentoCoresInfraClara[
+                                    corAtual.toUpperCase()
+                                ];
+                            linha.style.setProperty(
+                                "background",
+                                novoGradiente,
+                                "important"
+                            );
+                            log(
+                                `✅ GRADIENTES MINUTAS: infraTrClara[${linhaIndex}] ${corAtual} → ${novoGradiente}`
+                            );
+                            processados++;
+                        }
+                    });
+
+                    // Processar linhas escuras (infraTrEscura)
+                    const linhasEscuras =
+                        container.querySelectorAll("tr.infraTrEscura");
+                    linhasEscuras.forEach((linha, linhaIndex) => {
+                        const corAtual = rgbParaHex(
+                            window.getComputedStyle(linha).backgroundColor
+                        );
+                        if (
+                            corAtual &&
+                            mapeamentoCoresInfraEscura[corAtual.toUpperCase()]
+                        ) {
+                            const novoGradiente =
+                                mapeamentoCoresInfraEscura[
+                                    corAtual.toUpperCase()
+                                ];
+                            linha.style.setProperty(
+                                "background",
+                                novoGradiente,
+                                "important"
+                            );
+                            log(
+                                `✅ GRADIENTES MINUTAS: infraTrEscura[${linhaIndex}] ${corAtual} → ${novoGradiente}`
+                            );
+                            processados++;
+                        }
+                    });
+                });
+
+                log(
+                    `✅ GRADIENTES MINUTAS: ${processados} elementos processados com sucesso`
+                );
+                return {
+                    sucesso: true,
+                    processados,
+                    legMinutasEncontrado: !!document.querySelector(
+                        "#legMinutas.infraLegendObrigatorio"
+                    ),
+                    containersEncontrados: containersMinutas.length,
+                };
+            } catch (error) {
+                console.error(
+                    "❌ GRADIENTES MINUTAS: Erro durante aplicação:",
+                    error
+                );
+                return {
+                    sucesso: false,
+                    motivo: error.message,
+                    processados,
+                };
+            }
+        }
+
+        /**
+         * 🔄 FUNÇÃO DE APLICAÇÃO ROBUSTA DE GRADIENTES MINUTAS - Com retry automático
+         */
+        function aplicarGradientesLegMinutasRobusta() {
+            log(
+                "🔄 GRADIENTES MINUTAS ROBUSTA: Iniciando aplicação robusta de gradientes nas minutas..."
+            );
+
+            // Verificar se estamos na página correta primeiro
+            if (!isCapaProcessoPage()) {
+                log(
+                    "ℹ️ GRADIENTES MINUTAS ROBUSTA: Não é uma página de capa de processo"
+                );
+                return false;
+            }
+
+            let tentativas = 0;
+            const maxTentativas = 3;
+            const intervalTentativas = 800; // 800ms entre tentativas
+
+            const tentarAplicarGradientes = () => {
+                tentativas++;
+                log(
+                    `🎯 GRADIENTES MINUTAS: Tentativa ${tentativas}/${maxTentativas}`
+                );
+
+                const resultado = aplicarGradientesLegMinutas();
+                const sucesso = resultado && resultado.sucesso;
+
+                if (sucesso) {
+                    log(
+                        `✅ GRADIENTES MINUTAS ROBUSTA: Aplicação bem-sucedida na tentativa ${tentativas}!`
+                    );
+                    log(
+                        `📊 GRADIENTES MINUTAS: ${resultado.processados} elementos processados`
+                    );
+                    return true;
+                } else {
+                    log(
+                        `❌ GRADIENTES MINUTAS: Tentativa ${tentativas} falhou`
+                    );
+                    if (resultado?.motivo) {
+                        log(`   Motivo: ${resultado.motivo}`);
+                    }
+
+                    if (tentativas < maxTentativas) {
+                        log(
+                            `🔄 GRADIENTES MINUTAS: Reagendando tentativa em ${intervalTentativas}ms...`
+                        );
+                        setTimeout(tentarAplicarGradientes, intervalTentativas);
+                    } else {
+                        log(
+                            "❌ GRADIENTES MINUTAS ROBUSTA: Todas as tentativas falharam - desistindo"
+                        );
+                        return false;
+                    }
+                }
+            };
+
+            // Executar primeira tentativa imediatamente
+            return tentarAplicarGradientes();
+        }
+
         // 🚀 EXPOSIÇÃO GLOBAL DO NAMESPACE - CRÍTICO!
         // Criar namespace com funções essenciais diretamente
 
@@ -34729,6 +35204,20 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     : () =>
                           console.log(
                               "aplicarGradientesCapaProcessoRobusta não disponível"
+                          ),
+            aplicarGradientesLegMinutas:
+                typeof aplicarGradientesLegMinutas === "function"
+                    ? aplicarGradientesLegMinutas
+                    : () =>
+                          console.log(
+                              "aplicarGradientesLegMinutas não disponível"
+                          ),
+            aplicarGradientesLegMinutasRobusta:
+                typeof aplicarGradientesLegMinutasRobusta === "function"
+                    ? aplicarGradientesLegMinutasRobusta
+                    : () =>
+                          console.log(
+                              "aplicarGradientesLegMinutasRobusta não disponível"
                           ),
             forcarFlexboxNavbar: () => {
                 const elementosNavbar =

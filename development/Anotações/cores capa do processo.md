@@ -8,7 +8,7 @@ Na capa do processo ("function isCapaProcessoPage"), procurar por <fieldset id="
 
 ### SUBSTITUIÇÕES
 
-**AMARELO**
+**AMARELA**
 
 background-color: #efd88f !important
 
@@ -16,7 +16,7 @@ por
 
 background: linear-gradient( #F9EFAF, #F7E98D) !important;
 
-**VERMELHO**
+**VERMELHA**
 
 background-color: #db8080 !important;
 
@@ -54,7 +54,7 @@ background: #A0B9BF;
 
 por
 
-background-color: linear-gradient( #B5C9CF, #9CB0B7) !important;
+background: linear-gradient( #B5C9CF, #9CB0B7) !important;
 
 **ROSA**
 
@@ -62,4 +62,4 @@ background: #fbc4df;
 
 por
 
-background-color: linear-gradient( #FBAFDF, #F78DC7) !important;
+background: linear-gradient( #FBAFDF, #F78DC7) !important;
