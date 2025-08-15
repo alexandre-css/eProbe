@@ -4423,7 +4423,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 color: #64748B;
                                 flex-shrink: 0;
                                 margin-top: 1px;
-                            ">format_list_numbered_rtl</span>
+                            ">format_list_numbered</span>
                             <span style="
                                 font-weight: 500;
                                 word-break: break-word;
@@ -20505,6 +20505,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 );
                             }
 
+                            // Aplicar gradientes na capa do processo
+                            if (
+                                typeof aplicarGradientesCapaProcessoRobusta ===
+                                "function"
+                            ) {
+                                aplicarGradientesCapaProcessoRobusta();
+                                log(
+                                    "✅ INICIALIZAÇÃO: Gradientes robustos na capa iniciados"
+                                );
+                            }
+
                             // ⚡ NOVO: Aplicar estilização IMEDIATA para eliminar flash
                             if (
                                 typeof aplicarEstilizacaoImediataLembretes ===
@@ -25407,6 +25418,224 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return capaProcessoPatterns.some((pattern) =>
                     currentUrl.includes(pattern)
                 );
+            }
+
+            /**
+             * 🎨 FUNÇÃO PARA APLICAR GRADIENTES NA CAPA DO PROCESSO
+             * Substitui cores sólidas de background por gradientes suaves no fieldset da capa
+             * Baseado na documentação "cores capa do processo.md"
+             */
+            function aplicarGradientesCapaProcesso() {
+                log("🎨 GRADIENTES CAPA: Iniciando aplicação de gradientes...");
+
+                // Verificar se estamos na página correta
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "❌ GRADIENTES CAPA: Não é uma página de capa de processo"
+                    );
+                    return false;
+                }
+
+                // Buscar o fieldset da capa
+                const fieldsetCapa = document.querySelector(
+                    "#fldCapa.infraFieldset.bootstrap-styles"
+                );
+                if (!fieldsetCapa) {
+                    log("❌ GRADIENTES CAPA: Fieldset #fldCapa não encontrado");
+                    return false;
+                }
+
+                log("✅ GRADIENTES CAPA: Fieldset encontrado:", fieldsetCapa);
+
+                // Obter estilo computed atual
+                const estiloComputado = window.getComputedStyle(fieldsetCapa);
+                const corAtual = estiloComputado.backgroundColor;
+
+                log("🔍 GRADIENTES CAPA: Cor atual detectada:", corAtual);
+
+                // Função para converter RGB para hex
+                function rgbParaHex(rgb) {
+                    if (rgb.startsWith("#")) return rgb.toLowerCase();
+
+                    const rgbMatch = rgb.match(
+                        /rgb\((\d+),\s*(\d+),\s*(\d+)\)/
+                    );
+                    if (rgbMatch) {
+                        const r = parseInt(rgbMatch[1])
+                            .toString(16)
+                            .padStart(2, "0");
+                        const g = parseInt(rgbMatch[2])
+                            .toString(16)
+                            .padStart(2, "0");
+                        const b = parseInt(rgbMatch[3])
+                            .toString(16)
+                            .padStart(2, "0");
+                        return `#${r}${g}${b}`;
+                    }
+
+                    return rgb;
+                }
+
+                // Mapeamento de cores para gradientes conforme documentação
+                const mapeamentoCores = {
+                    // AMARELO
+                    "#efd88f": "linear-gradient(#F9EFAF, #F7E98D)",
+
+                    // VERMELHO (formato rgb)
+                    "#db8080": "linear-gradient(#FAAFAF, #F78D8D)",
+
+                    // AZUL
+                    "#c4dffb": "linear-gradient(#AFCFFA, #8DC0F7)",
+
+                    // VERDE
+                    "#a7eda7": "linear-gradient(#AFFAB6, #8DF792)",
+
+                    // LARANJA
+                    "#f5b574": "linear-gradient(#FAD3AF, #F7C68D)",
+
+                    // CINZA
+                    "#a0b9bf": "linear-gradient(#B5C9CF, #9CB0B7)",
+                    "#A0B9BF": "linear-gradient(#B5C9CF, #9CB0B7)", // case insensitive
+
+                    // ROSA
+                    "#fbc4df": "linear-gradient(#FBAFDF, #F78DC7)",
+                };
+
+                // Verificar múltiplos formatos da cor atual
+                const formatosPossiveisCor = [
+                    corAtual,
+                    corAtual.replace(/\s+/g, ""), // sem espaços
+                    rgbParaHex(corAtual),
+                    rgbParaHex(corAtual).toUpperCase(),
+                ];
+
+                log(
+                    "🔍 GRADIENTES CAPA: Formatos testados:",
+                    formatosPossiveisCor
+                );
+
+                let gradienteEncontrado = null;
+                let corCorrespondente = null;
+
+                // Buscar correspondência nos mapeamentos
+                for (const formato of formatosPossiveisCor) {
+                    if (mapeamentoCores[formato]) {
+                        gradienteEncontrado = mapeamentoCores[formato];
+                        corCorrespondente = formato;
+                        break;
+                    }
+                }
+
+                if (gradienteEncontrado) {
+                    log(`🎉 GRADIENTES CAPA: Correspondência encontrada!`);
+                    log(`   Cor original: ${corCorrespondente}`);
+                    log(`   Gradiente: ${gradienteEncontrado}`);
+
+                    // Aplicar o gradiente seguindo padrão das outras funções
+                    try {
+                        fieldsetCapa.style.setProperty(
+                            "background",
+                            gradienteEncontrado,
+                            "important"
+                        );
+                        log(
+                            "✅ GRADIENTES CAPA: Gradiente aplicado com sucesso!"
+                        );
+
+                        return {
+                            sucesso: true,
+                            corOriginal: corCorrespondente,
+                            gradienteAplicado: gradienteEncontrado,
+                            elemento: fieldsetCapa,
+                        };
+                    } catch (error) {
+                        logError(
+                            "❌ GRADIENTES CAPA: Erro ao aplicar gradiente:",
+                            error
+                        );
+                        return false;
+                    }
+                } else {
+                    log(
+                        `❌ GRADIENTES CAPA: Cor não reconhecida para substituição: ${corAtual}`
+                    );
+                    log(
+                        "💡 GRADIENTES CAPA: Cores suportadas:",
+                        Object.keys(mapeamentoCores)
+                    );
+
+                    return {
+                        sucesso: false,
+                        corNaoReconhecida: corAtual,
+                        coresSuportadas: Object.keys(mapeamentoCores),
+                    };
+                }
+            }
+
+            /**
+             * 🔄 FUNÇÃO DE APLICAÇÃO ROBUSTA DE GRADIENTES - Com detecção inteligente e retry automático
+             */
+            function aplicarGradientesCapaProcessoRobusta() {
+                log(
+                    "🔄 GRADIENTES ROBUSTA: Iniciando aplicação robusta de gradientes..."
+                );
+
+                // Verificar se estamos na página correta primeiro
+                if (!isCapaProcessoPage()) {
+                    log(
+                        "ℹ️ GRADIENTES ROBUSTA: Não é uma página de capa de processo"
+                    );
+                    return false;
+                }
+
+                let tentativas = 0;
+                const maxTentativas = 5;
+                const intervalTentativas = 1000; // 1 segundo entre tentativas
+
+                const tentarAplicarGradientes = () => {
+                    tentativas++;
+                    log(
+                        `🎯 GRADIENTES: Tentativa ${tentativas}/${maxTentativas}`
+                    );
+
+                    const resultado = aplicarGradientesCapaProcesso();
+                    const sucesso = resultado && resultado.sucesso;
+
+                    if (!sucesso && tentativas < maxTentativas) {
+                        log(
+                            `⏳ GRADIENTES: Aguardando ${intervalTentativas}ms para nova tentativa...`
+                        );
+                        setTimeout(tentarAplicarGradientes, intervalTentativas);
+                    } else if (sucesso) {
+                        log(
+                            "✅ GRADIENTES ROBUSTA: Gradientes aplicados com sucesso!"
+                        );
+                        log(
+                            `📊 RESULTADOS: Cor original: ${resultado.corOriginal}, Gradiente: ${resultado.gradienteAplicado}`
+                        );
+                    } else {
+                        log(
+                            "⚠️ GRADIENTES ROBUSTA: Não foi possível aplicar gradientes após todas as tentativas"
+                        );
+                    }
+                };
+
+                // Iniciar primeira tentativa
+                tentarAplicarGradientes();
+
+                // Também agendar uma verificação após carregamento completo
+                if (document.readyState !== "complete") {
+                    window.addEventListener("load", () => {
+                        setTimeout(() => {
+                            log(
+                                "🔄 GRADIENTES: Verificação pós-carregamento..."
+                            );
+                            aplicarGradientesCapaProcesso();
+                        }, 500);
+                    });
+                }
+
+                return true;
             }
 
             // 📏 FUNÇÃO AUXILIAR: Aplicar dimensionamento específico para ícones em divListaRecursosMinuta
@@ -30633,6 +30862,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 debugTodosDivLembrete,
                 aplicarEstilizacaoLembretesRobusta,
 
+                // 🎨 GRADIENTES PARA CAPA DO PROCESSO
+                aplicarGradientesCapaProcesso, // 🎯 NOVA: Aplica gradientes na capa do processo
+                aplicarGradientesCapaProcessoRobusta, // 🔄 NOVA: Aplicação robusta com retry automático
+
                 // 🧠 NOVA DETECÇÃO INTELIGENTE DE LEMBRETES
                 detectarTiposLembretesNaPagina,
 
@@ -34151,6 +34384,213 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             // ##### FIM DO NAMESPACE CONSOLIDADO #####
         })(); // ← FECHAMENTO DA FUNÇÃO ASYNC INTERNA
 
+        // 🎨 DEFINIR FUNÇÕES DE GRADIENTES ANTES DO NAMESPACE
+        /**
+         * 🎨 FUNÇÃO PARA APLICAR GRADIENTES NA CAPA DO PROCESSO
+         * Substitui cores sólidas de background por gradientes suaves no fieldset da capa
+         * Baseado na documentação "cores capa do processo.md"
+         */
+        function aplicarGradientesCapaProcesso() {
+            log("🎨 GRADIENTES CAPA: Iniciando aplicação de gradientes...");
+
+            // Verificar se estamos na página correta
+            if (!isCapaProcessoPage()) {
+                log("❌ GRADIENTES CAPA: Não é uma página de capa de processo");
+                return false;
+            }
+
+            // Buscar o fieldset da capa
+            const fieldsetCapa = document.querySelector(
+                "#fldCapa.infraFieldset.bootstrap-styles"
+            );
+            if (!fieldsetCapa) {
+                log("❌ GRADIENTES CAPA: Fieldset #fldCapa não encontrado");
+                return false;
+            }
+
+            log("✅ GRADIENTES CAPA: Fieldset encontrado:", fieldsetCapa);
+
+            // Obter estilo computed atual
+            const estiloComputado = window.getComputedStyle(fieldsetCapa);
+            const corAtual = estiloComputado.backgroundColor;
+
+            log("🔍 GRADIENTES CAPA: Cor atual detectada:", corAtual);
+
+            // Função para converter RGB para hex
+            function rgbParaHex(rgb) {
+                if (rgb.startsWith("#")) return rgb.toLowerCase();
+
+                const rgbMatch = rgb.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                if (rgbMatch) {
+                    const r = parseInt(rgbMatch[1])
+                        .toString(16)
+                        .padStart(2, "0");
+                    const g = parseInt(rgbMatch[2])
+                        .toString(16)
+                        .padStart(2, "0");
+                    const b = parseInt(rgbMatch[3])
+                        .toString(16)
+                        .padStart(2, "0");
+                    return `#${r}${g}${b}`;
+                }
+
+                return rgb;
+            }
+
+            // Mapeamento de cores para gradientes conforme documentação
+            const mapeamentoCores = {
+                // AMARELO
+                "#efd88f": "linear-gradient(#F9EFAF, #F7E98D)",
+
+                // VERMELHO (formato rgb)
+                "rgb(142, 53, 35)": "linear-gradient(#FAAFAF, #F78D8D)",
+                "rgb(142,53,35)": "linear-gradient(#FAAFAF, #F78D8D)", // sem espaços
+
+                // AZUL
+                "#c4dffb": "linear-gradient(#AFCFFA, #8DC0F7)",
+
+                // VERDE
+                "#a7eda7": "linear-gradient(#AFFAB6, #8DF792)",
+
+                // LARANJA
+                "#f5b574": "linear-gradient(#FAD3AF, #F7C68D)",
+
+                // CINZA
+                "#a0b9bf": "linear-gradient(#B5C9CF, #9CB0B7)",
+                "#A0B9BF": "linear-gradient(#B5C9CF, #9CB0B7)", // case insensitive
+
+                // ROSA
+                "#fbc4df": "linear-gradient(#FBAFDF, #F78DC7)",
+            };
+
+            // Verificar múltiplos formatos da cor atual
+            const formatosPossiveisCor = [
+                corAtual,
+                corAtual.replace(/\s+/g, ""), // sem espaços
+                rgbParaHex(corAtual),
+                rgbParaHex(corAtual).toUpperCase(),
+            ];
+
+            log("🔍 GRADIENTES CAPA: Formatos testados:", formatosPossiveisCor);
+
+            let gradienteEncontrado = null;
+            let corCorrespondente = null;
+
+            // Buscar correspondência nos mapeamentos
+            for (const formato of formatosPossiveisCor) {
+                if (mapeamentoCores[formato]) {
+                    gradienteEncontrado = mapeamentoCores[formato];
+                    corCorrespondente = formato;
+                    break;
+                }
+            }
+
+            if (gradienteEncontrado) {
+                log(`🎉 GRADIENTES CAPA: Correspondência encontrada!`);
+                log(`   Cor original: ${corCorrespondente}`);
+                log(`   Gradiente: ${gradienteEncontrado}`);
+
+                // Aplicar o gradiente seguindo padrão das outras funções
+                try {
+                    fieldsetCapa.style.setProperty(
+                        "background",
+                        gradienteEncontrado,
+                        "important"
+                    );
+                    log("✅ GRADIENTES CAPA: Gradiente aplicado com sucesso!");
+
+                    return {
+                        sucesso: true,
+                        corOriginal: corCorrespondente,
+                        gradienteAplicado: gradienteEncontrado,
+                        elemento: fieldsetCapa,
+                    };
+                } catch (error) {
+                    logError(
+                        "❌ GRADIENTES CAPA: Erro ao aplicar gradiente:",
+                        error
+                    );
+                    return false;
+                }
+            } else {
+                log(
+                    `❌ GRADIENTES CAPA: Cor não reconhecida para substituição: ${corAtual}`
+                );
+                log(
+                    "💡 GRADIENTES CAPA: Cores suportadas:",
+                    Object.keys(mapeamentoCores)
+                );
+
+                return {
+                    sucesso: false,
+                    corNaoReconhecida: corAtual,
+                    coresSuportadas: Object.keys(mapeamentoCores),
+                };
+            }
+        }
+
+        /**
+         * 🔄 FUNÇÃO DE APLICAÇÃO ROBUSTA DE GRADIENTES - Com detecção inteligente e retry automático
+         */
+        function aplicarGradientesCapaProcessoRobusta() {
+            log(
+                "🔄 GRADIENTES ROBUSTA: Iniciando aplicação robusta de gradientes..."
+            );
+
+            // Verificar se estamos na página correta primeiro
+            if (!isCapaProcessoPage()) {
+                log(
+                    "ℹ️ GRADIENTES ROBUSTA: Não é uma página de capa de processo"
+                );
+                return false;
+            }
+
+            let tentativas = 0;
+            const maxTentativas = 5;
+            const intervalTentativas = 1000; // 1 segundo entre tentativas
+
+            const tentarAplicarGradientes = () => {
+                tentativas++;
+                log(`🎯 GRADIENTES: Tentativa ${tentativas}/${maxTentativas}`);
+
+                const resultado = aplicarGradientesCapaProcesso();
+                const sucesso = resultado && resultado.sucesso;
+
+                if (!sucesso && tentativas < maxTentativas) {
+                    log(
+                        `⏳ GRADIENTES: Aguardando ${intervalTentativas}ms para nova tentativa...`
+                    );
+                    setTimeout(tentarAplicarGradientes, intervalTentativas);
+                } else if (sucesso) {
+                    log(
+                        "✅ GRADIENTES ROBUSTA: Gradientes aplicados com sucesso!"
+                    );
+                    log(
+                        `📊 RESULTADOS: Cor original: ${resultado.corOriginal}, Gradiente: ${resultado.gradienteAplicado}`
+                    );
+                } else {
+                    log(
+                        "⚠️ GRADIENTES ROBUSTA: Não foi possível aplicar gradientes após todas as tentativas"
+                    );
+                }
+            };
+
+            // Iniciar primeira tentativa
+            tentarAplicarGradientes();
+
+            // Também agendar uma verificação após carregamento completo
+            if (document.readyState !== "complete") {
+                window.addEventListener("load", () => {
+                    setTimeout(() => {
+                        log("🔄 GRADIENTES: Verificação pós-carregamento...");
+                        aplicarGradientesCapaProcesso();
+                    }, 500);
+                });
+            }
+
+            return true;
+        }
+
         // 🚀 EXPOSIÇÃO GLOBAL DO NAMESPACE - CRÍTICO!
         // Criar namespace com funções essenciais diretamente
 
@@ -34236,6 +34676,22 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     : window.unificarNavbarStyles ||
                       (() =>
                           console.log("unificarNavbarStyles não disponível")),
+
+            // 🎨 GRADIENTES PARA CAPA DO PROCESSO
+            aplicarGradientesCapaProcesso:
+                typeof aplicarGradientesCapaProcesso === "function"
+                    ? aplicarGradientesCapaProcesso
+                    : () =>
+                          console.log(
+                              "aplicarGradientesCapaProcesso não disponível"
+                          ),
+            aplicarGradientesCapaProcessoRobusta:
+                typeof aplicarGradientesCapaProcessoRobusta === "function"
+                    ? aplicarGradientesCapaProcessoRobusta
+                    : () =>
+                          console.log(
+                              "aplicarGradientesCapaProcessoRobusta não disponível"
+                          ),
             forcarFlexboxNavbar: () => {
                 const elementosNavbar =
                     document.querySelectorAll(".d-none.d-md-flex");
