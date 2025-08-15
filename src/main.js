@@ -997,14 +997,25 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 // ===== APLICAÇÃO INSTANTÂNEA DA NAVBAR - ANTES DE QUALQUER FLASH =====
 (function aplicarNavbarInstantaneo() {
     // CSS da navbar aplicado IMEDIATAMENTE ao carregar o arquivo
+    // Detectar domínio para tema padrão
+    const currentUrl = window.location.href;
+    let temaDefault = "blue"; // tema padrão geral
+
+    if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
+        temaDefault = "green"; // Verde para eproc2g
+    } else if (currentUrl.includes("eproc1g.tjsc.jus.br")) {
+        temaDefault = "blue"; // Azul para eproc1g
+    }
+
     const temaLocalStorage = localStorage.getItem("eprobe_selected_theme");
-    const tema = temaLocalStorage || "blue";
+    const tema = temaLocalStorage || temaDefault;
 
     const gradientes = {
         blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
         dark: "linear-gradient(to left, #1a1a1a, #696363)",
-        light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+        light: "linear-gradient(to left, #94A3B8, #475569)",
         violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+        green: "linear-gradient(to left, #17a394, #0c4f5c)",
     };
     const gradiente = gradientes[tema];
 
@@ -1090,8 +1101,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             const gradientes = {
                 blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
                 dark: "linear-gradient(to left, #1a1a1a, #696363)",
-                light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                light: "linear-gradient(to left, #94A3B8, #475569)",
                 violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+                green: "linear-gradient(to left, #17a394, #0c4f5c)",
             };
             const novoGradiente = gradientes[novoTema];
 
@@ -2107,16 +2119,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             transform: translateX(0);
         }
         
-        /* Navbar com fade-in */
+        /* Navbar sem animação */
         #eprobe-navbar-element {
-            animation: fadeInNavbar 0.4s ease-out 0.2s forwards !important;
             display: flex !important; 
             align-items: center !important;
+            transition: all 0.3s ease !important;
         }
         
-        @keyframes fadeInNavbar {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Efeito hover na logo eProbe */
+        #eprobe-navbar-element:hover {
+            background-color: rgba(255, 255, 255, 0.2784313725) !important;
+            border-radius: 5px !important;
         }
         
         /* Botões da extensão com transição suave */
@@ -3314,7 +3327,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // Verificar modalidade física
                 const matchFisica = htmlCompleto.match(padroes.sessaoFisica);
                 if (matchFisica) {
-                    modalidade = "física";
+                    modalidade = "Física";
                     dataEncontrada = matchFisica[1];
                     console.log(
                         `🏛️ PAUTA/MESA: ${eventoId} - Sessão FÍSICA detectada, data: ${dataEncontrada}`
@@ -3325,7 +3338,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const matchVirtual = htmlCompleto.match(padroes.sessaoVirtual);
                 if (matchVirtual && !modalidade) {
                     // só se não encontrou física
-                    modalidade = "virtual";
+                    modalidade = "Virtual";
                     dataEncontrada = matchVirtual[1];
                     console.log(
                         `💻 PAUTA/MESA: ${eventoId} - Sessão VIRTUAL detectada, data: ${dataEncontrada}`
@@ -4391,7 +4404,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 flex-shrink: 0;
                                 margin-top: 1px;
                             ">${
-                                sessao.dadosPauta.modalidade === "virtual"
+                                sessao.dadosPauta.modalidade === "Virtual"
                                     ? "dvr"
                                     : "groups"
                             }</span>
@@ -4401,8 +4414,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             ">
                                 ${
                                     sessao.dadosPauta.modalidade === "virtual"
-                                        ? "Sessão virtual"
-                                        : "Sessão física"
+                                        ? "Sessão Virtual"
+                                        : "Sessão Física"
                                 }
                             </span>
                         </div>
@@ -4574,8 +4587,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             const gradientes = {
                 blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
                 dark: "linear-gradient(to left, #1a1a1a, #696363)",
-                light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                light: "linear-gradient(to left, #94A3B8, #475569)",
                 violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+                green: "linear-gradient(to left, #17a394, #0c4f5c)",
             };
 
             const gradiente = gradientes[themeName] || gradientes.blue;
@@ -4659,8 +4673,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const gradientes = {
                     blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
                     dark: "linear-gradient(to left, #1a1a1a, #696363)",
-                    light: "linear-gradient(to top, #7BC6CC, #BE93C5)",
+                    light: "linear-gradient(to left, #94A3B8, #475569)",
                     violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+                    green: "linear-gradient(to left, #17a394, #0c4f5c)",
                 };
 
                 const gradiente = gradientes[temaAtual] || gradientes.blue;
@@ -4745,8 +4760,20 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             // Sincronizar com chrome.storage sem reaplicar estilos
             if (typeof chrome !== "undefined" && chrome.storage) {
                 chrome.storage.sync.get(["selectedTheme"], function (result) {
-                    const savedTheme = result.selectedTheme || "blue";
-                    log(`💾 Tema sincronizado encontrado: ${savedTheme}`);
+                    // Detectar tema padrão baseado no domínio
+                    let temaDefault = "blue";
+                    const currentUrl = window.location.href;
+
+                    if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
+                        temaDefault = "green"; // Verde para eproc2g
+                    } else if (currentUrl.includes("eproc1g.tjsc.jus.br")) {
+                        temaDefault = "blue"; // Azul para eproc1g
+                    }
+
+                    const savedTheme = result.selectedTheme || temaDefault;
+                    log(
+                        `💾 Tema determinado: ${savedTheme} (domínio padrão: ${temaDefault})`
+                    );
 
                     // Salvar no localStorage para próxima vez (CSS instantâneo usará isso)
                     try {
@@ -4760,10 +4787,21 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     }
                 });
             } else {
-                // Fallback: garantir tema blue no localStorage
-                log("🔄 Chrome storage não disponível, garantindo tema blue");
+                // Fallback: garantir tema baseado no domínio no localStorage
+                const currentUrl = window.location.href;
+                let temaDefault = "blue";
+
+                if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
+                    temaDefault = "green"; // Verde para eproc2g
+                } else if (currentUrl.includes("eproc1g.tjsc.jus.br")) {
+                    temaDefault = "blue"; // Azul para eproc1g
+                }
+
+                log(
+                    `🔄 Chrome storage não disponível, garantindo tema ${temaDefault}`
+                );
                 try {
-                    localStorage.setItem("eprobe_selected_theme", "blue");
+                    localStorage.setItem("eprobe_selected_theme", temaDefault);
                 } catch (e) {
                     console.warn("⚠️ Erro ao definir tema fallback:", e);
                 }
@@ -25000,12 +25038,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             const ICON_REPLACEMENTS = {
                 // Árvore
                 "arvore documento_listar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0c6e51" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-network-icon lucide-network"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-network-icon lucide-network"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>',
                     selector: 'img[alt="arvore documento_listar"]',
                 },
                 // Cancelar Movimentação
                 "processo movimento_desativar_consulta": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7b0a0a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
                     selector:
                         'img[alt="processo movimento_desativar_consulta"]',
                 },
@@ -25090,7 +25128,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             // Mapeamentos adicionais por texto do link
             const ICON_REPLACEMENTS_BY_TEXT = {
                 "Incluir em Pauta/Mesa": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5d87b7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-plus-icon lucide-calendar-plus"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-plus-icon lucide-calendar-plus"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>',
                 },
                 "Movimentar Processo": {
                     newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-right-icon lucide-arrow-left-right"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>',

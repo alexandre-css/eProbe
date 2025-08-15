@@ -1373,14 +1373,19 @@ body {
 }
 
 .button-theme-preview.light {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #94a3b8 0%, #475569 100%);
+    border: 1px solid #64748b;
+    box-shadow: 0 2px 4px rgba(71, 85, 105, 0.3);
 }
 
 .button-theme-preview.violet {
     background: linear-gradient(135deg, #6f42c1 0%, #8e44ad 100%);
     box-shadow: 0 2px 8px rgba(111, 66, 193, 0.3);
+}
+
+.button-theme-preview.green {
+    background: linear-gradient(to left, #17a394, #0c4f5c);
+    box-shadow: 0 2px 8px rgba(23, 163, 148, 0.3);
 }
 
 .button-theme-preview.reset {
@@ -1639,6 +1644,11 @@ input:checked + .slider:hover {
 /* Tema Violeta */
 #buttons_container button[data-theme="violet"] {
     background: linear-gradient(135deg, #6b46c1 0%, #4c1d95 100%);
+}
+
+/* Tema Verde */
+#buttons_container button[data-theme="green"] {
+    background: linear-gradient(135deg, #17a394 0%, #0c4f5c 100%);
 }
 
 /* Estados dos botões de tema */

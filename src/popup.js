@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Verificar se é o botão de reset
         if (buttons[index].classList.contains("reset-interface-theme")) {
-            // Reset dos temas de interface - volta para o tema azul padrão
+            // Reset dos temas de interface - volta para o tema padrão baseado no domínio
             console.log("🔄 POPUP: Reset de tema de interface solicitado");
 
             // Remove estado ativo de todos os botões
@@ -208,15 +208,47 @@ document.addEventListener("DOMContentLoaded", function () {
                 buttons[i].classList.remove("active");
             }
 
-            // Ativa o tema azul (índice 0)
-            if (buttons[0]) {
-                buttons[0].classList.add("active");
-            } // Remove o tema salvo e aplica o padrão
+            // Remove o tema salvo e aplica o padrão baseado no domínio
             chrome.storage.sync.remove("selectedTheme", function () {
                 console.log(
-                    "🗑️ POPUP: Tema salvo removido, voltando ao padrão"
+                    "🗑️ POPUP: Tema salvo removido, detectando tema padrão do domínio"
                 );
-                applyTheme("blue");
+
+                // Detectar tema baseado no domínio
+                chrome.tabs.query(
+                    { active: true, currentWindow: true },
+                    function (tabs) {
+                        let temaDefault = "blue";
+
+                        if (tabs && tabs[0] && tabs[0].url) {
+                            const currentUrl = tabs[0].url;
+                            if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
+                                temaDefault = "green"; // Verde para eproc2g
+                            } else if (
+                                currentUrl.includes("eproc1g.tjsc.jus.br")
+                            ) {
+                                temaDefault = "blue"; // Azul para eproc1g
+                            }
+                        }
+
+                        console.log(
+                            "🎯 POPUP: Tema padrão do domínio:",
+                            temaDefault
+                        );
+                        applyTheme(temaDefault);
+
+                        // Ativar visualmente o botão correto
+                        for (let i = 0; i < buttons.length; i++) {
+                            if (
+                                buttons[i].getAttribute("data-theme") ===
+                                temaDefault
+                            ) {
+                                buttons[i].classList.add("active");
+                                break;
+                            }
+                        }
+                    }
+                );
 
                 // Feedback visual temporário para o botão de reset
                 const resetButton = buttons[index];
@@ -511,32 +543,56 @@ document.addEventListener("DOMContentLoaded", function () {
         "botões"
     );
 
-    // Carrega tema salvo ou usa azul como padrão
+    // Carrega tema salvo ou define tema baseado no domínio
     chrome.storage.sync.get(["selectedTheme"], function (result) {
-        const savedTheme = result.selectedTheme || "blue";
-        console.log("💾 POPUP: Tema salvo encontrado:", savedTheme);
+        // Detectar tema padrão baseado no domínio atual
+        let temaDefault = "blue"; // tema padrão geral
 
-        // Encontra o botão do tema salvo e o ativa
-        let themeFound = false;
-        for (let i = 0; i < buttons.length; i++) {
-            if (buttons[i].getAttribute("data-theme") === savedTheme) {
+        // Verificar o domínio da aba ativa
+        chrome.tabs.query(
+            { active: true, currentWindow: true },
+            function (tabs) {
+                if (tabs && tabs[0] && tabs[0].url) {
+                    const currentUrl = tabs[0].url;
+                    if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
+                        temaDefault = "green"; // Verde para eproc2g
+                    } else if (currentUrl.includes("eproc1g.tjsc.jus.br")) {
+                        temaDefault = "blue"; // Azul para eproc1g
+                    }
+                }
+
+                const savedTheme = result.selectedTheme || temaDefault;
                 console.log(
-                    "🎯 POPUP: Ativando tema salvo:",
+                    "💾 POPUP: Tema determinado:",
                     savedTheme,
-                    "índice:",
-                    i
+                    "(domínio:",
+                    temaDefault,
+                    ")"
                 );
-                toggle(i);
-                themeFound = true;
-                break;
-            }
-        }
 
-        // Se nenhum tema foi encontrado, ativa o azul (padrão) no índice 0
-        if (!themeFound) {
-            console.log("🔵 POPUP: Ativando tema padrão azul (índice 0)");
-            toggle(0);
-        }
+                // Encontra o botão do tema e o ativa
+                let themeFound = false;
+                for (let i = 0; i < buttons.length; i++) {
+                    if (buttons[i].getAttribute("data-theme") === savedTheme) {
+                        console.log(
+                            "🎯 POPUP: Ativando tema:",
+                            savedTheme,
+                            "índice:",
+                            i
+                        );
+                        toggle(i);
+                        themeFound = true;
+                        break;
+                    }
+                }
+
+                // Se nenhum tema foi encontrado, ativa o tema padrão
+                if (!themeFound) {
+                    console.log("🔵 POPUP: Ativando tema padrão (índice 0)");
+                    toggle(0);
+                }
+            }
+        );
     });
 
     // ============================================
