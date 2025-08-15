@@ -4751,6 +4751,118 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
         }
 
+        /**
+         * 🔍 FUNÇÃO DE DEBUG PARA VERIFICAR CORES NA PÁGINA
+         * Encontra elementos com cores específicas para diagnosticar
+         */
+        function debugEncontrarCores() {
+            console.log(
+                "🔍 DEBUG: Procurando elementos com cores específicas..."
+            );
+
+            const elementos = document.querySelectorAll("*");
+            let elementosEncontrados = 0;
+            let coresEncontradas = new Set();
+
+            elementos.forEach((el) => {
+                const style = window.getComputedStyle(el);
+                const bgColor = style.backgroundColor;
+                const bg = style.background;
+
+                // Registrar todas as cores encontradas
+                if (
+                    bgColor &&
+                    bgColor !== "rgba(0, 0, 0, 0)" &&
+                    bgColor !== "transparent"
+                ) {
+                    coresEncontradas.add(bgColor);
+                }
+
+                // Procurar especificamente por nossa cor
+                if (
+                    bgColor.includes("235") &&
+                    bgColor.includes("242") &&
+                    bgColor.includes("223")
+                ) {
+                    elementosEncontrados++;
+
+                    console.log(
+                        `🎯 ELEMENTO ${elementosEncontrados} ENCONTRADO:`,
+                        {
+                            tag: el.tagName,
+                            classe: el.className,
+                            id: el.id,
+                            backgroundColor: bgColor,
+                            background: bg.substring(0, 100) + "...",
+                            match: bgColor === "rgb(235, 242, 223)",
+                        }
+                    );
+                }
+            });
+
+            console.log(`📊 RESUMO:`, {
+                elementosComCorEspecifica: elementosEncontrados,
+                totalCoresUnicas: coresEncontradas.size,
+                amostrasCores: Array.from(coresEncontradas).slice(0, 10),
+            });
+
+            return {
+                encontrados: elementosEncontrados,
+                cores: Array.from(coresEncontradas),
+            };
+        }
+
+        /**
+         * 🎨 FUNÇÃO PARA CORREÇÃO CONSERVADORA DE COR DE FUNDO
+         * Altera APENAS background-color preservando background-image
+         * Corrige elementos com rgb(235, 242, 223) para #C8E6C9
+         */
+        function corrigirCorDeFundoConservadora() {
+            console.log("🎨 CORREÇÃO: Alterando cor de fundo dos elementos...");
+
+            const elementos = document.querySelectorAll("*");
+            let elementosProcessados = 0;
+
+            elementos.forEach((el) => {
+                const style = window.getComputedStyle(el);
+                const bgColor = style.backgroundColor;
+
+                if (bgColor === "rgb(235, 242, 223)") {
+                    elementosProcessados++;
+
+                    console.log(`📦 ELEMENTO ${elementosProcessados}:`, {
+                        tag: el.tagName,
+                        classe: el.className,
+                        corOriginal: bgColor,
+                    });
+
+                    try {
+                        // Aplicar nova cor #C8E6C9
+                        el.style.setProperty(
+                            "background-color",
+                            "#C8E6C9",
+                            "important"
+                        );
+
+                        console.log(
+                            `✅ ELEMENTO ${elementosProcessados}: Cor alterada para #C8E6C9!`
+                        );
+                    } catch (error) {
+                        console.error(
+                            `❌ ERRO no elemento ${elementosProcessados}:`,
+                            error
+                        );
+                    }
+                }
+            });
+
+            console.log(`\n📊 RESUMO FINAL:`);
+            console.log(`  ✅ Elementos processados: ${elementosProcessados}`);
+            console.log(`  🎯 Nova cor aplicada: #C8E6C9 (verde suave)`);
+
+            return { processados: elementosProcessados };
+        }
+
         // Função para verificar e aplicar tema salvo - SIMPLIFICADA
         function loadAndApplyTheme() {
             // CSS instantâneo já cuida da aplicação - apenas sincronizar storage
@@ -10895,7 +11007,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
-            // � FUNÇÃO: Instrução para seleção manual do PDF (SEM DOWNLOADS)
+            //  FUNÇÃO: Instrução para seleção manual do PDF (SEM DOWNLOADS)
             async function instruirSelecaoManualPDF() {
                 console.log(
                     "📄 Instruindo seleção manual do PDF (sem downloads)..."
@@ -12978,57 +13090,57 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             " Há documentos, mostrando menu de documento específico"
                         );
                         menu.innerHTML = `
- <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="M12 8V4H8"/>
- <rect width="16" height="12" x="4" y="8" rx="2"/>
- <path d="M2 14h2"/>
- <path d="M20 14h2"/>
- <path d="M15 13v2"/>
- <path d="M9 13v2"/>
- </svg>
- Processar Documento
- </li>
- <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
- <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
- </svg>
- Resumo Perplexity
- </li>
- <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
- <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
- </svg>
- Escolher IA
- </li>
- <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l-.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
- <circle cx="12" cy="12" r="3"/>
- </svg>
- Configurar API
- </li>
- <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <path d="m14.5 9.5 1 1"/>
- <path d="m15.5 8.5-4 4"/>
- <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
- <path d="M3 3v5h5"/>
- <circle cx="10" cy="14" r="2"/>
- </svg>
- Testar API Key
- </li>
- <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
- <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
- <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
- <line x1="9" y1="9" x2="15" y2="9"/>
- <line x1="9" y1="13" x2="15" y2="13"/>
- <line x1="9" y1="17" x2="13" y2="17"/>
- </svg>
- Ver Logs de Erro
- </li>
- `;
+                            <li role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px; font-weight: 600; border-bottom: 1px solid rgba(148, 163, 184, 0.3); margin-bottom: 6px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 8V4H8"/>
+                            <rect width="16" height="12" x="4" y="8" rx="2"/>
+                            <path d="M2 14h2"/>
+                            <path d="M20 14h2"/>
+                            <path d="M15 13v2"/>
+                            <path d="M9 13v2"/>
+                            </svg>
+                            Processar Documento
+                            </li>
+                            <li id="api-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ffffff" stroke="none">
+                            <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                            </svg>
+                            Resumo Perplexity
+                            </li>
+                            <li id="manual-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" height="16px" viewBox="0 -960 960 960" width="16px" fill="#ffffff">
+                            <path d="M255.7-156.65q-17.7 0-32.79-8.77-15.08-8.76-23.56-23.15l-73.24-132.47h60.91l41.13 81.19h87.68v-24h-71.54l-41-81.19h-91.94L53.83-449.09q-4.28-6.48-6.5-14.25-2.22-7.77-2.22-16.88 0-5.55 8.72-31.69l59.54-103.05h92.98l39.9-81.19h71.58v-24h-85.98l-40.5 81.19h-63.48l71.48-132.47q8.04-15.03 23.27-23.47 15.22-8.45 33.08-8.45h65.93q27.17 0 45.5 18.38 18.33 18.37 18.33 45.21v152.56h-53.72l-36 24h89.72v139.11h-98.2l-40.32-80.71h-87.2l-26 24h97.04l40.98 80.71h113.7v179.85q0 26.84-18.33 45.21-18.33 18.38-45.5 18.38H255.7Zm331.31 0q-36.74 0-62.52-25.93-25.77-25.92-25.77-62.76 0-21.04 9.5-40.05 9.5-19.01 26.5-30.52v-328.18q-17-11.51-26.5-30.52-9.5-19.01-9.5-40.05 0-36.84 26.04-62.76 26.03-25.93 62.81-25.93 36.77 0 62.55 25.93 25.77 25.92 25.77 62.76 0 21.04-9.5 40.05-9.5 19.01-26.5 30.52v48.16l78.35-47.54q2.72-33.4 28-56.26 25.29-22.86 60.8-22.86 36.22 0 62.18 26.04 25.95 26.04 25.95 62.81 0 36.78-25.98 62.55-25.99 25.78-62.69 25.78-9.48 0-17.81-1.26-8.33-1.26-16.2-5.26l-88.05 52.73 99.86 80.55q5.28-1.16 10.68-2.46 5.4-1.3 11.61-1.3 36.96 0 62.77 26.04 25.81 26.03 25.81 62.81 0 36.77-25.9 62.55-25.9 25.77-62.48 25.77-38.16 0-64.62-27.12-26.45-27.12-24.41-65.79l-77.87-61.55v82.49q16 11.21 25.5 30.66 9.5 19.44 9.5 41.21 0 36.84-25.54 62.76-25.54 25.93-62.34 25.93Z"/>
+                            </svg>
+                            Escolher IA
+                            </li>
+                            <li id="config-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l-.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Configurar API
+                            </li>
+                            <li id="test-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m14.5 9.5 1 1"/>
+                            <path d="m15.5 8.5-4 4"/>
+                            <path d="M3 12a9 9 0 1 0 9-9 9.74 9.74 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                            <circle cx="10" cy="14" r="2"/>
+                            </svg>
+                            Testar API Key
+                            </li>
+                            <li id="logs-btn" role="menuitem" style="cursor: pointer; color: rgb(203 213 225); display: flex; width: 100%; font-size: 14px; align-items: center; border-radius: 6px; padding: 12px; transition: all 0.15s ease; gap: 8px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            <line x1="9" y1="9" x2="15" y2="9"/>
+                            <line x1="9" y1="13" x2="15" y2="13"/>
+                            <line x1="9" y1="17" x2="13" y2="17"/>
+                            </svg>
+                            Ver Logs de Erro
+                            </li>
+                            `;
 
                         // Adicionar eventos de hover e click para todos os botões
                         const menuItems = menu.querySelectorAll("li[id]");
@@ -13577,28 +13689,28 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 notification.id = "documento-relevante-notification";
                 notification.className = "eprobe-notification";
                 notification.style.cssText = `
- position: fixed !important;
- top: ${notificationTop};
- right: ${notificationRight};
- background: ${
-     type === "error"
-         ? "#dc3545"
-         : type === "warning"
-         ? "#ffc107"
-         : type === "success"
-         ? "#134377"
-         : "#134377"
- };
- color: white;
- padding: 15px 20px;
- border-radius: 5px;
- font-weight: bold;
- z-index: 10000;
- box-shadow: 0 4px 8px rgba(0,0,0,0.3);
- max-width: 280px;
- font-size: 14px;
- line-height: 1.4;
- `;
+                    position: fixed !important;
+                    top: ${notificationTop};
+                    right: ${notificationRight};
+                    background: ${
+                        type === "error"
+                            ? "#dc3545"
+                            : type === "warning"
+                            ? "#ffc107"
+                            : type === "success"
+                            ? "#134377"
+                            : "#134377"
+                    };
+                    color: white;
+                    padding: 15px 20px;
+                    border-radius: 5px;
+                    font-weight: bold;
+                    z-index: 10000;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+                    max-width: 280px;
+                    font-size: 14px;
+                    line-height: 1.4;
+                    `;
                 // Verificar se deve mostrar spinner
                 if (message.includes("Enviando para Perplexity")) {
                     notification.innerHTML = `
@@ -14973,18 +15085,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     const modal = document.createElement("div");
                     modal.id = "document-selection-modal";
                     modal.style.cssText = `
- position: fixed !important;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.8);
- z-index: 100010;
- display: flex;
- align-items: center;
- justify-content: center;
- backdrop-filter: blur(4px);
- `;
+                        position: fixed !important;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.8);
+                        z-index: 100010;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        backdrop-filter: blur(4px);
+                        `;
 
                     let documentOptions = "";
                     documentosRelevantes.forEach((documento, index) => {
@@ -15584,51 +15696,51 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             function showApiQuotaInfo() {
                 const modal = document.createElement("div");
                 modal.style.cssText = `
- position: fixed;
- top: 0;
- left: 0;
- width: 100%;
- height: 100%;
- background: rgba(0,0,0,0.7);
- z-index: 100003;
- display: flex;
- align-items: center;
- justify-content: center;
- `;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.7);
+                    z-index: 100003;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    `;
 
                 modal.innerHTML = `
- <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
- <div style="margin-bottom: 20px; text-align: center;">
- <h2 style="margin: 0; color: #dc3545; font-size: 20px;"> Créditos da API Esgotados</h2>
- </div>
- 
- <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
- <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
- 
- <p><strong>Para resolver:</strong></p>
- <ol>
- <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #134377;">perplexity.ai/settings/api</a></li>
- <li>Verifique seus créditos e limites</li>
- <li>Se necessário, adicione créditos à sua conta</li>
- <li>Ou aguarde a renovação dos créditos</li>
- </ol>
- 
- <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar em Perplexity web.</p>
- </div>
+                    <div style="background: white; border-radius: 10px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 25px rgba(0,0,0,0.3);">
+                    <div style="margin-bottom: 20px; text-align: center;">
+                    <h2 style="margin: 0; color: #dc3545; font-size: 20px;"> Créditos da API Esgotados</h2>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px; font-size: 14px; line-height: 1.6;">
+                    <p><strong>Sua API key do Perplexity não possui créditos suficientes.</strong></p>
+                    
+                    <p><strong>Para resolver:</strong></p>
+                    <ol>
+                    <li>Acesse: <a href="https://www.perplexity.ai/settings/api" target="_blank" style="color: #134377;">perplexity.ai/settings/api</a></li>
+                    <li>Verifique seus créditos e limites</li>
+                    <li>Se necessário, adicione créditos à sua conta</li>
+                    <li>Ou aguarde a renovação dos créditos</li>
+                    </ol>
+                    
+                    <p><strong>Alternativa:</strong> Use o método manual que copia o texto para você colar em Perplexity web.</p>
+                    </div>
 
- <div style="text-align: center;">
- <button id="open-billing" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
- Abrir Configurações
- </button>
- <button id="config-new-key" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
- Nova API Key
- </button>
- <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
- Fechar
- </button>
- </div>
- </div>
- `;
+                    <div style="text-align: center;">
+                    <button id="open-billing" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+                    Abrir Configurações
+                    </button>
+                    <button id="config-new-key" style="background: #134377; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-right: 10px; cursor: pointer; font-weight: bold;">
+                    Nova API Key
+                    </button>
+                    <button id="close-quota-info" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                    Fechar
+                    </button>
+                    </div>
+                    </div>
+                    `;
 
                 document.body.appendChild(modal);
 
@@ -19475,56 +19587,56 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     const overlay = document.createElement("div");
                     overlay.className = "help-modal-overlay";
                     overlay.innerHTML = `
- <div class="help-modal" style="max-width: 450px;">
- <div class="help-modal-header">
- <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
- <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
- <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
- <polyline points="14,2 14,8 20,8"/>
- <line x1="16" y1="13" x2="8" y2="13"/>
- <line x1="16" y1="17" x2="8" y2="17"/>
- <polyline points="10,9 9,9 8,9"/>
- </svg>
- Documento Selecionado
- </h2>
- <button class="help-close-btn" aria-label="Fechar">
- <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
- </button>
- </div>
- <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
- <p style="color:rgb(var(--color-text-main));margin-bottom:20px;line-height:1.5;">Como deseja processar o documento selecionado?</p>
- <div style="margin-bottom:20px;">
- <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
- <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#134377;flex-shrink:0;">
- <path d="M15 3h6v6"/>
- <path d="M10 14 21 3"/>
- <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
- </svg>
- <div>
- <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento Manual</div>
- <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Abre o documento em nova aba para extração manual</div>
- </div>
- </div>
- <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
- <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#f59e0b;flex-shrink:0;">
- <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
- <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
- <line x1="12" y1="19" x2="12" y2="22"/>
- <line x1="8" y1="22" x2="16" y2="22"/>
- </svg>
- <div>
- <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento via API</div>
- <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Tenta processar diretamente (experimental)</div>
- </div>
- </div>
- </div>
- <div style="display:flex;gap:12px;justify-content:flex-end;">
- <button class="btn primary" id="process-manual-btn" style="min-width:120px;">Manual</button>
- <button class="btn" id="process-api-btn" style="min-width:100px;">Via API</button>
- </div>
- </div>
- </div>
- `;
+                        <div class="help-modal" style="max-width: 450px;">
+                        <div class="help-modal-header">
+                        <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
+                        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                        <polyline points="14,2 14,8 20,8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                        <polyline points="10,9 9,9 8,9"/>
+                        </svg>
+                        Documento Selecionado
+                        </h2>
+                        <button class="help-close-btn" aria-label="Fechar">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
+                        </button>
+                        </div>
+                        <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
+                        <p style="color:rgb(var(--color-text-main));margin-bottom:20px;line-height:1.5;">Como deseja processar o documento selecionado?</p>
+                        <div style="margin-bottom:20px;">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#134377;flex-shrink:0;">
+                        <path d="M15 3h6v6"/>
+                        <path d="M10 14 21 3"/>
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                        </svg>
+                        <div>
+                        <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento Manual</div>
+                        <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Abre o documento em nova aba para extração manual</div>
+                        </div>
+                        </div>
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:8px;background:rgb(var(--color-background-alt3));">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;color:#f59e0b;flex-shrink:0;">
+                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                        <line x1="12" y1="19" x2="12" y2="22"/>
+                        <line x1="8" y1="22" x2="16" y2="22"/>
+                        </svg>
+                        <div>
+                        <div style="color:rgb(var(--color-text-main));font-weight:500;margin-bottom:4px;">Processamento via API</div>
+                        <div style="color:rgb(var(--color-text-muted));font-size:0.9rem;">Tenta processar diretamente (experimental)</div>
+                        </div>
+                        </div>
+                        </div>
+                        <div style="display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn primary" id="process-manual-btn" style="min-width:120px;">Manual</button>
+                        <button class="btn" id="process-api-btn" style="min-width:100px;">Via API</button>
+                        </div>
+                        </div>
+                        </div>
+                        `;
                     document.body.appendChild(overlay);
                     const close = (result) => {
                         document.body.removeChild(overlay);
@@ -24171,146 +24283,146 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
 
                 const css = `
-        /* eProbe Card Micro Compacto - Tamanho Exato do Conteúdo */
-        .eprobe-material-card-minimal {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 3px;
-            padding: 2px 4px;
-            margin: 1px 0;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            width: fit-content;
-            max-width: none;
-            font-size: 10px;
-            transition: all 0.2s ease;
-            display: inline-block;
-            line-height: 1.1;
-        }
-        
-        .eprobe-material-card-minimal:hover {
-            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .eprobe-card-minimal-content {
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-            white-space: nowrap;
-        }
-        
-        .eprobe-status-row {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-        
-        .eprobe-date-row {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-        
-        .eprobe-status-icon,
-        .eprobe-date-icon {
-            width: 12px;
-            height: 12px;
-            flex-shrink: 0;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .eprobe-status-text {
-            font-size: 10px;
-            font-weight: 600;
-            color: #1f2937;
-            line-height: 1.1;
-        }
-        
-        .eprobe-date-label {
-            font-size: 9px;
-            color: #6b7280;
-            font-weight: 500;
-            line-height: 1.1;
-        }
-        
-        .eprobe-date-text {
-            font-size: 10px;
-            color: #374151;
-            font-weight: 600;
-            line-height: 1.1;
-        }
-        
-        /* Ícones SVG micro otimizados */
-        .eprobe-icon-calendar::before {
-            content: "";
-            display: block;
-            width: 12px;
-            height: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2' ry='2'/%3E%3Cline x1='16' x2='16' y1='2' y2='6'/%3E%3Cline x1='8' x2='8' y1='2' y2='6'/%3E%3Cline x1='3' x2='21' y1='10' y2='10'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-size: contain;
-            background-position: center;
-        }
-        
-        .eprobe-icon-check::before {
-            content: "";
-            display: block;
-            width: 12px;
-            height: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-size: contain;
-            background-position: center;
-        }
-        
-        .eprobe-icon-alert::before {
-            content: "";
-            display: block;
-            width: 12px;
-            height: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-size: contain;
-            background-position: center;
-        }
-        
-        .eprobe-icon-info::before {
-            content: "";
-            display: block;
-            width: 12px;
-            height: 12px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-size: contain;
-            background-position: center;
-        }
-        
-        /* Cores dos ícones por status */
-        .eprobe-status-icon.status-pautado .eprobe-icon-info::before {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
-        }
-        
-        .eprobe-status-icon.status-julgado .eprobe-icon-check::before {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
-        }
-        
-        .eprobe-status-icon.status-retirado .eprobe-icon-alert::before {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
-        }
-        
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .eprobe-material-card-minimal {
-                max-width: 90vw;
-            }
-            
-            .eprobe-card-minimal-content {
-                white-space: normal;
-            }
-        }
-    `;
+                    /* eProbe Card Micro Compacto - Tamanho Exato do Conteúdo */
+                    .eprobe-material-card-minimal {
+                        background: #ffffff;
+                        border: 1px solid #e5e7eb;
+                        border-radius: 3px;
+                        padding: 2px 4px;
+                        margin: 1px 0;
+                        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        width: fit-content;
+                        max-width: none;
+                        font-size: 10px;
+                        transition: all 0.2s ease;
+                        display: inline-block;
+                        line-height: 1.1;
+                    }
+                    
+                    .eprobe-material-card-minimal:hover {
+                        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+                    }
+                    
+                    .eprobe-card-minimal-content {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1px;
+                        white-space: nowrap;
+                    }
+                    
+                    .eprobe-status-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 3px;
+                    }
+                    
+                    .eprobe-date-row {
+                        display: flex;
+                        align-items: center;
+                        gap: 3px;
+                    }
+                    
+                    .eprobe-status-icon,
+                    .eprobe-date-icon {
+                        width: 12px;
+                        height: 12px;
+                        flex-shrink: 0;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                    }
+                    
+                    .eprobe-status-text {
+                        font-size: 10px;
+                        font-weight: 600;
+                        color: #1f2937;
+                        line-height: 1.1;
+                    }
+                    
+                    .eprobe-date-label {
+                        font-size: 9px;
+                        color: #6b7280;
+                        font-weight: 500;
+                        line-height: 1.1;
+                    }
+                    
+                    .eprobe-date-text {
+                        font-size: 10px;
+                        color: #374151;
+                        font-weight: 600;
+                        line-height: 1.1;
+                    }
+                    
+                    /* Ícones SVG micro otimizados */
+                    .eprobe-icon-calendar::before {
+                        content: "";
+                        display: block;
+                        width: 12px;
+                        height: 12px;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='4' rx='2' ry='2'/%3E%3Cline x1='16' x2='16' y1='2' y2='6'/%3E%3Cline x1='8' x2='8' y1='2' y2='6'/%3E%3Cline x1='3' x2='21' y1='10' y2='10'/%3E%3C/svg%3E");
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center;
+                    }
+                    
+                    .eprobe-icon-check::before {
+                        content: "";
+                        display: block;
+                        width: 12px;
+                        height: 12px;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center;
+                    }
+                    
+                    .eprobe-icon-alert::before {
+                        content: "";
+                        display: block;
+                        width: 12px;
+                        height: 12px;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center;
+                    }
+                    
+                    .eprobe-icon-info::before {
+                        content: "";
+                        display: block;
+                        width: 12px;
+                        height: 12px;
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+                        background-repeat: no-repeat;
+                        background-size: contain;
+                        background-position: center;
+                    }
+                    
+                    /* Cores dos ícones por status */
+                    .eprobe-status-icon.status-pautado .eprobe-icon-info::before {
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='m9 12 2 2 4-4'/%3E%3C/svg%3E");
+                    }
+                    
+                    .eprobe-status-icon.status-julgado .eprobe-icon-check::before {
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20,6 9,17 4,12'/%3E%3C/svg%3E");
+                    }
+                    
+                    .eprobe-status-icon.status-retirado .eprobe-icon-alert::before {
+                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z'/%3E%3Cpath d='M12 9v4'/%3E%3Cpath d='m12 17 .01 0'/%3E%3C/svg%3E");
+                    }
+                    
+                    /* Responsividade */
+                    @media (max-width: 768px) {
+                        .eprobe-material-card-minimal {
+                            max-width: 90vw;
+                        }
+                        
+                        .eprobe-card-minimal-content {
+                            white-space: normal;
+                        }
+                    }
+                `;
 
                 // Carregar ícones já incluídos no CSS
                 const styleElement = document.createElement("style");
@@ -35338,6 +35450,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     : window.unificarNavbarStyles ||
                       (() =>
                           console.log("unificarNavbarStyles não disponível")),
+            corrigirCorDeFundoConservadora: corrigirCorDeFundoConservadora,
+            debugEncontrarCores:
+                typeof debugEncontrarCores === "function"
+                    ? debugEncontrarCores
+                    : () => console.log("debugEncontrarCores não disponível"),
+            testarCorrecaoCorFundo:
+                typeof testarCorrecaoCorFundo === "function"
+                    ? testarCorrecaoCorFundo
+                    : () =>
+                          console.log("testarCorrecaoCorFundo não disponível"),
 
             // 🎨 GRADIENTES PARA CAPA DO PROCESSO
             aplicarGradientesCapaProcesso:
@@ -35809,7 +35931,71 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
     }
 });
 
-// 🚨 INTERCEPTAÇÃO FINAL BRUTAL - ÚLTIMA LINHA DE DEFESA
+// � CRIAÇÃO GLOBAL DO NAMESPACE - FORA DA IIFE!
+// Este namespace é criado FORA da IIFE para garantir exposição global
+(function criarNamespaceGlobal() {
+    console.log("🚀 CRIANDO NAMESPACE GLOBAL: window.SENT1_AUTO...");
+
+    // Função de correção de cores (sempre disponível)
+    const corrigirCorDeFundoConservadora = function () {
+        console.log("🎨 CORREÇÃO: Alterando cor de fundo dos elementos...");
+
+        const elementos = document.querySelectorAll("*");
+        let elementosProcessados = 0;
+
+        elementos.forEach((el) => {
+            const style = window.getComputedStyle(el);
+            const bgColor = style.backgroundColor;
+
+            if (bgColor === "rgb(235, 242, 223)") {
+                elementosProcessados++;
+
+                console.log(`📦 ELEMENTO ${elementosProcessados}:`, {
+                    tag: el.tagName,
+                    classe: el.className,
+                    corOriginal: bgColor,
+                });
+
+                try {
+                    el.style.setProperty(
+                        "background-color",
+                        "#C8E6C9",
+                        "important"
+                    );
+                    console.log(
+                        `✅ ELEMENTO ${elementosProcessados}: Cor alterada para #C8E6C9!`
+                    );
+                } catch (error) {
+                    console.error(
+                        `❌ ERRO no elemento ${elementosProcessados}:`,
+                        error
+                    );
+                }
+            }
+        });
+
+        console.log(`\n📊 RESUMO FINAL:`);
+        console.log(`  ✅ Elementos processados: ${elementosProcessados}`);
+        console.log(`  🎯 Nova cor aplicada: #C8E6C9 (verde suave)`);
+
+        return { processados: elementosProcessados };
+    };
+
+    // Criar namespace global
+    window.SENT1_AUTO = {
+        corrigirCorDeFundoConservadora: corrigirCorDeFundoConservadora,
+        status: "namespace_global_ativo",
+        versao: "2.0.0-global",
+        timestamp: new Date().toISOString(),
+    };
+
+    console.log(
+        "✅ NAMESPACE GLOBAL CRIADO! window.SENT1_AUTO disponível globalmente"
+    );
+    console.log("🎯 Funções disponíveis:", Object.keys(window.SENT1_AUTO));
+})();
+
+// �🚨 INTERCEPTAÇÃO FINAL BRUTAL - ÚLTIMA LINHA DE DEFESA
 (function interceptacaoFinalBrutal() {
     console.log(
         "🔥 INTERCEPTAÇÃO FINAL: Substituição brutal de switchRelevanciaEvento"
@@ -36144,8 +36330,79 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         return processadosTotal;
     }
 
+    // 🎨 FUNÇÃO PARA GRADIENTES DA CAPA DO PROCESSO
+    function aplicarGradientesCapaProcesso() {
+        // Verificar se estamos na página correta
+        const urlAtual = window.location.href;
+        if (!urlAtual.includes("controlador.php?acao=processo_selecionar&")) {
+            console.log(
+                "⏭️ eProbe CAPA: Não é página de processo, pulando aplicação"
+            );
+            return 0;
+        }
+
+        console.log(
+            "🎨 eProbe CAPA: Aplicando gradientes em TODA a página de processo..."
+        );
+
+        // Mapeamento das 4 cores específicas da capa
+        const coresCapaProcesso = {
+            "rgb(35, 110, 142)": "linear-gradient(#5A8DB5, #4A7DA5)", // AZUL
+            "rgb(142, 53, 35)": "linear-gradient(#D6807A, #C26B58)", // VERMELHA
+            "rgb(89, 89, 89)": "linear-gradient(#8A9EA5, #778C93)", // CINZA
+            "rgb(105, 142, 35)": "linear-gradient(#8AAE85, #759B70)", // VERDE OLIVA
+        };
+
+        // Buscar TODOS os elementos dentro de divInfraAreaGlobal
+        const areaGlobal = document.querySelector("#divInfraAreaGlobal");
+        if (!areaGlobal) {
+            console.log("⚠️ eProbe CAPA: #divInfraAreaGlobal não encontrado");
+            return 0;
+        }
+
+        // Buscar TODOS os elementos com background-color
+        const todosElementos = areaGlobal.querySelectorAll("*");
+        let processados = 0;
+
+        console.log(
+            `🔍 eProbe CAPA: Analisando ${todosElementos.length} elementos em divInfraAreaGlobal...`
+        );
+
+        todosElementos.forEach((elemento, index) => {
+            const cor = window.getComputedStyle(elemento).backgroundColor;
+
+            // Verificar se a cor está no mapeamento
+            if (coresCapaProcesso[cor]) {
+                elemento.style.setProperty(
+                    "background",
+                    coresCapaProcesso[cor],
+                    "important"
+                );
+                console.log(
+                    `✅ eProbe CAPA: Elemento ${index + 1} (${
+                        elemento.tagName
+                    }.${elemento.className}) aplicado - ${cor}`
+                );
+                processados++;
+            }
+        });
+
+        if (processados > 0) {
+            console.log(
+                `🎉 eProbe CAPA: ${processados} elementos processados em TODA a página!`
+            );
+        } else {
+            console.log(
+                `ℹ️ eProbe CAPA: Nenhum elemento com as cores especificadas encontrado`
+            );
+        }
+
+        return processados;
+    }
+
     // Aplicar imediatamente
     aplicarGradientes();
+    aplicarGradientesCapaProcesso();
 
     // Observer funcional
     const container = document.querySelector("#conteudoMinutas");
@@ -36155,8 +36412,11 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 "🔄 eProbe OBSERVER: Mudança detectada, reaplicando..."
             );
             aplicarGradientes();
+            aplicarGradientesCapaProcesso(); // Aplicar também na capa
             setTimeout(aplicarGradientes, 50);
+            setTimeout(aplicarGradientesCapaProcesso, 50);
             setTimeout(aplicarGradientes, 150);
+            setTimeout(aplicarGradientesCapaProcesso, 150);
         });
 
         observer.observe(container, {
@@ -36164,6 +36424,25 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             subtree: true,
             attributes: true,
         });
+
+        // Observer adicional para toda a área global da página
+        const areaGlobal = document.querySelector("#divInfraAreaGlobal");
+        if (areaGlobal) {
+            const observerCapa = new MutationObserver(() => {
+                console.log(
+                    "🔄 eProbe CAPA OBSERVER: Reaplicando gradientes em toda a página..."
+                );
+                aplicarGradientesCapaProcesso();
+                setTimeout(aplicarGradientesCapaProcesso, 25);
+                setTimeout(aplicarGradientesCapaProcesso, 100);
+            });
+
+            observerCapa.observe(areaGlobal, {
+                childList: true,
+                subtree: true,
+                attributes: true,
+            });
+        }
 
         // Click listener
         document.addEventListener("click", (e) => {
@@ -36181,7 +36460,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         console.log("✅ eProbe GRADIENTES: Sistema completo configurado!");
         window.eProbeGradientesFuncional = {
             aplicar: aplicarGradientes,
+            aplicarCapa: aplicarGradientesCapaProcesso,
             observer: observer,
+            status: () => console.log("✅ Sistema de gradientes ativo!"),
         };
     }
 
