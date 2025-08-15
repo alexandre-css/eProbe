@@ -36024,12 +36024,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
     console.log("🎨 SISTEMA FUNCIONAL: Iniciando gradientes + observer...");
 
     function aplicarGradientes() {
+        let processadosTotal = 0;
+
+        // 1. PROCESSAR LEGMINUTAS (como antes)
         const elementos = document.querySelectorAll(
             'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio'
         );
-        if (elementos.length === 0) return 0;
 
-        const cores = {
+        const coresLegMinutas = {
             "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)",
             "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)",
             "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)",
@@ -36043,26 +36045,103 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)",
         };
 
-        let processados = 0;
         elementos.forEach((el, i) => {
             const cor = window.getComputedStyle(el).backgroundColor;
             if (cor !== "rgba(0, 0, 0, 0)") {
                 const gradiente =
-                    cores[cor] || "linear-gradient(#FFDE8F, #FFB84D)";
+                    coresLegMinutas[cor] || "linear-gradient(#FFDE8F, #FFB84D)";
                 el.style.setProperty("background", gradiente, "important");
                 console.log(
                     `✅ eProbe GRADIENTE: legMinutas ${i + 1} aplicado!`
                 );
-                processados++;
+                processadosTotal++;
             }
         });
 
-        if (processados > 0) {
+        // 2. PROCESSAR INFRATRCLARA E INFRATRESCU
+        const containersMinutas = document.querySelectorAll(
+            '[id^="conteudoInternoMinutas_"]'
+        );
+
+        // Mapeamento para infraTrClara (tons claros)
+        const coresInfraTrClara = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)", // VERDE
+        };
+
+        // Mapeamento para infraTrEscura (tons escuros) - CONFORME DOCUMENTAÇÃO
+        const coresInfraTrEscura = {
+            "rgb(122, 197, 205)": "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL #7AC5CD
+            "rgb(205, 129, 98)": "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO #CD8162
+            "rgb(205, 170, 125)": "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO #CDAA7D
+            "rgb(205, 155, 29)": "linear-gradient(#FFA93A, #FF9520)", // DOURADO #CD9B1D
+            "rgb(139, 123, 139)": "linear-gradient(#B593B5, #A082A0)", // LILÁS #8B7B8B
+            "rgb(169, 169, 169)": "linear-gradient(#8A9EA5, #778C93)", // CINZA #A9A9A9
+            "rgb(205, 85, 85)": "linear-gradient(#F47A7A, #F15858)", // VERMELHA #CD5555
+            "rgb(205, 205, 0)": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMÃO #CDCD00
+            "rgb(205, 150, 205)": "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO #CD96CD
+            "rgb(205, 198, 115)": "linear-gradient(#F5DC7A, #F3D058)", // AMARELA #CDC673
+            "rgb(124, 205, 124)": "linear-gradient(#7AF381, #58EF5F)", // VERDE #7CCD7C
+            // 🎯 TRATAMENTO ESPECIAL PARA CORES TRANSPARENTES/CINZA CLARO
+            "rgba(0, 0, 0, 0.05)": "linear-gradient(#F5F5F5, #E8E8E8)", // CINZA MUITO CLARO
+        };
+
+        containersMinutas.forEach((container, containerIndex) => {
+            // Processar infraTrClara
+            const linhasClaras = container.querySelectorAll("tr.infraTrClara");
+            linhasClaras.forEach((linha, linhaIndex) => {
+                const cor = window.getComputedStyle(linha).backgroundColor;
+                if (cor !== "rgba(0, 0, 0, 0)" && coresInfraTrClara[cor]) {
+                    linha.style.setProperty(
+                        "background",
+                        coresInfraTrClara[cor],
+                        "important"
+                    );
+                    console.log(
+                        `✅ eProbe CLARA: Container ${
+                            containerIndex + 1
+                        } linha ${linhaIndex + 1} aplicado!`
+                    );
+                    processadosTotal++;
+                }
+            });
+
+            // Processar infraTrEscura
+            const linhasEscuras =
+                container.querySelectorAll("tr.infraTrEscura");
+            linhasEscuras.forEach((linha, linhaIndex) => {
+                const cor = window.getComputedStyle(linha).backgroundColor;
+                if (cor !== "rgba(0, 0, 0, 0)" && coresInfraTrEscura[cor]) {
+                    linha.style.setProperty(
+                        "background",
+                        coresInfraTrEscura[cor],
+                        "important"
+                    );
+                    console.log(
+                        `✅ eProbe ESCURA: Container ${
+                            containerIndex + 1
+                        } linha ${linhaIndex + 1} aplicado!`
+                    );
+                    processadosTotal++;
+                }
+            });
+        });
+
+        if (processadosTotal > 0) {
             console.log(
-                `🎉 eProbe GRADIENTES: ${processados} elementos processados!`
+                `🎉 eProbe GRADIENTES: ${processadosTotal} elementos processados (legMinutas + tabelas)!`
             );
         }
-        return processados;
+        return processadosTotal;
     }
 
     // Aplicar imediatamente
