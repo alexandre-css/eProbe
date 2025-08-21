@@ -10121,233 +10121,165 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return info;
             }
 
-            // Solucao automatica para extracao de texto de PDF (SEM DOWNLOADS)
+            // 🎯 ESTRATÉGIA ÚNICA E FOCADA - EXTRAÇÃO PDF VIA ELEMENTO #pdf-embed
             async function extractTextFromPDF() {
                 console.log(
-                    "Iniciando extracao automatica de PDF (sem downloads)..."
+                    "🎯 NOVA ESTRATÉGIA: Focada no elemento #pdf-embed identificado"
                 );
 
-                // Limpeza de clipboard se contem notificacoes eProbe
-                try {
-                    const clipboardContent =
-                        await navigator.clipboard.readText();
-                    if (clipboardContent) {
-                        const contentLower = clipboardContent.toLowerCase();
-                        const eProbeIndicators = [
-                            "resumir documento",
-                            "pdf detectado",
-                            "clique dentro do pdf",
-                            "aguarde o pdf carregar",
-                            "selecione todo o texto do pdf",
-                        ];
-                        const hasEProbeContent = eProbeIndicators.some(
-                            (indicator) => contentLower.includes(indicator)
-                        );
-                        if (hasEProbeContent) {
-                            console.log(
-                                "Limpando clipboard com conteudo eProbe"
-                            );
-                            await navigator.clipboard.writeText("");
-                        }
-                    }
-                } catch (error) {
-                    console.log(
-                        "Aviso: Nao foi possivel verificar/limpar clipboard:",
-                        error.message
-                    );
-                }
-
-                // Verificacao de pagina
+                // Verificação de página
                 const pageType = detectPageType();
                 if (pageType !== "documento_pdf") {
-                    throw new Error("Nao e uma pagina de documento PDF");
+                    throw new Error("Não é uma página de documento PDF");
                 }
 
-                // Detectar elemento PDF apenas para validar existencia
-                const pdfElement = document.querySelector(
-                    'iframe[src*="pdf"], embed[type="application/pdf"], object[type="application/pdf"]'
-                );
-                if (!pdfElement) {
-                    console.log("Elemento PDF nao encontrado no DOM");
-                }
-
+                // 🎯 ELEMENTO CORRETO: #plugin identificado no HTML
                 console.log(
-                    "Usando estrategias nativas (sem qualquer download)..."
+                    "🎯 ESTRATÉGIA FOCADA: Buscando elemento #plugin (correto conforme HTML)..."
                 );
 
-                // Estrategia 1: texto ja renderizado em iframes acessiveis
-                const iframes = document.querySelectorAll(
-                    'iframe[src*="acessar_documento"], iframe[src*="pdf"]'
-                );
-                for (const iframe of iframes) {
-                    try {
-                        const iframeDoc =
-                            iframe.contentDocument ||
-                            iframe.contentWindow.document;
-                        if (iframeDoc && iframeDoc.body) {
-                            const textoIframe =
-                                iframeDoc.body.innerText ||
-                                iframeDoc.body.textContent;
-                            if (textoIframe && textoIframe.length > 100) {
-                                console.log(
-                                    "Texto extraido de iframe:",
-                                    textoIframe.length,
-                                    "caracteres"
-                                );
-                                return textoIframe.trim();
-                            }
-                        }
-                    } catch (e) {
-                        console.log("Iframe inacessivel (CORS):", e.message);
-                    }
-                }
+                const seletoresPDF = [
+                    "#plugin", // 🎯 ELEMENTO CORRETO identificado no HTML
+                    "#pdf-embed",
+                    'embed[type="application/x-google-chrome-pdf"]',
+                    'embed[type="application/pdf"]',
+                    'iframe[src*="acessar_documento"]',
+                    'iframe[src*="pdf"]',
+                    'object[type="application/pdf"]',
+                    "embed",
+                    "iframe",
+                ];
 
-                // Estrategia 2: Simulacao fisica
-                console.log("Iniciando simulacao fisica no plugin PDF...");
-                const textoSimulacao = await simularInteracaoFisicaPDF();
-                if (textoSimulacao) {
-                    console.log("Simulacao fisica bem sucedida");
-                    showNotification(
-                        "Texto extraido via simulacao automatica",
-                        "success",
-                        2000
-                    );
-                    return textoSimulacao.trim();
-                }
+                let elementoEncontrado = null;
 
-                // Instrucoes manuais (ASCII apenas)
-                console.log("Fallback: instrucoes manuais para copia do PDF");
-                showNotification(
-                    "Instrucao manual:\n1) Clique dentro do PDF\n2) Pressione Ctrl+A e depois Ctrl+C\n3) Clique novamente no botao eProbe para validar o texto",
-                    "info",
-                    12000
-                );
-
-                // Verificar clipboard (usuario pode ja ter copiado)
-                try {
-                    const clipboardText = await navigator.clipboard.readText();
-                    if (clipboardText && clipboardText.length > 100) {
-                        console.log(
-                            "Texto encontrado no clipboard:",
-                            clipboardText.length,
-                            "caracteres"
-                        );
-                        const textoValidado = await checkClipboardForPDFText();
-                        if (textoValidado) {
-                            console.log("Texto juridico validado do PDF");
-                            return textoValidado.trim();
-                        } else {
-                            console.log("Texto do clipboard rejeitado");
-                        }
-                    }
-                } catch (clipError) {
+                for (const seletor of seletoresPDF) {
+                    const elementos = document.querySelectorAll(seletor);
                     console.log(
-                        "Aviso: Nao foi possivel acessar clipboard:",
-                        clipError.message
+                        `🔍 Seletor "${seletor}": ${elementos.length} elemento(s) encontrado(s)`
+                    );
+
+                    elementos.forEach((el, index) => {
+                        console.log(`  [${index}] Elemento:`, el);
+                        console.log(`  [${index}] ID:`, el.id || "sem id");
+                        console.log(
+                            `  [${index}] Type:`,
+                            el.type || "sem type"
+                        );
+                        console.log(`  [${index}] Src:`, el.src || "sem src");
+                        console.log(`  [${index}] TagName:`, el.tagName);
+
+                        // Se ainda não temos elemento, usar o primeiro encontrado
+                        if (
+                            !elementoEncontrado &&
+                            el.tagName &&
+                            (el.tagName.toLowerCase() === "embed" ||
+                                el.tagName.toLowerCase() === "iframe")
+                        ) {
+                            elementoEncontrado = el;
+                            console.log(
+                                `✅ USANDO: Elemento "${seletor}" será usado como target`
+                            );
+                        }
+                    });
+                }
+
+                if (!elementoEncontrado) {
+                    throw new Error(
+                        "❌ ERRO: Nenhum elemento PDF encontrado com qualquer seletor"
                     );
                 }
 
-                // Funcao interna para validar clipboard (sem emojis)
-                async function checkClipboardForPDFText() {
-                    try {
-                        const text = await navigator.clipboard.readText();
-                        if (!text || text.length < 100) return null;
-                        const textLower = text.toLowerCase();
-                        const eProbeIndicators = [
-                            "resumir documento",
-                            "pdf detectado",
-                            "clique dentro do pdf",
-                            "aguarde o pdf carregar",
-                            "selecione todo o texto do pdf",
-                            "copie o texto do pdf",
-                            "clique novamente no botao eprobe",
-                            "nao copie texto do console",
-                            "copie apenas o texto do documento pdf",
-                        ];
-                        const eProbeCount = eProbeIndicators.filter((i) =>
-                            textLower.includes(i)
-                        ).length;
-                        if (eProbeCount > 0) {
-                            console.log(
-                                "Texto rejeitado: contem notificacoes eProbe"
-                            );
-                            return null;
-                        }
-                        const logIndicators = [
-                            "console.log",
-                            "error:",
-                            "warning:",
-                            "debug:",
-                        ];
-                        const logCount = logIndicators.filter((i) =>
-                            textLower.includes(i)
-                        ).length;
-                        if (logCount > 2) {
-                            console.log(
-                                "Texto rejeitado: contem logs de debug"
-                            );
-                            return null;
-                        }
-                        const termosJuridicos = [
-                            "tribunal",
-                            "juiz",
-                            "processo",
-                            "sentenca",
-                            "decisao",
-                            "despacho",
-                            "acordao",
-                            "recurso",
-                            "apelacao",
-                            "embargos",
-                            "requerente",
-                            "requerido",
-                            "autor",
-                            "reu",
-                            "defesa",
-                            "peticao",
-                            "contestacao",
-                            "agravo",
-                            "mandado",
-                            "citacao",
-                        ];
-                        const termosEncontrados = termosJuridicos.filter((t) =>
-                            textLower.includes(t)
-                        ).length;
-                        if (termosEncontrados >= 2) {
-                            console.log(
-                                "Texto juridico validado (",
-                                termosEncontrados,
-                                "termos)"
-                            );
-                            return text;
-                        }
-                        return null;
-                    } catch (error) {
-                        console.log(
-                            "Erro ao verificar clipboard:",
-                            error.message
-                        );
-                        return null;
-                    }
-                }
-
-                // Selecionar automaticamente (nao faz download)
-                console.log("Tentando automacao de selecao...");
-                const textFromSelection = await tryAutomaticSelection();
-                if (textFromSelection) {
-                    console.log("Extracao via selecao automatica bem sucedida");
-                    return textFromSelection;
-                }
-
                 console.log(
-                    "Falha: nenhuma estrategia sem download obteve texto"
+                    "🎯 ELEMENTO FINAL SELECIONADO:",
+                    elementoEncontrado
+                );
+                const targetElement = elementoEncontrado;
+
+                // 🎯 ESTRATÉGIA ÚNICA: Focar no elemento + aguardar interação manual
+                console.log(
+                    "🎯 Focando no elemento PDF e aguardando seleção manual..."
+                );
+
+                // Focus no elemento
+                try {
+                    targetElement.focus();
+                    targetElement.click();
+                    console.log("✅ Elemento PDF focado com sucesso");
+                } catch (e) {
+                    console.log(
+                        "⚠️ Não foi possível focar no elemento:",
+                        e.message
+                    );
+                }
+
+                // Aguardar e verificar clipboard periodicamente
+                console.log(
+                    "⏳ Aguardando seleção manual do usuário (Ctrl+A + Ctrl+C)..."
                 );
                 showNotification(
-                    "Nao foi possivel extrair texto automaticamente. Tente copiar manualmente e repetir.",
-                    "warning",
-                    5000
+                    "📄 Clique no PDF, pressione Ctrl+A para selecionar tudo, depois Ctrl+C para copiar",
+                    "info",
+                    8000
                 );
-                return null;
+
+                return new Promise((resolve) => {
+                    let attempts = 0;
+                    const maxAttempts = 60; // 30 segundos
+
+                    const checkClipboard = async () => {
+                        attempts++;
+
+                        try {
+                            const clipboardText =
+                                await navigator.clipboard.readText();
+
+                            // Verificar se é conteúdo válido (não são logs da extensão)
+                            if (
+                                clipboardText &&
+                                clipboardText.length > 100 &&
+                                !clipboardText.includes(
+                                    "ANTIFLASH COORDINATOR"
+                                ) &&
+                                !clipboardText.includes("🎭") &&
+                                !clipboardText.includes("main.js:") &&
+                                !clipboardText.includes("eProbe") &&
+                                !clipboardText.includes("window.SENT1_AUTO")
+                            ) {
+                                console.log(
+                                    `✅ Texto válido extraído: ${clipboardText.length} caracteres`
+                                );
+                                showNotification(
+                                    `✅ Texto extraído com sucesso: ${clipboardText.length} caracteres`,
+                                    "success"
+                                );
+                                resolve(clipboardText.trim());
+                                return;
+                            }
+                        } catch (e) {
+                            console.log(
+                                "⚠️ Erro ao verificar clipboard:",
+                                e.message
+                            );
+                        }
+
+                        // Continuar verificando ou timeout
+                        if (attempts < maxAttempts) {
+                            setTimeout(checkClipboard, 500);
+                        } else {
+                            console.log(
+                                "⏰ Timeout: Usuário não copiou texto válido"
+                            );
+                            showNotification(
+                                "⏰ Tempo esgotado. Tente copiar o texto do PDF manualmente",
+                                "warning"
+                            );
+                            resolve(null);
+                        }
+                    };
+
+                    // Iniciar verificação após delay
+                    setTimeout(checkClipboard, 1000);
+                });
             }
 
             // 🤖 FUNÇÃO DE AUTOMAÇÃO COMPLETA - Ctrl+A + Ctrl+C automáticos
@@ -35870,6 +35802,61 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                           console.log(
                               "debugDeteccaoSessaoRapida não disponível"
                           ),
+
+            // 🔍 NOVA FUNÇÃO DEBUG - INVESTIGAR ELEMENTOS PDF
+            debugElementosPDF: function () {
+                console.log(
+                    "🔍 DEBUG: Investigando todos os elementos PDF na página..."
+                );
+
+                const seletoresPDF = [
+                    "#pdf-embed",
+                    'embed[type="application/x-google-chrome-pdf"]',
+                    'embed[type="application/pdf"]',
+                    'iframe[src*="acessar_documento"]',
+                    'iframe[src*="pdf"]',
+                    'object[type="application/pdf"]',
+                    "embed",
+                    "iframe",
+                ];
+
+                const resultados = {};
+
+                for (const seletor of seletoresPDF) {
+                    const elementos = document.querySelectorAll(seletor);
+                    resultados[seletor] = [];
+
+                    console.log(
+                        `🔍 Seletor "${seletor}": ${elementos.length} elemento(s)`
+                    );
+
+                    elementos.forEach((el, index) => {
+                        const info = {
+                            id: el.id || "sem id",
+                            type: el.type || "sem type",
+                            src: el.src || "sem src",
+                            tagName: el.tagName,
+                            className: el.className || "sem class",
+                        };
+
+                        resultados[seletor].push(info);
+                        console.log(`  [${index}]`, info);
+                    });
+                }
+
+                console.log("📊 RESULTADO COMPLETO:", resultados);
+                return resultados;
+            },
+
+            // 🎯 NOVA FUNÇÃO DE TESTE - ESTRATÉGIA PDF FOCADA
+            testarExtracaoPDFFocada:
+                typeof extractTextFromPDF === "function"
+                    ? extractTextFromPDF
+                    : () =>
+                          console.log(
+                              "⚠️ extractTextFromPDF não disponível - use em página de PDF"
+                          ),
+
             diagnosticarSistemaCompleto:
                 typeof diagnosticarSistemaCompleto === "function"
                     ? diagnosticarSistemaCompleto
