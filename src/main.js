@@ -96,7 +96,312 @@ CLEANUP_SYSTEM.addInterval(
     }, PERFORMANCE_CONFIG.cleanupInterval)
 );
 
-// 🚨 FLAG GLOBAL - DESABILITAR SUBSTITUIÇÃO DE ESTRELAS
+// 🎭 SISTEMA DE COORDENAÇÃO ANTI-FLASH - CONTROLA REVELAÇÃO DE ELEMENTOS
+const AntiFlashCoordinator = {
+    pendingElements: new Set(),
+    batchGroups: new Map(),
+    revealQueue: [],
+    isProcessingQueue: false,
+
+    // Registrar elemento para revelação coordenada
+    register(element, groupId = null) {
+        if (!element) return;
+
+        // Aplicar classe de loading
+        element.classList.add("eprobe-loading");
+        element.setAttribute("data-eprobe-state", "loading");
+
+        if (groupId) {
+            // Adicionar ao grupo para revelação em lote
+            if (!this.batchGroups.has(groupId)) {
+                this.batchGroups.set(groupId, new Set());
+            }
+            this.batchGroups.get(groupId).add(element);
+            element.classList.add("eprobe-batch-pending");
+        } else {
+            // Adicionar aos elementos pendentes individuais
+            this.pendingElements.add(element);
+        }
+
+        logCritical(
+            `🎭 ANTIFLASH: Elemento registrado ${
+                groupId ? `(grupo: ${groupId})` : "(individual)"
+            }`
+        );
+        return element;
+    },
+
+    // Revelar elemento individual (se pronto)
+    reveal(element, immediate = false) {
+        if (!element) return;
+
+        const revealAction = () => {
+            element.classList.remove("eprobe-loading", "eprobe-batch-pending");
+            element.classList.add("eprobe-ready");
+            element.setAttribute("data-eprobe-state", "ready");
+            this.pendingElements.delete(element);
+        };
+
+        if (immediate) {
+            revealAction();
+        } else {
+            // Usar requestAnimationFrame para timing otimizado
+            requestAnimationFrame(revealAction);
+        }
+
+        logCritical("🎯 ANTIFLASH: Elemento revelado com sucesso");
+    },
+
+    // Revelar grupo completo em lote
+    revealGroup(groupId, immediate = false) {
+        const group = this.batchGroups.get(groupId);
+        if (!group) return;
+
+        const revealGroupAction = () => {
+            group.forEach((element) => {
+                element.classList.remove(
+                    "eprobe-loading",
+                    "eprobe-batch-pending"
+                );
+                element.classList.add("eprobe-ready", "eprobe-batch-ready");
+                element.setAttribute("data-eprobe-state", "ready");
+            });
+            this.batchGroups.delete(groupId);
+        };
+
+        if (immediate) {
+            revealGroupAction();
+        } else {
+            requestAnimationFrame(revealGroupAction);
+        }
+
+        logCritical(
+            `🎉 ANTIFLASH: Grupo ${groupId} revelado (${group.size} elementos)`
+        );
+    },
+
+    // Revelar todos os elementos pendentes
+    revealAll(immediate = false) {
+        const revealAllAction = () => {
+            // Revelar elementos individuais
+            this.pendingElements.forEach((element) =>
+                this.reveal(element, true)
+            );
+
+            // Revelar todos os grupos
+            this.batchGroups.forEach((group, groupId) => {
+                this.revealGroup(groupId, true);
+            });
+        };
+
+        if (immediate) {
+            revealAllAction();
+        } else {
+            requestAnimationFrame(revealAllAction);
+        }
+
+        logCritical("🌟 ANTIFLASH: Todos os elementos revelados");
+    },
+
+    // Verificar status dos elementos pendentes
+    getStatus() {
+        return {
+            pendingCount: this.pendingElements.size,
+            batchGroupsCount: this.batchGroups.size,
+            totalBatchElements: Array.from(this.batchGroups.values()).reduce(
+                (sum, group) => sum + group.size,
+                0
+            ),
+        };
+    },
+
+    // Cleanup de elementos órfãos
+    cleanup() {
+        this.pendingElements.clear();
+        this.batchGroups.clear();
+        this.revealQueue = [];
+        this.isProcessingQueue = false;
+    },
+
+    // 🚀 BATCH PROCESSING AVANÇADO - ETAPA 4
+
+    // Aguardar grupo estar completo e revelar automaticamente
+    waitForGroupComplete(groupId, expectedCount, timeout = 3000) {
+        return new Promise((resolve) => {
+            const checkGroup = () => {
+                const group = this.batchGroups.get(groupId);
+                if (group && group.size >= expectedCount) {
+                    this.revealGroup(groupId);
+                    logCritical(
+                        `⏰ BATCH: Grupo ${groupId} revelado após atingir ${expectedCount} elementos`
+                    );
+                    resolve(true);
+                    return;
+                }
+
+                // Verificar novamente após delay
+                setTimeout(checkGroup, 100);
+            };
+
+            // Timeout de segurança
+            setTimeout(() => {
+                const group = this.batchGroups.get(groupId);
+                if (group && group.size > 0) {
+                    this.revealGroup(groupId);
+                    logCritical(
+                        `⚠️ BATCH: Grupo ${groupId} revelado por timeout (${group.size}/${expectedCount})`
+                    );
+                }
+                resolve(false);
+            }, timeout);
+
+            checkGroup();
+        });
+    },
+
+    // Revelar grupos em sequência com delay
+    revealGroupsSequentially(groupIds, delay = 200) {
+        groupIds.forEach((groupId, index) => {
+            setTimeout(() => {
+                this.revealGroup(groupId);
+                logCritical(
+                    `🎬 BATCH: Grupo ${groupId} revelado em sequência (${
+                        index + 1
+                    }/${groupIds.length})`
+                );
+            }, index * delay);
+        });
+    },
+
+    // Revelar todos os grupos simultaneamente com coordenação
+    revealAllGroupsCoordinated() {
+        const allGroupIds = Array.from(this.batchGroups.keys());
+
+        if (allGroupIds.length === 0) return;
+
+        // Aguardar próximo frame para coordenar revelação
+        requestAnimationFrame(() => {
+            allGroupIds.forEach((groupId) => {
+                this.revealGroup(groupId, true);
+            });
+
+            logCritical(
+                `🎆 BATCH: ${
+                    allGroupIds.length
+                } grupos revelados simultaneamente: ${allGroupIds.join(", ")}`
+            );
+        });
+    },
+
+    // Auto-revelar grupos que ficam pendentes muito tempo
+    setupAutoReveal(timeout = 5000) {
+        setInterval(() => {
+            this.batchGroups.forEach((group, groupId) => {
+                // Verificar se elementos do grupo estão há muito tempo pendentes
+                const firstElement = group.values().next().value;
+                if (firstElement) {
+                    const loadingTime =
+                        Date.now() -
+                        (firstElement.dataset.eprobeLoadingStart || Date.now());
+                    if (loadingTime > timeout) {
+                        this.revealGroup(groupId);
+                        logCritical(
+                            `🕒 AUTO-REVEAL: Grupo ${groupId} revelado por timeout (${loadingTime}ms)`
+                        );
+                    }
+                }
+            });
+        }, 1000);
+    },
+};
+
+// Registrar o AntiFlashCoordinator no sistema de cleanup
+CLEANUP_SYSTEM.cleanup = (function (originalCleanup) {
+    return function () {
+        originalCleanup.call(this);
+        AntiFlashCoordinator.cleanup();
+        logCritical("🧹 CLEANUP: AntiFlashCoordinator limpo");
+    };
+})(CLEANUP_SYSTEM.cleanup);
+
+// 🎯 FUNÇÕES HELPER GLOBAIS PARA ANTI-FLASH - ETAPA 4 COMPLETA
+window.eProbeAntiFlash = {
+    // Criar elemento com anti-flash automático
+    createElement(tagName, options = {}) {
+        const element = document.createElement(tagName);
+
+        // Aplicar propriedades básicas
+        if (options.className) element.className = options.className;
+        if (options.id) element.id = options.id;
+        if (options.innerHTML) element.innerHTML = options.innerHTML;
+
+        // 🚀 MARCAR TIMESTAMP DE CRIAÇÃO PARA AUTO-REVEAL
+        element.dataset.eprobeLoadingStart = Date.now();
+
+        // Registrar no sistema anti-flash
+        AntiFlashCoordinator.register(element, options.groupId);
+
+        return element;
+    },
+
+    // Revelar elemento quando pronto
+    reveal: (element) => AntiFlashCoordinator.reveal(element),
+
+    // Revelar grupo
+    revealGroup: (groupId) => AntiFlashCoordinator.revealGroup(groupId),
+
+    // Status do sistema
+    status: () => AntiFlashCoordinator.getStatus(),
+
+    // 🚀 FUNCIONALIDADES BATCH PROCESSING - ETAPA 4
+
+    // Aguardar grupo completo
+    waitForGroup: (groupId, expectedCount, timeout) =>
+        AntiFlashCoordinator.waitForGroupComplete(
+            groupId,
+            expectedCount,
+            timeout
+        ),
+
+    // Revelar grupos em sequência
+    revealSequence: (groupIds, delay) =>
+        AntiFlashCoordinator.revealGroupsSequentially(groupIds, delay),
+
+    // Revelar todos coordenadamente
+    revealAllCoordinated: () =>
+        AntiFlashCoordinator.revealAllGroupsCoordinated(),
+
+    // Criar múltiplos elementos em lote
+    createBatch(configs, groupId) {
+        const elements = configs.map((config) =>
+            this.createElement(config.tagName, { ...config, groupId })
+        );
+
+        logCritical(
+            `🎭 BATCH: Criados ${elements.length} elementos no grupo ${groupId}`
+        );
+        return elements;
+    },
+
+    // Revelar lote quando todos estiverem prontos
+    revealWhenComplete(groupId, expectedCount) {
+        return this.waitForGroup(groupId, expectedCount);
+    },
+};
+
+// Log de ativação do sistema
+logCritical(
+    "🎭 ANTIFLASH COORDINATOR: Sistema ativado e disponível globalmente"
+);
+logCritical(
+    "💡 USO: window.eProbeAntiFlash.createElement() para elementos sem flash"
+);
+
+// � ATIVAR AUTO-REVEAL PARA GRUPOS QUE FICAM PENDENTES
+AntiFlashCoordinator.setupAutoReveal(5000); // 5 segundos timeout
+logCritical("⏰ AUTO-REVEAL: Ativado com timeout de 5 segundos");
+
+// �🚨 FLAG GLOBAL - DESABILITAR SUBSTITUIÇÃO DE ESTRELAS
 const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição de estrelas
 
 // 🚨 INTERCEPTAÇÃO ULTRA-PRECOCE - CAPTURA AMBAS AS FUNÇÕES PROBLEMÁTICAS
@@ -1473,6 +1778,32 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         cssUltraCritico.textContent = `
             /* ===== ULTRA ANTI-FLASH CRITICAL STYLES ===== */
             
+            /* 🎯 SISTEMA ANTI-FLASH PARA ELEMENTOS EPROBE - APLICADO PRIMEIRO */
+            .eprobe-loading, 
+            .eprobe-creating,
+            [data-eprobe-state="loading"] {
+                opacity: 0 !important;
+                transition: opacity 0.15s ease-out !important;
+                pointer-events: none !important;
+                visibility: hidden !important;
+            }
+
+            .eprobe-ready {
+                opacity: 1 !important;
+                pointer-events: auto !important;
+                visibility: visible !important;
+            }
+
+            /* 🚀 COORDENAÇÃO DE BATCH: Elementos aguardando revelação coordenada */
+            .eprobe-batch-pending {
+                opacity: 0 !important;
+                transition: opacity 0.2s ease-out !important;
+            }
+
+            .eprobe-batch-ready {
+                opacity: 1 !important;
+            }
+            
             /* Preparação instantânea do body */
             body {
                 visibility: visible !important;
@@ -1904,6 +2235,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         }
 
         log("✅ ULTRA ANTI-FLASH: CSS crítico aplicado instantaneamente");
+        logCritical(
+            "🎯 ANTI-FLASH ELEMENTS: Sistema de coordenação ativado (.eprobe-loading/.eprobe-ready)"
+        );
 
         // 2. MARCAR BOTÕES QUE SERÃO SUBSTITUÍDOS - Antes da renderização
         const marcarBotoesParaSubstituicao = () => {
@@ -3710,9 +4044,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     "🎨 TOOLTIP: Criando novo tooltip com tipos de sessão..."
                 );
 
-                const tooltip = document.createElement("div");
-                tooltip.id = "eprobe-rich-tooltip";
-                tooltip.innerHTML = tooltipHTML;
+                // 🎭 CRIAR TOOLTIP COM SISTEMA ANTI-FLASH
+                const tooltip = window.eProbeAntiFlash.createElement("div", {
+                    id: "eprobe-rich-tooltip",
+                    innerHTML: tooltipHTML,
+                    groupId: "tooltips", // Agrupar tooltips
+                });
+
                 tooltip.style.cssText = `
                     position: fixed !important;
                     background: transparent !important;
@@ -3738,7 +4076,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // Adicionar ao DOM primeiro para permitir medição
                 document.body.appendChild(tooltip);
 
-                // 🎯 EVENT LISTENERS DO TOOLTIP PARA MANTER VISÍVEL DURANTE HOVER
+                // � REVELAR TOOLTIP APÓS INSERÇÃO NO DOM
+                requestAnimationFrame(() => {
+                    window.eProbeAntiFlash.reveal(tooltip);
+                });
+
+                // �🎯 EVENT LISTENERS DO TOOLTIP PARA MANTER VISÍVEL DURANTE HOVER
                 tooltip.addEventListener(
                     "mouseenter",
                     () => {
@@ -5711,8 +6054,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         "🎯 INSERÇÃO: txtMagistrado encontrado, posicionando ao lado direito..."
                     );
 
-                    // Criar wrapper para posicionamento lado a lado
-                    const wrapper = document.createElement("div");
+                    // 🎭 CRIAR WRAPPER COM SISTEMA ANTI-FLASH
+                    const wrapper = window.eProbeAntiFlash.createElement(
+                        "div",
+                        {
+                            groupId: "wrappers", // Agrupar wrappers
+                        }
+                    );
+
                     wrapper.style.cssText = `
                         display: flex !important;
                         align-items: center !important;
@@ -5739,6 +6088,11 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             flex-shrink: 0 !important;
                             position: relative !important;
                         `;
+
+                        // 🎭 REVELAR WRAPPER APÓS TODAS AS CONFIGURAÇÕES
+                        requestAnimationFrame(() => {
+                            window.eProbeAntiFlash.reveal(wrapper);
+                        });
 
                         logCritical(
                             "✅ INSERÇÃO: Card posicionado ao lado direito do txtMagistrado"
@@ -5882,10 +6236,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                 log("📦 CARD: Criando elemento DOM...");
 
-                // Criar card Material Light pequeno (design Figma)
-                const card = document.createElement("div");
-                card.id = "eprobe-card-sessao-material";
-                card.className = "session-card";
+                // 🎭 CRIAR CARD COM SISTEMA ANTI-FLASH
+                const card = window.eProbeAntiFlash.createElement("div", {
+                    id: "eprobe-card-sessao-material",
+                    className: "session-card",
+                    groupId: "session-cards", // Agrupar todos os cards de sessão
+                });
+
+                logCritical(
+                    "🎭 CARD: Elemento criado com sistema anti-flash ativo"
+                );
 
                 // Estilo do card Figma: Material Light pequeno - OTIMIZADO PARA POSICIONAMENTO
                 card.style.cssText = `
@@ -6041,6 +6401,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
 
                 logCritical("✅ CARD MATERIAL: Criação concluída com sucesso!");
+
+                // 🎭 REVELAR CARD APÓS TODAS AS CONFIGURAÇÕES
+                // Aguardar próximo frame para garantir que tudo esteja pronto
+                requestAnimationFrame(() => {
+                    window.eProbeAntiFlash.reveal(card);
+                    logCritical("🌟 CARD: Revelado com sistema anti-flash");
+                });
+
                 return card;
             } catch (error) {
                 logError("❌ CARD FIGMA: Erro ao criar card:", error);
@@ -36458,6 +36826,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         ) {
             window.requestIdleCallback(
                 (deadline) => {
+                    const elementosModificados = [];
+
                     for (
                         let i = 0;
                         i < elementosEspecificos.length && i < maxProcessamento;
@@ -36468,20 +36838,42 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         const elemento = elementosEspecificos[i];
                         const cor =
                             window.getComputedStyle(elemento).backgroundColor;
+
                         if (coresCapaProcesso[cor]) {
+                            // 🎭 REGISTRAR NO SISTEMA ANTI-FLASH ANTES DE MODIFICAR
+                            AntiFlashCoordinator.register(
+                                elemento,
+                                "gradients-batch"
+                            );
+
                             elemento.style.setProperty(
                                 "background",
                                 coresCapaProcesso[cor],
                                 "important"
                             );
+                            elementosModificados.push(elemento);
                             processados++;
                         }
+                    }
+
+                    // 🎆 REVELAR TODOS OS GRADIENTES SIMULTANEAMENTE APÓS PROCESSAMENTO
+                    if (elementosModificados.length > 0) {
+                        requestAnimationFrame(() => {
+                            window.eProbeAntiFlash.revealGroup(
+                                "gradients-batch"
+                            );
+                            logCritical(
+                                `🎨 GRADIENTS: ${elementosModificados.length} elementos revelados em lote`
+                            );
+                        });
                     }
                 },
                 { timeout: PERFORMANCE_CONFIG.idleCallbackTimeout }
             );
         } else {
-            // Fallback síncrono limitado
+            // Fallback síncrono limitado com batch processing
+            const elementosModificados = [];
+
             for (
                 let i = 0;
                 i < elementosEspecificos.length && i < maxProcessamento;
@@ -36490,13 +36882,30 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const elemento = elementosEspecificos[i];
                 const cor = window.getComputedStyle(elemento).backgroundColor;
                 if (coresCapaProcesso[cor]) {
+                    // 🎭 REGISTRAR NO SISTEMA ANTI-FLASH
+                    AntiFlashCoordinator.register(
+                        elemento,
+                        "gradients-batch-sync"
+                    );
+
                     elemento.style.setProperty(
                         "background",
                         coresCapaProcesso[cor],
                         "important"
                     );
+                    elementosModificados.push(elemento);
                     processados++;
                 }
+            }
+
+            // 🎆 REVELAR LOTE SÍNCRONO
+            if (elementosModificados.length > 0) {
+                requestAnimationFrame(() => {
+                    window.eProbeAntiFlash.revealGroup("gradients-batch-sync");
+                    logCritical(
+                        `🎨 GRADIENTS SYNC: ${elementosModificados.length} elementos revelados em lote`
+                    );
+                });
             }
         }
 
