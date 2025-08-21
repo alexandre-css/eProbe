@@ -1,8 +1,100 @@
-﻿// ===== SISTEMA DE LOGGING CONTROLADO =====
+﻿// ===== SISTEMA DE LOGGING CONTROLADO E PERFORMANCE =====
 const DEBUG_MODE = false; // ⚡ ATIVA/DESATIVA DEBUG DE DETECÇÃO DE SESSÃO
 const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silenciosos por padrão
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
 const logError = console.error.bind(console); // Erros sempre visíveis
+
+// 🚀 SISTEMA DE PERFORMANCE CRÍTICA - OBRIGATÓRIO
+const PERFORMANCE_CONFIG = {
+    maxElementsToProcess: 1000, // Máximo de elementos por processamento
+    debounceDelay: 300, // Delay de debounce em ms
+    idleCallbackTimeout: 5000, // Timeout para requestIdleCallback
+    enableLazyLoading: true, // Habilitar lazy loading
+    cleanupInterval: 30000, // Interval de cleanup em ms
+};
+
+// 🔧 THROTTLE GLOBAL OBRIGATÓRIO
+const throttleGlobal = (func, delay) => {
+    let timeoutId;
+    let lastExecTime = 0;
+    return function (...args) {
+        const currentTime = Date.now();
+        if (currentTime - lastExecTime > delay) {
+            func.apply(this, args);
+            lastExecTime = currentTime;
+        } else {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+                lastExecTime = Date.now();
+            }, delay);
+        }
+    };
+};
+
+// 🔧 DEBOUNCE GLOBAL OBRIGATÓRIO
+const debounceGlobal = (func, delay) => {
+    let timeoutId;
+    return function (...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+};
+
+// 🧹 SISTEMA DE CLEANUP GLOBAL - OTIMIZAÇÃO CRÍTICA PARA PERFORMANCE
+const CLEANUP_SYSTEM = {
+    timers: new Set(),
+    observers: new Set(),
+    intervals: new Set(),
+
+    // Registrar timer para cleanup automático
+    addTimer(timerId) {
+        this.timers.add(timerId);
+        return timerId;
+    },
+
+    // Registrar observer para cleanup automático
+    addObserver(observer) {
+        this.observers.add(observer);
+        return observer;
+    },
+
+    // Registrar interval para cleanup automático
+    addInterval(intervalId) {
+        this.intervals.add(intervalId);
+        return intervalId;
+    },
+
+    // Cleanup forçado de todos os recursos
+    cleanupAll() {
+        console.log("🧹 CLEANUP: Iniciando limpeza de recursos...");
+
+        // Limpar timers
+        this.timers.forEach((timerId) => clearTimeout(timerId));
+        this.timers.clear();
+
+        // Limpar intervals
+        this.intervals.forEach((intervalId) => clearInterval(intervalId));
+        this.intervals.clear();
+
+        // Desconectar observers
+        this.observers.forEach((observer) => {
+            try {
+                observer.disconnect();
+            } catch (e) {}
+        });
+        this.observers.clear();
+
+        console.log("✅ CLEANUP: Recursos limpos com sucesso");
+    },
+};
+
+// Auto-cleanup a cada 2 minutos para prevenir memory leaks
+CLEANUP_SYSTEM.addInterval(
+    setInterval(() => {
+        CLEANUP_SYSTEM.cleanupAll();
+    }, PERFORMANCE_CONFIG.cleanupInterval)
+);
 
 // 🚨 FLAG GLOBAL - DESABILITAR SUBSTITUIÇÃO DE ESTRELAS
 const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição de estrelas
@@ -2282,13 +2374,21 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         }
     }
 
-    // ===== OBSERVADOR CRÍTICO PARA NAVBAR =====
-    const observadorNavbar = new MutationObserver((mutations) => {
-        let needsUpdate = false;
+    // ===== OBSERVADOR CRÍTICO PARA NAVBAR - OTIMIZADO PARA PERFORMANCE =====
+    const observadorNavbar = new MutationObserver(
+        debounceGlobal((mutations) => {
+            let needsUpdate = false;
 
-        mutations.forEach((mutation) => {
-            // Verificar se foram adicionados elementos
-            if (mutation.type === "childList") {
+            // 🚀 FILTRAR MUTATIONS RELEVANTES: Reduzir processamento
+            const mutationsRelevantes = mutations.filter(
+                (mutation) =>
+                    mutation.type === "childList" &&
+                    mutation.addedNodes.length > 0
+            );
+
+            if (mutationsRelevantes.length === 0) return;
+
+            mutationsRelevantes.forEach((mutation) => {
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === 1) {
                         // Element node
@@ -2304,39 +2404,33 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         ) {
                             needsUpdate = true;
                         }
+
+                        // Verificar se contém elementos .d-none.d-md-flex
+                        const elementosNavbar =
+                            node.querySelectorAll?.(".d-none.d-md-flex");
+                        if (elementosNavbar && elementosNavbar.length > 0) {
+                            needsUpdate = true;
+                        }
                     }
                 });
+            });
+
+            if (needsUpdate) {
+                // Aplicar com pequeno delay para garantir que DOM esteja atualizado
+                setTimeout(forcarFlexboxNavbar, 1);
             }
+        }, PERFORMANCE_CONFIG.debounceDelay)
+    );
 
-            // Verificar mudanças de atributos que possam afetar display
-            if (
-                mutation.type === "attributes" &&
-                (mutation.attributeName === "class" ||
-                    mutation.attributeName === "style")
-            ) {
-                const target = mutation.target;
-                if (
-                    target.classList?.contains("d-none") &&
-                    target.classList?.contains("d-md-flex")
-                ) {
-                    needsUpdate = true;
-                }
-            }
-        });
-
-        if (needsUpdate) {
-            // Aplicar com pequeno delay para garantir que DOM esteja atualizado
-            setTimeout(forcarFlexboxNavbar, 1);
-        }
-    });
-
-    // Iniciar observação IMEDIATA
+    // Iniciar observação IMEDIATA COM CLEANUP AUTOMÁTICO
     if (document.body) {
+        // 🚀 REGISTRAR NO SISTEMA DE CLEANUP
+        CLEANUP_SYSTEM.addObserver(observadorNavbar);
+
         observadorNavbar.observe(document.body, {
             childList: true,
-            subtree: true,
-            attributes: true,
-            attributeFilter: ["class", "style"],
+            subtree: false, // 🚀 OTIMIZAÇÃO: Reduzir escopo de observação
+            attributes: false, // 🚀 OTIMIZAÇÃO: Desabilitar observação de atributos
         });
 
         // Aplicação inicial
@@ -35732,20 +35826,6 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             "funções disponíveis"
         );
 
-        // 🔧 TESTE: Verificar se debugPDFExtracao está acessível
-        if (typeof debugPDFExtracao === "function") {
-            console.log("✅ debugPDFExtracao encontrada na IIFE");
-            // Forçar adição ao namespace se não estiver
-            if (!window.SENT1_AUTO.debugPDFExtracao) {
-                window.SENT1_AUTO.debugPDFExtracao = debugPDFExtracao;
-                console.log(
-                    "🔧 debugPDFExtracao adicionada manualmente ao namespace"
-                );
-            }
-        } else {
-            console.error("❌ debugPDFExtracao não encontrada na IIFE");
-        }
-
         // 🔧 TESTE: Listar funções disponíveis no namespace
         console.log(
             "🔍 Funções disponíveis no SENT1_AUTO:",
@@ -36330,20 +36410,21 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         return processadosTotal;
     }
 
-    // 🎨 FUNÇÃO PARA GRADIENTES DA CAPA DO PROCESSO
+    // 🎨 FUNÇÃO PARA GRADIENTES DA CAPA DO PROCESSO - OTIMIZADA PARA PERFORMANCE
     function aplicarGradientesCapaProcesso() {
-        // Verificar se estamos na página correta
+        // Early exit agressivo para performance
         const urlAtual = window.location.href;
         if (!urlAtual.includes("controlador.php?acao=processo_selecionar&")) {
-            console.log(
-                "⏭️ eProbe CAPA: Não é página de processo, pulando aplicação"
-            );
             return 0;
         }
 
-        console.log(
-            "🎨 eProbe CAPA: Aplicando gradientes em TODA a página de processo..."
-        );
+        // 🚀 THROTTLING: Verificar se já processamos recentemente
+        if (!window.eProbeLastGradientRun) window.eProbeLastGradientRun = 0;
+        const agora = Date.now();
+        if (agora - window.eProbeLastGradientRun < 1000) {
+            return 0; // Throttle de 1 segundo
+        }
+        window.eProbeLastGradientRun = agora;
 
         // Mapeamento das 4 cores específicas da capa
         const coresCapaProcesso = {
@@ -36353,48 +36434,70 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             "rgb(105, 142, 35)": "linear-gradient(#8AAE85, #759B70)", // VERDE OLIVA
         };
 
-        // Buscar TODOS os elementos dentro de divInfraAreaGlobal
+        // Buscar APENAS elementos mais específicos para reduzir carga
         const areaGlobal = document.querySelector("#divInfraAreaGlobal");
-        if (!areaGlobal) {
-            console.log("⚠️ eProbe CAPA: #divInfraAreaGlobal não encontrado");
+        if (!areaGlobal) return 0;
+
+        // 🚀 OTIMIZAÇÃO: Buscar apenas elementos com classes específicas
+        const elementosEspecificos = areaGlobal.querySelectorAll(
+            ".infraNomeParte, .infraEventoDescricao"
+        );
+
+        let processados = 0;
+        const maxProcessamento = PERFORMANCE_CONFIG.maxElementsToProcess;
+
+        // Early exit se muitos elementos
+        if (elementosEspecificos.length > maxProcessamento) {
             return 0;
         }
 
-        // Buscar TODOS os elementos com background-color
-        const todosElementos = areaGlobal.querySelectorAll("*");
-        let processados = 0;
+        // 🚀 USAR REQUESTIDLECALLBACK PARA PROCESSAMENTO NÃO-BLOQUEANTE
+        if (
+            window.requestIdleCallback &&
+            PERFORMANCE_CONFIG.enableLazyLoading
+        ) {
+            window.requestIdleCallback(
+                (deadline) => {
+                    for (
+                        let i = 0;
+                        i < elementosEspecificos.length && i < maxProcessamento;
+                        i++
+                    ) {
+                        if (deadline.timeRemaining() <= 0) break;
 
-        console.log(
-            `🔍 eProbe CAPA: Analisando ${todosElementos.length} elementos em divInfraAreaGlobal...`
-        );
-
-        todosElementos.forEach((elemento, index) => {
-            const cor = window.getComputedStyle(elemento).backgroundColor;
-
-            // Verificar se a cor está no mapeamento
-            if (coresCapaProcesso[cor]) {
-                elemento.style.setProperty(
-                    "background",
-                    coresCapaProcesso[cor],
-                    "important"
-                );
-                console.log(
-                    `✅ eProbe CAPA: Elemento ${index + 1} (${
-                        elemento.tagName
-                    }.${elemento.className}) aplicado - ${cor}`
-                );
-                processados++;
-            }
-        });
-
-        if (processados > 0) {
-            console.log(
-                `🎉 eProbe CAPA: ${processados} elementos processados em TODA a página!`
+                        const elemento = elementosEspecificos[i];
+                        const cor =
+                            window.getComputedStyle(elemento).backgroundColor;
+                        if (coresCapaProcesso[cor]) {
+                            elemento.style.setProperty(
+                                "background",
+                                coresCapaProcesso[cor],
+                                "important"
+                            );
+                            processados++;
+                        }
+                    }
+                },
+                { timeout: PERFORMANCE_CONFIG.idleCallbackTimeout }
             );
         } else {
-            console.log(
-                `ℹ️ eProbe CAPA: Nenhum elemento com as cores especificadas encontrado`
-            );
+            // Fallback síncrono limitado
+            for (
+                let i = 0;
+                i < elementosEspecificos.length && i < maxProcessamento;
+                i++
+            ) {
+                const elemento = elementosEspecificos[i];
+                const cor = window.getComputedStyle(elemento).backgroundColor;
+                if (coresCapaProcesso[cor]) {
+                    elemento.style.setProperty(
+                        "background",
+                        coresCapaProcesso[cor],
+                        "important"
+                    );
+                    processados++;
+                }
+            }
         }
 
         return processados;
@@ -36425,37 +36528,89 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             attributes: true,
         });
 
-        // Observer adicional para toda a área global da página
+        // Observer adicional para toda a área global da página - OTIMIZADO PARA PERFORMANCE
         const areaGlobal = document.querySelector("#divInfraAreaGlobal");
         if (areaGlobal) {
-            const observerCapa = new MutationObserver(() => {
-                console.log(
-                    "🔄 eProbe CAPA OBSERVER: Reaplicando gradientes em toda a página..."
+            let capaDebounceTimer = null;
+            let processandoCapa = false;
+            let ultimaExecucao = 0;
+
+            const observerCapa = new MutationObserver((mutations) => {
+                // Early exit - evitar processamento desnecessário
+                if (processandoCapa) return;
+
+                // 🚀 THROTTLE ADICIONAL: Limitar frequência de execução
+                const agora = Date.now();
+                if (agora - ultimaExecucao < PERFORMANCE_CONFIG.debounceDelay) {
+                    return;
+                }
+
+                // 🚀 FILTRAR MUTATIONS RELEVANTES: Reduzir processamento
+                const mutationsRelevantes = mutations.filter(
+                    (mutation) =>
+                        mutation.type === "childList" &&
+                        mutation.addedNodes.length > 0
                 );
-                aplicarGradientesCapaProcesso();
-                setTimeout(aplicarGradientesCapaProcesso, 25);
-                setTimeout(aplicarGradientesCapaProcesso, 100);
+
+                if (mutationsRelevantes.length === 0) return;
+
+                // Limpar timer anterior
+                if (capaDebounceTimer) {
+                    clearTimeout(capaDebounceTimer);
+                }
+
+                // Debounce obrigatório de 500ms (aumentado para melhor performance)
+                capaDebounceTimer = setTimeout(() => {
+                    processandoCapa = true;
+                    aplicarGradientesCapaProcesso();
+                    processandoCapa = false;
+                    ultimaExecucao = Date.now();
+                }, 500);
             });
 
             observerCapa.observe(areaGlobal, {
                 childList: true,
-                subtree: true,
-                attributes: true,
+                subtree: false, // 🚀 OTIMIZAÇÃO: Desabilitar observação em subárvore
+                attributes: false,
+                attributeOldValue: false,
+                characterData: false,
+                characterDataOldValue: false,
             });
+
+            // 🚀 CLEANUP AUTOMÁTICO: Desconectar observer após 2 minutos
+            setTimeout(() => {
+                if (observerCapa) {
+                    observerCapa.disconnect();
+                    console.log(
+                        "🧹 CLEANUP: Observer de gradientes desconectado automaticamente"
+                    );
+                }
+            }, 120000);
         }
 
-        // Click listener
-        document.addEventListener("click", (e) => {
-            if (
-                e.target.closest('input[type="image"][title*="Atualizar"]') ||
-                e.target.closest('input[onclick*="atualizaMinutas"]')
-            ) {
-                console.log("🖱️ eProbe CLICK: Reaplicando preventivamente...");
-                aplicarGradientes();
-                setTimeout(aplicarGradientes, 25);
-                setTimeout(aplicarGradientes, 100);
-            }
-        });
+        // Click listener com debounce
+        let clickDebounceTimer = null;
+        document.addEventListener(
+            "click",
+            (e) => {
+                if (
+                    e.target.closest(
+                        'input[type="image"][title*="Atualizar"]'
+                    ) ||
+                    e.target.closest('input[onclick*="atualizaMinutas"]')
+                ) {
+                    // Debounce para clicks
+                    if (clickDebounceTimer) {
+                        clearTimeout(clickDebounceTimer);
+                    }
+
+                    clickDebounceTimer = setTimeout(() => {
+                        aplicarGradientes();
+                    }, 100);
+                }
+            },
+            { passive: true }
+        );
 
         console.log("✅ eProbe GRADIENTES: Sistema completo configurado!");
         window.eProbeGradientesFuncional = {
