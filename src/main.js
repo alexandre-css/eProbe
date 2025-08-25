@@ -1634,12 +1634,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             });
         },
 
-        // ⚡ NOVO: Aplicar anti-flash a botões
+        // ⚡ NOVO: Aplicar anti-flash a botões (COM PROTEÇÃO PARA SELECT2)
         stabilizarBotoes: function () {
             const botoes = document.querySelectorAll(
                 '.btn, button, .botaoLerMais, input[type="button"], input[type="submit"]'
             );
             botoes.forEach((botao) => {
+                // 🚫 EXCEÇÃO: Não interferir em botões select2
+                if (botao.classList.contains("select2-search-choice-close")) {
+                    return; // Pular este botão
+                }
+
                 botao.style.setProperty("transition", "none", "important");
                 botao.style.setProperty("will-change", "auto", "important");
             });
@@ -1740,6 +1745,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             .btn, button, .botaoLerMais { 
                 transition: none !important; 
                 will-change: auto !important; 
+            }
+            
+            /* 🚫 EXCEÇÃO: Preservar funcionalidade dos elementos select2 */
+            .select2-search-choice-close.btn,
+            .select2-search-choice-close,
+            .select2-container .btn,
+            [class*="select2"] .btn,
+            [class*="select2"] button {
+                transition: all 0.15s ease !important;
+                will-change: initial !important;
             }
             
             * { 
@@ -7567,8 +7582,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // Destaca localizadores urgentes
                 destacarLocalizadoresUrgentes(tabela);
 
-                // Adiciona interface de separadores
-                adicionarInterfaceSeparadores(tabela);
+                // ❌ DESABILITADO: Adiciona interface de separadores
+                // adicionarInterfaceSeparadores(tabela);
 
                 // Restaurar separadores salvos
                 restaurarSeparadores(tabela);
@@ -8017,7 +8032,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
-            // Função para adicionar interface de separadores na página de localizadores
+            // ❌ DESABILITADO: Função para adicionar interface de separadores na página de localizadores
+            /*
             function adicionarInterfaceSeparadores(tabela) {
                 log("🛠️ LOCALIZADORES: Adicionando interface para separadores");
 
@@ -8026,7 +8042,11 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                 // Adicionar menu de contexto nas linhas da tabela
                 adicionarMenuContextoLinhas(tabela);
-            } // Função para adicionar texto informativo sobre separadores
+            }
+            */
+
+            // ❌ DESABILITADO: Função para adicionar texto informativo sobre separadores
+            /*
             function adicionarTextoInformativoSeparadores(tabela) {
                 // Procurar container adequado para o texto (acima da tabela)
                 const containerTabela =
@@ -8085,8 +8105,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     "✅ LOCALIZADORES: Texto informativo de separadores adicionado"
                 );
             }
+            */
 
-            // Função para adicionar menu de contexto nas linhas
+            // ❌ DESABILITADO: Função para adicionar menu de contexto nas linhas
+            /*
             function adicionarMenuContextoLinhas(tabela) {
                 const linhas = tabela.querySelectorAll(
                     "tbody tr:not(.eprobe-divisor-linha)"
@@ -8132,8 +8154,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     `✅ LOCALIZADORES: Menu de contexto adicionado a ${linhas.length} linhas`
                 );
             }
+            */
 
-            // Função para mostrar menu de contexto para separador
+            // ❌ DESABILITADO: Função para mostrar menu de contexto para separador
+            /*
             function mostrarMenuContextoSeparador(
                 event,
                 linha,
@@ -8337,6 +8361,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     "✅ LOCALIZADORES: Menu de contexto criado e posicionado com overlay"
                 );
             }
+            */
 
             // Sistema robusto de criação de botão com múltiplas tentativas
             let buttonCreationAttempts = 0;
@@ -9760,9 +9785,22 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 // ✅ NOVA LÓGICA: Usar resultado da detecção melhorada
                 if (pageType === "documento_pdf") {
                     log(
-                        "📄 PDF confirmado - extraindo texto automaticamente..."
+                        "📄 PDF confirmado - solicitando seleção manual do usuário..."
                     );
-                    showNotification("📄 Extraindo texto do PDF...", "info");
+                    showNotification(
+                        `
+                        📄 PDF detectado! Para extrair:
+                        
+                        1️⃣ Aguarde carregar completamente
+                        2️⃣ Selecione todo texto (Ctrl+A)
+                        3️⃣ Copie (Ctrl+C)
+                        4️⃣ Clique novamente no botão
+                        
+                        ⚡ Sistema aguardando sua ação!
+                    `.trim(),
+                        "info",
+                        8000
+                    );
 
                     try {
                         const textoExtraido = await extractTextFromPDF();
@@ -9786,83 +9824,6 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         );
                         return null;
                     }
-                }
-
-                // ✅ ESTRATÉGIA ESPECÍFICA PARA PDFS: Verificar clipboard inteligente
-                const currentPageType = detectPageType();
-                if (currentPageType === "documento_pdf") {
-                    console.log(
-                        "📄 PDF detectado - verificando clipboard para texto copiado..."
-                    );
-
-                    try {
-                        const clipboardText =
-                            await navigator.clipboard.readText();
-                        if (clipboardText && clipboardText.length > 50) {
-                            console.log(
-                                "📋 Texto encontrado no clipboard:",
-                                clipboardText.length,
-                                "caracteres"
-                            );
-
-                            // Verificar se parece com conteúdo de documento jurídico
-                            const contemTermosJuridicos =
-                                /\b(processo|sentença|decisão|despacho|petição|comarca|juiz|tribunal|recurso|apelação|embargos|tjsc|eproc|art|artigo|inciso|parágrafo|código|lei)\b/i.test(
-                                    clipboardText
-                                );
-                            const contemFormatoData =
-                                /\d{1,2}\/\d{1,2}\/\d{4}/.test(clipboardText);
-                            const contemNumeroProcesso =
-                                /\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4}/.test(
-                                    clipboardText
-                                );
-                            const contemTextoEstruturado =
-                                clipboardText.split("\n").length > 5;
-
-                            if (
-                                contemTermosJuridicos ||
-                                contemFormatoData ||
-                                contemNumeroProcesso ||
-                                contemTextoEstruturado
-                            ) {
-                                console.log(
-                                    "✅ Texto jurídico detectado no clipboard - usando automaticamente"
-                                );
-                                showNotification(
-                                    "📋 Texto extraído do clipboard automaticamente!",
-                                    "success"
-                                );
-                                return clipboardText.trim();
-                            } else {
-                                console.log(
-                                    "⚠️ Texto no clipboard não parece ser de documento jurídico"
-                                );
-                            }
-                        }
-                    } catch (clipError) {
-                        console.log(
-                            "⚠️ Não foi possível acessar clipboard:",
-                            clipError.message
-                        );
-                    }
-
-                    // Se chegou aqui, é PDF mas não tem texto adequado no clipboard
-                    showNotification(
-                        `
-                        📄 PDF detectado! Para extrair:
-                        
-                        1️⃣ Aguarde carregar completamente
-                        2️⃣ Selecione todo texto (Ctrl+A)
-                        3️⃣ Copie (Ctrl+C)
-                        4️⃣ Clique novamente no botão
-                        
-                        ⚡ Detecção automática ativada!
-                    `.trim(),
-                        "info",
-                        6000
-                    );
-
-                    return null; // Não prosseguir para outras estratégias
                 }
 
                 // Aceitar múltiplos tipos de página de documento HTML
@@ -12553,6 +12514,625 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
+            // Função para abrir IA com prompt personalizado
+            async function openAIWithCustomPrompt(aiName, url, prompt) {
+                try {
+                    log(
+                        `🚀 Abrindo ${aiName} para análise com prompt personalizado...`
+                    );
+
+                    // Copiar prompt para área de transferência
+                    await navigator.clipboard.writeText(prompt);
+
+                    log(
+                        `✅ Prompt preparado para ${aiName} (${prompt.length} caracteres)`
+                    );
+
+                    // Abrir IA em nova aba
+                    window.open(url, "_blank");
+
+                    showNotification(
+                        `${aiName} aberto!\n\nO prompt com o documento está na área de transferência.\nCole no ${aiName} (Ctrl+V) para análise.`,
+                        "success"
+                    );
+
+                    log(`✅ ${aiName} aberto com sucesso em nova aba`);
+                    return true;
+                } catch (error) {
+                    log(`❌ Erro ao abrir ${aiName}:`, error);
+                    showNotification(`❌ Erro ao abrir ${aiName}`, "error");
+                    return false;
+                }
+            }
+
+            // Função para Perplexity com prompt personalizado
+            async function sendToPerplexityWithPrompt(texto, promptType) {
+                const requestId = Date.now().toString();
+
+                try {
+                    debugApiCall(requestId, "INÍCIO", {
+                        textoLength: texto.length,
+                        promptType: promptType,
+                    });
+                    log(
+                        ` Enviando texto para Perplexity via API com prompt ${promptType}...`
+                    );
+                    showNotification("Enviando para Perplexity...", "info");
+
+                    const apiKey = await getStoredApiKey();
+                    if (!apiKey) {
+                        debugApiCall(
+                            requestId,
+                            "ERRO",
+                            "API key não encontrada"
+                        );
+                        showNotification(" Erro ao obter chave API", "error");
+                        return false;
+                    }
+
+                    // Definir prompts baseado no tipo
+                    let prompt;
+                    if (promptType === "resumir") {
+                        prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido. DOCUMENTO: ${texto}`;
+                    } else if (promptType === "relatorio") {
+                        prompt = `Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado nesta petição. Considerando o que consta na referida peça, transforme a petição em um pequeno relatório com a seguinte estrutura:
+
+Alega a parte ("apelante" ou "impetrante" ou "agravante" ou "embargante" etc., a depender do tipo de recurso) que...
+
+Afirma que...
+
+Requer a concessão de ("antecipação dos efeitos da tutela recursal" ou "efeito suspensivo" ou "liminar" etc., dependendo do pedido) para...
+
+No mérito, postula a...
+
+Use: linguagem impessoal ("entende-se" ao invés de "entendo", por exemplo) e seja sucinto.
+
+Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada" etc., a depender do tipo de recurso. 
+
+Utilize uma estrutura de texto, sem símbolos ou caracteres especiais no início dos parágrafos.
+
+DOCUMENTO: ${texto}`;
+                    } else {
+                        // Fallback para o prompt padrão
+                        prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido. DOCUMENTO: ${texto}`;
+                    }
+
+                    const requestBody = {
+                        model: "sonar",
+                        messages: [
+                            {
+                                role: "system",
+                                content:
+                                    "Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.",
+                            },
+                            {
+                                role: "user",
+                                content: prompt,
+                            },
+                        ],
+                        max_tokens: 1200,
+                        temperature: 0.1,
+                        top_p: 0.9,
+                    };
+
+                    debugApiCall(requestId, "REQUEST_BODY", {
+                        model: requestBody.model,
+                        promptLength: prompt.length,
+                        maxTokens: requestBody.max_tokens,
+                    });
+
+                    const response = await fetch(
+                        "https://api.perplexity.ai/chat/completions",
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${apiKey}`,
+                                "User-Agent": "eProbe-Extension/1.0",
+                            },
+                            body: JSON.stringify(requestBody),
+                        }
+                    );
+
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        debugApiCall(requestId, "ERRO_HTTP", {
+                            status: response.status,
+                            statusText: response.statusText,
+                            error: errorText,
+                        });
+                        throw new Error(
+                            `HTTP ${response.status}: ${response.statusText} - ${errorText}`
+                        );
+                    }
+
+                    const data = await response.json();
+                    debugApiCall(requestId, "RESPONSE", {
+                        choices: data.choices?.length || 0,
+                        usage: data.usage,
+                    });
+
+                    if (
+                        data.choices &&
+                        data.choices.length > 0 &&
+                        data.choices[0].message
+                    ) {
+                        const resultado = data.choices[0].message.content;
+
+                        log("✅ Resposta recebida do Perplexity:", {
+                            length: resultado.length,
+                            promptLength: prompt.length,
+                            usage: data.usage,
+                        });
+
+                        // Copiar resultado para área de transferência
+                        await navigator.clipboard.writeText(resultado);
+
+                        showNotification(
+                            `✅ Resumo gerado pelo Perplexity!\n\nResposta copiada para área de transferência.\nUse Ctrl+V para colar.`,
+                            "success"
+                        );
+
+                        debugApiCall(requestId, "SUCESSO", {
+                            resultLength: resultado.length,
+                            usage: data.usage,
+                        });
+
+                        return true;
+                    } else {
+                        debugApiCall(
+                            requestId,
+                            "ERRO",
+                            "Resposta sem conteúdo válido"
+                        );
+                        showNotification(
+                            "❌ Resposta vazia do Perplexity",
+                            "error"
+                        );
+                        return false;
+                    }
+                } catch (error) {
+                    debugApiCall(requestId, "ERRO_CATCH", error.message);
+                    log("❌ Erro ao chamar Perplexity:", error);
+
+                    const errorMessage = error.message.includes("401")
+                        ? "❌ Erro de autenticação. Verifique sua API key."
+                        : error.message.includes("429")
+                        ? "❌ Limite de requisições excedido. Tente novamente em alguns minutos."
+                        : error.message.includes("timeout")
+                        ? "❌ Timeout na requisição. Tente novamente."
+                        : `❌ Erro ao chamar Perplexity: ${error.message}`;
+
+                    showNotification(errorMessage, "error");
+                    return false;
+                }
+            }
+
+            // Modal para seleção de prompt para Perplexity
+            async function showPerplexityPromptModal(texto) {
+                return new Promise((resolve) => {
+                    // Remover modal existente se houver
+                    const existingModal = document.getElementById(
+                        "perplexity-prompt-modal"
+                    );
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Criar overlay do modal
+                    const overlay = document.createElement("div");
+                    overlay.id = "perplexity-prompt-modal";
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.8);
+                        z-index: 10003;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-family: "Roboto", -apple-system, system-ui, sans-serif;
+                    `;
+
+                    // Criar conteúdo do modal
+                    const modal = document.createElement("div");
+                    modal.style.cssText = `
+                        background: #134377;
+                        border-radius: 12px;
+                        padding: 32px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+                        border: 1px solid rgba(82, 82, 82, 0.3);
+                    `;
+
+                    modal.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#22B8CD">
+                                    <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                                </svg>
+                                <h2 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">
+                                    Escolha o prompt para Perplexity
+                                </h2>
+                            </div>
+                            <p style="color: rgb(203 213 225); margin: 0; font-size: 16px;">
+                                Selecione qual tipo de análise deseja fazer no documento
+                            </p>
+                        </div>
+
+                        <div style="display: grid; gap: 16px; margin-bottom: 24px;">
+                            <button id="perplexity-prompt-resumir" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M8 6h13"/>
+                                        <path d="M8 12h13"/>
+                                        <path d="M8 18h13"/>
+                                        <path d="M3 6h.01"/>
+                                        <path d="M3 12h.01"/>
+                                        <path d="M3 18h.01"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Resumir em tópicos curtos</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Gera um resumo objetivo em bullet points para capa do processo digital, indicando tipo de ação, partes, pedidos, decisão e fundamentos.
+                                </div>
+                            </button>
+
+                            <button id="perplexity-prompt-relatorio" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14,2 14,8 20,8"/>
+                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                        <polyline points="10,9 9,9 8,9"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Gerar relatório para acórdão</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Transforma a petição em relatório estruturado para minuta de acórdão, seguindo linguagem técnica impessoal e formato específico do tribunal.
+                                </div>
+                            </button>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 12px;">
+                            <button id="cancel-perplexity-prompt" style="
+                                padding: 12px 24px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s ease;
+                            ">
+                                Cancelar
+                            </button>
+                        </div>
+                    `;
+
+                    // Adicionar CSS hover via JavaScript
+                    const style = document.createElement("style");
+                    style.textContent = `
+                        .prompt-option:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            border-color: rgba(255, 255, 255, 0.3) !important;
+                            transform: translateY(-1px);
+                        }
+                        #cancel-perplexity-prompt:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    // Adicionar eventos aos botões
+                    modal
+                        .querySelector("#perplexity-prompt-resumir")
+                        .addEventListener("click", async () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                await sendToPerplexityWithPrompt(
+                                    texto,
+                                    "resumir"
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#perplexity-prompt-relatorio")
+                        .addEventListener("click", async () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                await sendToPerplexityWithPrompt(
+                                    texto,
+                                    "relatorio"
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#cancel-perplexity-prompt")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        });
+
+                    // Fechar ao clicar no overlay
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        }
+                    });
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+                });
+            }
+
+            // Modal para seleção de prompt
+            async function showPromptSelectionModal(aiName, url, texto) {
+                return new Promise((resolve) => {
+                    // Remover modal existente se houver
+                    const existingModal = document.getElementById(
+                        "prompt-selection-modal"
+                    );
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Criar overlay do modal
+                    const overlay = document.createElement("div");
+                    overlay.id = "prompt-selection-modal";
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.8);
+                        z-index: 10003;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        font-family: "Roboto", -apple-system, system-ui, sans-serif;
+                    `;
+
+                    // Criar conteúdo do modal
+                    const modal = document.createElement("div");
+                    modal.style.cssText = `
+                        background: #134377;
+                        border-radius: 12px;
+                        padding: 32px;
+                        max-width: 600px;
+                        width: 90%;
+                        max-height: 80vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+                        border: 1px solid rgba(82, 82, 82, 0.3);
+                    `;
+
+                    modal.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14,2 14,8 20,8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                    <polyline points="10,9 9,9 8,9"/>
+                                </svg>
+                                <h2 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">
+                                    Escolha o prompt para ${aiName}
+                                </h2>
+                            </div>
+                            <p style="color: rgb(203 213 225); margin: 0; font-size: 16px;">
+                                Selecione qual tipo de análise deseja fazer no documento
+                            </p>
+                        </div>
+
+                        <div style="display: grid; gap: 16px; margin-bottom: 24px;">
+                            <button id="prompt-resumir" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M8 6h13"/>
+                                        <path d="M8 12h13"/>
+                                        <path d="M8 18h13"/>
+                                        <path d="M3 6h.01"/>
+                                        <path d="M3 12h.01"/>
+                                        <path d="M3 18h.01"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Resumir em tópicos curtos</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Gera um resumo objetivo em bullet points para capa do processo digital, indicando tipo de ação, partes, pedidos, decisão e fundamentos.
+                                </div>
+                            </button>
+
+                            <button id="prompt-relatorio" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                        <polyline points="14,2 14,8 20,8"/>
+                                        <line x1="16" y1="13" x2="8" y2="13"/>
+                                        <line x1="16" y1="17" x2="8" y2="17"/>
+                                        <polyline points="10,9 9,9 8,9"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Gerar relatório para acórdão</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Transforma a petição em relatório estruturado para minuta de acórdão, seguindo linguagem técnica impessoal e formato específico do tribunal.
+                                </div>
+                            </button>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 12px;">
+                            <button id="cancel-prompt" style="
+                                padding: 12px 24px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s ease;
+                            ">
+                                Voltar
+                            </button>
+                        </div>
+                    `;
+
+                    // Adicionar CSS hover via JavaScript
+                    const style = document.createElement("style");
+                    style.textContent = `
+                        .prompt-option:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                            border-color: rgba(255, 255, 255, 0.3) !important;
+                            transform: translateY(-1px);
+                        }
+                        #cancel-prompt:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    // Definir prompts
+                    const promptResumir = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.
+
+Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido.
+
+DOCUMENTO:
+${texto}`;
+
+                    const promptRelatorio = `Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado nesta petição. Considerando o que consta na referida peça, transforme a petição em um pequeno relatório com a seguinte estrutura:
+
+Alega a parte ("apelante" ou "impetrante" ou "agravante" ou "embargante" etc., a depender do tipo de recurso) que...
+
+Afirma que...
+
+Requer a concessão de ("antecipação dos efeitos da tutela recursal" ou "efeito suspensivo" ou "liminar" etc., dependendo do pedido) para...
+
+No mérito, postula a...
+
+Use: linguagem impessoal ("entende-se" ao invés de "entendo", por exemplo) e seja sucinto.
+
+Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada" etc., a depender do tipo de recurso.
+
+DOCUMENTO:
+${texto}`;
+
+                    // Adicionar eventos aos botões
+                    modal
+                        .querySelector("#prompt-resumir")
+                        .addEventListener("click", async () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                await openAIWithCustomPrompt(
+                                    aiName,
+                                    url,
+                                    promptResumir
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#prompt-relatorio")
+                        .addEventListener("click", async () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                await openAIWithCustomPrompt(
+                                    aiName,
+                                    url,
+                                    promptRelatorio
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#cancel-prompt")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        });
+
+                    // Fechar ao clicar no overlay
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                            style.remove();
+                            resolve(false);
+                        }
+                    });
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+                });
+            }
+
             // Modal para seleção de IA
             async function showAISelectionModal(texto) {
                 return new Promise((resolve) => {
@@ -12819,7 +13399,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "ChatGPT",
                                     "https://chat.openai.com/",
                                     texto
@@ -12833,7 +13413,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "Claude",
                                     "https://claude.ai/",
                                     texto
@@ -12847,7 +13427,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "Gemini",
                                     "https://gemini.google.com/",
                                     texto
@@ -12861,7 +13441,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "Perplexity",
                                     "https://www.perplexity.ai/",
                                     texto
@@ -12875,7 +13455,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "Copilot",
                                     "https://copilot.cloud.microsoft/",
                                     texto
@@ -12889,7 +13469,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             overlay.remove();
                             style.remove();
                             resolve(
-                                openAIWithText(
+                                showPromptSelectionModal(
                                     "Deepseek",
                                     "https://chat.deepseek.com/",
                                     texto
@@ -13399,7 +13979,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             menu.remove();
                             const texto = await autoExtractText();
                             if (texto) {
-                                await sendToPerplexity(texto);
+                                await showPerplexityPromptModal(texto);
                             }
                         }
                     );
@@ -13562,7 +14142,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 menu.remove();
                                 const texto = await autoExtractText();
                                 if (texto) {
-                                    await sendToPerplexity(texto);
+                                    await showPerplexityPromptModal(texto);
                                 }
                             }
                         );
@@ -13934,7 +14514,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     } else if (pageType === "documento_especifico") {
                         const texto = await autoExtractText();
                         if (texto) {
-                            const apiSent = await sendToPerplexity(texto);
+                            const apiSent = await sendToPerplexityWithPrompt(
+                                texto,
+                                "resumir"
+                            );
 
                             if (!apiSent) {
                                 log(
@@ -17603,11 +18186,25 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                 const correcoesAplicadas = [];
 
+                // 🚫 PROTEÇÃO: Não aplicar correções em elementos select2
+                const isSelect2Element = (element) => {
+                    return (
+                        element.classList.contains(
+                            "select2-search-choice-close"
+                        ) ||
+                        element.closest(".select2-container") ||
+                        element.matches('[class*="select2"]')
+                    );
+                };
+
                 // 1. Corrigir especificamente o botão LegNovaMinuta
                 const botaoLegNovaMinuta = document.querySelector(
                     "#LegNovaMinuta button"
                 );
-                if (botaoLegNovaMinuta) {
+                if (
+                    botaoLegNovaMinuta &&
+                    !isSelect2Element(botaoLegNovaMinuta)
+                ) {
                     // Corrigir o botão e todos os seus elementos filhos
                     botaoLegNovaMinuta.style.setProperty(
                         "pointer-events",
@@ -17642,6 +18239,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     ".infraLegendObrigatorio button"
                 );
                 botoesInfraLegend.forEach((botao, index) => {
+                    if (isSelect2Element(botao)) {
+                        console.log(
+                            `⚠️ CORREÇÃO: Pulando botão select2 ${index + 1}`
+                        );
+                        return;
+                    }
+
                     botao.style.setProperty(
                         "pointer-events",
                         "auto",
@@ -17693,10 +18297,20 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     );
                 });
 
-                // 4. Corrigir botões btn-link que podem estar bloqueados
+                // 4. Corrigir botões btn-link que podem estar bloqueados (EXCETO select2)
                 const botoesBtnLink =
                     document.querySelectorAll("button.btn-link");
                 botoesBtnLink.forEach((botao, index) => {
+                    // 🚫 EXCEÇÃO: Não interferir em botões select2
+                    if (
+                        botao.classList.contains("select2-search-choice-close")
+                    ) {
+                        console.log(
+                            "🛡️ PROTEÇÃO: Botão select2-search-choice-close ignorado para preservar funcionalidade"
+                        );
+                        return; // Pular este botão
+                    }
+
                     botao.style.setProperty(
                         "pointer-events",
                         "auto",
@@ -21749,78 +22363,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 });
             }
 
-            // ##### VERIFICAÇÃO E CORREÇÃO DE ESCOPO DAS FUNÇÕES PRINCIPAIS #####
-
-            // Garantir que as funções principais estejam acessíveis no namespace
-            // Esta seção corrige problemas de escopo com expressões de função
-
-            // ========================================
-            // 🔧 IMPLEMENTAÇÕES DAS FUNÇÕES FALTANTES
-            // ========================================
-
             /**
-     * Função principal de automação completa
-        log(`   ID: ${spanElement.id || "sem-id"}`);
-        log(`   Tag: ${spanElement.tagName}`);
-        log(`   Classe: ${spanElement.className || "sem-classe"}`);
-
-        // Extrair dados do atributo onmouseover
-        const onmouseoverAttr = spanElement.getAttribute("onmouseover");
-
-        if (!onmouseoverAttr) {
-            logError("❌ XPATH: Atributo onmouseover não encontrado");
-            log("   Element HTML:", spanElement.outerHTML);
-            return null;
-        }
-
-        log("🔍 XPATH: Atributo onmouseover encontrado:");
-        log(`   ${onmouseoverAttr}`);
-
-        // Extrair o conteúdo do tooltip (texto dentro das aspas)
-        const match = onmouseoverAttr.match(/infraTooltipMostrar\('([^']+)'/);
-        if (!match) {
-            logError("❌ XPATH: Formato do tooltip não reconhecido");
-            log("   Tentando extrair de outras formas...");
-
-            // Tentativa alternativa de extração
-            const matchAlternativo = onmouseoverAttr.match(/"([^"]+)"/);
-            if (matchAlternativo) {
-                log("✅ XPATH: Formato alternativo detectado");
-                return processarTooltipContent(matchAlternativo[1]);
-            }
-
-            return null;
-        }
-
-        return processarTooltipContent(match[1]);
-    }
-
-    // Função auxiliar para processar o conteúdo do tooltip
-    function processarTooltipContent(tooltipContent) {
-        log(`📝 XPATH: Conteúdo do tooltip: ${tooltipContent}`);
-
-        // USAR FUNÇÃO GLOBAL que detecta o formato atualizado
-        const resultado = extrairDadosCardSessaoGlobal(tooltipContent);
-
-        if (resultado) {
-            log(`✅ XPATH: SUCESSO! Dados extraídos:`);
-            log(`   - Status: ${resultado.status}`);
-            log(`   - Status Original: ${resultado.statusOriginal}`);
-            log(`   - Tipo: ${resultado.tipoProcesso}`);
-            log(`   - Data: ${resultado.data}`);
-            log(`   - Código: ${resultado.codigo}`);
-            log(`   - Total Sessões: ${resultado.totalSessoes}`);
-
-    // ===== HELPERS PARA EVENT LISTENERS PASSIVOS =====
-
-    // ❌ FUNÇÃO REMOVIDA: extrairDadosSessaoCompleto() 
-    // ✅ USE AGORA: detectarSessoesUnificado()
-
-        // 🔧 SISTEMA UNIFICADO DE TOOLTIP - Todas as funcionalidades movidas para função única
-
-        /**
-         * 🎨 FUNÇÃO DE DEBUG PARA divLembrete - Identifica elementos com background amarelo
-         */
+             * 🎨 FUNÇÃO DE DEBUG PARA divLembrete - Identifica elementos com background amarelo
+             */
             function debugDivLembrete() {
                 log(
                     "🔍 DEBUG: Procurando elementos divLembrete com background-color:#efef8f"
@@ -25062,20 +25607,20 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     ...opcoes,
                 };
 
-                // Seletores para todos os tipos de botões do eProc (INCLUINDO botões eProbe - EXCLUINDO pesquisa, navbar, infraLegendObrigatorio, btn-link e btn-sm)
+                // Seletores para todos os tipos de botões do eProc (INCLUINDO botões eProbe - EXCLUINDO pesquisa, navbar, infraLegendObrigatorio, btn-link, btn-sm e select2)
                 const seletoresBotoes = [
-                    ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .infraButton:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .infraButton.btn-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .infraButton.eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)",
-                    'button[class*="infra"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)',
-                    'input[type="button"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)',
-                    'input[type="submit"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)',
-                    'button[onclick*="abrirVisualizacao"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)',
-                    'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm)',
+                    ".bootstrap-styles .btn:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .eproc-button:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .infraButton:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .infraButton.btn-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .infraButton.eproc-button-primary:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    ".bootstrap-styles .infraArvore .infraButton.infraArvoreNoSelecionado:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)",
+                    'button[class*="infra"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)',
+                    'input[type="button"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)',
+                    'input[type="submit"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)',
+                    'button[onclick*="abrirVisualizacao"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)',
+                    'button[onclick*="processo"]:not(.btn-pesquisar):not(.btn-pesquisar-nova-janela):not(.search-button):not(#eprobe-navbar-element):not(#eprobe-navbar-element *):not(.infraLegendObrigatorio):not(.infraLegendObrigatorio *):not(.btn-link):not(.btn-sm):not(.select2-search-choice-close)',
                 ];
 
                 // Remover estilo anterior se existir
@@ -30129,6 +30674,45 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return false;
             };
 
+            let nsSendToPerplexityWithPrompt = async function (
+                texto,
+                promptType
+            ) {
+                console.error(
+                    "❌ NAMESPACE: sendToPerplexityWithPrompt não está disponível"
+                );
+                return false;
+            };
+
+            let nsShowPromptSelectionModal = async function (
+                aiName,
+                url,
+                texto
+            ) {
+                console.error(
+                    "❌ NAMESPACE: showPromptSelectionModal não está disponível"
+                );
+                return false;
+            };
+
+            let nsShowPerplexityPromptModal = async function (texto) {
+                console.error(
+                    "❌ NAMESPACE: showPerplexityPromptModal não está disponível"
+                );
+                return false;
+            };
+
+            let nsOpenAIWithCustomPrompt = async function (
+                aiName,
+                url,
+                prompt
+            ) {
+                console.error(
+                    "❌ NAMESPACE: openAIWithCustomPrompt não está disponível"
+                );
+                return false;
+            };
+
             let nsDetectPageType = function () {
                 console.error(
                     "❌ NAMESPACE: detectPageType não está disponível"
@@ -30954,6 +31538,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 autoExtractText: nsAutoExtractText,
                 copyToClipboard: nsCopyToClipboard,
                 sendToPerplexity: nsSendToPerplexity,
+                sendToPerplexityWithPrompt: nsSendToPerplexityWithPrompt,
+                showPromptSelectionModal: nsShowPromptSelectionModal,
+                showPerplexityPromptModal: nsShowPerplexityPromptModal,
+                openAIWithCustomPrompt: nsOpenAIWithCustomPrompt,
                 detectPageType: nsDetectPageType,
                 isValidPageForButton: nsIsValidPageForButton,
                 findDocumentosRelevantes: nsFindDocumentosRelevantes,
