@@ -1396,6 +1396,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
     // CSS da navbar aplicado IMEDIATAMENTE ao carregar o arquivo
     // Detectar domínio para tema padrão
     const currentUrl = window.location.href;
+
+    // 🚨 VERIFICAÇÃO CRÍTICA: NÃO aplicar navbar na tela de edição de minutas
+    if (currentUrl.includes("acao=minuta_editar")) {
+        console.log(
+            "🚫 eProbe: Navbar desabilitada na tela de edição de minutas"
+        );
+        return; // Sair imediatamente - não aplicar navbar
+    }
+
     let temaDefault = "blue"; // tema padrão geral
 
     if (currentUrl.includes("eproc2g.tjsc.jus.br")) {
@@ -1522,6 +1531,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
     // Listener para evento customizado de mudança de tema
     window.addEventListener("eprobe-theme-changed", (e) => {
+        // 🚨 VERIFICAÇÃO CRÍTICA: NÃO aplicar tema na tela de edição de minutas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes("acao=minuta_editar")) {
+            console.log(
+                "🚫 eProbe: Event listener de tema desabilitado na tela de edição de minutas"
+            );
+            return; // Sair imediatamente - não aplicar tema
+        }
+
         const { theme, gradient } = e.detail;
 
         // Forçar aplicação imediata nos elementos da navbar
@@ -2707,6 +2725,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
     // ===== FUNÇÃO OBRIGATÓRIA: FORÇAR FLEXBOX NA NAVBAR =====
     function forcarFlexboxNavbar() {
+        // 🚨 VERIFICAÇÃO CRÍTICA: NÃO aplicar flexbox na tela de edição de minutas
+        const currentUrl = window.location.href;
+        if (currentUrl.includes("acao=minuta_editar")) {
+            console.log(
+                "🚫 eProbe: Flexbox navbar desabilitado na tela de edição de minutas"
+            );
+            return; // Sair imediatamente - não aplicar flexbox
+        }
+
         // Aplicar estilos inline obrigatórios em todos os elementos .d-none.d-md-flex
         const elementosNavbar = document.querySelectorAll(".d-none.d-md-flex");
         elementosNavbar.forEach((elemento) => {
@@ -3798,6 +3825,49 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     );
                 }
 
+                // 🐛 DEBUG: Se não encontrou modalidade, vamos analisar o HTML
+                if (!modalidade) {
+                    console.log(
+                        `🐛 DEBUG: ${eventoId} - HTML completo:`,
+                        htmlCompleto
+                    );
+                    console.log(
+                        `🐛 DEBUG: ${eventoId} - Texto do evento:`,
+                        textoEvento
+                    );
+
+                    // Tentar padrões alternativos mais flexíveis
+                    const padraoFisicoAlternativo =
+                        /[Ss]essão.*[Ff]ísica.*?(\d{1,2}\/\d{1,2}\/\d{4})/i;
+                    const padraoVirtualAlternativo =
+                        /[Ss]essão.*[Vv]irtual.*?(\d{1,2}\/\d{1,2}\/\d{4})/i;
+
+                    const matchFisicoAlt = htmlCompleto.match(
+                        padraoFisicoAlternativo
+                    );
+                    const matchVirtualAlt = htmlCompleto.match(
+                        padraoVirtualAlternativo
+                    );
+
+                    if (matchFisicoAlt) {
+                        modalidade = "Física";
+                        dataEncontrada = matchFisicoAlt[1];
+                        console.log(
+                            `🔧 DEBUG: ${eventoId} - Sessão FÍSICA detectada com padrão alternativo, data: ${dataEncontrada}`
+                        );
+                    } else if (matchVirtualAlt) {
+                        modalidade = "Virtual";
+                        dataEncontrada = matchVirtualAlt[1];
+                        console.log(
+                            `🔧 DEBUG: ${eventoId} - Sessão VIRTUAL detectada com padrão alternativo, data: ${dataEncontrada}`
+                        );
+                    } else {
+                        console.log(
+                            `🐛 DEBUG: ${eventoId} - Nenhum padrão de modalidade encontrado`
+                        );
+                    }
+                }
+
                 // Extrair sequencial
                 const matchSequencial = htmlCompleto.match(padroes.sequencial);
                 if (matchSequencial) {
@@ -4866,7 +4936,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 flex-shrink: 0;
                                 margin-top: 1px;
                             ">${
-                                sessao.dadosPauta.modalidade === "Virtual"
+                                sessao.dadosPauta.modalidade?.toLowerCase() ===
+                                "virtual"
                                     ? "dvr"
                                     : "groups"
                             }</span>
@@ -4875,7 +4946,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                                 word-break: break-word;
                             ">
                                 ${
-                                    sessao.dadosPauta.modalidade === "virtual"
+                                    sessao.dadosPauta.modalidade?.toLowerCase() ===
+                                    "virtual"
                                         ? "Sessão Virtual"
                                         : "Sessão Física"
                                 }
@@ -5041,6 +5113,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         // Função para aplicar estilos do tema (definida globalmente)
         function applyThemeStyles(themeName) {
             log(`🎨 Aplicando tema ${themeName}...`);
+
+            // 🚨 VERIFICAÇÃO CRÍTICA: NÃO aplicar tema na tela de edição de minutas
+            const currentUrl = window.location.href;
+            if (currentUrl.includes("acao=minuta_editar")) {
+                console.log(
+                    "🚫 eProbe: Tema desabilitado na tela de edição de minutas"
+                );
+                return; // Sair imediatamente - não aplicar tema
+            }
 
             // Salvar tema no localStorage
             localStorage.setItem("eprobe_selected_theme", themeName);
@@ -17872,6 +17953,23 @@ ${texto}`;
                                         shouldCheckLembretes = true;
                                     }
 
+                                    // 🔧 NOVO: Verificar se é um botão "Ler mais" que não foi processado
+                                    if (
+                                        node.classList &&
+                                        node.classList.contains(
+                                            "botaoLerMais"
+                                        ) &&
+                                        !node.hasAttribute(
+                                            "data-eprobe-expandir-replaced"
+                                        )
+                                    ) {
+                                        shouldCheckLembretes = true;
+                                        console.log(
+                                            "🔍 OBSERVER: Novo botão 'Ler mais' detectado:",
+                                            node
+                                        );
+                                    }
+
                                     // Verificar elementos filhos também
                                     const lembreteElements =
                                         node.querySelectorAll &&
@@ -17883,6 +17981,22 @@ ${texto}`;
                                         lembreteElements.length > 0
                                     ) {
                                         shouldCheckLembretes = true;
+                                    }
+
+                                    // 🔧 NOVO: Verificar botões "Ler mais" filhos não processados
+                                    const botoesLerMais =
+                                        node.querySelectorAll &&
+                                        node.querySelectorAll(
+                                            "div.botaoLerMais:not([data-eprobe-expandir-replaced])"
+                                        );
+                                    if (
+                                        botoesLerMais &&
+                                        botoesLerMais.length > 0
+                                    ) {
+                                        shouldCheckLembretes = true;
+                                        console.log(
+                                            `🔍 OBSERVER: ${botoesLerMais.length} botões 'Ler mais' não processados detectados em filhos`
+                                        );
                                     }
 
                                     if (
@@ -23511,21 +23625,61 @@ ${texto}`;
                         );
                     });
 
-                    botoesLerMais.forEach((botao) => {
-                        if (
+                    // 🔧 DEBUG: Log dos botões encontrados
+                    console.log(
+                        `🔍 LEMBRETES: ${botoesLerMais.length} botões "Ler mais" encontrados total`
+                    );
+                    const botoesNaoProcessados = botoesLerMais.filter(
+                        (botao) =>
                             !botao.hasAttribute("data-eprobe-expandir-replaced")
-                        ) {
+                    );
+                    console.log(
+                        `🔍 LEMBRETES: ${botoesNaoProcessados.length} botões "Ler mais" não processados`
+                    );
+
+                    botoesLerMais.forEach((botao, index) => {
+                        const jaProcessado = botao.hasAttribute(
+                            "data-eprobe-expandir-replaced"
+                        );
+                        console.log(
+                            `🔍 BOTÃO ${index + 1}: ${
+                                jaProcessado
+                                    ? "✅ Já processado"
+                                    : "🔄 Processando..."
+                            }`
+                        );
+
+                        if (!jaProcessado) {
                             const temEventoClick =
                                 botao.onclick || botao.getAttribute("onclick");
-                            if (!temEventoClick) return;
+                            if (!temEventoClick) {
+                                console.log(
+                                    `❌ BOTÃO ${index + 1}: Sem evento de click`
+                                );
+                                return;
+                            }
 
                             const lembreteParent =
                                 botao.closest(".divLembrete");
-                            if (!lembreteParent) return;
+                            if (!lembreteParent) {
+                                console.log(
+                                    `❌ BOTÃO ${
+                                        index + 1
+                                    }: Sem parent .divLembrete`
+                                );
+                                return;
+                            }
 
                             const desLembrete =
                                 lembreteParent.querySelector(".desLembrete");
-                            if (!desLembrete) return;
+                            if (!desLembrete) {
+                                console.log(
+                                    `❌ BOTÃO ${
+                                        index + 1
+                                    }: Sem elemento .desLembrete`
+                                );
+                                return;
+                            }
 
                             // Verificar se há truncamento de texto
                             const textoCompleto = desLembrete.textContent || "";
@@ -23584,7 +23738,19 @@ ${texto}`;
                                     botao
                                 );
                                 botao.parentNode.removeChild(botao);
+
+                                console.log(
+                                    `✅ BOTÃO ${
+                                        index + 1
+                                    }: Substituído com sucesso por "Expandir lembrete"`
+                                );
                             } catch (error) {
+                                console.log(
+                                    `❌ BOTÃO ${
+                                        index + 1
+                                    }: Erro na substituição:`,
+                                    error
+                                );
                                 // Silencioso para máxima performance
                             }
                         }
@@ -25593,6 +25759,15 @@ ${texto}`;
             ) {
                 log(`🎨 BOTÕES: Aplicando tema "${tema}" aos botões do eProc`);
 
+                // 🚨 VERIFICAÇÃO CRÍTICA: NÃO aplicar tema de botões na tela de edição de minutas
+                const currentUrl = window.location.href;
+                if (currentUrl.includes("acao=minuta_editar")) {
+                    console.log(
+                        "🚫 eProbe: Tema de botões desabilitado na tela de edição de minutas"
+                    );
+                    return; // Sair imediatamente - não aplicar tema de botões
+                }
+
                 // Verificar se o tema existe
                 if (!TEMAS_BOTOES_EPROC[tema]) {
                     console.warn(
@@ -25789,6 +25964,15 @@ ${texto}`;
 
             // Função para restaurar tema salvo
             window.restaurarTemaBotoesEproc = function () {
+                // 🚨 VERIFICAÇÃO CRÍTICA: NÃO restaurar tema na tela de edição de minutas
+                const currentUrl = window.location.href;
+                if (currentUrl.includes("acao=minuta_editar")) {
+                    console.log(
+                        "🚫 eProbe: Restauração de tema de botões desabilitada na tela de edição de minutas"
+                    );
+                    return false; // Retornar false para indicar que não foi restaurado
+                }
+
                 try {
                     const temaSalvo = localStorage.getItem(
                         "eprobe_tema_botoes_eproc"
@@ -25872,6 +26056,15 @@ ${texto}`;
              */
 
             window.gerenciarNavbarEprobe = function () {
+                // 🚨 VERIFICAÇÃO CRÍTICA: NÃO gerenciar navbar na tela de edição de minutas
+                const currentUrl = window.location.href;
+                if (currentUrl.includes("acao=minuta_editar")) {
+                    console.log(
+                        "🚫 eProbe: Gerenciamento de navbar desabilitado na tela de edição de minutas"
+                    );
+                    return; // Sair imediatamente - não gerenciar navbar
+                }
+
                 if (window.navbarEprobeInicializada) return;
                 window.navbarEprobeInicializada = true;
 
@@ -25943,20 +26136,30 @@ ${texto}`;
             };
 
             // 🚀 EXECUÇÃO IMEDIATA DA NAVBAR - ELIMINAR DELAY
-            // Executar gerenciamento da navbar IMEDIATAMENTE (sem timeout)
-            if (window.gerenciarNavbarEprobe) {
-                log("⚡ NAVBAR: Executando gerenciamento imediato da navbar");
-                window.gerenciarNavbarEprobe();
+            // 🚨 VERIFICAÇÃO CRÍTICA: NÃO executar navbar na tela de edição de minutas
+            const currentUrl = window.location.href;
+            if (!currentUrl.includes("acao=minuta_editar")) {
+                // Executar gerenciamento da navbar IMEDIATAMENTE (sem timeout)
+                if (window.gerenciarNavbarEprobe) {
+                    log(
+                        "⚡ NAVBAR: Executando gerenciamento imediato da navbar"
+                    );
+                    window.gerenciarNavbarEprobe();
+                } else {
+                    // Se a função ainda não estiver disponível, aguardar pouco e tentar novamente
+                    setTimeout(() => {
+                        if (window.gerenciarNavbarEprobe) {
+                            log(
+                                "⚡ NAVBAR: Executando gerenciamento da navbar (tentativa 2)"
+                            );
+                            window.gerenciarNavbarEprobe();
+                        }
+                    }, 50);
+                }
             } else {
-                // Se a função ainda não estiver disponível, aguardar pouco e tentar novamente
-                setTimeout(() => {
-                    if (window.gerenciarNavbarEprobe) {
-                        log(
-                            "⚡ NAVBAR: Executando gerenciamento da navbar (tentativa 2)"
-                        );
-                        window.gerenciarNavbarEprobe();
-                    }
-                }, 50);
+                console.log(
+                    "🚫 eProbe: Execução automática de navbar desabilitada na tela de edição de minutas"
+                );
             }
 
             // ============================================
@@ -30134,6 +30337,101 @@ ${texto}`;
                             "⚠️ OBSERVER: Função setupInterfaceObserver não encontrada"
                         );
                     }
+
+                    // 🚨 NOVO: Listeners adicionais para detectar criação de lembretes
+                    log(
+                        "🚨 LISTENERS: Configurando listeners para criação de lembretes..."
+                    );
+
+                    // Listener para submissões de formulário
+                    document.addEventListener("submit", function (event) {
+                        // Verificar se é um formulário de lembrete
+                        const form = event.target;
+                        if (
+                            form &&
+                            (form.innerHTML.includes("lembrete") ||
+                                form.innerHTML.includes("Lembrete"))
+                        ) {
+                            console.log(
+                                "🚨 FORM SUBMIT: Possível criação de lembrete detectada"
+                            );
+
+                            // Verificar por novos botões após delay
+                            setTimeout(() => {
+                                if (
+                                    typeof aplicarEstilizacaoImediataLembretes ===
+                                    "function"
+                                ) {
+                                    console.log(
+                                        "🚨 FORM SUBMIT: Aplicando estilização após submit"
+                                    );
+                                    aplicarEstilizacaoImediataLembretes();
+                                }
+                            }, 1000);
+
+                            setTimeout(() => {
+                                if (
+                                    typeof aplicarEstilizacaoImediataLembretes ===
+                                    "function"
+                                ) {
+                                    console.log(
+                                        "🚨 FORM SUBMIT: Segunda tentativa após submit"
+                                    );
+                                    aplicarEstilizacaoImediataLembretes();
+                                }
+                            }, 2000);
+                        }
+                    });
+
+                    // Listener para clicks em botões que podem criar lembretes
+                    document.addEventListener("click", function (event) {
+                        const target = event.target;
+                        const text = target.textContent || "";
+
+                        if (
+                            text.includes("Salvar") ||
+                            text.includes("Gravar") ||
+                            text.includes("Incluir")
+                        ) {
+                            console.log(
+                                "🚨 CLICK: Possível ação de criação detectada:",
+                                text
+                            );
+
+                            // Múltiplas verificações com delays crescentes
+                            [1000, 2000, 3000, 5000].forEach((delay) => {
+                                setTimeout(() => {
+                                    if (
+                                        typeof aplicarEstilizacaoImediataLembretes ===
+                                        "function"
+                                    ) {
+                                        console.log(
+                                            `🚨 CLICK: Verificando botões após ${delay}ms`
+                                        );
+                                        aplicarEstilizacaoImediataLembretes();
+                                    }
+                                }, delay);
+                            });
+                        }
+                    });
+
+                    log(
+                        "✅ LISTENERS: Listeners de criação de lembretes configurados"
+                    );
+
+                    // 🚨 AUTO-INICIALIZAR: Monitor agressivo de botões "Ler Mais"
+                    setTimeout(() => {
+                        if (
+                            window.SENT1_AUTO &&
+                            typeof window.SENT1_AUTO
+                                .iniciarMonitorBotoesLerMais === "function"
+                        ) {
+                            console.log(
+                                "🚨 AUTO-INIT: Iniciando monitor agressivo automaticamente..."
+                            );
+                            window.SENT1_AUTO.iniciarMonitorBotoesLerMais();
+                        }
+                    }, 3000); // Depois que tudo estiver inicializado
                 } catch (error) {
                     console.error("❌ OBSERVER: Erro na inicialização:", error);
                 }
@@ -36736,6 +37034,231 @@ ${texto}`;
                 } catch (error) {
                     console.error("❌ Erro no debug PDF:", error);
                     return { erro: error.message };
+                }
+            },
+
+            // 🐛 DEBUG: Função específica para analisar eventos problemáticos
+            debugEventoProblematico: () => {
+                console.log(
+                    "🐛 DEBUG: Analisando evento problemático de mesa..."
+                );
+                try {
+                    // Procurar pelo evento trEvento37 especificamente
+                    const evento37 = document.querySelector("#trEvento37");
+                    if (evento37) {
+                        const textoEvento = evento37.textContent.trim();
+                        const htmlCompleto = evento37.innerHTML;
+
+                        console.log("🔍 Evento trEvento37 encontrado:");
+                        console.log("📝 Texto:", textoEvento);
+                        console.log("🔧 HTML:", htmlCompleto);
+
+                        // Testar padrões de extração
+                        const padroes = {
+                            sessaoFisica:
+                                /<b>Sessão Ordinária Física<\/b><br>Data da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                            sessaoVirtual:
+                                /<b>Sessão Virtual[^<]*<\/b><br>Período da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                            sequencial: /Sequencial:\s*(\d+)/i,
+                            // Padrões alternativos mais flexíveis
+                            fisicoAlt:
+                                /[Ss]essão.*[Ff]ísica.*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                            virtualAlt:
+                                /[Ss]essão.*[Vv]irtual.*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
+                            dataGenerica:
+                                /(\d{1,2}\/\d{1,2}\/\d{4})\s*\d{1,2}:\d{2}/i,
+                        };
+
+                        const resultados = {};
+                        Object.keys(padroes).forEach((nome) => {
+                            const match = htmlCompleto.match(padroes[nome]);
+                            resultados[nome] = match
+                                ? { match: match[0], grupo1: match[1] }
+                                : null;
+                            console.log(
+                                `🔍 Padrão ${nome}:`,
+                                resultados[nome]
+                                    ? `✅ ${match[0]}`
+                                    : "❌ Não encontrado"
+                            );
+                        });
+
+                        return {
+                            evento: "trEvento37",
+                            texto: textoEvento,
+                            html: htmlCompleto,
+                            padroes: resultados,
+                        };
+                    } else {
+                        console.log("❌ Evento trEvento37 não encontrado");
+
+                        // Procurar por qualquer evento de mesa
+                        const eventosTabela =
+                            document.querySelectorAll('tr[id^="trEvento"]');
+                        const eventosMesa = [];
+
+                        eventosTabela.forEach((evento) => {
+                            const texto = evento.textContent.trim();
+                            if (texto.includes("mesa para julgamento")) {
+                                eventosMesa.push({
+                                    id: evento.id,
+                                    texto: texto,
+                                    html: evento.innerHTML,
+                                });
+                            }
+                        });
+
+                        console.log(
+                            `🔍 Encontrados ${eventosMesa.length} eventos de mesa:`,
+                            eventosMesa
+                        );
+                        return { eventosMesa };
+                    }
+                } catch (error) {
+                    console.error("❌ Erro no debug do evento:", error);
+                    return { erro: error.message };
+                }
+            },
+
+            // 🔧 FORÇAR: Função para forçar processamento de botões "Ler Mais"
+            forcarProcessamentoBotoesLerMais: () => {
+                console.log(
+                    "🔧 FORÇA: Forçando processamento de botões 'Ler Mais'..."
+                );
+                try {
+                    // Buscar todos os botões "Ler mais" não processados
+                    const botoesLerMais = Array.from(
+                        document.querySelectorAll(
+                            "div.botaoLerMais:not([data-eprobe-expandir-replaced])"
+                        )
+                    ).filter((botao) => {
+                        const texto = (botao.textContent || "").toLowerCase();
+                        return (
+                            texto.includes("ler mais") ||
+                            texto.includes("...ler mais") ||
+                            texto.includes("... ler mais")
+                        );
+                    });
+
+                    console.log(
+                        `🔍 FORÇA: ${botoesLerMais.length} botões "Ler mais" não processados encontrados`
+                    );
+
+                    if (botoesLerMais.length === 0) {
+                        console.log(
+                            "✅ FORÇA: Todos os botões já foram processados"
+                        );
+                        return { processados: 0, jaProcessados: true };
+                    }
+
+                    // Forçar execução da função de estilização
+                    if (
+                        typeof aplicarEstilizacaoImediataLembretes ===
+                        "function"
+                    ) {
+                        aplicarEstilizacaoImediataLembretes();
+
+                        // Verificar novamente após processamento
+                        setTimeout(() => {
+                            const restantes = document.querySelectorAll(
+                                "div.botaoLerMais:not([data-eprobe-expandir-replaced])"
+                            ).length;
+                            console.log(
+                                `🔍 FORÇA: ${restantes} botões restantes após processamento`
+                            );
+                        }, 500);
+
+                        return {
+                            inicialNaoProcessados: botoesLerMais.length,
+                            funcaoExecutada: true,
+                            timestamp: new Date().toLocaleString("pt-BR"),
+                        };
+                    } else {
+                        console.error(
+                            "❌ FORÇA: Função aplicarEstilizacaoImediataLembretes não disponível"
+                        );
+                        return { erro: "Função não disponível" };
+                    }
+                } catch (error) {
+                    console.error("❌ Erro ao forçar processamento:", error);
+                    return { erro: error.message };
+                }
+            },
+
+            // 🚨 MONITOR AGRESSIVO: Função para monitorar continuamente botões "Ler Mais"
+            iniciarMonitorBotoesLerMais: () => {
+                console.log(
+                    "🚨 MONITOR: Iniciando monitoramento agressivo de botões 'Ler Mais'..."
+                );
+
+                let contadorVerificacoes = 0;
+                const maxVerificacoes = 50; // 50 verificações = ~25 segundos
+
+                // Cleanup de monitor anterior se existir
+                if (window.eProbeMonitorLerMais) {
+                    clearInterval(window.eProbeMonitorLerMais);
+                }
+
+                // Monitor por polling a cada 500ms
+                window.eProbeMonitorLerMais = setInterval(() => {
+                    contadorVerificacoes++;
+
+                    const botoesNaoProcessados = Array.from(
+                        document.querySelectorAll(
+                            "div.botaoLerMais:not([data-eprobe-expandir-replaced])"
+                        )
+                    ).filter((botao) => {
+                        const texto = (botao.textContent || "").toLowerCase();
+                        return (
+                            texto.includes("ler mais") ||
+                            texto.includes("...ler mais") ||
+                            texto.includes("... ler mais")
+                        );
+                    });
+
+                    if (botoesNaoProcessados.length > 0) {
+                        console.log(
+                            `🚨 MONITOR: ${botoesNaoProcessados.length} botões não processados encontrados na verificação ${contadorVerificacoes}`
+                        );
+
+                        // Forçar processamento imediato
+                        if (
+                            typeof aplicarEstilizacaoImediataLembretes ===
+                            "function"
+                        ) {
+                            aplicarEstilizacaoImediataLembretes();
+                        }
+                    }
+
+                    // Parar monitor após máximo de verificações
+                    if (contadorVerificacoes >= maxVerificacoes) {
+                        clearInterval(window.eProbeMonitorLerMais);
+                        console.log(
+                            `🚨 MONITOR: Finalizando após ${contadorVerificacoes} verificações`
+                        );
+                    }
+                }, 500);
+
+                return {
+                    monitorAtivo: true,
+                    maxVerificacoes: maxVerificacoes,
+                    intervalo: "500ms",
+                    timestamp: new Date().toLocaleString("pt-BR"),
+                };
+            },
+
+            // 🛑 PARAR MONITOR: Função para parar o monitor
+            pararMonitorBotoesLerMais: () => {
+                if (window.eProbeMonitorLerMais) {
+                    clearInterval(window.eProbeMonitorLerMais);
+                    window.eProbeMonitorLerMais = null;
+                    console.log(
+                        "🛑 MONITOR: Monitor de botões parado manualmente"
+                    );
+                    return { parado: true };
+                } else {
+                    console.log("🛑 MONITOR: Nenhum monitor ativo para parar");
+                    return { parado: false, motivo: "Nenhum monitor ativo" };
                 }
             },
 
