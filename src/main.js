@@ -1,4 +1,69 @@
-﻿// ===== SISTEMA DE LOGGING CONTROLADO E PERFORMANCE =====
+﻿// ⚡ ANTI-FLASH RADICAL - INJEÇÃO NO HTML ANTES DO RENDER
+(function antiFlashRadical() {
+    const navbarDesabilitada =
+        localStorage.getItem("eprobe_navbar_enabled") === "false";
+
+    if (
+        !navbarDesabilitada &&
+        !window.location.href.includes("acao=minuta_editar")
+    ) {
+        // Detectar tema
+        let tema = localStorage.getItem("eprobe_selected_theme") || "blue";
+        if (!localStorage.getItem("eprobe_selected_theme")) {
+            if (window.location.href.includes("eproc2g.tjsc.jus.br")) {
+                tema = "green";
+            } else if (window.location.href.includes("eproc1g.tjsc.jus.br")) {
+                tema = "blue";
+            }
+        }
+
+        const gradientes = {
+            blue: "linear-gradient(to left, #0d1c2c, #007ebd)",
+            dark: "linear-gradient(to left, #1a1a1a, #696363)",
+            light: "linear-gradient(to left, #94A3B8, #475569)",
+            violet: "linear-gradient(to left, #6b46c1, #4c1d95)",
+            green: "linear-gradient(to left, #17a394, #0c4f5c)",
+        };
+
+        const gradiente = gradientes[tema];
+
+        // ⚡ TÉCNICA RADICAL: document.write para injeção PRÉ-RENDER
+        if (document.readyState === "loading") {
+            document.write(`
+                <style id="eprobe-pre-render-anti-flash">
+                /* ANTI-FLASH PRÉ-RENDER - INJETADO NO HTML */
+                #navbar.navbar.bg-instancia,
+                .navbar.bg-instancia,
+                nav.navbar.bg-instancia,
+                .navbar.text-white.bg-instancia,
+                .navbar.text-white.d-xl-flex.bg-instancia {
+                    background: ${gradiente} !important;
+                    background-image: ${gradiente} !important;
+                    background-color: transparent !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    min-height: 50px !important;
+                    opacity: 1 !important;
+                    visibility: visible !important;
+                    transition: none !important;
+                    animation: none !important;
+                }
+                
+                .d-none.d-md-flex,
+                div.d-none.d-md-flex,
+                .navbar .d-none.d-md-flex,
+                #navbar .d-none.d-md-flex {
+                    display: flex !important;
+                    align-items: center !important;
+                }
+                </style>
+            `);
+            console.log("⚡ PRÉ-RENDER: CSS injetado via document.write");
+        }
+    }
+})();
+
+// ===== SISTEMA DE LOGGING CONTROLADO E PERFORMANCE =====
 const DEBUG_MODE = false; // ⚡ ATIVA/DESATIVA DEBUG DE DETECÇÃO DE SESSÃO
 const log = DEBUG_MODE ? console.log.bind(console) : () => {}; // Logs silenciosos por padrão
 const logCritical = console.log.bind(console); // Apenas logs críticos sempre visíveis
@@ -1461,8 +1526,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         }
     `;
 
-    // APLICAÇÃO MAIS ROBUSTA E IMEDIATA
+    // ⚡ APLICAÇÃO ULTRA-INSTANTÂNEA - APLICAR PRIMEIRO, VERIFICAR DEPOIS
     const aplicarCSS = () => {
+        // Remover CSS do anti-flash ultra se existir
+        const cssAntiFlash = document.getElementById("eprobe-anti-flash-ultra");
+        if (cssAntiFlash) {
+            cssAntiFlash.remove();
+            console.log(
+                "🔄 ANTI-FLASH: CSS temporário removido, aplicando definitivo"
+            );
+        }
+
         // Remover CSS anterior se existir
         const cssAnterior = document.getElementById(
             "eprobe-navbar-instant-immediate"
@@ -1477,6 +1551,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             document.documentElement;
         if (head) {
             head.insertBefore(cssNavbarImediato, head.firstChild);
+
             console.log(
                 `⚡ NAVBAR IMEDIATO: Tema ${tema} aplicado instantaneamente`
             );
@@ -1485,7 +1560,23 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         return false;
     };
 
-    // Aplicar imediatamente se possível
+    // 🚀 APLICAR IMEDIATAMENTE - SEM VERIFICAÇÕES QUE CAUSEM DELAY
+    let cssAplicado = false;
+
+    // Verificação rápida via localStorage (síncrona)
+    const navbarStorageKey = "eprobe_navbar_enabled";
+    const navbarEnabledLocal = localStorage.getItem(navbarStorageKey);
+
+    // Se explicitamente desabilitada, não aplicar
+    if (navbarEnabledLocal === "false") {
+        console.log(
+            "🚫 eProbe: Navbar instantânea desabilitada por configuração salva"
+        );
+
+        return; // Sair imediatamente - não aplicar navbar
+    }
+
+    // APLICAR CSS IMEDIATAMENTE (padrão = ativado se não explicitamente desabilitado)
     if (!aplicarCSS()) {
         // Se falhou, tentar novamente em intervalos mínimos
         const tentativas = 5;
@@ -1494,9 +1585,42 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         const intervalo = setInterval(() => {
             if (aplicarCSS() || tentativa >= tentativas) {
                 clearInterval(intervalo);
+                if (tentativa < tentativas) {
+                    cssAplicado = true;
+                }
             }
             tentativa++;
         }, 1);
+    } else {
+        cssAplicado = true;
+    }
+
+    // 🔄 VERIFICAÇÃO ASSÍNCRONA PARA CLEANUP (sem afetar aplicação inicial)
+    if (
+        typeof chrome !== "undefined" &&
+        chrome.storage &&
+        chrome.storage.sync
+    ) {
+        // Verificar chrome.storage de forma assíncrona para sincronizar com localStorage
+        chrome.storage.sync.get(["customize-navbar"], function (result) {
+            const navbarEnabled = result["customize-navbar"] !== false; // default true
+
+            // Sincronizar localStorage com chrome.storage
+            localStorage.setItem(navbarStorageKey, navbarEnabled.toString());
+
+            if (!navbarEnabled && cssAplicado) {
+                // Se CSS foi aplicado mas agora deve ser removido, remover
+                const cssExistente = document.getElementById(
+                    "eprobe-navbar-instant-immediate"
+                );
+                if (cssExistente) {
+                    cssExistente.remove();
+                    console.log(
+                        "🚫 eProbe: Navbar instantânea removida após verificação do storage"
+                    );
+                }
+            }
+        });
     }
 
     // Listener para mudanças de tema em tempo real
@@ -5123,6 +5247,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return; // Sair imediatamente - não aplicar tema
             }
 
+            // 🎨 VERIFICAÇÃO: Se personalização da navbar está desabilitada, não aplicar
+            if (!PERSONALIZACAO_NAVBAR_HABILITADA) {
+                log(
+                    "🚫 NAVBAR: Personalização desabilitada - não aplicando tema na navbar"
+                );
+                return;
+            }
+
             // Salvar tema no localStorage
             localStorage.setItem("eprobe_selected_theme", themeName);
 
@@ -5281,6 +5413,220 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             } catch (error) {
                 console.error("❌ NAVBAR: Erro ao unificar estilos:", error);
                 return false;
+            }
+        }
+
+        /**
+         * 🎨 ATIVAR PERSONALIZAÇÃO DA NAVBAR
+         * Aplica os estilos personalizados da navbar
+         */
+        function ativarPersonalizacaoNavbar() {
+            log("🎨 NAVBAR: Ativando personalização da navbar...");
+
+            try {
+                PERSONALIZACAO_NAVBAR_HABILITADA = true;
+
+                // 💾 SINCRONIZAR COM LOCALSTORAGE para aplicação instantânea
+                localStorage.setItem("eprobe_navbar_enabled", "true");
+
+                // Verificar se não estamos na tela de edição de minutas
+                const currentUrl = window.location.href;
+                if (currentUrl.includes("acao=minuta_editar")) {
+                    log(
+                        "🚫 NAVBAR: Personalização desabilitada na tela de edição de minutas"
+                    );
+                    return false;
+                }
+
+                // Obter tema atual
+                const temaAtual =
+                    localStorage.getItem("eprobe_selected_theme") || "blue";
+
+                // Aplicar tema usando a função existente
+                applyThemeStyles(temaAtual);
+
+                // Garantir que a unificação seja aplicada
+                setTimeout(() => {
+                    unificarNavbarStyles();
+                }, 100);
+
+                log("✅ NAVBAR: Personalização ativada com sucesso");
+                return true;
+            } catch (error) {
+                logError("❌ NAVBAR: Erro ao ativar personalização:", error);
+                return false;
+            }
+        }
+
+        /**
+         * 🚫 DESATIVAR PERSONALIZAÇÃO DA NAVBAR
+         * Remove os estilos personalizados da navbar
+         */
+        function desativarPersonalizacaoNavbar() {
+            log("🚫 NAVBAR: Desativando personalização da navbar...");
+
+            try {
+                PERSONALIZACAO_NAVBAR_HABILITADA = false;
+
+                // 💾 SINCRONIZAR COM LOCALSTORAGE para aplicação instantânea
+                localStorage.setItem("eprobe_navbar_enabled", "false");
+
+                // Remover CSS personalizado da navbar
+                const cssNavbar = document.getElementById(
+                    "eprobe-navbar-instant-immediate"
+                );
+                if (cssNavbar) {
+                    cssNavbar.remove();
+                    log("🗑️ NAVBAR: CSS personalizado removido");
+                }
+
+                // Restaurar estilos originais da navbar
+                const navbarElements = document.querySelectorAll(
+                    "#navbar.navbar.bg-instancia, .navbar.bg-instancia, nav.navbar.bg-instancia"
+                );
+
+                navbarElements.forEach((navbar) => {
+                    // Remover propriedades inline aplicadas
+                    navbar.style.removeProperty("background-image");
+                    navbar.style.removeProperty("background");
+
+                    log(
+                        `🔄 NAVBAR: Estilos originais restaurados para elemento ${navbar.tagName}`
+                    );
+                });
+
+                // Restaurar elementos .d-none.d-md-flex ao estado original
+                const flexElements =
+                    document.querySelectorAll(".d-none.d-md-flex");
+                flexElements.forEach((element) => {
+                    // Manter display flex mas remover forçamento via style inline
+                    if (element.style.display === "flex") {
+                        element.style.removeProperty("display");
+                    }
+                });
+
+                log("✅ NAVBAR: Personalização desativada com sucesso");
+
+                // Disparar evento para notificar outros componentes
+                window.dispatchEvent(
+                    new CustomEvent("eprobe-navbar-customization-disabled", {
+                        detail: { timestamp: Date.now() },
+                    })
+                );
+
+                return true;
+            } catch (error) {
+                logError("❌ NAVBAR: Erro ao desativar personalização:", error);
+                return false;
+            }
+        }
+
+        /**
+         * 🔍 VERIFICAR STATUS DA PERSONALIZAÇÃO DA NAVBAR
+         * Retorna o estado atual da personalização
+         */
+        function verificarStatusPersonalizacaoNavbar() {
+            return {
+                habilitada: PERSONALIZACAO_NAVBAR_HABILITADA,
+                cssPresente: !!document.getElementById(
+                    "eprobe-navbar-instant-immediate"
+                ),
+                temaAtual:
+                    localStorage.getItem("eprobe_selected_theme") || "blue",
+                elementosNavbar: document.querySelectorAll(
+                    "#navbar.navbar.bg-instancia, .navbar.bg-instancia, nav.navbar.bg-instancia"
+                ).length,
+            };
+        }
+
+        /**
+         * 🚀 INICIALIZAR CONFIGURAÇÕES DE PERSONALIZAÇÃO
+         * Carrega as configurações salvas do chrome.storage e aplica
+         */
+        function inicializarConfiguracoesPersalizacao() {
+            log("🚀 PERSONALIZAÇÃO: Inicializando configurações...");
+
+            try {
+                // Verificar se a API do Chrome está disponível
+                if (
+                    typeof chrome !== "undefined" &&
+                    chrome.storage &&
+                    chrome.storage.sync
+                ) {
+                    // Carregar configuração da navbar
+                    chrome.storage.sync.get(
+                        ["customize-navbar"],
+                        function (result) {
+                            const navbarEnabled =
+                                result["customize-navbar"] !== false; // default true
+
+                            log(
+                                `🎨 PERSONALIZAÇÃO: Estado inicial da navbar: ${navbarEnabled}`
+                            );
+
+                            // 💾 SINCRONIZAR COM LOCALSTORAGE
+                            localStorage.setItem(
+                                "eprobe_navbar_enabled",
+                                navbarEnabled.toString()
+                            );
+
+                            if (navbarEnabled) {
+                                // Ativar personalização da navbar
+                                setTimeout(() => {
+                                    ativarPersonalizacaoNavbar();
+                                }, 100);
+                            } else {
+                                // Desativar personalização da navbar
+                                PERSONALIZACAO_NAVBAR_HABILITADA = false;
+
+                                // Remover CSS se já foi aplicado pela função instantânea
+                                const cssExistente = document.getElementById(
+                                    "eprobe-navbar-instant-immediate"
+                                );
+                                if (cssExistente) {
+                                    cssExistente.remove();
+                                    log(
+                                        "🗑️ PERSONALIZAÇÃO: CSS instantâneo removido por configuração"
+                                    );
+                                }
+
+                                log(
+                                    "🚫 PERSONALIZAÇÃO: Navbar desabilitada por configuração"
+                                );
+                            }
+                        }
+                    );
+
+                    // TODO: Carregar outras configurações de personalização quando implementadas
+                    // chrome.storage.sync.get(["customize-icons"], ...);
+                    // chrome.storage.sync.get(["customize-buttons"], ...);
+                    // chrome.storage.sync.get(["customize-reminders"], ...);
+                } else {
+                    log(
+                        "⚠️ PERSONALIZAÇÃO: API do Chrome não disponível - usando configurações padrão"
+                    );
+                    // Usar configurações padrão quando não há acesso ao chrome.storage
+                    PERSONALIZACAO_NAVBAR_HABILITADA = true;
+
+                    setTimeout(() => {
+                        ativarPersonalizacaoNavbar();
+                    }, 100);
+                }
+
+                log(
+                    "✅ PERSONALIZAÇÃO: Configurações inicializadas com sucesso"
+                );
+            } catch (error) {
+                logError(
+                    "❌ PERSONALIZAÇÃO: Erro ao inicializar configurações:",
+                    error
+                );
+
+                // Fallback para configurações padrão
+                PERSONALIZACAO_NAVBAR_HABILITADA = true;
+                setTimeout(() => {
+                    ativarPersonalizacaoNavbar();
+                }, 100);
             }
         }
 
@@ -6906,6 +7252,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
         // 🔥 CONTROLE DE PERFORMANCE ULTRA
         let MODO_ULTRA_PERFORMANCE = false; // Controla operações custosas para otimizar performance
+
+        // 🎨 CONTROLE DE PERSONALIZAÇÕES
+        let PERSONALIZACAO_NAVBAR_HABILITADA = true; // Controla se a personalização da navbar está ativa
 
         // Configurações de segurança MAIS RIGOROSAS
         const MAX_TENTATIVAS_CRUZAMENTO = 1; // REDUZIDO: Máximo 1 tentativa por processo
@@ -22153,6 +22502,115 @@ ${texto}`;
                         });
                     }
 
+                    // ========================================
+                    // HANDLERS PARA NOVOS TOGGLES DE PERSONALIZAÇÃO
+                    // ========================================
+
+                    if (request.action === "toggleNavbarCustomization") {
+                        log(
+                            "🎨 POPUP: Toggle para personalização da navbar:",
+                            request.enabled
+                        );
+
+                        let success = false;
+                        let message = "";
+
+                        try {
+                            if (request.enabled) {
+                                // Ativar personalização da navbar
+                                success = ativarPersonalizacaoNavbar();
+                                message = success
+                                    ? "Personalização da navbar ativada com sucesso"
+                                    : "Erro ao ativar personalização da navbar";
+                            } else {
+                                // Desativar personalização da navbar
+                                success = desativarPersonalizacaoNavbar();
+                                message = success
+                                    ? "Personalização da navbar desativada com sucesso"
+                                    : "Erro ao desativar personalização da navbar";
+                            }
+
+                            // Log do status atual
+                            const status =
+                                verificarStatusPersonalizacaoNavbar();
+                            log("📊 NAVBAR: Status atual:", status);
+                        } catch (error) {
+                            logError("❌ NAVBAR: Erro no toggle:", error);
+                            success = false;
+                            message = "Erro interno no controle da navbar";
+                        }
+
+                        sendResponse({
+                            success: success,
+                            message: message,
+                            enabled: PERSONALIZACAO_NAVBAR_HABILITADA,
+                        });
+                    }
+
+                    if (request.action === "toggleIconsCustomization") {
+                        log(
+                            "🎨 POPUP: Toggle para personalização de ícones:",
+                            request.enabled
+                        );
+
+                        // TODO: Implementar lógica de ativação/desativação da personalização de ícones
+                        // Por enquanto, apenas confirmar recebimento
+                        sendResponse({
+                            success: true,
+                            message: request.enabled
+                                ? "Personalização de ícones ativada"
+                                : "Personalização de ícones desativada",
+                        });
+                    }
+
+                    if (request.action === "toggleButtonsCustomization") {
+                        log(
+                            "🎨 POPUP: Toggle para personalização de botões:",
+                            request.enabled
+                        );
+
+                        // TODO: Implementar lógica de ativação/desativação da personalização de botões
+                        // Por enquanto, apenas confirmar recebimento
+                        sendResponse({
+                            success: true,
+                            message: request.enabled
+                                ? "Personalização de botões ativada"
+                                : "Personalização de botões desativada",
+                        });
+                    }
+
+                    if (request.action === "toggleRemindersCustomization") {
+                        log(
+                            "🎨 POPUP: Toggle para personalização de lembretes:",
+                            request.enabled
+                        );
+
+                        // TODO: Implementar lógica de ativação/desativação da personalização de lembretes
+                        // Por enquanto, apenas confirmar recebimento
+                        sendResponse({
+                            success: true,
+                            message: request.enabled
+                                ? "Personalização de lembretes ativada"
+                                : "Personalização de lembretes desativada",
+                        });
+                    }
+
+                    if (request.action === "toggleAllAppearanceCustomization") {
+                        log(
+                            "🎨 POPUP: Toggle para todas as personalizações:",
+                            request.enabled
+                        );
+
+                        // TODO: Implementar lógica de ativação/desativação de todas as personalizações
+                        // Por enquanto, apenas confirmar recebimento
+                        sendResponse({
+                            success: true,
+                            message: request.enabled
+                                ? "Todas as personalizações ativadas"
+                                : "Todas as personalizações desativadas",
+                        });
+                    }
+
                     // Handler para aplicação de temas
                     if (request.action === "applyTheme") {
                         const theme = request.theme;
@@ -30302,6 +30760,22 @@ ${texto}`;
                 inicializarPersonalizacaoPesquisaNavbar();
             }, 1500);
 
+            // 🎨 EXECUÇÃO AUTOMÁTICA - Configurações de personalização
+            setTimeout(() => {
+                log("🎨 PERSONALIZAÇÃO: Inicializando configurações...");
+                try {
+                    inicializarConfiguracoesPersalizacao();
+                    logCritical(
+                        "✅ PERSONALIZAÇÃO: Configurações inicializadas com sucesso"
+                    );
+                } catch (error) {
+                    console.error(
+                        "❌ PERSONALIZAÇÃO: Erro na inicialização:",
+                        error
+                    );
+                }
+            }, 800); // Executar antes das outras inicializações para garantir estado correto
+
             // 🎨 EXECUÇÃO AUTOMÁTICA - Sistema de substituição de ícones
             setTimeout(() => {
                 log("🎨 ÍCONES: Iniciando sistema automaticamente...");
@@ -32884,6 +33358,14 @@ ${texto}`;
                 inicializarSubstituicaoIcones: inicializarSubstituicaoIcones, // Implementação real
                 diagnosticarIconesCSS:
                     debugInterfaceFunctions.diagnosticarIconesCSS,
+
+                // 🎨 FUNÇÕES DE CONTROLE DE PERSONALIZAÇÃO DA NAVBAR
+                ativarPersonalizacaoNavbar: ativarPersonalizacaoNavbar,
+                desativarPersonalizacaoNavbar: desativarPersonalizacaoNavbar,
+                verificarStatusPersonalizacaoNavbar:
+                    verificarStatusPersonalizacaoNavbar,
+                inicializarConfiguracoesPersalizacao:
+                    inicializarConfiguracoesPersalizacao,
 
                 // Função de teste para verificar restrições de personalização
                 testarRestricaoPersonalizacaoIcones: () => {

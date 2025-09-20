@@ -19,6 +19,11 @@
                             "highlight-session-date": true,
                             "auto-session-requests": false,
                             selectedButtonTheme: "elegante",
+                            "customize-navbar": true,
+                            "customize-icons": true,
+                            "customize-buttons": true,
+                            "customize-reminders": true,
+                            "customize-all-appearance": true,
                         };
 
                         // Tentar recuperar dados persistentes do localStorage
@@ -507,6 +512,281 @@ document.addEventListener("DOMContentLoaded", function () {
                                 }
                             }
                         );
+                    }
+                }
+            );
+        });
+    }
+
+    // ========================================
+    // SWITCHES DE PERSONALIZAÇÃO
+    // ========================================
+
+    // Switch para personalização da navbar
+    const customizeNavbarSwitch = document.getElementById("customize-navbar");
+    if (customizeNavbarSwitch) {
+        // Carregar estado inicial
+        chrome.storage.sync.get(["customize-navbar"], function (result) {
+            customizeNavbarSwitch.checked =
+                result["customize-navbar"] !== false; // default true
+            console.log(
+                "💾 POPUP: Estado inicial da personalização da navbar:",
+                customizeNavbarSwitch.checked
+            );
+        });
+
+        // Listener para mudanças
+        customizeNavbarSwitch.addEventListener("change", function () {
+            const enabled = this.checked;
+            console.log(
+                "🎨 POPUP: Mudança na personalização da navbar:",
+                enabled
+            );
+
+            // Salvar preferência
+            chrome.storage.sync.set(
+                { "customize-navbar": enabled },
+                function () {
+                    console.log(
+                        "✅ POPUP: Preferência de navbar salva:",
+                        enabled
+                    );
+                }
+            );
+
+            // Enviar mensagem para o content script
+            chrome.tabs.query(
+                { active: true, currentWindow: true },
+                function (tabs) {
+                    if (tabs[0]) {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            action: "toggleNavbarCustomization",
+                            enabled: enabled,
+                        });
+                    }
+                }
+            );
+        });
+    }
+
+    // Switch para personalização de ícones
+    const customizeIconsSwitch = document.getElementById("customize-icons");
+    if (customizeIconsSwitch) {
+        // Carregar estado inicial
+        chrome.storage.sync.get(["customize-icons"], function (result) {
+            customizeIconsSwitch.checked = result["customize-icons"] !== false; // default true
+            console.log(
+                "💾 POPUP: Estado inicial da personalização de ícones:",
+                customizeIconsSwitch.checked
+            );
+        });
+
+        // Listener para mudanças
+        customizeIconsSwitch.addEventListener("change", function () {
+            const enabled = this.checked;
+            console.log(
+                "🎨 POPUP: Mudança na personalização de ícones:",
+                enabled
+            );
+
+            // Salvar preferência
+            chrome.storage.sync.set(
+                { "customize-icons": enabled },
+                function () {
+                    console.log(
+                        "✅ POPUP: Preferência de ícones salva:",
+                        enabled
+                    );
+                }
+            );
+
+            // Enviar mensagem para o content script
+            chrome.tabs.query(
+                { active: true, currentWindow: true },
+                function (tabs) {
+                    if (tabs[0]) {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            action: "toggleIconsCustomization",
+                            enabled: enabled,
+                        });
+                    }
+                }
+            );
+        });
+    }
+
+    // Switch para personalização de botões
+    const customizeButtonsSwitch = document.getElementById("customize-buttons");
+    if (customizeButtonsSwitch) {
+        // Carregar estado inicial
+        chrome.storage.sync.get(["customize-buttons"], function (result) {
+            customizeButtonsSwitch.checked =
+                result["customize-buttons"] !== false; // default true
+            console.log(
+                "💾 POPUP: Estado inicial da personalização de botões:",
+                customizeButtonsSwitch.checked
+            );
+        });
+
+        // Listener para mudanças
+        customizeButtonsSwitch.addEventListener("change", function () {
+            const enabled = this.checked;
+            console.log(
+                "🎨 POPUP: Mudança na personalização de botões:",
+                enabled
+            );
+
+            // Salvar preferência
+            chrome.storage.sync.set(
+                { "customize-buttons": enabled },
+                function () {
+                    console.log(
+                        "✅ POPUP: Preferência de botões salva:",
+                        enabled
+                    );
+                }
+            );
+
+            // Enviar mensagem para o content script
+            chrome.tabs.query(
+                { active: true, currentWindow: true },
+                function (tabs) {
+                    if (tabs[0]) {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            action: "toggleButtonsCustomization",
+                            enabled: enabled,
+                        });
+                    }
+                }
+            );
+        });
+    }
+
+    // Switch para personalização de lembretes
+    const customizeRemindersSwitch = document.getElementById(
+        "customize-reminders"
+    );
+    if (customizeRemindersSwitch) {
+        // Carregar estado inicial
+        chrome.storage.sync.get(["customize-reminders"], function (result) {
+            customizeRemindersSwitch.checked =
+                result["customize-reminders"] !== false; // default true
+            console.log(
+                "💾 POPUP: Estado inicial da personalização de lembretes:",
+                customizeRemindersSwitch.checked
+            );
+        });
+
+        // Listener para mudanças
+        customizeRemindersSwitch.addEventListener("change", function () {
+            const enabled = this.checked;
+            console.log(
+                "🎨 POPUP: Mudança na personalização de lembretes:",
+                enabled
+            );
+
+            // Salvar preferência
+            chrome.storage.sync.set(
+                { "customize-reminders": enabled },
+                function () {
+                    console.log(
+                        "✅ POPUP: Preferência de lembretes salva:",
+                        enabled
+                    );
+                }
+            );
+
+            // Enviar mensagem para o content script
+            chrome.tabs.query(
+                { active: true, currentWindow: true },
+                function (tabs) {
+                    if (tabs[0]) {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            action: "toggleRemindersCustomization",
+                            enabled: enabled,
+                        });
+                    }
+                }
+            );
+        });
+    }
+
+    // Switch para todas as personalizações de aparência
+    const customizeAllAppearanceSwitch = document.getElementById(
+        "customize-all-appearance"
+    );
+    if (customizeAllAppearanceSwitch) {
+        // Carregar estado inicial
+        chrome.storage.sync.get(
+            ["customize-all-appearance"],
+            function (result) {
+                customizeAllAppearanceSwitch.checked =
+                    result["customize-all-appearance"] !== false; // default true
+                console.log(
+                    "💾 POPUP: Estado inicial de todas as personalizações:",
+                    customizeAllAppearanceSwitch.checked
+                );
+            }
+        );
+
+        // Listener para mudanças
+        customizeAllAppearanceSwitch.addEventListener("change", function () {
+            const enabled = this.checked;
+            console.log(
+                "🎨 POPUP: Mudança em todas as personalizações:",
+                enabled
+            );
+
+            // Salvar preferência
+            chrome.storage.sync.set(
+                { "customize-all-appearance": enabled },
+                function () {
+                    console.log(
+                        "✅ POPUP: Preferência de todas as personalizações salva:",
+                        enabled
+                    );
+                }
+            );
+
+            // Se desativado, desativar todos os outros toggles de personalização
+            if (!enabled) {
+                document.getElementById("customize-navbar").checked = false;
+                document.getElementById("customize-icons").checked = false;
+                document.getElementById("customize-buttons").checked = false;
+                document.getElementById("customize-reminders").checked = false;
+
+                // Salvar estados desativados
+                chrome.storage.sync.set({
+                    "customize-navbar": false,
+                    "customize-icons": false,
+                    "customize-buttons": false,
+                    "customize-reminders": false,
+                });
+            } else {
+                // Se ativado, ativar todos os outros toggles de personalização
+                document.getElementById("customize-navbar").checked = true;
+                document.getElementById("customize-icons").checked = true;
+                document.getElementById("customize-buttons").checked = true;
+                document.getElementById("customize-reminders").checked = true;
+
+                // Salvar estados ativados
+                chrome.storage.sync.set({
+                    "customize-navbar": true,
+                    "customize-icons": true,
+                    "customize-buttons": true,
+                    "customize-reminders": true,
+                });
+            }
+
+            // Enviar mensagem para o content script
+            chrome.tabs.query(
+                { active: true, currentWindow: true },
+                function (tabs) {
+                    if (tabs[0]) {
+                        chrome.tabs.sendMessage(tabs[0].id, {
+                            action: "toggleAllAppearanceCustomization",
+                            enabled: enabled,
+                        });
                     }
                 }
             );

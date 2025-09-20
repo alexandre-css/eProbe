@@ -1,242 +1,227 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>eProbe - Automação Completa</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
-        rel="stylesheet" />
-    <link rel="stylesheet" href="popup.css" />
-</head>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>eProbe - Automação Completa</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Genos:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet" />
+        <link rel="stylesheet" href="popup.css" />
+    </head>
 
-<body>
-    <div class="header">
-        <h1>
-            <img class="icon icon-large" src="../assets/400x.png" alt="eProbe" />
-            eProbe
-        </h1>
-        <p>Extração e resumo de documentos por IA</p>
-    </div>
-
-    <div class="main-container">
-        <div class="automation-card">
-            <div class="automation-steps">
-                <div class="step">
-                    <div class="step-number">
-                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8" />
-                            <path d="m21 21-4.35-4.35" />
-                        </svg>
-                    </div>
-                    <div class="step-text">
-                        Detecta documentos na página
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">
-                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M15 3h6v6" />
-                            <path d="M10 14 21 3" />
-                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                        </svg>
-                    </div>
-                    <div class="step-text">
-                        Abre documento automaticamente
-                    </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">
-                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-                            <polyline points="14,2 14,8 20,8" />
-                            <line x1="16" y1="13" x2="8" y2="13" />
-                            <line x1="16" y1="17" x2="8" y2="17" />
-                            <polyline points="10,9 9,9 8,9" />
-                        </svg>
-                    </div>
-                    <div class="step-text">Extrai texto (HTML/PDF)</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">
-                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                        </svg>
-                    </div>
-                    <div class="step-text">Copia para clipboard</div>
-                </div>
-                <div class="step">
-                    <div class="step-number">
-                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-                        </svg>
-                    </div>
-                    <div class="step-text">Gera resumo via IA</div>
-                </div>
-            </div>
+    <body>
+        <div class="header">
+            <h1>
+                <img class="icon icon-large" src="../assets/400x.png" alt="eProbe" />
+                eProbe
+            </h1>
+            <p>Extração e resumo de documentos por IA</p>
         </div>
 
-        <div class="buttons">
-            <!-- Acordeão de Configurações -->
-            <div class="config-accordion">
-                <div class="config-header" id="config-header">
-                    <div class="config-title">
-                        <svg class="icon icon-small config-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <path
-                                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
-                            <circle cx="12" cy="12" r="3" />
+        <div class="main-container">
+            <div class="buttons">
+                <!-- Acordeão de Configurações -->
+                <div class="config-accordion">
+                    <div class="config-header" id="config-header">
+                        <div class="config-title">
+                            <svg class="icon icon-small config-icon" xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            <span>Configurações</span>
+                        </div>
+                        <svg class="icon icon-small config-chevron" id="config-chevron"
+                            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m6 9 6 6 6-6" />
                         </svg>
-                        <span>Configurações</span>
                     </div>
-                    <svg class="icon icon-small config-chevron" id="config-chevron" xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round">
-                        <path d="m6 9 6 6 6-6" />
-                    </svg>
-                </div>
 
-                <div class="config-content" id="config-content">
-                    <!-- Configurações da Extensão -->
-                    <div class="config-section">
-                        <h3 class="config-section-title">Extensão</h3>
-                        <div class="settings-container">
-                            <div class="setting-item">
-                                <label class="switch" for="highlight-session-date">
-                                    <input type="checkbox" id="highlight-session-date" />
-                                    <span class="slider"></span>
-                                </label>
-                                <label class="setting-label" for="highlight-session-date">Data da sessão em
-                                    destaque</label>
-                            </div>
-                            <div class="setting-item">
-                                <label class="switch" for="auto-session-requests">
-                                    <input type="checkbox" id="auto-session-requests" />
-                                    <span class="slider"></span>
-                                </label>
-                                <label class="setting-label" for="auto-session-requests">Requisições automáticas de
-                                    sessão</label>
+                    <div class="config-content" id="config-content">
+                        <!-- Configurações da Extensão -->
+                        <div class="config-section">
+                            <h3 class="config-section-title">Extensão</h3>
+                            <div class="settings-container">
+                                <div class="setting-item">
+                                    <label class="switch" for="highlight-session-date">
+                                        <input type="checkbox" id="highlight-session-date" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="highlight-session-date">Data da sessão em
+                                        destaque</label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="switch" for="auto-session-requests">
+                                        <input type="checkbox" id="auto-session-requests" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="auto-session-requests">Requisições automáticas de
+                                        sessão</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Temas de Interface -->
-                    <div class="config-section">
-                        <h3 class="config-section-title">Temas de Interface</h3>
-                        <div class="button-themes">
-                            <div class="button-theme-grid" id="interface_themes_container">
-                                <button class="button-theme-option" data-theme="blue" data-index="0" title="Tema Azul">
-                                    <div class="button-theme-preview blue"></div>
-                                </button>
-                                <button class="button-theme-option" data-theme="dark" data-index="1"
-                                    title="Tema Escuro">
-                                    <div class="button-theme-preview dark"></div>
-                                </button>
-                                <button class="button-theme-option" data-theme="light" data-index="2"
-                                    title="Tema Claro">
-                                    <div class="button-theme-preview light"></div>
-                                </button>
-                                <button class="button-theme-option" data-theme="violet" data-index="3"
-                                    title="Tema Violeta">
-                                    <div class="button-theme-preview violet"></div>
-                                </button>
-                                <button class="button-theme-option" data-theme="green" data-index="4"
-                                    title="Tema Verde">
-                                    <div class="button-theme-preview green"></div>
-                                </button>
-                                <button class="button-theme-option reset-interface-theme" data-theme="reset"
-                                    data-index="5" title="Resetar">
-                                    <div class="button-theme-preview reset">
-                                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                            <path d="M21 3v5h-5" />
-                                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                            <path d="M8 16H3v5" />
-                                        </svg>
-                                    </div>
-                                </button>
+                        <!-- Configurações de Personalização -->
+                        <div class="config-section">
+                            <h3 class="config-section-title">Personalização</h3>
+                            <div class="settings-container">
+                                <div class="setting-item">
+                                    <label class="switch" for="customize-navbar">
+                                        <input type="checkbox" id="customize-navbar" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="customize-navbar">Personalização da navbar</label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="switch" for="customize-icons">
+                                        <input type="checkbox" id="customize-icons" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="customize-icons">Personalização de ícones</label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="switch" for="customize-buttons">
+                                        <input type="checkbox" id="customize-buttons" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="customize-buttons">Personalização de
+                                        botões</label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="switch" for="customize-reminders">
+                                        <input type="checkbox" id="customize-reminders" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="customize-reminders">Personalização de
+                                        lembretes</label>
+                                </div>
+                                <div class="setting-item">
+                                    <label class="switch" for="customize-all-appearance">
+                                        <input type="checkbox" id="customize-all-appearance" />
+                                        <span class="slider"></span>
+                                    </label>
+                                    <label class="setting-label" for="customize-all-appearance">Todas as personalizações
+                                        de aparência</label>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Temas de Botões -->
-                    <div class="config-section">
-                        <h3 class="config-section-title">Temas de Botões</h3>
-                        <div class="button-themes">
-                            <div class="button-theme-grid">
-                                <button class="button-theme-option" data-button-theme="elegante" title="Elegante">
-                                    <div class="button-theme-preview elegante"></div>
-                                </button>
-                                <button class="button-theme-option" data-button-theme="profissional"
-                                    title="Profissional">
-                                    <div class="button-theme-preview profissional"></div>
-                                </button>
-                                <button class="button-theme-option" data-button-theme="minimalista" title="Minimalista">
-                                    <div class="button-theme-preview minimalista"></div>
-                                </button>
-                                <button class="button-theme-option" data-button-theme="escuro" title="Escuro">
-                                    <div class="button-theme-preview escuro"></div>
-                                </button>
-                                <!-- TEMPORARIAMENTE DESABILITADO - Tema Material
+                        <!-- Temas de Interface -->
+                        <div class="config-section">
+                            <h3 class="config-section-title">Temas de Interface</h3>
+                            <div class="button-themes">
+                                <div class="button-theme-grid" id="interface_themes_container">
+                                    <button class="button-theme-option" data-theme="blue" data-index="0"
+                                        title="Tema Azul">
+                                        <div class="button-theme-preview blue"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-theme="dark" data-index="1"
+                                        title="Tema Escuro">
+                                        <div class="button-theme-preview dark"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-theme="light" data-index="2"
+                                        title="Tema Claro">
+                                        <div class="button-theme-preview light"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-theme="violet" data-index="3"
+                                        title="Tema Violeta">
+                                        <div class="button-theme-preview violet"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-theme="green" data-index="4"
+                                        title="Tema Verde">
+                                        <div class="button-theme-preview green"></div>
+                                    </button>
+                                    <button class="button-theme-option reset-interface-theme" data-theme="reset"
+                                        data-index="5" title="Resetar">
+                                        <div class="button-theme-preview reset">
+                                            <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                                <path d="M21 3v5h-5" />
+                                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                                <path d="M8 16H3v5" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Temas de Botões -->
+                        <div class="config-section">
+                            <h3 class="config-section-title">Temas de Botões</h3>
+                            <div class="button-themes">
+                                <div class="button-theme-grid">
+                                    <button class="button-theme-option" data-button-theme="elegante" title="Elegante">
+                                        <div class="button-theme-preview elegante"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-button-theme="profissional"
+                                        title="Profissional">
+                                        <div class="button-theme-preview profissional"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-button-theme="minimalista"
+                                        title="Minimalista">
+                                        <div class="button-theme-preview minimalista"></div>
+                                    </button>
+                                    <button class="button-theme-option" data-button-theme="escuro" title="Escuro">
+                                        <div class="button-theme-preview escuro"></div>
+                                    </button>
+                                    <!-- TEMPORARIAMENTE DESABILITADO - Tema Material
                                 <button class="button-theme-option" data-button-theme="material" title="Material">
                                     <div class="button-theme-preview material"></div>
                                 </button>
                                 -->
-                                <button class="button-theme-option reset-button-theme" title="Resetar">
-                                    <div class="button-theme-preview reset">
-                                        <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                                            <path d="M21 3v5h-5" />
-                                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                                            <path d="M8 16H3v5" />
-                                        </svg>
-                                    </div>
-                                </button>
+                                    <button class="button-theme-option reset-button-theme" title="Resetar">
+                                        <div class="button-theme-preview reset">
+                                            <svg class="icon icon-small" xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                                                <path d="M21 3v5h-5" />
+                                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                                                <path d="M8 16H3v5" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div id="status" class="status info hidden">
-            <span class="loading-spinner hidden">
-                <svg class="icon icon-spinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                </svg>
-            </span>
-            <span class="status-text">Aguardando ação...</span>
-        </div>
+            <div id="status" class="status info hidden">
+                <span class="loading-spinner hidden">
+                    <svg class="icon icon-spinner" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                </span>
+                <span class="status-text">Aguardando ação...</span>
+            </div>
 
-        <!-- Footer -->
-        <div class="footer">
-            <div class="footer-content">
-                <p class="footer-text">
-                    eProbe v1.0.0-beta<br>
-                    Alexandre Claudino Simas Santos<br>
-                    alexandress@tjsc.jus.br
-                </p>
+            <!-- Footer -->
+            <div class="footer">
+                <div class="footer-content">
+                    <p class="footer-text">
+                        eProbe v1.0.0-beta<br>
+                        Alexandre Claudino Simas Santos<br>
+                        alexandress@tjsc.jus.br
+                    </p>
+                </div>
             </div>
         </div>
-    </div>
 
 
-    <script src="popup.js"></script>
-</body>
+        <script src="popup.js"></script>
+    </body>
 
 </html>
