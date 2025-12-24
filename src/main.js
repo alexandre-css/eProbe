@@ -13348,6 +13348,25 @@ Só descreva informações reais presentes no documento.
 Ao citar dispositivos legais, utilize exclusivamente esse padrão: "conforme determina o § 2º do art. 86 da Lei n. 8.213/1991". Sempre indique primeiro o parágrafo (se houver), depois o artigo, seguido do número e ano da lei, exatamente neste formato.
 
 DOCUMENTO: ${texto}`;
+                    } else if (promptType === "lembrete") {
+                        prompt = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sua tarefa é fazer um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Seja objetivo e direto, sem redação em texto corrido. Você deverá OBRIGATORIAMENTE MANTER os códigos html na versão entregue ao usuário.
+
+SEMPRE responda em bullet points diretos, com seguinte formato:
+
+__________________________________
+
+<b>Apelante/Recorrente/Embargante/Agravante/Impetrante</b>: Nome da Parte (usar plural em caso de mais de um apelante/recorrente etc.)<p>
+<b>Paciente</b>: Nome da Parte (incluir SOMENTE se tratar de Habeas Corpus), usar plural em caso de mais de um apelante/recorrente etc.)<p>
+<b>Ação</b>: Tipo de Ação na origem ("anulatória de débito fiscal", "ação por danos morais e materiais", "ação penal pública condicionada ou incondicionada ou ação penal privada", "inquérito policial", "pedido de busca e apreensão", "pedido de prisão temporária formulado pelo MP ou formulado pelo Delegado de Polícia", "mandado de segurança", etc.; caso a informação não consiga ser extraída da peça enviada pelo usuário, não inclua este item; a "ação da origem" é aquela referente ao processo de primeiro grau, não é o recurso que a parte está interpondo agora<p>
+<b>Objeto do Recurso</b>: resumo da decisão contra a qual a parte está se insurgindo (ex: "sentença que condenou o apelante ao pagamento de danos morais no valor de...", "sentença que condenou o apelante pela prática dos crimes do art. 121 do Código Penal e do art. 33 da Lei n. 11.343/2006, em concurso material", "decisão que pronunciou o recorrente pela prática do crime do art. 121, § 2º, inciso II c/c art. 14, inciso II, ambos do Código Penal", "acórdão proferido na sessão de DD/MM/AAAA", "acórdão que deu parcial provimento ao recurso do autor/réu", etc.)
+<b>Pedidos</b>: pedidos formulados no recurso pela parte, separados por ";" caso sejam mais de um (ex: "reforma da sentença para absolver o acusado"; "reforma da sentença para afastar a condenação ao pagamento de compensação por danos morais"; "concessão da ordem para determinar a soltura do paciente, com base nos arts. XXX", "acolhimento dos embargos de declaração para sanar a omissão, com efeito infringente para desprover/prover o recurso", etc); caso o objeto seja uma decisão de pronúncia, NÃO UTILIZE a estrutura "decisão de pronúncia que pronunciou...", UTILIZE a estrutura "decisão que pronunciou o/a...",)<p>
+<b>Pedidos</b>: pedidos formulados pela parte no recurso, separados por ";" caso sejam mais de um (ex: "reforma da sentença para absolver o acusado"; "reforma da sentença para afastar a condenação ao pagamento de compensação por danos morais"; "concessão da ordem para determinar a soltura do paciente, com base nos arts. XXX", "acolhimento dos embargos de declaração para sanar a omissão, com efeitos infringentes para desprover/prover o recurso", etc.)
+
+__________________________________
+
+OBSERVAÇÃO IMPORTANTE E CRÍTICA, REGRA IMPRESCINDÍVEL: Quando devolver qualquer conteúdo que contenha tags HTML (ex.: <b>, <p>, <a>), sempre coloque-o entre três crases (\`\`\`), sem especificar linguagem. Não renderize HTML. Mostre literalmente.
+
+DOCUMENTO: ${texto}`;
                     } else {
                         // Fallback para o prompt padrão
                         prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido. DOCUMENTO: ${texto}`;
@@ -13580,6 +13599,32 @@ DOCUMENTO: ${texto}`;
                                     Transforma a petição em relatório estruturado para minuta de acórdão, seguindo linguagem técnica impessoal e formato específico do tribunal.
                                 </div>
                             </button>
+
+                            <button id="perplexity-prompt-lembrete" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Criar lembrete</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Gera resumo estruturado com formatação HTML para capa do processo, incluindo partes, ação, objeto do recurso e pedidos.
+                                </div>
+                            </button>
                         </div>
 
                         <div style="display: flex; justify-content: center; gap: 12px;">
@@ -13627,6 +13672,14 @@ DOCUMENTO: ${texto}`;
                             overlay.remove();
                             style.remove();
                             resolve("relatorio");
+                        });
+
+                    modal
+                        .querySelector("#perplexity-prompt-lembrete")
+                        .addEventListener("click", () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve("lembrete");
                         });
 
                     modal
@@ -13999,6 +14052,32 @@ DOCUMENTO: ${texto}`;
                                     Transforma a petição em relatório estruturado para minuta de acórdão, seguindo linguagem técnica impessoal e formato específico do tribunal.
                                 </div>
                             </button>
+
+                            <button id="prompt-lembrete" class="prompt-option" style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: flex-start;
+                                gap: 8px;
+                                padding: 20px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 2px solid transparent;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                transition: all 0.2s ease;
+                                text-align: left;
+                            ">
+                                <div style="display: flex; align-items: center; gap: 12px; width: 100%;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                    <div style="font-size: 18px; font-weight: 600;">Criar lembrete</div>
+                                </div>
+                                <div style="font-size: 14px; color: rgb(203 213 225); line-height: 1.4;">
+                                    Gera resumo estruturado com formatação HTML para capa do processo, incluindo partes, ação, objeto do recurso e pedidos.
+                                </div>
+                            </button>
                         </div>
 
                         <div style="display: flex; justify-content: center; gap: 12px;">
@@ -14017,6 +14096,19 @@ DOCUMENTO: ${texto}`;
                         </div>
                     `;
 
+                    console.log(
+                        "🔍 DEBUG MODAL PROMPTS: HTML definido para showPromptSelectionModal"
+                    );
+                    console.log(
+                        "🔍 DEBUG: Botão #prompt-lembrete no HTML?",
+                        modal.innerHTML.includes("prompt-lembrete")
+                    );
+                    console.log(
+                        "🔍 DEBUG: Total de botões .prompt-option no HTML:",
+                        (modal.innerHTML.match(/class="prompt-option"/g) || [])
+                            .length
+                    );
+
                     // Adicionar CSS hover via JavaScript
                     const style = document.createElement("style");
                     style.textContent = `
@@ -14032,7 +14124,9 @@ DOCUMENTO: ${texto}`;
                     document.head.appendChild(style);
 
                     // Definir prompts
-                    const promptResumir = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital de um Habeas Corpus. Indique: impetrante, paciente, crime pelo qual o paciente é investigado ou acusado, pedido de liminar formulado (com fundamentos centrais). Seja objetivo e direto, sem redação em texto corrido.
+                    const promptResumir = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.
+
+Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido.
 
 DOCUMENTO:
 ${texto}`;
@@ -14082,6 +14176,26 @@ ${texto}`;
 DOCUMENTO:
 ${texto}`;
 
+                    const promptLembrete = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sua tarefa é fazer um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Seja objetivo e direto, sem redação em texto corrido. Você deverá OBRIGATORIAMENTE MANTER os códigos html na versão entregue ao usuário.
+
+SEMPRE responda em bullet points diretos, com seguinte formato:
+
+__________________________________
+
+<b>Apelante/Recorrente/Embargante/Agravante/Impetrante</b>: Nome da Parte (usar plural em caso de mais de um apelante/recorrente etc.)<p>
+<b>Paciente</b>: Nome da Parte (incluir SOMENTE se tratar de Habeas Corpus), usar plural em caso de mais de um apelante/recorrente etc.)<p>
+<b>Ação</b>: Tipo de Ação na origem ("anulatória de débito fiscal", "ação por danos morais e materiais", "ação penal pública condicionada ou incondicionada ou ação penal privada", "inquérito policial", "pedido de busca e apreensão", "pedido de prisão temporária formulado pelo MP ou formulado pelo Delegado de Polícia", "mandado de segurança", etc.; caso a informação não consiga ser extraída da peça enviada pelo usuário, não inclua este item; a "ação da origem" é aquela referente ao processo de primeiro grau, não é o recurso que a parte está interpondo agora<p>
+<b>Objeto do Recurso</b>: resumo da decisão contra a qual a parte está se insurgindo (ex: "sentença que condenou o apelante ao pagamento de danos morais no valor de...", "sentença que condenou o apelante pela prática dos crimes do art. 121 do Código Penal e do art. 33 da Lei n. 11.343/2006, em concurso material", "decisão que pronunciou o recorrente pela prática do crime do art. 121, § 2º, inciso II c/c art. 14, inciso II, ambos do Código Penal", "acórdão proferido na sessão de DD/MM/AAAA", "acórdão que deu parcial provimento ao recurso do autor/réu", etc.)
+<b>Pedidos</b>: pedidos formulados no recurso pela parte, separados por ";" caso sejam mais de um (ex: "reforma da sentença para absolver o acusado"; "reforma da sentença para afastar a condenação ao pagamento de compensação por danos morais"; "concessão da ordem para determinar a soltura do paciente, com base nos arts. XXX", "acolhimento dos embargos de declaração para sanar a omissão, com efeito infringente para desprover/prover o recurso", etc); caso o objeto seja uma decisão de pronúncia, NÃO UTILIZE a estrutura "decisão de pronúncia que pronunciou...", UTILIZE a estrutura "decisão que pronunciou o/a...",)<p>
+<b>Pedidos</b>: pedidos formulados pela parte no recurso, separados por ";" caso sejam mais de um (ex: "reforma da sentença para absolver o acusado"; "reforma da sentença para afastar a condenação ao pagamento de compensação por danos morais"; "concessão da ordem para determinar a soltura do paciente, com base nos arts. XXX", "acolhimento dos embargos de declaração para sanar a omissão, com efeitos infringentes para desprover/prover o recurso", etc.)
+
+__________________________________
+
+OBSERVAÇÃO IMPORTANTE E CRÍTICA, REGRA IMPRESCINDÍVEL: Quando devolver qualquer conteúdo que contenha tags HTML (ex.: <b>, <p>, <a>), sempre coloque-o entre três crases (\`\`\`), sem especificar linguagem. Não renderize HTML. Mostre literalmente.
+
+DOCUMENTO:
+${texto}`;
+
                     // Adicionar eventos aos botões
                     modal
                         .querySelector("#prompt-resumir")
@@ -14107,6 +14221,20 @@ ${texto}`;
                                     aiName,
                                     url,
                                     promptRelatorio
+                                )
+                            );
+                        });
+
+                    modal
+                        .querySelector("#prompt-lembrete")
+                        .addEventListener("click", async () => {
+                            overlay.remove();
+                            style.remove();
+                            resolve(
+                                await openAIWithCustomPrompt(
+                                    aiName,
+                                    url,
+                                    promptLembrete
                                 )
                             );
                         });
@@ -32043,15 +32171,13 @@ ${texto}`;
                 return false;
             };
 
+            // Wrapper que chama a função real quando for executada
             let nsShowPromptSelectionModal = async function (
                 aiName,
                 url,
                 texto
             ) {
-                console.error(
-                    "❌ NAMESPACE: showPromptSelectionModal não está disponível"
-                );
-                return false;
+                return await showPromptSelectionModal(aiName, url, texto);
             };
 
             let nsShowPerplexityPromptModal = async function (texto) {
