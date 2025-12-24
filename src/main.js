@@ -9341,9 +9341,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                                 // Verificar se o texto COMEÇA com algum dos tipos válidos
                                 const resultado = tiposValidos.some((tipo) => {
-                                    const tipoNormalizado = normalizarTexto(tipo);
+                                    const tipoNormalizado =
+                                        normalizarTexto(tipo);
                                     const match =
-                                        textoNormalizado.startsWith(tipoNormalizado) ||
+                                        textoNormalizado.startsWith(
+                                            tipoNormalizado
+                                        ) ||
                                         new RegExp(
                                             `^[\\s\\-_]*${tipoNormalizado}\\d*`,
                                             "i"
@@ -9525,7 +9528,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         // Regex ajustada para aceitar qualquer quantidade de letras maiúsculas + dígitos
                         return (
                             textoNormalizado === tipoNormalizado ||
-                            textoNormalizado.startsWith(tipoNormalizado + " ") ||
+                            textoNormalizado.startsWith(
+                                tipoNormalizado + " "
+                            ) ||
                             (/^[A-Z]+\d+/.test(textoNormalizado) &&
                                 textoNormalizado.startsWith(tipoNormalizado))
                         );
