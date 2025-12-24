@@ -7602,6 +7602,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     descricao: "Petição 1",
                     dataNome: "PET1",
                 },
+                RAZAPELA1: {
+                    nome: "RAZAPELA1",
+                    descricao: "Razões de Apelação 1",
+                    dataNome: "RAZAPELA1",
+                },
+                DENUNCIA1: {
+                    nome: "DENUNCIA1",
+                    descricao: "Denúncia 1",
+                    dataNome: "DENUNCIA1",
+                },
                 /*          DECI: {
                 nome: "DESPADEC",
                 descricao: "Decisão",
@@ -9249,6 +9259,15 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const pageType = detectPageType();
                 log(` Tipo de página detectado: ${pageType}`);
 
+                // DEBUG: Mostrar tipos configurados
+                const tiposConfigurados = Object.values(
+                    TIPOS_DOCUMENTO_RELEVANTE
+                ).map((t) => t.nome);
+                console.log(
+                    `🔍 DEBUG FIND: Tipos configurados:`,
+                    tiposConfigurados
+                );
+
                 // Estratégias múltiplas para encontrar documentos relevantes
                 const estrategias = [
                     // Estratégia 1: Seletores específicos do eProc com data-nome
@@ -9263,10 +9282,20 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             ])
                             .flat()
                             .join(", ");
-                        return document.querySelectorAll(selectors);
+
+                        console.log(
+                            `🔍 DEBUG ESTRATÉGIA 1: Seletores:`,
+                            selectors.substring(0, 200) + "..."
+                        );
+                        const elementos = document.querySelectorAll(selectors);
+                        console.log(
+                            `🔍 DEBUG ESTRATÉGIA 1: Encontrou ${elementos.length} elementos`
+                        );
+
+                        return elementos;
                     },
 
-                    // Estratégia 2: Buscar por texto dos links que contenha os tipos
+                    // Estratégia 2: Buscar por texto dos links que COMECE com os tipos esperados
                     () => {
                         const tiposValidos = Object.values(
                             TIPOS_DOCUMENTO_RELEVANTE
@@ -9274,38 +9303,72 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         const todosLinks = document.querySelectorAll(
                             'a.infraLinkDocumento, a[href*="documento"]'
                         );
-                        return Array.from(todosLinks).filter((link) => {
-                            const texto = link.textContent.trim().toUpperCase();
-                            return tiposValidos.some((tipo) =>
-                                texto.includes(tipo)
-                            );
-                        });
+
+                        console.log(
+                            `🔍 DEBUG ESTRATÉGIA 2: Encontrados ${todosLinks.length} links para testar`
+                        );
+
+                        const filtrados = Array.from(todosLinks).filter(
+                            (link) => {
+                                const texto = link.textContent
+                                    .trim()
+                                    .toUpperCase();
+
+                                // DEBUG: Mostrar todos os textos dos links
+                                if (texto.length < 50) {
+                                    // Evitar logs muito longos
+                                    console.log(
+                                        `  📝 Testando link: "${texto}"`
+                                    );
+                                }
+
+                                // Verificar se o texto COMEÇA com algum dos tipos válidos
+                                const resultado = tiposValidos.some((tipo) => {
+                                    const tipoUpper = tipo.toUpperCase();
+                                    const match =
+                                        texto.startsWith(tipoUpper) ||
+                                        new RegExp(
+                                            `^[\\s\\-_]*${tipoUpper}\\d*`,
+                                            "i"
+                                        ).test(texto);
+
+                                    if (match) {
+                                        console.log(
+                                            `    ✅ MATCH com tipo "${tipo}": "${texto}"`
+                                        );
+                                    }
+
+                                    return match;
+                                });
+
+                                return resultado;
+                            }
+                        );
+
+                        console.log(
+                            `🔍 DEBUG ESTRATÉGIA 2: ${filtrados.length} links passaram no filtro`
+                        );
+                        return filtrados;
                     },
 
-                    // Estratégia 3: Buscar por padrões específicos no href
-                    () => {
-                        const patterns = [
-                            "SENT",
-                            "INIC",
-                            "DECI",
-                            "DESP",
-                            "PETI",
-                        ];
-                        const selector = patterns
-                            .map((p) => `a[href*="${p}"]`)
-                            .join(", ");
-                        return document.querySelectorAll(selector);
-                    },
-
-                    // Estratégia 4: Buscar em tabelas de eventos
+                    // Estratégia 3: Buscar em tabelas de eventos com validação estrita do texto
                     () => {
                         const linksEmTabelas = document.querySelectorAll(
                             'table a[href*="documento"], table a.infraLinkDocumento'
                         );
+                        const tiposValidos = Object.values(
+                            TIPOS_DOCUMENTO_RELEVANTE
+                        ).map((t) => t.nome);
                         return Array.from(linksEmTabelas).filter((link) => {
                             const texto = link.textContent.trim().toUpperCase();
-                            return ["SENT", "INIC", "DECI", "DESP"].some(
-                                (tipo) => texto.includes(tipo)
+                            // Validação estrita: texto deve começar com um dos tipos válidos
+                            return tiposValidos.some(
+                                (tipo) =>
+                                    texto.startsWith(tipo) ||
+                                    new RegExp(
+                                        `^[\\s\\-_]*${tipo}\\d*`,
+                                        "i"
+                                    ).test(texto)
                             );
                         });
                     },
@@ -9314,22 +9377,52 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 let links = [];
                 let estrategiaUsada = 0;
 
-                // Testar estratégias até encontrar documentos
+                // Testar TODAS as estratégias e combinar resultados (sem duplicatas)
+                const todosLinks = [];
+                const linksSeen = new Set(); // Para evitar duplicatas
+
                 for (let i = 0; i < estrategias.length; i++) {
                     try {
+                        console.log(
+                            `🔍 DEBUG: Testando Estratégia ${i + 1}...`
+                        );
                         const resultados = estrategias[i]();
+                        console.log(
+                            `🔍 DEBUG: Estratégia ${i + 1} retornou ${
+                                resultados ? resultados.length : 0
+                            } resultados`
+                        );
+
                         if (resultados && resultados.length > 0) {
-                            links = Array.from(resultados);
-                            estrategiaUsada = i + 1;
-                            log(
-                                `✅ Estratégia ${estrategiaUsada} funcionou - encontrados ${links.length} links`
-                            );
-                            break;
+                            // Adicionar resultados sem duplicatas
+                            Array.from(resultados).forEach((link) => {
+                                const href = link.getAttribute("href");
+                                if (href && !linksSeen.has(href)) {
+                                    linksSeen.add(href);
+                                    todosLinks.push(link);
+                                }
+                            });
+
+                            if (estrategiaUsada === 0) {
+                                estrategiaUsada = i + 1; // Registrar primeira estratégia que encontrou algo
+                            }
                         }
                     } catch (error) {
+                        console.log(
+                            `❌ DEBUG: Estratégia ${i + 1} ERRO:`,
+                            error
+                        );
                         log(`❌ Estratégia ${i + 1} falhou:`, error);
                     }
                 }
+
+                links = todosLinks;
+                console.log(
+                    `✅ DEBUG: Total de ${links.length} links ÚNICOS encontrados de todas as estratégias`
+                );
+                log(
+                    `✅ Total de ${links.length} links encontrados (estratégia primária: ${estrategiaUsada})`
+                );
 
                 log(
                     ` Links de documentos relevantes encontrados: ${links.length} (estratégia ${estrategiaUsada})`
@@ -9402,13 +9495,24 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         element: link,
                     });
 
-                    // Verificar se é um dos tipos configurados
+                    // Verificar se é um dos tipos configurados - validação ESTRITA
                     const tipoEncontrado = Object.values(
                         TIPOS_DOCUMENTO_RELEVANTE
-                    ).find(
-                        (tipo) =>
-                            texto === tipo.nome || texto.includes(tipo.nome)
-                    );
+                    ).find((tipo) => {
+                        const textoUpper = texto.toUpperCase();
+                        const tipoNome = tipo.nome.toUpperCase();
+                        // Aceitar apenas se:
+                        // 1. Texto é exatamente o tipo (ex: "SENT", "RAZAPELA1")
+                        // 2. Texto começa com o tipo seguido de espaço (ex: "SENT - ", "RAZAPELA1 - ")
+                        // 3. Texto começa com o tipo seguido de número (ex: "SENT1", "SENT2")
+                        // Regex ajustada para aceitar qualquer quantidade de letras maiúsculas + dígitos
+                        return (
+                            textoUpper === tipoNome ||
+                            textoUpper.startsWith(tipoNome + " ") ||
+                            (/^[A-Z]+\d+/.test(textoUpper) &&
+                                textoUpper.startsWith(tipoNome))
+                        );
+                    });
 
                     if (tipoEncontrado) {
                         // Extrair informações do tooltip para diferenciar as sentenças
@@ -10212,25 +10316,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const pageType = detectPageType();
                 log("🔍 Tipo de página detectado:", pageType);
 
-                // ✅ NOVA LÓGICA: Usar resultado da detecção melhorada
+                // ✅ Extração automática de PDF
                 if (pageType === "documento_pdf") {
-                    log(
-                        "📄 PDF confirmado - solicitando seleção manual do usuário..."
-                    );
-                    showNotification(
-                        `
-                        📄 PDF detectado! Para extrair:
-                        
-                        1️⃣ Aguarde carregar completamente
-                        2️⃣ Selecione todo texto (Ctrl+A)
-                        3️⃣ Copie (Ctrl+C)
-                        4️⃣ Clique novamente no botão
-                        
-                        ⚡ Sistema aguardando sua ação!
-                    `.trim(),
-                        "info",
-                        8000
-                    );
+                    log("📄 Iniciando extração automática de PDF...");
 
                     try {
                         const textoExtraido = await extractTextFromPDF();
@@ -10241,10 +10329,6 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             );
                         }
 
-                        showNotification(
-                            `✅ Texto extraído: ${textoExtraido.length} caracteres`,
-                            "success"
-                        );
                         return textoExtraido;
                     } catch (error) {
                         console.error("❌ Falha na extração de PDF:", error);
@@ -10512,11 +10596,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return info;
             }
 
-            // 🎯 ESTRATÉGIA ÚNICA E FOCADA - EXTRAÇÃO PDF VIA ELEMENTO #pdf-embed
+            // 🎯 EXTRAÇÃO DE PDF - MÉTODO SIMPLIFICADO E EFICAZ
             async function extractTextFromPDF() {
-                console.log(
-                    "🎯 NOVA ESTRATÉGIA: Focada no elemento #pdf-embed identificado"
-                );
+                console.log("🎯 Extraindo texto do PDF...");
 
                 // Verificação de página
                 const pageType = detectPageType();
@@ -10524,152 +10606,376 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     throw new Error("Não é uma página de documento PDF");
                 }
 
-                // 🎯 ELEMENTO CORRETO: #plugin identificado no HTML
-                console.log(
-                    "🎯 ESTRATÉGIA FOCADA: Buscando elemento #plugin (correto conforme HTML)..."
+                // Buscar elemento PDF
+                const pdfElement = document.querySelector(
+                    'embed[type*="pdf"], iframe[src*="acessar_documento"]'
                 );
 
-                const seletoresPDF = [
-                    "#plugin", // 🎯 ELEMENTO CORRETO identificado no HTML
-                    "#pdf-embed",
-                    'embed[type="application/x-google-chrome-pdf"]',
-                    'embed[type="application/pdf"]',
-                    'iframe[src*="acessar_documento"]',
-                    'iframe[src*="pdf"]',
-                    'object[type="application/pdf"]',
-                    "embed",
-                    "iframe",
-                ];
-
-                let elementoEncontrado = null;
-
-                for (const seletor of seletoresPDF) {
-                    const elementos = document.querySelectorAll(seletor);
-                    console.log(
-                        `🔍 Seletor "${seletor}": ${elementos.length} elemento(s) encontrado(s)`
-                    );
-
-                    elementos.forEach((el, index) => {
-                        console.log(`  [${index}] Elemento:`, el);
-                        console.log(`  [${index}] ID:`, el.id || "sem id");
-                        console.log(
-                            `  [${index}] Type:`,
-                            el.type || "sem type"
-                        );
-                        console.log(`  [${index}] Src:`, el.src || "sem src");
-                        console.log(`  [${index}] TagName:`, el.tagName);
-
-                        // Se ainda não temos elemento, usar o primeiro encontrado
-                        if (
-                            !elementoEncontrado &&
-                            el.tagName &&
-                            (el.tagName.toLowerCase() === "embed" ||
-                                el.tagName.toLowerCase() === "iframe")
-                        ) {
-                            elementoEncontrado = el;
-                            console.log(
-                                `✅ USANDO: Elemento "${seletor}" será usado como target`
-                            );
-                        }
-                    });
+                if (!pdfElement) {
+                    throw new Error("Elemento PDF não encontrado");
                 }
 
-                if (!elementoEncontrado) {
-                    throw new Error(
-                        "❌ ERRO: Nenhum elemento PDF encontrado com qualquer seletor"
-                    );
-                }
+                console.log("✅ Elemento PDF encontrado:", pdfElement.tagName);
 
-                console.log(
-                    "🎯 ELEMENTO FINAL SELECIONADO:",
-                    elementoEncontrado
-                );
-                const targetElement = elementoEncontrado;
-
-                // 🎯 ESTRATÉGIA ÚNICA: Focar no elemento + aguardar interação manual
-                console.log(
-                    "🎯 Focando no elemento PDF e aguardando seleção manual..."
-                );
-
-                // Focus no elemento
+                // Limpar clipboard ANTES de começar a monitorar
                 try {
-                    targetElement.focus();
-                    targetElement.click();
-                    console.log("✅ Elemento PDF focado com sucesso");
+                    await navigator.clipboard.writeText("");
+                    console.log("🧹 Clipboard limpo - aguardando nova cópia");
                 } catch (e) {
                     console.log(
-                        "⚠️ Não foi possível focar no elemento:",
+                        "⚠️ Não foi possível limpar clipboard:",
                         e.message
                     );
                 }
 
-                // Aguardar e verificar clipboard periodicamente
-                console.log(
-                    "⏳ Aguardando seleção manual do usuário (Ctrl+A + Ctrl+C)..."
-                );
-                showNotification(
-                    "📄 Clique no PDF, pressione Ctrl+A para selecionar tudo, depois Ctrl+C para copiar",
+                // Focar no PDF automaticamente
+                try {
+                    pdfElement.focus();
+                    pdfElement.click();
+                    await new Promise((resolve) => setTimeout(resolve, 200));
+                } catch (e) {
+                    console.log("⚠️ Erro ao focar PDF:", e.message);
+                }
+
+                // Instruir usuário de forma clara e direta com animação
+                const notification = showNotification(
+                    "🔄 MONITORANDO CLIPBOARD...\n\n1️⃣ Clique no PDF\n2️⃣ Ctrl+A (selecionar)\n3️⃣ Ctrl+C (copiar)\n\n⚡ O sistema detectará AUTOMATICAMENTE!\n❌ NÃO clique novamente no botão!",
                     "info",
-                    8000
+                    0 // Não desaparece automaticamente
                 );
 
-                return new Promise((resolve) => {
-                    let attempts = 0;
-                    const maxAttempts = 60; // 30 segundos
+                // Adicionar indicador de monitoramento piscante
+                if (notification) {
+                    const pulseIndicator = document.createElement("div");
+                    pulseIndicator.textContent = "👁️ Monitorando...";
+                    pulseIndicator.style.cssText = `
+                        margin-top: 8px;
+                        padding: 8px;
+                        background: #e3f2fd;
+                        border-radius: 4px;
+                        font-weight: bold;
+                        text-align: center;
+                        animation: pulse 1.5s ease-in-out infinite;
+                    `;
 
-                    const checkClipboard = async () => {
-                        attempts++;
+                    // Adicionar animação CSS
+                    if (!document.getElementById("eprobe-pulse-animation")) {
+                        const style = document.createElement("style");
+                        style.id = "eprobe-pulse-animation";
+                        style.textContent = `
+                            @keyframes pulse {
+                                0%, 100% { opacity: 1; transform: scale(1); }
+                                50% { opacity: 0.7; transform: scale(0.98); }
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+
+                    notification.appendChild(pulseIndicator);
+                }
+
+                console.log("⏳ Aguardando que o usuário copie o texto...");
+
+                // Usar listener de eventos do clipboard (funciona sempre!)
+                return new Promise((resolve) => {
+                    let timeoutId;
+                    let pulseInterval;
+
+                    // Listener para evento de cópia
+                    const handleCopy = async (e) => {
+                        // Aguardar um pouco para garantir que o texto está no clipboard
+                        await new Promise((r) => setTimeout(r, 100));
 
                         try {
-                            const clipboardText =
-                                await navigator.clipboard.readText();
+                            const text = await navigator.clipboard.readText();
 
-                            // Verificar se é conteúdo válido (não são logs da extensão)
-                            if (
-                                clipboardText &&
-                                clipboardText.length > 100 &&
-                                !clipboardText.includes(
-                                    "ANTIFLASH COORDINATOR"
-                                ) &&
-                                !clipboardText.includes("🎭") &&
-                                !clipboardText.includes("main.js:") &&
-                                !clipboardText.includes("eProbe") &&
-                                !clipboardText.includes("window.SENT1_AUTO")
-                            ) {
+                            if (text && text.length > 100) {
                                 console.log(
-                                    `✅ Texto válido extraído: ${clipboardText.length} caracteres`
+                                    `✅ Texto copiado detectado: ${text.length} caracteres`
                                 );
-                                showNotification(
-                                    `✅ Texto extraído com sucesso: ${clipboardText.length} caracteres`,
-                                    "success"
-                                );
-                                resolve(clipboardText.trim());
-                                return;
-                            }
-                        } catch (e) {
-                            console.log(
-                                "⚠️ Erro ao verificar clipboard:",
-                                e.message
-                            );
-                        }
 
-                        // Continuar verificando ou timeout
-                        if (attempts < maxAttempts) {
-                            setTimeout(checkClipboard, 500);
-                        } else {
+                                // Limpar listeners e timers
+                                document.removeEventListener(
+                                    "copy",
+                                    handleCopy
+                                );
+                                window.removeEventListener(
+                                    "focus",
+                                    handleWindowFocus
+                                );
+                                clearTimeout(timeoutId);
+                                clearInterval(pulseInterval);
+
+                                // Fechar notificação
+                                const existingNotifications =
+                                    document.querySelectorAll(
+                                        ".eprobe-notification"
+                                    );
+                                existingNotifications.forEach((n) =>
+                                    n.remove()
+                                );
+
+                                // Mostrar modal
+                                const confirmed = await showConfirmationModal(
+                                    text
+                                );
+
+                                if (confirmed) {
+                                    resolve(text.trim());
+                                } else {
+                                    console.log("⚠️ Usuário cancelou o envio");
+                                    showNotification(
+                                        "❌ Envio cancelado pelo usuário",
+                                        "warning"
+                                    );
+                                    resolve(null);
+                                }
+                            }
+                        } catch (err) {
                             console.log(
-                                "⏰ Timeout: Usuário não copiou texto válido"
+                                "⚠️ Erro ao ler clipboard após cópia:",
+                                err.message
                             );
-                            showNotification(
-                                "⏰ Tempo esgotado. Tente copiar o texto do PDF manualmente",
-                                "warning"
-                            );
-                            resolve(null);
                         }
                     };
 
-                    // Iniciar verificação após delay
-                    setTimeout(checkClipboard, 1000);
+                    // Listener para quando a janela ganha foco (após Ctrl+C no PDF)
+                    const handleWindowFocus = async () => {
+                        await new Promise((r) => setTimeout(r, 100));
+
+                        try {
+                            const text = await navigator.clipboard.readText();
+
+                            if (text && text.length > 100) {
+                                console.log(
+                                    `✅ Texto detectado ao recuperar foco: ${text.length} caracteres`
+                                );
+
+                                // Limpar listeners e timers
+                                document.removeEventListener(
+                                    "copy",
+                                    handleCopy
+                                );
+                                window.removeEventListener(
+                                    "focus",
+                                    handleWindowFocus
+                                );
+                                clearTimeout(timeoutId);
+                                clearInterval(pulseInterval);
+
+                                // Fechar notificação
+                                const existingNotifications =
+                                    document.querySelectorAll(
+                                        ".eprobe-notification"
+                                    );
+                                existingNotifications.forEach((n) =>
+                                    n.remove()
+                                );
+
+                                // Mostrar modal
+                                const confirmed = await showConfirmationModal(
+                                    text
+                                );
+
+                                if (confirmed) {
+                                    resolve(text.trim());
+                                } else {
+                                    console.log("⚠️ Usuário cancelou o envio");
+                                    showNotification(
+                                        "❌ Envio cancelado pelo usuário",
+                                        "warning"
+                                    );
+                                    resolve(null);
+                                }
+                            }
+                        } catch (err) {
+                            // Silenciar
+                        }
+                    };
+
+                    // Adicionar listeners
+                    document.addEventListener("copy", handleCopy);
+                    window.addEventListener("focus", handleWindowFocus);
+
+                    // Atualizar contador a cada 5 segundos
+                    let elapsed = 0;
+                    pulseInterval = setInterval(() => {
+                        elapsed += 5;
+                        if (notification) {
+                            const pulseIndicator = notification.querySelector(
+                                'div[style*="Monitorando"]'
+                            );
+                            if (pulseIndicator) {
+                                pulseIndicator.textContent = `👁️ Monitorando... ${elapsed}s`;
+                            }
+                        }
+                    }, 5000);
+
+                    // Timeout de 60 segundos
+                    timeoutId = setTimeout(() => {
+                        document.removeEventListener("copy", handleCopy);
+                        window.removeEventListener("focus", handleWindowFocus);
+                        clearInterval(pulseInterval);
+
+                        console.log("⏰ Timeout: usuário não copiou texto");
+                        showNotification(
+                            "⏰ Tempo esgotado (60s).\n\nClique no botão novamente para tentar.",
+                            "error",
+                            5000
+                        );
+                        resolve(null);
+                    }, 60000);
+                });
+            }
+
+            // Modal de confirmação com preview do texto
+            async function showConfirmationModal(texto) {
+                return new Promise((resolve) => {
+                    // Criar overlay
+                    const overlay = document.createElement("div");
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.7);
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        z-index: 999999;
+                        backdrop-filter: blur(3px);
+                    `;
+
+                    // Criar modal
+                    const modal = document.createElement("div");
+                    modal.style.cssText = `
+                        background: white;
+                        border-radius: 12px;
+                        padding: 24px;
+                        max-width: 700px;
+                        width: 90%;
+                        max-height: 80vh;
+                        display: flex;
+                        flex-direction: column;
+                        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                    `;
+
+                    // Título
+                    const title = document.createElement("h2");
+                    title.textContent = "Texto Copiado - Confirmar Envio";
+                    title.style.cssText = `
+                        margin: 0 0 16px 0;
+                        font-size: 20px;
+                        font-weight: 600;
+                        color: #333;
+                    `;
+
+                    // Info
+                    const info = document.createElement("p");
+                    info.textContent = `${texto.length} caracteres detectados. Deseja enviar para análise do Perplexity?`;
+                    info.style.cssText = `
+                        margin: 0 0 16px 0;
+                        font-size: 14px;
+                        color: #666;
+                    `;
+
+                    // Textarea com o texto
+                    const textarea = document.createElement("textarea");
+                    textarea.value = texto;
+                    textarea.readOnly = true;
+                    textarea.style.cssText = `
+                        width: 100%;
+                        height: 300px;
+                        padding: 12px;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        font-family: monospace;
+                        font-size: 12px;
+                        resize: vertical;
+                        margin-bottom: 16px;
+                        background: #f9f9f9;
+                    `;
+
+                    // Container de botões
+                    const buttonContainer = document.createElement("div");
+                    buttonContainer.style.cssText = `
+                        display: flex;
+                        gap: 12px;
+                        justify-content: flex-end;
+                    `;
+
+                    // Botão Cancelar
+                    const cancelBtn = document.createElement("button");
+                    cancelBtn.textContent = "Cancelar";
+                    cancelBtn.style.cssText = `
+                        padding: 10px 24px;
+                        border: 1px solid #ddd;
+                        background: white;
+                        color: #666;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        transition: all 0.2s;
+                    `;
+                    cancelBtn.onmouseover = () => {
+                        cancelBtn.style.background = "#f5f5f5";
+                    };
+                    cancelBtn.onmouseout = () => {
+                        cancelBtn.style.background = "white";
+                    };
+                    cancelBtn.onclick = () => {
+                        document.body.removeChild(overlay);
+                        resolve(false);
+                    };
+
+                    // Botão Enviar
+                    const sendBtn = document.createElement("button");
+                    sendBtn.textContent = "Enviar ao Perplexity";
+                    sendBtn.style.cssText = `
+                        padding: 10px 24px;
+                        border: none;
+                        background: #0066cc;
+                        color: white;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                        transition: all 0.2s;
+                    `;
+                    sendBtn.onmouseover = () => {
+                        sendBtn.style.background = "#0052a3";
+                    };
+                    sendBtn.onmouseout = () => {
+                        sendBtn.style.background = "#0066cc";
+                    };
+                    sendBtn.onclick = () => {
+                        document.body.removeChild(overlay);
+                        resolve(true);
+                    };
+
+                    // Montar estrutura
+                    buttonContainer.appendChild(cancelBtn);
+                    buttonContainer.appendChild(sendBtn);
+
+                    modal.appendChild(title);
+                    modal.appendChild(info);
+                    modal.appendChild(textarea);
+                    modal.appendChild(buttonContainer);
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+
+                    // Fechar com ESC
+                    const escHandler = (e) => {
+                        if (e.key === "Escape") {
+                            document.body.removeChild(overlay);
+                            document.removeEventListener("keydown", escHandler);
+                            resolve(false);
+                        }
+                    };
+                    document.addEventListener("keydown", escHandler);
                 });
             }
 
@@ -13005,7 +13311,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     if (promptType === "resumir") {
                         prompt = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido. DOCUMENTO: ${texto}`;
                     } else if (promptType === "relatorio") {
-                        prompt = `Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado nesta petição. Considerando o que consta na referida peça, transforme a petição em um pequeno relatório com a seguinte estrutura:
+                        prompt = `Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado na petição fornecida. Considerando o que consta na petição, transforme-a em um pequeno relatório com a seguinte estrutura:
 
 Alega a parte ("apelante" ou "impetrante" ou "agravante" ou "embargante" etc., a depender do tipo de recurso) que...
 
@@ -13017,9 +13323,29 @@ No mérito, postula a...
 
 Use: linguagem impessoal ("entende-se" ao invés de "entendo", por exemplo) e seja sucinto.
 
-Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada" etc., a depender do tipo de recurso. 
+Evite utilizar o nome real das partes. Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada" etc., a depender do tipo de recurso.
 
 Utilize uma estrutura de texto, sem símbolos ou caracteres especiais no início dos parágrafos.
+
+Regras de escrita:
+
+Use linguagem objetiva, evitando termos excessivamente rebuscados.
+
+Não inicie frases com "com efeito" ou "destarte".
+
+Não utilize "fulcro" ou "com fulcro".
+
+Não empregue "resta" com sentido de "está".
+
+Utilize a expressão "celebrar contrato" ao invés de "firmar contrato".
+
+Utilize o formato de data DD/MM/AAAA e abrevie "número" como "n.", nunca "nº", "nº." ou outra forma que não "n.".
+
+IMPORTANTE: sempre use colchetes ao invés de parênteses.
+
+Só descreva informações reais presentes no documento.
+
+Ao citar dispositivos legais, utilize exclusivamente esse padrão: "conforme determina o § 2º do art. 86 da Lei n. 8.213/1991". Sempre indique primeiro o parágrafo (se houver), depois o artigo, seguido do número e ano da lei, exatamente neste formato.
 
 DOCUMENTO: ${texto}`;
                     } else {
@@ -13138,8 +13464,8 @@ DOCUMENTO: ${texto}`;
                 }
             }
 
-            // Modal para seleção de prompt para Perplexity
-            async function showPerplexityPromptModal(texto) {
+            // Modal para seleção de prompt para Perplexity (retorna apenas o tipo selecionado)
+            async function showPerplexityPromptModal() {
                 return new Promise((resolve) => {
                     // Remover modal existente se houver
                     const existingModal = document.getElementById(
@@ -13289,28 +13615,18 @@ DOCUMENTO: ${texto}`;
                     // Adicionar eventos aos botões
                     modal
                         .querySelector("#perplexity-prompt-resumir")
-                        .addEventListener("click", async () => {
+                        .addEventListener("click", () => {
                             overlay.remove();
                             style.remove();
-                            resolve(
-                                await sendToPerplexityWithPrompt(
-                                    texto,
-                                    "resumir"
-                                )
-                            );
+                            resolve("resumir");
                         });
 
                     modal
                         .querySelector("#perplexity-prompt-relatorio")
-                        .addEventListener("click", async () => {
+                        .addEventListener("click", () => {
                             overlay.remove();
                             style.remove();
-                            resolve(
-                                await sendToPerplexityWithPrompt(
-                                    texto,
-                                    "relatorio"
-                                )
-                            );
+                            resolve("relatorio");
                         });
 
                     modal
@@ -13318,7 +13634,7 @@ DOCUMENTO: ${texto}`;
                         .addEventListener("click", () => {
                             overlay.remove();
                             style.remove();
-                            resolve(false);
+                            resolve(null);
                         });
 
                     // Fechar ao clicar no overlay
@@ -13326,7 +13642,235 @@ DOCUMENTO: ${texto}`;
                         if (e.target === overlay) {
                             overlay.remove();
                             style.remove();
+                            resolve(null);
+                        }
+                    });
+
+                    overlay.appendChild(modal);
+                    document.body.appendChild(overlay);
+                });
+            }
+
+            // Modal para usuário colar texto manualmente e enviar para Perplexity
+            async function showPerplexityTextInputModal(promptType) {
+                return new Promise((resolve) => {
+                    // Remover modal existente se houver
+                    const existingModal = document.getElementById(
+                        "perplexity-text-input-modal"
+                    );
+                    if (existingModal) {
+                        existingModal.remove();
+                    }
+
+                    // Criar overlay do modal (transparente para permitir interação com o fundo)
+                    const overlay = document.createElement("div");
+                    overlay.id = "perplexity-text-input-modal";
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.3);
+                        z-index: 10003;
+                        display: flex;
+                        justify-content: flex-end;
+                        align-items: flex-start;
+                        padding: 20px;
+                        font-family: "Roboto", -apple-system, system-ui, sans-serif;
+                        pointer-events: none;
+                    `;
+
+                    // Criar conteúdo do modal (posicionado à direita, tamanho reduzido)
+                    const modal = document.createElement("div");
+                    modal.style.cssText = `
+                        background: #134377;
+                        border-radius: 12px;
+                        padding: 24px;
+                        max-width: 500px;
+                        width: 100%;
+                        max-height: 90vh;
+                        overflow-y: auto;
+                        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+                        border: 1px solid rgba(82, 82, 82, 0.3);
+                        pointer-events: auto;
+                    `;
+
+                    const promptDescription =
+                        promptType === "resumir"
+                            ? "Resumir em tópicos curtos"
+                            : "Gerar relatório para acórdão";
+
+                    modal.innerHTML = `
+                        <div style="text-align: center; margin-bottom: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="#22B8CD">
+                                    <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                                </svg>
+                                <h2 style="color: white; margin: 0; font-size: 24px; font-weight: 600;">
+                                    Cole o texto do documento
+                                </h2>
+                            </div>
+                            <p style="color: rgb(203 213 225); margin: 0; font-size: 16px;">
+                                Prompt selecionado: <strong style="color: #22B8CD;">${promptDescription}</strong>
+                            </p>
+                            <p style="color: rgb(148, 163, 184); margin-top: 8px; font-size: 14px;">
+                                Copie o conteúdo do PDF e cole no campo abaixo
+                            </p>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <textarea id="perplexity-text-input" placeholder="Cole aqui o texto do documento..." style="
+                                width: 100%;
+                                min-height: 300px;
+                                padding: 16px;
+                                background: rgba(255, 255, 255, 0.05);
+                                border: 2px solid rgba(255, 255, 255, 0.1);
+                                border-radius: 8px;
+                                color: white;
+                                font-size: 14px;
+                                font-family: 'Segoe UI', sans-serif;
+                                resize: vertical;
+                                outline: none;
+                                transition: all 0.2s ease;
+                            "></textarea>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; gap: 12px;">
+                            <button id="send-to-perplexity-btn" style="
+                                padding: 12px 32px;
+                                background: #22B8CD;
+                                border: none;
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-size: 16px;
+                                font-weight: 600;
+                                transition: all 0.2s ease;
+                                display: flex;
+                                align-items: center;
+                                gap: 8px;
+                            ">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                                    <path d="M19.785 0v7.272H22.5V17.62h-2.935V24l-7.037-6.194v6.145h-1.091v-6.152L4.392 24v-6.465H1.5V7.188h2.884V0l7.053 6.494V.19h1.09v6.49L19.786 0zm-7.257 9.044v7.319l5.946 5.234V14.44l-5.946-5.397zm-1.099-.08l-5.946 5.398v7.235l5.946-5.234V8.965zm8.136 7.58h1.844V8.349H13.46l6.105 5.54v2.655zm-8.982-8.28H2.59v8.195h1.8v-2.576l6.192-5.62zM5.475 2.476v4.71h5.115l-5.115-4.71zm13.219 0l-5.115 4.71h5.115v-4.71z"/>
+                                </svg>
+                                Enviar para Perplexity
+                            </button>
+                            <button id="cancel-text-input-btn" style="
+                                padding: 12px 24px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border: 1px solid rgba(255, 255, 255, 0.2);
+                                border-radius: 8px;
+                                color: white;
+                                cursor: pointer;
+                                font-size: 14px;
+                                transition: all 0.2s ease;
+                            ">
+                                Cancelar
+                            </button>
+                        </div>
+                    `;
+
+                    // Adicionar CSS hover via JavaScript
+                    const style = document.createElement("style");
+                    style.textContent = `
+                        #perplexity-text-input:focus {
+                            border-color: #22B8CD !important;
+                            background: rgba(255, 255, 255, 0.08) !important;
+                        }
+                        #send-to-perplexity-btn:hover {
+                            background: #1a9daf !important;
+                            transform: translateY(-1px);
+                        }
+                        #send-to-perplexity-btn:disabled {
+                            background: rgba(255, 255, 255, 0.1) !important;
+                            cursor: not-allowed;
+                            opacity: 0.5;
+                        }
+                        #cancel-text-input-btn:hover {
+                            background: rgba(255, 255, 255, 0.2) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+
+                    const textarea = modal.querySelector(
+                        "#perplexity-text-input"
+                    );
+                    const sendBtn = modal.querySelector(
+                        "#send-to-perplexity-btn"
+                    );
+                    const cancelBtn = modal.querySelector(
+                        "#cancel-text-input-btn"
+                    );
+
+                    // Focar no textarea automaticamente
+                    setTimeout(() => textarea.focus(), 100);
+
+                    // Evento do botão Enviar
+                    sendBtn.addEventListener("click", async () => {
+                        const texto = textarea.value.trim();
+
+                        if (!texto) {
+                            showNotification(
+                                "Por favor, cole o texto do documento antes de enviar",
+                                "error"
+                            );
+                            return;
+                        }
+
+                        // Desabilitar botão durante envio
+                        sendBtn.disabled = true;
+                        sendBtn.innerHTML = `
+                            <svg style="animation: spin 1s linear infinite;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                            </svg>
+                            Enviando...
+                        `;
+
+                        // Adicionar animação de spin
+                        const spinStyle = document.createElement("style");
+                        spinStyle.textContent = `
+                            @keyframes spin {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `;
+                        document.head.appendChild(spinStyle);
+
+                        // Chamar API do Perplexity
+                        const success = await sendToPerplexityWithPrompt(
+                            texto,
+                            promptType
+                        );
+
+                        // Fechar modal
+                        overlay.remove();
+                        style.remove();
+                        spinStyle.remove();
+
+                        resolve(success);
+                    });
+
+                    // Evento do botão Cancelar
+                    cancelBtn.addEventListener("click", () => {
+                        overlay.remove();
+                        style.remove();
+                        resolve(false);
+                    });
+
+                    // Fechar ao clicar no overlay
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) {
+                            overlay.remove();
+                            style.remove();
                             resolve(false);
+                        }
+                    });
+
+                    // Atalho Ctrl+Enter para enviar
+                    textarea.addEventListener("keydown", (e) => {
+                        if (e.ctrlKey && e.key === "Enter") {
+                            sendBtn.click();
                         }
                     });
 
@@ -13488,26 +14032,52 @@ DOCUMENTO: ${texto}`;
                     document.head.appendChild(style);
 
                     // Definir prompts
-                    const promptResumir = `Você é um assistente especializado em resumir documentos judiciais de forma extremamente objetiva e sucinta para capas de processos digitais. Sempre responda em bullet points diretos.
-
-Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital. Indique: tipo de ação, partes, pedido(s) do autor, decisão (improcedente/procedente/parcialmente procedente), fundamentos centrais, condenação (custas/honorários se houver). Seja objetivo e direto, sem redação em texto corrido.
+                    const promptResumir = `Faça um resumo extremamente sucinto do documento, em formato de apontamentos diretos (bullet points), para constar na capa do processo digital de um Habeas Corpus. Indique: impetrante, paciente, crime pelo qual o paciente é investigado ou acusado, pedido de liminar formulado (com fundamentos centrais). Seja objetivo e direto, sem redação em texto corrido.
 
 DOCUMENTO:
 ${texto}`;
 
-                    const promptRelatorio = `Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado nesta petição. Considerando o que consta na referida peça, transforme a petição em um pequeno relatório com a seguinte estrutura:
+                    const promptRelatorio = `Entrada: arquivo PDF enviado pelo usuário ou texto colado no prompt = {{entrada}}
 
-Alega a parte ("apelante" ou "impetrante" ou "agravante" ou "embargante" etc., a depender do tipo de recurso) que...
-
-Afirma que...
-
-Requer a concessão de ("antecipação dos efeitos da tutela recursal" ou "efeito suspensivo" ou "liminar" etc., dependendo do pedido) para...
-
-No mérito, postula a...
-
-Use: linguagem impessoal ("entende-se" ao invés de "entendo", por exemplo) e seja sucinto.
-
-Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada" etc., a depender do tipo de recurso.
+                    Atue como um assessor de desembargador do Tribunal de Justiça de Santa Catarina que está redigindo uma minuta de acórdão sobre o caso relatado na {{entrada}}. Considerando o que consta na {{entrada}}, transforme a petição em um pequeno relatório com a seguinte estrutura:
+                    
+                    Alega a parte ("apelante" ou "impetrante" ou "agravante" ou "embargante" ou "recorrente" etc., a depender do tipo de recurso) que...
+                    
+                    Afirma que...
+                    
+                    Requer a concessão de ("antecipação dos efeitos da tutela recursal" ou "efeito suspensivo" ou "liminar" etc., dependendo do pedido; utilizar SOMENTE SE HOUVER pedido de tutela antecipada, liminar, etc.) para...
+                    
+                    No mérito, postula a... (CASO TENHA HAVIDO pedido de tutela antecipada, liminar, etc., conforme parágrafo anterior; caso NÃO TENHA HAVIDO, usar apenas o PRÓXIMO PARÁGRAFO)
+                    
+                    Requer a ("reforma da sentença", "reforma da decisão recorrida", "reforma da decisão de pronúncia", "declaração de nulidade do processo de origem", "trancamento do processo", etc., a depender do pedido formulado no recurso; utilizar este parágrafo caso NÃO TENHA HAVIDO pedido de tutela antecipada, liminar, etc., conforme os dois parágrafos anteriores) para... ("condenar", "absolver", "obrigar", etc., a depender do objetivo do recurso interposto)
+                    
+                    _______________
+                    
+                    Use: linguagem impessoal ("entende-se" ao invés de "entendo", por exemplo) e seja sucinto.
+                    
+                    Evite utilizar o nome real das partes. Refira-se às partes sempre como "apelante"/"apelada" ou "impetrante"/"impetrada" ou "agravante"/"agravada" ou "embargante"/"embargada", "impetrante", "paciente", etc., a depender do tipo de recurso. 
+                    
+                    Utilize uma estrutura de texto, sem símbolos ou caracteres especiais no início dos parágrafos.
+                    
+                    Regras de escrita:
+                    
+                    Use linguagem objetiva, evitando termos excessivamente rebuscados. 
+                    
+                    Não inicie frases com “com efeito” ou “destarte”. 
+                    
+                    Não utilize “fulcro” ou “com fulcro”. 
+                    
+                    Não empregue “resta” com sentido de “está”. 
+                    
+                    Utilize a expressão “celebrar contrato” ao invés de “firmar contrato”. 
+                    
+                    Utilize o formato de data DD/MM/AAAA e abrevie “número” como “n.”, nunca "nº", "nº." ou outra forma que não "n.".
+                    
+                    IMPORTANTE: sempre use colchetes ao invés de parênteses.
+                    
+                    Só descreva informações reais presentes na {{entrada}}.
+                    
+                    Ao citar dispositivos legais, utilize exclusivamente esse padrão: “conforme determina o § 2º do art. 86 da Lei n. 8.213/1991”. Sempre indique primeiro o parágrafo [se houver], depois o artigo, seguido do número e ano da lei, exatamente neste formato. 
 
 DOCUMENTO:
 ${texto}`;
@@ -14407,9 +14977,12 @@ ${texto}`;
                         "click",
                         async () => {
                             menu.remove();
-                            const texto = await autoExtractText();
-                            if (texto) {
-                                await showPerplexityPromptModal(texto);
+                            // Não extrair texto automaticamente - apenas abrir modal de prompts
+                            const promptType =
+                                await showPerplexityPromptModal();
+                            if (promptType) {
+                                // Abrir modal para usuário colar texto manualmente
+                                await showPerplexityTextInputModal(promptType);
                             }
                         }
                     );
@@ -14923,12 +15496,12 @@ ${texto}`;
             // Automação completa - usando expressão de função para evitar problemas de escopo
             const runFullAutomation = async function () {
                 if (isAutomationActive) {
-                    log(" Automação já está ativa");
+                    log("⚠️ Automação já está ativa");
                     return;
                 }
 
                 isAutomationActive = true;
-                log(" Iniciando automação completa...");
+                log("🚀 Iniciando automação completa...");
 
                 try {
                     const pageType = detectPageType();
@@ -14937,13 +15510,29 @@ ${texto}`;
                         const opened = await autoOpenDocumentoRelevante();
                         if (opened) {
                             showNotification(
-                                " Documento aberto! Aguarde carregar e execute novamente na nova aba",
+                                "✅ Documento aberto! Aguarde carregar e clique novamente no botão eProbe",
                                 "success"
                             );
                         }
-                    } else if (pageType === "documento_especifico") {
+                    } else if (
+                        pageType === "documento_especifico" ||
+                        pageType === "documento_pdf" ||
+                        pageType === "documento_html"
+                    ) {
+                        showNotification(
+                            "⚡ Extraindo texto automaticamente...",
+                            "info"
+                        );
+
                         const texto = await autoExtractText();
-                        if (texto) {
+
+                        if (texto && texto.length > 100) {
+                            showNotification(
+                                "✅ Texto extraído! Enviando para Perplexity...",
+                                "info"
+                            );
+
+                            // Tentar enviar para Perplexity
                             const apiSent = await sendToPerplexityWithPrompt(
                                 texto,
                                 "resumir"
@@ -14951,36 +15540,34 @@ ${texto}`;
 
                             if (!apiSent) {
                                 log(
-                                    " API falhou, usando método de clipboard como fallback"
+                                    "⚠️ API falhou, copiando para clipboard como fallback"
                                 );
-                                showNotification(
-                                    " Tentando método alternativo...",
-                                    "warning"
-                                );
-
                                 const copied = await copyToClipboardWithPrefix(
                                     texto
                                 );
                                 if (copied) {
                                     showNotification(
-                                        " Texto copiado! Cole em Perplexity ou outra IA (Ctrl+V)\n\nO texto já inclui o prefixo de instrução para IA",
-                                        "success"
+                                        "✅ Texto copiado com prefixo para IA!\n\nCole em Perplexity (Ctrl+V)",
+                                        "success",
+                                        5000
                                     );
                                 }
                             }
+                        } else {
+                            showNotification(
+                                "❌ Não foi possível extrair texto suficiente",
+                                "error"
+                            );
                         }
                     } else {
                         showNotification(
-                            " Página não reconhecida. Use na página do processo ou documento",
-                            "error"
+                            "⚠️ Página não reconhecida. Use na página do documento",
+                            "warning"
                         );
                     }
                 } catch (error) {
-                    log(" Erro na automação:", error);
-                    showNotification(
-                        " Erro na automação: " + error.message,
-                        "error"
-                    );
+                    log("❌ Erro na automação:", error);
+                    showNotification("❌ Erro: " + error.message, "error");
                 } finally {
                     isAutomationActive = false;
                 }
@@ -32313,6 +32900,7 @@ ${texto}`;
                 sendToPerplexityWithPrompt: nsSendToPerplexityWithPrompt,
                 showPromptSelectionModal: nsShowPromptSelectionModal,
                 showPerplexityPromptModal: nsShowPerplexityPromptModal,
+                showPerplexityTextInputModal: showPerplexityTextInputModal,
                 openAIWithCustomPrompt: nsOpenAIWithCustomPrompt,
                 detectPageType: nsDetectPageType,
                 isValidPageForButton: nsIsValidPageForButton,
