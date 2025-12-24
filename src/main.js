@@ -7589,6 +7589,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             let debugMode = true;
             let isAutomationActive = false;
 
+            // Função auxiliar para normalizar texto (remover acentos)
+            const normalizarTexto = (texto) => {
+                return texto
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .toUpperCase();
+            };
+
             // Configuração dos tipos de documentos relevantes - VERSÃO EXPANDIDA
             const TIPOS_DOCUMENTO_RELEVANTE = {
                 SENT: { nome: "SENT", descricao: "Sentença", dataNome: "SENT" },
@@ -9320,27 +9328,26 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                         const filtrados = Array.from(todosLinks).filter(
                             (link) => {
-                                const texto = link.textContent
-                                    .trim()
-                                    .toUpperCase();
+                                const texto = link.textContent.trim();
+                                const textoNormalizado = normalizarTexto(texto);
 
                                 // DEBUG: Mostrar todos os textos dos links
                                 if (texto.length < 50) {
                                     // Evitar logs muito longos
                                     console.log(
-                                        `  📝 Testando link: "${texto}"`
+                                        `  📝 Testando link: "${texto}" -> normalizado: "${textoNormalizado}"`
                                     );
                                 }
 
                                 // Verificar se o texto COMEÇA com algum dos tipos válidos
                                 const resultado = tiposValidos.some((tipo) => {
-                                    const tipoUpper = tipo.toUpperCase();
+                                    const tipoNormalizado = normalizarTexto(tipo);
                                     const match =
-                                        texto.startsWith(tipoUpper) ||
+                                        textoNormalizado.startsWith(tipoNormalizado) ||
                                         new RegExp(
-                                            `^[\\s\\-_]*${tipoUpper}\\d*`,
+                                            `^[\\s\\-_]*${tipoNormalizado}\\d*`,
                                             "i"
-                                        ).test(texto);
+                                        ).test(textoNormalizado);
 
                                     if (match) {
                                         console.log(
@@ -9509,18 +9516,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     const tipoEncontrado = Object.values(
                         TIPOS_DOCUMENTO_RELEVANTE
                     ).find((tipo) => {
-                        const textoUpper = texto.toUpperCase();
-                        const tipoNome = tipo.nome.toUpperCase();
+                        const textoNormalizado = normalizarTexto(texto);
+                        const tipoNormalizado = normalizarTexto(tipo.nome);
                         // Aceitar apenas se:
-                        // 1. Texto é exatamente o tipo (ex: "SENT", "RAZAPELA1")
-                        // 2. Texto começa com o tipo seguido de espaço (ex: "SENT - ", "RAZAPELA1 - ")
-                        // 3. Texto começa com o tipo seguido de número (ex: "SENT1", "SENT2")
+                        // 1. Texto é exatamente o tipo (ex: "SENT", "RAZAPELA1", "APELACAO1")
+                        // 2. Texto começa com o tipo seguido de espaço (ex: "SENT - ", "APELACAO1 - ")
+                        // 3. Texto começa com o tipo seguido de número (ex: "SENT1", "APELACAO1")
                         // Regex ajustada para aceitar qualquer quantidade de letras maiúsculas + dígitos
                         return (
-                            textoUpper === tipoNome ||
-                            textoUpper.startsWith(tipoNome + " ") ||
-                            (/^[A-Z]+\d+/.test(textoUpper) &&
-                                textoUpper.startsWith(tipoNome))
+                            textoNormalizado === tipoNormalizado ||
+                            textoNormalizado.startsWith(tipoNormalizado + " ") ||
+                            (/^[A-Z]+\d+/.test(textoNormalizado) &&
+                                textoNormalizado.startsWith(tipoNormalizado))
                         );
                     });
 
