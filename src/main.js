@@ -7612,6 +7612,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                     descricao: "Denúncia 1",
                     dataNome: "DENUNCIA1",
                 },
+                APELACAO1: {
+                    nome: "APELACAO1",
+                    descricao: "Apelação 1",
+                    dataNome: "APELACAO1",
+                },
+                RAZRECUR1: {
+                    nome: "RAZRECUR1",
+                    descricao: "Razões de Recurso 1",
+                    dataNome: "RAZRECUR1",
+                },
                 /*          DECI: {
                 nome: "DESPADEC",
                 descricao: "Decisão",
