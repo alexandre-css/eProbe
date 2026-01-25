@@ -1,801 +1,276 @@
 # eProbe - AI Coding Instructions
 
-## 🚨 REGRAS CRÍTICAS ABSOLUTAS - NUNCA MAIS ESQUECER
+> Chrome extension automating legal document detection & extraction from Brazilian court system (eProc/TJSC). Focus: minimal surgical changes, strict syntax validation, consolidated namespace architecture.
 
-### 🔴 SINTAXE OBRIGATÓRIA - REGRA CRÍTICA NÚMERO 1
+## Project Quickstart
 
-**REGRA CRÍTICA ABSOLUTA**: SEMPRE verificar sintaxe antes de propor qualquer mudança. NUNCA deixar erros de sintaxe que impeçam o funcionamento da extensão.
+**Tech Stack**: Manifest V3 Chrome Extension | Vanilla JS | eProc DOM manipulation | Brazilian court API integration  
+**Main Files**: `src/main.js` (39K lines), `src/popup.js`, `src/themeApply.js`  
+**Target**: `eproc1g.tjsc.jus.br`, `eproc2g.tjsc.jus.br`  
+**Landing Page**: https://e-probe.vercel.app/
 
-**CHECKLIST OBRIGATÓRIO antes de QUALQUER edição:**
+## Critical Rules - Read First
 
-1. ✅ Parênteses, colchetes e chaves estão balanceados?
-2. ✅ Todas as funções têm fechamento correto?
-3. ✅ Strings estão devidamente fechadas?
-4. ✅ Ponto e vírgula onde necessário?
-5. ✅ Try-catch têm estrutura completa (não órfãos)?
-6. ✅ IIFEs estão corretamente fechadas?
-7. ✅ Não há código órfão sem contexto?
-8. ✅ Object.assign() usado corretamente?
+### Rule 1: Syntax Validation ALWAYS
 
-**PADRÃO DE VERIFICAÇÃO OBRIGATÓRIO:**
+### Rule 1: Syntax Validation ALWAYS
+
+**Before ANY edit**: Check balanced braces, complete try-catch blocks, closed IIFEs, no orphaned code.
 
 ```javascript
-// ANTES de qualquer edição, SEMPRE verificar:
-// 1. Estrutura de fechamento
-function minhaFuncao() {
-    // implementação
-} // ✅ Fechamento correto
+// ✅ Complete structures
+function myFunc() { /*...*/ }  // Closed
+try { /*...*/ } catch(e) { /*...*/ }  // Complete pair
+(function() { /*...*/ })();  // Closed IIFE
 
-// 2. Try-catch completo
-try {
-    // código
-} catch (error) {
-    // tratamento - NUNCA deixar catch órfão!
+// ❌ Fatal errors
+} catch(e) { /*...*/ }  // Orphaned catch
+function incomplete() { /*...*/ // Missing }
+```
+
+### Rule 2: Minimal Surgical Changes ONLY
+
+**Never refactor working code**. Fix ONLY the specific reported issue. Ask before large changes.
+
+```javascript
+// ❌ Wrong: Rewrite entire function
+function existingWorkingFunction() {
+    /* complete rewrite */
 }
 
-// 3. IIFE correta
-(function () {
-    // código
-})(); // ✅ Fechamento correto
-```
-
-**❌ ERROS FATAIS QUE NUNCA MAIS PODEM ACONTECER:**
-
--   Catch órfão sem try correspondente
--   Funções sem fechamento
--   Código órfão que quebra a estrutura
--   Múltiplas chamadas init() duplicadas
--   Namespace criado depois do timeout de fallback
-
-### 🔴 PRINCÍPIO DA MUDANÇA MÍNIMA - REGRA CRÍTICA NÚMERO 2
-
-**REGRA ABSOLUTA**: Fazer APENAS mudanças mínimas e cirúrgicas. NUNCA refatorar código que já funciona.
-
-**CHECKLIST OBRIGATÓRIO:**
-
-1. ✅ A mudança resolve APENAS o problema específico relatado?
-2. ✅ Preserva toda funcionalidade existente?
-3. ✅ Não adiciona complexidade desnecessária?
-4. ✅ Perguntei antes de fazer alterações grandes?
-5. ✅ Testei a sintaxe antes de sugerir?
-
-**PADRÃO CORRETO:**
-
-```javascript
-// ❌ ERRADO - Refatorar tudo:
-// Reescrever função inteira que já funciona
-
-// ✅ CORRETO - Mudança cirúrgica:
-// Adicionar apenas a linha necessária para corrigir o bug específico
-```
-
-### 🔴 CODIFICAÇÃO UTF-8 OBRIGATÓRIA - REGRA CRÍTICA NÚMERO 3
-
-**REGRA CRÍTICA ABSOLUTA**: SEMPRE usar APENAS caracteres compatíveis com UTF-8. NUNCA usar emojis ou símbolos especiais em código JavaScript.
-
-**CARACTERES PROIBIDOS (JAMAIS USAR):**
-
--   Emojis: ❌ ✅ 📄 🎯 ⚠️ 📋 🔄 🚀 📅 🎨 🔧 🌐 📊 💥 🆘 🛡️
--   Qualquer símbolo Unicode especial em código
--   Caracteres acentuados em variáveis ou strings de código
--   Símbolos decorativos não-ASCII
-
-**CARACTERES PERMITIDOS (APENAS ESTES):**
-
--   Letras: a-z, A-Z
--   Números: 0-9
--   Pontuação básica: . , ; : ! ? " ' ( ) [ ] { } + - \* / = < > % & | ^ ~ \_ $ # @
--   Espaços e quebras de linha padrão
-
-### 🔴 RESPEITO AO CÓDIGO EXISTENTE - REGRA CRÍTICA NÚMERO 4
-
-**REGRA ABSOLUTA**: NUNCA modificar extensivamente código que já funciona. SEMPRE preservar arquiteturas existentes.
-
-**APRENDIZADOS CRÍTICOS:**
-
--   ❌ NUNCA fazer modificações massivas sem necessidade
--   ❌ NUNCA complicar sistemas que já funcionam
--   ❌ NUNCA adicionar complexidade desnecessária
--   ✅ SEMPRE fazer mudanças cirúrgicas e mínimas
--   ✅ SEMPRE perguntar antes de mudanças grandes
--   ✅ SEMPRE testar sintaxe antes de sugerir
-
-### 🔴 VERIFICAÇÃO OBRIGATÓRIA DO NAMESPACE ANTES DE QUALQUER SUGESTÃO
-
-**REGRA CRÍTICA ABSOLUTA**: SEMPRE verificar `Object.keys(window.SENT1_AUTO)` ANTES de sugerir qualquer função.
-
-```javascript
-// ✅ VERIFICAÇÃO OBRIGATÓRIA - SEMPRE FAZER PRIMEIRO:
-console.log("🔍 Funções disponíveis:", Object.keys(window.SENT1_AUTO));
-
-// ✅ VERIFICAR SE FUNÇÃO EXISTE ANTES DE SUGERIR:
-if (!window.SENT1_AUTO.testarSistemaCompleto) {
-    console.error("❌ Função não existe no namespace");
-    console.log(
-        "💡 Use alternativa que EXISTE:",
-        Object.keys(window.SENT1_AUTO).filter((f) => f.includes("testar"))
-    );
+// ✅ Correct: Add only the needed line
+function existingWorkingFunction() {
+    // ...existing code unchanged...
+    newLineToFixBug(); // <- Surgical addition
+    // ...rest unchanged...
 }
 ```
 
-**CHECKLIST OBRIGATÓRIO antes de sugerir qualquer função:**
+### Rule 3: UTF-8 Only - NO Emojis in Code
 
-1. ✅ Verificou `Object.keys(window.SENT1_AUTO)` primeiro?
-2. ✅ Confirmou que a função EXISTE no namespace atual?
-3. ✅ Se a função não existe, ofereceu alternativas que EXISTEM?
-4. ✅ Incluiu verificação de existência no código sugerido?
-5. ✅ NUNCA assumiu que uma função existe sem verificar?
+**Forbidden**: ❌ ✅ 🎯 📋 🔧 and ALL emojis/special Unicode in JS code  
+**Allowed**: a-z A-Z 0-9 basic punctuation only
 
-**FUNÇÕES QUE REALMENTE EXISTEM (confirmadas):**
+### Rule 4: Consolidated Namespace Architecture
 
--   ✅ `detectarCardSessaoSimplificado()`
--   ✅ `testarDeteccaoRobusta()`
--   ✅ `diagnosticarEstruturaDOMMinutas()`
--   ✅ `testarDeteccaoComLogsCompletos()`
--   ✅ `resetarSistemaCard()`
--   ✅ `forcarCriacaoCardTeste()`
-
-**❌ NUNCA MAIS FAZER:**
-
--   Sugerir `testarSistemaCompleto()` sem verificar se existe
--   Assumir que funções estão no namespace
--   Dar erro "Cannot read properties of undefined"
-
-### 🔴 DECLARAÇÃO OBRIGATÓRIA DE VARIÁVEIS E FUNÇÕES
-
-**REGRA ABSOLUTA**: SEMPRE declarar variáveis e funções antes de usar. NUNCA referenciar variáveis não declaradas.
-
-```javascript
-// ❌ ERRO CRÍTICO - NÃO FAZER:
-if (minhaVariavel) { ... } // ReferenceError se não declarada
-
-// ✅ CORRETO - SEMPRE FAZER:
-let minhaVariavel = false; // Declarar primeiro
-if (minhaVariavel) { ... } // Usar depois
-```
-
-**CHECKLIST OBRIGATÓRIO antes de cada edição:**
-
-1. ✅ Todas as variáveis estão declaradas com `let`, `const` ou `var`?
-2. ✅ Todas as funções estão definidas antes de serem chamadas?
-3. ✅ Escopo das variáveis está correto?
-4. ✅ Funções retornam valores consistentes (boolean, string, object)?
-5. ✅ Não há referências a variáveis undefined?
-6. ✅ **NOVO**: Event listeners usam `{ passive: true }` quando apropriado?
-7. ✅ **NOVO**: setTimeout/setInterval são otimizados (debounce, backoff)?
-8. ✅ **NOVO**: MutationObserver usa debounce para performance?
-
-### 📁 ORGANIZAÇÃO OBRIGATÓRIA DE ARQUIVOS MARKDOWN
-
-**REGRA ABSOLUTA**: SEMPRE criar arquivos `.md` em `C:\eProbe\md\` - NUNCA em outras pastas.
-
-```
-✅ CORRETO: C:\eProbe\md\NOVA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\NOVA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\development\NOVA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\src\NOVA_DOCUMENTACAO.md
-```
-
-**EXCEÇÕES PERMITIDAS APENAS:**
-
--   `README.md` (raiz do projeto)
--   `PRIVACY_POLICY.md` (raiz do projeto)
--   Arquivos temporários em `development/` durante desenvolvimento ativo
-
-### 🔧 PADRÕES DE DECLARAÇÃO OBRIGATÓRIOS
-
-```javascript
-// 1. VARIÁVEIS DE CONTROLE - sempre inicializar
-let interceptAttempts = 0;
-let jQueryDetected = false;
-let jQueryIntercepted = false;
-
-// 2. FUNÇÕES - sempre declarar antes de usar
-const minhaFuncao = () => {
-    // implementação
-    return valorConsistente; // sempre retornar algo
-};
-
-// 3. VARIÁVEIS DE ESCOPO - verificar disponibilidade
-if (typeof window.jQuery !== "undefined") {
-    // usar jQuery apenas se existir
-}
-```
-
-### 🎯 NAMESPACE CONSOLIDADO - REGRA OBRIGATÓRIA
-
-**REGRA ABSOLUTA**: SEMPRE atualizar o namespace `window.SENT1_AUTO` ao criar novas funções públicas.
-
-**LOCALIZAÇÃO DO NAMESPACE**: Entre as linhas marcadas com:
+**Single namespace location** in `src/main.js` lines 33039-37365:
 
 ```javascript
 // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
 window.SENT1_AUTO = {
-    // ... todas as funções públicas aqui
+    myNewFunction, // <- Add ALL public functions here
+    // ...all functions in ONE place...
 };
 // ##### FIM DO NAMESPACE CONSOLIDADO #####
 ```
 
-**CHECKLIST OBRIGATÓRIO ao criar nova função:**
+❌ Never: `window.SENT1_AUTO.newFunc = ...` scattered throughout file  
+✅ Always: Declare function first, then add to consolidated namespace
 
-1. ✅ A função foi declarada ANTES da seção do namespace?
-2. ✅ A função foi adicionada ao objeto `window.SENT1_AUTO`?
-3. ✅ A função está categorizada corretamente (debug, teste, API, interface)?
-4. ✅ A função possui comentário explicativo no namespace?
-5. ✅ Não há duplicação de funções no namespace?
-
-**PADRÃO CORRETO:**
+### Rule 5: Variable Declaration Required
 
 ```javascript
-// 1. DECLARAR a função primeiro (dentro da IIFE)
-function minhaNovaFuncao() {
-    // implementação
-    return resultado;
+// ❌ ReferenceError risk
+if (undeclaredVar) {
+    /*...*/
 }
 
-// 2. ADICIONAR ao namespace (na seção consolidada)
-// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-window.SENT1_AUTO = {
-    // ... outras funções existentes...
-
-    // 🔧 MINHA CATEGORIA
-    minhaNovaFuncao, // <- SEMPRE ADICIONAR AQUI
-
-    // ... resto do namespace...
-};
-// ##### FIM DO NAMESPACE CONSOLIDADO #####
+// ✅ Always declare first
+let myVar = false;
+if (myVar) {
+    /*...*/
+}
 ```
 
-**❌ NUNCA FAZER:**
+### Rule 6: Namespace Function Verification
 
--   Criar `window.SENT1_AUTO.novaFuncao =` fora do namespace consolidado
--   Duplicar funções no namespace
--   Esquecer de adicionar novas funções ao namespace
-
-### 🚀 OTIMIZAÇÃO DE PERFORMANCE - REGRAS OBRIGATÓRIAS
-
-**REGRA ABSOLUTA**: SEMPRE otimizar para performance seguindo padrões estabelecidos.
-
-#### Event Listeners Otimizados
+**Before suggesting ANY function call**:
 
 ```javascript
-// ❌ ERRO - Event listener sem otimização:
-button.addEventListener("mouseenter", handler);
+// ✅ REQUIRED verification
+console.log("Available:", Object.keys(window.SENT1_AUTO));
+if (window.SENT1_AUTO.functionName) {
+    window.SENT1_AUTO.functionName();
+}
+```
 
-// ✅ CORRETO - Event listener otimizado:
+**Confirmed working functions**:
+
+-   `detectarCardSessaoSimplificado()`
+-   `testarDeteccaoRobusta()`
+-   `diagnosticarEstruturaDOMMinutas()`
+
+❌ Never assume a function exists without checking
+
+## Architecture Essentials
+
+### Entry Points & Message Flow
+
+**Content Script**: `src/main.js` injected at document_end
+
+-   Anti-flash injection via `document.write` before DOM render (lines 1-60)
+-   Ultra-early eProc function interception
+-   Global namespace `window.SENT1_AUTO` with fallback system
+
+**Popup**: `src/popup.html` + `src/popup.js` (CSP-compliant, no inline scripts)
+
+-   Message passing: `chrome.tabs.sendMessage()` → `main.js` listener
+-   Theme system: popup.js → main.js → `window.applyThemeStyles()` in themeApply.js
+
+**Theme Application**: `src/themeApply.js` exposes `window.applyThemeStyles(themeName)`
+
+### Core Systems
+
+**1. Anti-Flash System** (lines 1-60): Injects CSS before page render to eliminate visual flash  
+**2. Function Interception**: Replaces problematic eProc functions ultra-early  
+**3. Document Detection**: `findDocumentosRelevantes()` finds SENT1/INIC1 legal docs  
+**4. PDF Extraction**: 5 fallback strategies in `extractTextFromPDF()`  
+**5. Session Date Detection**: Brazilian court format parsing with regex
+
+### Performance Critical Patterns
+
+```javascript
+// ✅ Required optimizations
 button.addEventListener("mouseenter", handler, { passive: true });
-```
 
-#### Debounce Obrigatório
+const debounced = window.debounce(myFunc, 300); // Use global debounce
+debounced();
 
-```javascript
-// ❌ ERRO - setTimeout direto:
-setTimeout(minhaFuncao, 200);
-
-// ✅ CORRETO - Usar debounce global:
-const debouncedFunction = window.debounce(minhaFuncao, 200);
-debouncedFunction();
-```
-
-#### MutationObserver Eficiente
-
-```javascript
-// ❌ ERRO - Observer sem debounce:
 const observer = new MutationObserver((mutations) => {
-    mutations.forEach((mutation) => processarMutacao(mutation));
-});
-
-// ✅ CORRETO - Observer com debounce e early exit:
-const observer = new MutationObserver((mutations) => {
-    let shouldProcess = false;
-    for (const mutation of mutations) {
-        if (condicaoAtendida(mutation)) {
-            shouldProcess = true;
-            break; // Early exit
-        }
-    }
-    if (shouldProcess) {
-        debouncedProcess();
-    }
+    if (someCondition) return; // Early exit
+    debouncedProcess();
 });
 ```
 
-#### Backoff Exponencial
+**Backoff exponential for retries**:
 
 ```javascript
-// ❌ ERRO - Timeouts fixos repetidos:
-setTimeout(tentarNovamente, 1000);
-setTimeout(tentarNovamente, 1000);
-
-// ✅ CORRETO - Backoff exponencial:
-const delay = Math.min(1000 * Math.pow(1.5, tentativas - 1), 5000);
-setTimeout(tentarNovamente, delay);
+const delay = Math.min(1000 * Math.pow(1.5, attempts - 1), 5000);
+setTimeout(retry, delay);
 ```
 
-**PADRÕES DE PERFORMANCE OBRIGATÓRIOS**:
+## Domain-Specific Knowledge
 
-1. ✅ Event listeners sempre com `{ passive: true }` para scroll/hover
-2. ✅ MutationObserver sempre com debounce de 50ms mínimo
-3. ✅ setTimeout repetidos sempre com backoff exponencial
-4. ✅ Loops sempre com early exit quando possível
-5. ✅ Timer cleanup obrigatório (clearTimeout/clearInterval)
+### eProc Integration
 
-## 🛡️ COMPROMISSO DE QUALIDADE - NUNCA MAIS FALHAR
+**URL patterns**: `processo_selecionar`, `acessar_documento`  
+**DOM selectors**: `.infraEventoDescricao`, `#divInfraAreaProcesso`, `#conteudoMinutas`  
+**Process number format**: `\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4}`
 
-### **PROMESSA ABSOLUTA DO ASSISTENTE:**
+### Brazilian Court Minutes Pattern
 
-**EU VOU SEMPRE:**
+**Exact page**: "Consulta Processual - Detalhes do Processo"  
+**DOM path**: `#divInfraAreaGlobal → #divInfraAreaProcesso → #conteudoMinutas → #fldMinutas`  
+**Regex**: `/(Type)\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi`
 
-1. ✅ Verificar sintaxe ANTES de sugerir qualquer mudança
-2. ✅ Fazer APENAS mudanças mínimas e cirúrgicas
-3. ✅ Preservar todo código que já funciona
-4. ✅ Perguntar antes de fazer alterações grandes
-5. ✅ Respeitar a arquitetura existente do projeto
-6. ✅ Testar logicamente as mudanças antes de sugerir
+### Theme System Architecture
 
-**EU NUNCA MAIS VOU:**
+**4 themes**: blue (default), dark, light, violet  
+**Storage**: `chrome.storage.sync` with fallback to blue  
+**Flow**: User click → popup.js → sendMessage → main.js → themeApply.js applies CSS
 
-1. ❌ Deixar erros de sintaxe que quebrem a extensão
-2. ❌ Refatorar extensivamente código funcional
-3. ❌ Adicionar complexidade desnecessária
-4. ❌ Modificar múltiplos arquivos sem necessidade
-5. ❌ Assumir que mudanças massivas são necessárias
-6. ❌ Ignorar as regras de mudança mínima
+## Development Workflows
 
-**FRASE LEMBRETE:**
-"SINTAXE PRIMEIRO, MUDANÇA MÍNIMA SEMPRE!"
+### Testing Extension
 
-## Project Overview
-
-eProbe is a Chrome extension that automates document detection and text extraction from the Brazilian court system (eProc/TJSC). It intelligently identifies legal documents (SENT1, INIC1), extracts text content, and facilitates AI-powered document analysis.
-
-**🌐 Project Landing Page**: https://e-probe.vercel.app/
-
-## Architecture & Core Components
-
-### Main Entry Points
-
--   **`src/main.js`**: Primary content script (13,623 lines) - handles all automation logic and message handling
--   **`src/popup.js`**: Extension popup interface with functional theme system and configuration switches (332 lines)
--   **`src/themeApply.js`**: Real-time theme application with global applyThemeStyles() function (88 lines)
--   **`src/popup.html`**: Clean popup interface without inline scripts (CSP compliant) (164 lines)
--   **`manifest.json`**: Chrome extension configuration with eProc domain permissions (31 lines)
--   **`index.html`**: Project landing page with comprehensive feature showcase (986 lines) - https://e-probe.vercel.app/
-
-### Key Architectural Patterns
-
-#### Global Namespace Design
-
-## Core Workflows & Current Status
-
-### Estado Atual do Sistema (Agosto 2025)
-
-**✅ Funcionando:**
-
--   Interceptação de funções problemáticas do eProc
--   Sistema anti-flash multicamadas
--   Aplicação instantânea de temas
--   Namespace principal com fallback de emergência
--   Funções de teste essenciais disponíveis
-
-**🔧 Funções Principais Confirmadas:**
-
-```javascript
-// Estas funções EXISTEM e funcionam no namespace atual:
-window.SENT1_AUTO.detectarCardSessaoSimplificado();
-window.SENT1_AUTO.testarDeteccaoRobusta();
-window.SENT1_AUTO.diagnosticarEstruturaDOMMinutas();
+```powershell
+# Use VS Code task: Ctrl+Shift+P → "Tasks: Run Task" → "Testar Extensão eProbe"
+# OR manually:
+# 1. edge://extensions/
+# 2. Enable "Developer mode"
+# 3. "Load unpacked" → c:\Apps\eProbe
+# 4. Navigate to eProc page
+# 5. Verify "AUTOMAÇÃO SENT1" button appears
 ```
 
-### Document Processing Pipeline
+### Debug Console Functions
 
-1. **Detection**: Sistema detecta páginas do eProc
-2. **Interceptation**: Substitui funções problemáticas antes do DOM
-3. **Namespace Creation**: Cria namespace principal ou fallback
-4. **Theme Application**: Aplica tema instantaneamente
-5. **Anti-Flash**: Elimina flash visual durante carregamento
-
-## Development Conventions & Critical Rules
-
-### 🚨 PRÁTICAS OBRIGATÓRIAS DE CODIFICAÇÃO
-
-#### Declaração de Variáveis e Funções
+On eProc pages, access via browser console:
 
 ```javascript
-// ❌ ERRO COMUM - NÃO FAZER:
-if (jQueryDetected) { ... } // ReferenceError se não declarada
-
-// ✅ PADRÃO CORRETO - SEMPRE FAZER:
-let jQueryDetected = false; // Declarar no escopo correto
-let interceptAttempts = 0;
-const maxAttempts = 5;
-
-// Função deve ser declarada antes de usar
-const optimizedIntercept = () => {
-    interceptAttempts++;
-    const success = interceptJQueryMegaAggressive();
-
-    // Sempre atualizar variáveis de controle
-    if (success) {
-        jQueryDetected = true;
-    }
-
-    // Sempre retornar valor consistente
-    return success;
-};
+window.SENT1_AUTO.debugTextoMinutas();
+window.SENT1_AUTO.debugDeteccaoDataSessao();
+window.SENT1_AUTO.statusControlesRequisicao();
 ```
 
-#### Controle de Escopo e Inicialização
+### Namespace Verification Task
 
-```javascript
-// Variáveis globais no topo do arquivo
-let dataSessaoPautado = null;
-let processoComDataSessao = null;
-let jQueryIntercepted = false;
-
-// Verificação antes de usar variáveis globais
-if (typeof window.jQuery !== "undefined") {
-    // usar apenas se existir
-}
-
-// Funções devem ter valores de retorno consistentes
-function detectarAlgo() {
-    // ...implementação...
-    return resultado || false; // sempre retornar algo
-}
+```powershell
+# VS Code task: "Verificar Namespace eProbe"
+# Checks all functions are in consolidated namespace
 ```
 
-### Critical Testing & Debugging
+## File Organization
 
-#### Verificação de Namespace Obrigatória
+**Documentation**: ALL `.md` files → `md/` directory  
+**Exceptions**: `README.md`, `PRIVACY_POLICY.md` (root only)
 
-```javascript
-// ✅ SEMPRE fazer antes de sugerir funções:
-console.log("Funções disponíveis:", Object.keys(window.SENT1_AUTO));
-
-// ✅ Verificar existência antes de usar:
-if (window.SENT1_AUTO.minhaFuncao) {
-    window.SENT1_AUTO.minhaFuncao();
-} else {
-    console.error("Função não encontrada no namespace");
-}
+```
+✅ c:\Apps\eProbe\md\MY_DOC.md
+❌ c:\Apps\eProbe\MY_DOC.md
+❌ c:\Apps\eProbe\src\MY_DOC.md
 ```
 
-#### Theme System Architecture
+## Common Patterns
 
-Theme system follows clean message-passing pattern without CSP violations:
+### Function Family Pattern
+
+Complete 4-operation set for entities:
 
 ```javascript
-// popup.html - Clean interface with theme buttons (no inline scripts)
-<button data-theme="blue" data-index="0"></button>;
-
-// popup.js - Event handlers and communication
-function applyTheme(theme) {
-    chrome.storage.sync.set({ selectedTheme: theme });
-    chrome.tabs.sendMessage(tabs[0].id, {
-        action: "applyTheme",
-        theme: theme,
-    });
-}
-
-// main.js - Message handling
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.action === "applyTheme") {
-        window.applyThemeStyles(request.theme);
-    }
-});
-
-// themeApply.js - Global theme application
-window.applyThemeStyles = function (themeName) {
-    // Apply CSS to eProc navbar
-};
+function getDadosCompletos[Entity]() { return entity; }
+function hasDadosCompletos[Entity]() { return entity !== null; }
+function resetDadosCompletos[Entity]() { entity = null; }
+function showDadosCompletos[Entity]() { console.log(entity); }
 ```
 
-#### State Management
-
--   **Process-level caching**: `processosJaProcessados` Set prevents duplicate processing
--   **Session data storage**: Global variables like `dataSessaoPautado`, `dadosCompletosMinutas`
--   **Request throttling**: `tentativasCruzamento`, `ultimaTentativaCruzamento` for API rate limiting
-
-#### Page Type Detection
-
-Three main page types drive different workflows:
+### Process-Scoped State
 
 ```javascript
-function detectPageType() {
-    if (url.includes("processo_selecionar")) return "lista_documentos";
-    if (url.includes("acessar_documento")) return "documento_especifico";
-    // ... PDF vs HTML document detection
-}
-```
+let processoAtual = null;
+let processoComDataSessao = null; // Process with session data
+let processoComDadosCompletos = null;
 
-## Core Workflows
-
-### Document Processing Pipeline
-
-1. **Detection**: `findDocumentosRelevantes()` finds SENT1/INIC1 links
-2. **Opening**: `autoOpenDocumentoRelevante()` navigates to document
-3. **Extraction**: `autoExtractText()` extracts text (multiple PDF strategies)
-4. **AI Integration**: `sendToChatGPT()` or clipboard copy with prefixes
-
-### Session Date Detection (Court Minutes)
-
-Specialized for Brazilian court document format:
-
-```javascript
-// Must be on exact page: "Consulta Processual - Detalhes do Processo"
-// Follows DOM path: #divInfraAreaGlobal → #divInfraAreaProcesso → #conteudoMinutas → #fldMinutas
-// Regex pattern: (Type) (Incluído em Pauta em Date - Organ)
-const padraoMinutas =
-    /([A-Za-zÀ-ÿ\s]+(?:Interno|Declaração|Mérito|Preliminar|Cautelar))\s*\(Incluído em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})\s*-\s*([A-Z0-9]+)\)/gi;
-```
-
-### PDF Text Extraction Strategies
-
-Multiple fallback approaches in `extractTextFromPDF()`:
-
-1. Selection-based extraction via DOM events
-2. PDF.js library integration
-3. Direct fetch + PDF parsing
-4. Clipboard-based extraction
-5. OCR capture as last resort
-
-## Development Conventions
-
-### 🚨 PRÁTICAS OBRIGATÓRIAS DE CODIFICAÇÃO
-
-#### Declaração de Variáveis e Funções
-
-```javascript
-// ❌ ERRO COMUM - NÃO FAZER:
-if (jQueryDetected) { ... } // ReferenceError se não declarada
-
-// ✅ PADRÃO CORRETO - SEMPRE FAZER:
-let jQueryDetected = false; // Declarar no escopo correto
-let interceptAttempts = 0;
-const maxAttempts = 5;
-
-// Função deve ser declarada antes de usar
-const optimizedIntercept = () => {
-    interceptAttempts++;
-    const success = interceptJQueryMegaAggressive();
-
-    // Sempre atualizar variáveis de controle
-    if (success) {
-        jQueryDetected = true;
-    }
-
-    // Sempre retornar valor consistente
-    return success;
-};
-```
-
-#### Controle de Escopo e Inicialização
-
-```javascript
-// Variáveis globais no topo do arquivo
-let dataSessaoPautado = null;
-let processoComDataSessao = null;
-let jQueryIntercepted = false;
-
-// Verificação antes de usar variáveis globais
-if (typeof window.jQuery !== "undefined") {
-    // usar apenas se existir
-}
-
-// Funções devem ter valores de retorno consistentes
-function detectarAlgo() {
-    // ...implementação...
-    return resultado || false; // sempre retornar algo
-}
-```
-
-#### Namespace Consolidado - Regra Crítica
-
-```javascript
-// ❌ ERRO CRÍTICO - NÃO FAZER:
-// Criar funções expostas fora do namespace consolidado
-window.SENT1_AUTO.minhaNovaFuncao = function() { ... }; // ERRADO!
-
-// ✅ PADRÃO CORRETO - SEMPRE FAZER:
-// 1. Declarar a função dentro da IIFE
-function minhaNovaFuncao() {
-    // implementação
-    return resultado;
-}
-
-// 2. Adicionar ao namespace consolidado ÚNICO
-// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-window.SENT1_AUTO = {
-    // ... funções existentes...
-    minhaNovaFuncao,    // <- ADICIONAR AQUI
-    // ... resto das funções...
-};
-// ##### FIM DO NAMESPACE CONSOLIDADO #####
-
-// ❌ NUNCA criar múltiplos namespaces espalhados pelo arquivo
-// ❌ NUNCA esquecer de adicionar novas funções ao namespace
-// ❌ NUNCA duplicar funções no namespace
-```
-
-### Function Naming & Organization
-
--   **Portuguese naming**: Core domain functions use Portuguese (`detectarDataSessao`, `getDadosCompletos`)
--   **Namespace prefixing**: Debug functions grouped with clear prefixes (`debug*`, `forcar*`, `reset*`)
--   **Async patterns**: Heavy use of async/await with try-catch error handling
-
-### State Management Patterns
-
-```javascript
-// Process-aware caching
 function hasDataSessaoPautado() {
     return (
         dataSessaoPautado !== null && processoComDataSessao === processoAtual
     );
 }
-
-// Automatic interface updates
-setTimeout(() => {
-    inserirDataSessaoNaInterface();
-}, 500);
 ```
 
-### Error Handling & Logging
+### Error Resilience
 
--   Console logging with emoji prefixes for categorization: `🔍`, `✅`, `❌`, `⚠️`
--   Notification system via `showNotification(message, type)`
--   Graceful degradation: API failures → clipboard fallback → manual instructions
+-   Try-catch everywhere around DOM queries and eProc API calls
+-   Fallback chain: API → Clipboard → Manual instructions
+-   Cache validation: Always check cached data matches current process
 
-## Domain-Specific Knowledge
+## Anti-Patterns - Never Do This
 
-### eProc Integration Points
+❌ Inline scripts in HTML (CSP violation)  
+❌ `window.SENT1_AUTO.func =` outside consolidated section  
+❌ Assuming jQuery availability without checking  
+❌ Reprocessing same document multiple times (check `processosJaProcessados` Set)  
+❌ Emojis or special Unicode in JavaScript code  
+❌ Extensive refactoring of working code  
+❌ Creating `.md` files outside `md/` directory
 
--   **Target domains**: `eproc1g.tjsc.jus.br`, `eproc2g.tjsc.jus.br`
--   **Document types**: SENT1 (sentences), INIC1 (initial petitions)
--   **DOM selectors**: eProc uses specific CSS classes like `.infraEventoDescricao`
+## Recent Updates (Dec 2025)
 
-### Brazilian Court Document Patterns
+**Performance**: Variables properly scoped, jQuery detection capped at 5 attempts  
+**Theme System**: Full CSP compliance, no inline scripts, clean message passing  
+**Anti-Flash**: `document.write` injection eliminates all visual flash  
+**Namespace**: Fallback system ensures functionality even with errors
 
--   **Date format**: DD/MM/YYYY validation with Brazilian calendar rules
--   **Court minute structure**: Specific regex for "Incluído em Pauta" patterns
--   **Process numbers**: Format `\d{7}-\d{2}\.\d{4}\.\d{1}\.\d{2}\.\d{4}`
+**Stable Features**:
 
-## Testing & Debugging
+-   Ultra-early function interception
+-   Instant theme application
+-   Robust eProc page detection
+-   Emergency namespace fallback
 
-### Manual Testing Workflow
+---
 
-```bash
-# Use VS Code task (Ctrl+Shift+P → "Tasks: Run Task")
-# Task: "Testar Extensão eProbe"
-# 1. Open Chrome → edge://extensions/
-# 2. Enable "Developer mode"
-# 3. "Load unpacked" → select c:\eProbe folder
-# 4. Navigate to eProc page
-# 5. Verify "AUTOMAÇÃO SENT1" button integration
-```
-
-### Debug Console Functions
-
-Access via browser console on eProc pages:
-
--   `window.SENT1_AUTO.debugTextoMinutas()` - Analyze court minutes text
--   `window.SENT1_AUTO.debugDeteccaoDataSessao()` - Session detection troubleshooting
--   `window.SENT1_AUTO.statusControlesRequisicao()` - Check request throttling state
-
-### Common Issues & Solutions
-
-**CSP Violations**: Extension follows strict Content Security Policy:
-
--   No inline scripts in HTML files
--   All JavaScript in separate .js files
--   Use chrome.tabs.sendMessage for popup ↔ content script communication
-
-**Missing Function Errors**: The codebase uses pattern where functions are declared but their implementations may be missing. Always check:
-
-```javascript
-// Required function families (get*, has*, reset*, show*):
-getDadosCompletosMinutas(),
-    hasDadosCompletosMinutas(),
-    resetDadosCompletosMinutas(),
-    showDadosCompletosMinutas();
-```
-
-**Namespace Access Errors**: Functions must be explicitly added to the consolidated `window.SENT1_AUTO` namespace:
-
-```javascript
-// ❌ Wrong: Creating scattered namespace assignments
-window.SENT1_AUTO.debugTextoMinutas = debugTextoMinutas; // SCATTERED!
-
-// ✅ Correct: Single consolidated namespace at end of file
-// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-window.SENT1_AUTO = {
-    debugTextoMinutas, // All functions in ONE place
-    // ... all other functions...
-};
-// ##### FIM DO NAMESPACE CONSOLIDADO #####
-```
-
-**Critical Rule**: All `window.SENT1_AUTO` assignments must be in the consolidated section marked between `// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####` and `// ##### FIM DO NAMESPACE CONSOLIDADO #####`
-
-**Theme System Issues**: Theme buttons must use proper message passing:
-
-```javascript
-// ❌ Wrong: Inline script (CSP violation)
-<button onclick="applyTheme('blue')">
-
-// ✅ Correct: Event listener in popup.js
-button.addEventListener('click', function() {
-    applyTheme(this.getAttribute('data-theme'));
-});
-```
-
-**Button Recreation Loop**: Monitor console for "Botão removido do DOM, recriando..." indicating SPA navigation issues requiring observer pattern adjustments.
-
-### SPA Navigation Handling
-
-eProc uses single-page app patterns - extension includes mutation observers and URL change detection to handle dynamic page updates.
-
-## Performance Considerations
-
--   **Request throttling**: Built-in delays and retry limits for court system API calls
--   **Text processing limits**: PDF extraction capped at 10-15 pages for performance
--   **Cache invalidation**: Time-based cache expiry for session data (60-second default)
--   **Process deduplication**: Prevents reprocessing same document multiple times per session
-
-## Development Patterns & Anti-Patterns
-
-### Function Family Pattern
-
-Functions are organized in consistent families with 4 operations:
-
-```javascript
-// Data access pattern - always implement all 4:
-function getDadosCompletos[Entity]() { return entity; }
-function hasDadosCompletos[Entity]() { return entity !== null; }
-function resetDadosCompletos[Entity]() { entity = null; }
-function showDadosCompletos[Entity]() { console.log/alert info; }
-```
-
-### Global State Variables
-
-Process-scoped variables track current context:
-
-```javascript
-let processoAtual = null; // Current process number
-let processoComDataSessao = null; // Process with session data
-let processoComDadosCompletos = null; // Process with complete data
-```
-
-### Error Resilience Patterns
-
--   **Try-catch everywhere**: Especially around DOM queries and eProc API calls
--   **Graceful fallbacks**: API → Clipboard → Manual instructions
--   **Cache validation**: Always check if cached data matches current process
-
-## File Organization & Structure
-
-### Documentation Standards
-
--   **Documentation files**: All `.md` files should be saved in `/md/` directory
--   **Code files**: JavaScript, HTML, CSS in `src/` root
--   **Configuration**: Extension manifest and settings in project root
-
-### 📝 REGRA OBRIGATÓRIA - Criação de Arquivos Markdown
-
-**SEMPRE** criar arquivos `.md` em `C:\eProbe\md\` - NUNCA em outras pastas.
-
-```
-✅ CORRETO: C:\eProbe\md\MINHA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\MINHA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\development\MINHA_DOCUMENTACAO.md
-❌ ERRADO: C:\eProbe\src\MINHA_DOCUMENTACAO.md
-```
-
-**Exceções permitidas**:
-
--   `README.md` (raiz do projeto)
--   `PRIVACY_POLICY.md` (raiz do projeto)
--   Arquivos temporários em `development/` (apenas durante desenvolvimento ativo)
+**Remember**: Syntax first, minimal changes always, verify namespace before suggesting functions.
 
 ### Current Documentation Structure
 
