@@ -3372,9 +3372,19 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Vista",
                     },
+                                        {
+                        nome: "Pedido de Vista em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Vista",
+                    },
                     {
                         nome: "Convertido em Diligência em Pauta",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Convertido em Diligência em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Diligência",
+                    },
+                                       {
+                        nome: "Convertido em Diligência em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Convertido em Diligência em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Diligência",
                     },
                     {
@@ -3382,9 +3392,19 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Julgado",
                     },
+                                        {
+                        nome: "Julgado em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Julgado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Julgado",
+                    },
                     {
                         nome: "Retirado em Pauta",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Retirado",
+                    },
+                                        {
+                        nome: "Retirado em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
                     },
                 ];
