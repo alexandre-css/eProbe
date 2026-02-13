@@ -469,7 +469,936 @@ logCritical("⏰ AUTO-REVEAL: Ativado com timeout de 5 segundos");
 // �🚨 FLAG GLOBAL - DESABILITAR SUBSTITUIÇÃO DE ESTRELAS
 const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição de estrelas
 
-// Interceptacao de switchRelevancia: desabilitada (funcionalidade eProc preservada).
+// 🚨 INTERCEPTAÇÃO ULTRA-PRECOCE - CAPTURA AMBAS AS FUNÇÕES PROBLEMÁTICAS
+(function interceptacaoUltraPrecoce() {
+    logCritical(
+        "🎨 PERSONALIZAÇÃO: Customizando apenas aparência das estrelas (SEM interceptar funções)...",
+    );
+
+    //   FUNÇÃO ULTRA-SEGURA PARA EVENTO - COMPLETAMENTE DESABILITADA
+    function switchRelevanciaEventoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax,
+    ) {
+        // COMPLETAMENTE DESABILITADO para preservar funcionalidade do eProc
+        console.log(
+            "⚠️ INTERCEPTAÇÃO DESABILITADA: switchRelevanciaEvento não será interceptada",
+        );
+        return false; // Não fazer nada
+    }
+
+    //  🔥 FORÇA BRUTAL: Redefinir switchRelevanciaEvento IMEDIATAMENTE - DESABILITADO
+    const forcarInterceptacaoEvento = () => {
+        if (typeof window.switchRelevanciaEvento === "function") {
+            const codigo = window.switchRelevanciaEvento.toString();
+            if (
+                codigo.includes("substring") ||
+                codigo.includes("controlador.php")
+            ) {
+                logCritical(
+                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA! Mas não interceptaremos mais...",
+                );
+                // REMOVIDA: Interceptação completa de switchRelevanciaEvento
+                /*
+                window.switchRelevanciaEvento = function (
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax
+                ) {
+                    console.log(
+                        "🛡️ INTERCEPTAÇÃO FORÇADA: switchRelevanciaEvento redirecionada para função segura"
+                    );
+                    return switchRelevanciaEventoUltraSegura(
+                        idEvento,
+                        relevancia,
+                        tipo,
+                        urlAjax
+                    );
+                };
+                */
+            }
+        }
+        // DESABILITADO: Não repetir verificação para switchRelevanciaEvento
+        // setTimeout(forcarInterceptacaoEvento, 100);
+    };
+
+    // Criar nossa função robusta para switchRelevanciaDocumento - DESABILITADA
+    function switchRelevanciaDocumentoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax,
+    ) {
+        // COMPLETAMENTE DESABILITADO para preservar funcionalidade do eProc
+        console.log(
+            "⚠️ INTERCEPTAÇÃO DESABILITADA: switchRelevanciaDocumento não será interceptada",
+        );
+        return false; // Não fazer nada
+
+        /* CÓDIGO ORIGINAL DESABILITADO:
+        try {
+            logCritical(
+                "🛡️ ULTRA-SEGURA: switchRelevanciaDocumento interceptada:",
+                {
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax,
+                }
+            );
+
+            // 🚨 CORREÇÃO CRÍTICA: Validação mais robusta dos parâmetros
+            if (idEvento === undefined || idEvento === null) {
+                console.error("❌ ERRO: idEvento é undefined ou null");
+                return false;
+            }
+
+            if (urlAjax === undefined || urlAjax === null) {
+                console.error("❌ ERRO: urlAjax é undefined ou null");
+                return false;
+            }
+
+            // Converter para string de forma segura
+            const idEventoStr = String(idEvento);
+            const urlAjaxStr = String(urlAjax);
+
+            // Verificar se a conversão foi bem-sucedida
+            if (idEventoStr === "undefined" || urlAjaxStr === "undefined") {
+                console.error(
+                    "❌ ERRO: Parâmetros convertidos resultaram em 'undefined'"
+                );
+                return false;
+            }
+
+            // Construir URL com máxima segurança usando as strings validadas
+            let fullUrl = urlAjaxStr;
+            const separator = fullUrl.includes("?") ? "&" : "?";
+            const params = `idEvento=${encodeURIComponent(
+                idEventoStr
+            )}&relevancia=${encodeURIComponent(
+                String(relevancia || "")
+            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
+            fullUrl += separator + params;
+
+            logCritical("🌐 URL CONSTRUÍDA:", fullUrl);
+
+            // AJAX ultra-robusto
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", fullUrl, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        logCritical(
+                            "✅ SUCESSO ULTRA-SEGURO:",
+                            xhr.responseText
+                        );
+
+                        // Atualizar ícone após sucesso usando ID validado
+                        setTimeout(() => {
+                            atualizarIconeUltraSeguro(idEventoStr, relevancia);
+                        }, 50);
+
+                        // Verificar se deve recarregar
+                        const resposta = String(
+                            xhr.responseText || ""
+                        ).toLowerCase();
+                        if (
+                            resposta.includes("reload") ||
+                            resposta.includes("location")
+                        ) {
+                            setTimeout(() => window.location.reload(), 300);
+                        }
+                    } else {
+                        console.error("❌ ERRO HTTP:", xhr.status);
+                    }
+                }
+            };
+
+            xhr.onerror = () => console.error("❌ ERRO REDE");
+            xhr.ontimeout = () => console.error("❌ TIMEOUT");
+            xhr.timeout = 15000;
+
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error("❌ ERRO CRÍTICO na função ultra-segura:", error);
+            return false;
+        }
+        */ // FIM DO CÓDIGO DESABILITADO
+    }
+
+    // DESABILITADO: Função ultra-segura para atualizar ícones (interferindo com eProc)
+    function atualizarIconeUltraSeguro(idEvento, relevancia) {
+        // COMPLETAMENTE DESABILITADO para não interferir com switchRelevanciaEvento do eProc
+        logCritical(
+            `⚠️ ATUALIZAÇÃO DE ÍCONE DESABILITADA: ${idEvento} -> ${relevancia} (preservando funcionalidade original)`,
+        );
+        return true; // Retornar sucesso sem fazer modificações
+
+        // Código original comentado para preservar funcionalidade do eProc:
+        /*
+        try {
+            logCritical(`🌟 ATUALIZANDO ÍCONE: ${idEvento} -> ${relevancia}`);
+
+            const seletores = [
+                `img[onclick*="${idEvento}"]`,
+                `a[onclick*="${idEvento}"]`,
+                `[onclick*="switchRelevanciaDocumento('${idEvento}'"]`,
+                `[onclick*='switchRelevanciaDocumento("${idEvento}"']`,
+                `img[src*="estrela"]`,
+                `img[alt*="estrela"]`,
+            ];
+
+            let iconesAtualizados = 0;
+
+            for (const seletor of seletores) {
+                try {
+                    const elementos = document.querySelectorAll(seletor);
+                    elementos.forEach((elemento) => {
+                        if (elemento.tagName === "IMG" && elemento.src) {
+                            const srcOriginal = elemento.src;
+                            let novoSrc = srcOriginal;
+
+                            // Lógica robusta de troca de ícones
+                            if (
+                                relevancia === "S" ||
+                                relevancia === "1" ||
+                                relevancia === 1
+                            ) {
+                                // Marcar como relevante
+                                novoSrc = novoSrc
+                                    .replace(/estrela[_\-]?off/gi, "estrela_on")
+                                    .replace(
+                                        /estrela[_\-]?apagada/gi,
+                                        "estrela_acesa"
+                                    )
+                                    .replace(/EstrelaApagada/gi, "EstrelaAcesa")
+                                    .replace(/estrela\.gif/gi, "estrela_on.gif")
+                                    .replace(/estrela_0/gi, "estrela_1");
+                            } else {
+                                // Marcar como não relevante
+                                novoSrc = novoSrc
+                                    .replace(/estrela[_\-]?on/gi, "estrela_off")
+                                    .replace(
+                                        /estrela[_\-]?acesa/gi,
+                                        "estrela_apagada"
+                                    )
+                                    .replace(/EstrelaAcesa/gi, "EstrelaApagada")
+                                    .replace(/estrela_on\.gif/gi, "estrela.gif")
+                                    .replace(/estrela_1/gi, "estrela_0");
+                            }
+
+                            if (novoSrc !== srcOriginal) {
+                                elemento.src = novoSrc;
+                                iconesAtualizados++;
+                                logCritical(
+                                    `✅ Ícone ${iconesAtualizados}: ${srcOriginal} → ${novoSrc}`
+                                );
+                            }
+                        }
+                    });
+                } catch (selectorError) {
+                    console.warn(
+                        `⚠️ Erro com seletor ${seletor}:`,
+                        selectorError
+                    );
+                }
+            }
+
+            logCritical(`🎯 Total de ícones atualizados: ${iconesAtualizados}`);
+        } catch (error) {
+            console.error("❌ Erro ao atualizar ícones:", error);
+        }
+        */
+        // FIM DA FUNÇÃO COMENTADA
+    }
+
+    // ️ FUNÇÃO ULTRA-SEGURA PARA switchRelevanciaEvento
+    function switchRelevanciaEventoUltraSegura(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax,
+    ) {
+        console.log(
+            "🔥 INTERCEPTAÇÃO CONFIRMADA: switchRelevanciaEvento chamada com parâmetros:",
+            {
+                idEvento: typeof idEvento + " = " + idEvento,
+                relevancia: typeof relevancia + " = " + relevancia,
+                tipo: typeof tipo + " = " + tipo,
+                urlAjax:
+                    typeof urlAjax +
+                    " = " +
+                    (urlAjax ? String(urlAjax).substring(0, 50) : "undefined") +
+                    "...",
+            },
+        );
+
+        try {
+            logCritical(
+                "🛡️ ULTRA-SEGURA: switchRelevanciaEvento interceptada:",
+                {
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax,
+                },
+            );
+
+            // 🚨 CORREÇÃO CRÍTICA: Validação mais robusta dos parâmetros
+            if (idEvento === undefined || idEvento === null) {
+                console.error("❌ ERRO: idEvento é undefined ou null");
+                return false;
+            }
+
+            if (urlAjax === undefined || urlAjax === null) {
+                console.error("❌ ERRO: urlAjax é undefined ou null");
+                return false;
+            }
+
+            // Converter para string de forma segura
+            const idEventoStr = String(idEvento);
+            const urlAjaxStr = String(urlAjax);
+
+            // Verificar se a conversão foi bem-sucedida
+            if (idEventoStr === "undefined" || urlAjaxStr === "undefined") {
+                console.error(
+                    "❌ ERRO: Parâmetros convertidos resultaram em 'undefined'",
+                );
+                return false;
+            }
+
+            // Construir URL com máxima segurança usando as strings validadas
+            let fullUrl = urlAjaxStr;
+            const separator = fullUrl.includes("?") ? "&" : "?";
+            const params = `idEvento=${encodeURIComponent(
+                idEventoStr,
+            )}&relevancia=${encodeURIComponent(
+                String(relevancia || ""),
+            )}&tipo=${encodeURIComponent(String(tipo || ""))}`;
+            fullUrl += separator + params;
+
+            logCritical("🌐 switchRelevanciaEvento URL CONSTRUÍDA:", fullUrl);
+
+            // AJAX ultra-robusto - MESMA LÓGICA
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", fullUrl, true);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        logCritical(
+                            "✅ switchRelevanciaEvento SUCESSO:",
+                            xhr.responseText,
+                        );
+
+                        // Atualizar ícone após sucesso usando ID validado
+                        setTimeout(() => {
+                            atualizarIconeUltraSeguro(idEventoStr, relevancia);
+                        }, 50);
+
+                        // Verificar se deve recarregar
+                        const resposta = String(
+                            xhr.responseText || "",
+                        ).toLowerCase();
+                        if (
+                            resposta.includes("reload") ||
+                            resposta.includes("location")
+                        ) {
+                            setTimeout(() => window.location.reload(), 300);
+                        }
+                    } else {
+                        console.error(
+                            "❌ switchRelevanciaEvento ERRO HTTP:",
+                            xhr.status,
+                        );
+                    }
+                }
+            };
+
+            xhr.onerror = () =>
+                console.error("❌ switchRelevanciaEvento ERRO REDE");
+            xhr.ontimeout = () =>
+                console.error("❌ switchRelevanciaEvento TIMEOUT");
+            xhr.timeout = 15000;
+
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error(
+                "❌ ERRO CRÍTICO na switchRelevanciaEvento ultra-segura:",
+                error,
+            );
+            return false;
+        }
+    }
+
+    // 🔒 INTERCEPTAÇÃO MAIS INTELIGENTE - Fallback para função original
+    let funcaoOriginalEproc = null; // Armazenar a função original do eProc se existir
+    let interceptacaoAtiva = true; // Circuit breaker para parar loops infinitos
+    let contadorTentativas = 0; // Contador de tentativas de redefinição
+    const maxTentativas = 10; // Máximo de tentativas permitidas
+
+    let funcaoInterceptada = function (idEvento, relevancia, tipo, urlAjax) {
+        try {
+            // Tentar nossa função ultra-segura primeiro
+            const resultado = switchRelevanciaDocumentoUltraSegura(
+                idEvento,
+                relevancia,
+                tipo,
+                urlAjax,
+            );
+            if (resultado === true) {
+                return true;
+            }
+        } catch (error) {
+            console.warn(
+                "⚠️ Função ultra-segura falhou, tentando fallback:",
+                error,
+            );
+        }
+
+        // Se nossa função falhou, tentar função original do eProc (se segura)
+        if (funcaoOriginalEproc && typeof funcaoOriginalEproc === "function") {
+            try {
+                console.log(
+                    "🔄 Tentando função original do eProc como fallback...",
+                );
+                return funcaoOriginalEproc.call(
+                    this,
+                    idEvento,
+                    relevancia,
+                    tipo,
+                    urlAjax,
+                );
+            } catch (error) {
+                console.error("❌ Função original também falhou:", error);
+                return false;
+            }
+        }
+
+        console.error("❌ Todas as tentativas falharam");
+        return false;
+    };
+
+    // Marcar nossa função para identificação
+    funcaoInterceptada.__eprobeInterceptada = true;
+    let tentativasRedefinicao = 0;
+
+    // DESABILITADO: Object.defineProperty(window, "switchRelevanciaDocumento", {
+    /*
+    Object.defineProperty(window, "switchRelevanciaDocumento", {
+        get: function () {
+            return funcaoInterceptada;
+        },
+        set: function (novaFuncao) {
+            contadorTentativas++;
+
+            // 🚨 CIRCUIT BREAKER: Parar loop infinito
+            if (contadorTentativas > maxTentativas) {
+                console.warn(
+                    `⚠️ CIRCUIT BREAKER: Máximo de ${maxTentativas} tentativas atingido. Parando interceptação.`
+                );
+                interceptacaoAtiva = false;
+                return;
+            }
+
+            if (!interceptacaoAtiva) {
+                console.log(
+                    "⏸️ INTERCEPTAÇÃO DESABILITADA: Permitindo redefinição direta"
+                );
+                funcaoInterceptada = novaFuncao;
+                return;
+            }
+
+            logCritical(
+                `🚨 TENTATIVA ${contadorTentativas} DE REDEFINIÇÃO INTERCEPTADA!`
+            );
+
+            // Analisar a função que está tentando ser definida
+            if (typeof novaFuncao === "function") {
+                const codigoFuncao = novaFuncao.toString();
+                logCritical(
+                    "🔍 Analisando função:",
+                    codigoFuncao.substring(0, 200) + "..."
+                );
+
+                // Se parece ser a função original do eProc (mas não problemática), armazenar como fallback
+                if (
+                    codigoFuncao.includes("controlador.php") &&
+                    !codigoFuncao.includes("ULTRA-SEGURA") &&
+                    codigoFuncao.length > 100 // Parece ser uma função real
+                ) {
+                    console.log(
+                        "💾 Armazenando função original do eProc como fallback"
+                    );
+                    funcaoOriginalEproc = novaFuncao;
+
+                    // Ainda manter nossa função como principal, mas agora com fallback
+                    logCritical(
+                        "🛡️ Função original armazenada, mantendo interceptação ativa"
+                    );
+                    return;
+                }
+
+                // Se for nossa própria função sendo redefinida, permitir
+                if (
+                    codigoFuncao.includes("ULTRA-SEGURA") ||
+                    codigoFuncao.includes(
+                        "switchRelevanciaDocumentoUltraSegura"
+                    )
+                ) {
+                    console.log(
+                        "✅ Permitindo redefinição da nossa própria função"
+                    );
+                    funcaoInterceptada = novaFuncao;
+                    return;
+                }
+                if (
+                    codigoFuncao.includes("substring") ||
+                    codigoFuncao.includes("controlador.php")
+                ) {
+                    logCritical(
+                        "🛡️ FUNÇÃO PROBLEMÁTICA DETECTADA E BLOQUEADA!"
+                    );
+                }
+            }
+
+            // NÃO permitir a redefinição - manter sempre nossa função
+            return;
+        },
+        configurable: false,
+        enumerable: true,
+    });
+    */ // FIM DA INTERCEPTAÇÃO DESABILITADA
+
+    // 🔒 INTERCEPTAÇÃO ADICIONAL - switchRelevanciaEvento com sistema híbrido
+    let funcaoOriginalEprocEvento = null; // Armazenar a função original do eProc se existir
+    // REMOVIDO: Interceptação completa de switchRelevanciaEvento
+    /*
+    // DESABILITADO: Circuit breaker para switchRelevanciaEvento
+    let interceptacaoAtivaEvento = false; // Desabilitado para preservar funcionalidade original
+    let contadorTentativasEvento = 0; // Contador de tentativas para evento
+
+    let funcaoEventoInterceptada = function (
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax
+    ) {
+        try {
+            // Tentar nossa função ultra-segura primeiro
+            const resultado = switchRelevanciaEventoUltraSegura(
+                idEvento,
+                relevancia,
+                tipo,
+                urlAjax
+            );
+            if (resultado === true) {
+                return true;
+            }
+        } catch (error) {
+            console.warn("⚠️ switchRelevanciaEvento falhou:", error);
+        }
+
+        // 🚨 NUNCA USAR FALLBACK - A função original do eProc é problemática!
+        console.error(
+            "❌ switchRelevanciaEvento: Todas as tentativas falharam, retornando false para segurança"
+        );
+        return false; // Sempre retornar false em vez de tentar função problemática
+    };
+
+    // Marcar nossa função de evento para identificação
+    funcaoEventoInterceptada.__eprobeInterceptadaEvento = true;
+    let tentativasRedefinicaoEvento = 0;
+    */
+
+    // REMOVIDO: Object.defineProperty para switchRelevanciaEvento (causava erro)
+    /*
+    Object.defineProperty(window, "switchRelevanciaEvento", {
+        get: function () {
+            // DESABILITADO: return funcaoEventoInterceptada;
+            return undefined; // Permitir que função original funcione
+        },
+        set: function (novaFuncao) {
+            // DESABILITADO: Não interceptar mais, permitir definição normal
+            // A função original do eProc pode ser definida sem interferência
+
+            if (!interceptacaoAtivaEvento) {
+                console.log(
+                    "⏸️ INTERCEPTAÇÃO EVENTO DESABILITADA: Permitindo redefinição direta"
+                );
+                funcaoEventoInterceptada = novaFuncao;
+                return;
+            }
+
+            logCritical(
+                `🚨 switchRelevanciaEvento: TENTATIVA ${contadorTentativasEvento} DE REDEFINIÇÃO BLOQUEADA!`
+            );
+
+            // Analisar a função que está tentando ser definida
+            if (typeof novaFuncao === "function") {
+                const codigoFuncao = novaFuncao.toString();
+                logCritical(
+                    "🔍 switchRelevanciaEvento código analisando:",
+                    codigoFuncao.substring(0, 200) + "..."
+                );
+
+                // 🚨 NUNCA ARMAZENAR função original - é problemática!
+                if (
+                    codigoFuncao.includes("controlador.php") &&
+                    !codigoFuncao.includes("ULTRA-SEGURA") &&
+                    codigoFuncao.length > 100 // Parece ser uma função real
+                ) {
+                    logCritical(
+                        "  FUNÇÃO ORIGINAL DO EPROC DETECTADA E BLOQUEADA - contém bugs!"
+                    );
+                    logCritical(
+                        "🛡️ Mantendo nossa função segura, nunca usando fallback problemático"
+                    );
+                    return; // Bloquear e nunca armazenar
+                }
+
+                // Se for nossa própria função sendo redefinida, permitir
+                if (
+                    codigoFuncao.includes("ULTRA-SEGURA") ||
+                    codigoFuncao.includes("__eprobeInterceptadaEvento")
+                ) {
+                    console.log(
+                        "✅ Permitindo redefinição da nossa própria função de evento"
+                    );
+                    funcaoEventoInterceptada = novaFuncao;
+                    return;
+                }
+
+                // Se for a função problemática do eProc, bloquear
+                if (
+                    codigoFuncao.includes("substring") &&
+                    codigoFuncao.includes("controlador.php")
+                ) {
+                    logCritical(
+                        "🛡️ switchRelevanciaEvento FUNÇÃO PROBLEMÁTICA DETECTADA E BLOQUEADA!"
+                    );
+                }
+            }
+
+            // NÃO permitir a redefinição - manter sempre nossa função
+            return;
+        },
+        configurable: false,
+        enumerable: true,
+    });
+    */
+
+    // 🔄 VERIFICAÇÃO CONTÍNUA ULTRA-AGRESSIVA - DESABILITADA
+    let verificacaoAtiva = false; // ⛔ DESABILITADO para preservar funcionalidade do eProc
+    let totalVerificacoes = 0; // Contador total de verificações
+
+    const verificarIntegridade = () => {
+        if (!verificacaoAtiva) return;
+
+        try {
+            // Verificar switchRelevanciaDocumento
+            if (window.switchRelevanciaDocumento !== funcaoInterceptada) {
+                logCritical(
+                    "🚨 switchRelevanciaDocumento ALTERADA! Forçando restore...",
+                );
+
+                // Tentar forçar nossa função de volta
+                try {
+                    delete window.switchRelevanciaDocumento;
+                } catch (e) {}
+
+                window.switchRelevanciaDocumento = funcaoInterceptada;
+            }
+
+            // Verificar se as funções existem e são nossas
+            const funcaoDocumento = window.switchRelevanciaDocumento;
+            if (typeof funcaoDocumento === "function" && interceptacaoAtiva) {
+                // Verificar se é nossa função usando marcação
+                if (
+                    !funcaoDocumento.__eprobeInterceptada &&
+                    !funcaoDocumento.toString().includes("ULTRA-SEGURA")
+                ) {
+                    logCritical(
+                        "🚨 switchRelevanciaDocumento ESTRANHA DETECTADA! Substituindo...",
+                    );
+                    window.switchRelevanciaDocumento = funcaoInterceptada;
+                } else {
+                    // É nossa função, não fazer nada
+                    if (funcaoDocumento.__eprobeInterceptada) {
+                        console.log(
+                            "✅ switchRelevanciaDocumento é nossa função (marcada)",
+                        );
+                    }
+                }
+            }
+
+            const funcaoEvento = window.switchRelevanciaEvento;
+            if (
+                typeof funcaoEvento === "function" &&
+                interceptacaoAtivaEvento
+            ) {
+                // Verificar se é nossa função usando marcação
+                if (
+                    !funcaoEvento.__eprobeInterceptadaEvento &&
+                    !funcaoEvento.toString().includes("ULTRA-SEGURA")
+                ) {
+                    logCritical(
+                        "🚨 switchRelevanciaEvento ESTRANHA DETECTADA! Mas não substituiremos mais...",
+                    );
+                    // REMOVIDO: window.switchRelevanciaEvento = funcaoEventoInterceptada;
+                } else {
+                    // É nossa função, não fazer nada
+                    if (funcaoEvento.__eprobeInterceptadaEvento) {
+                        console.log(
+                            "✅ switchRelevanciaEvento é nossa função (marcada)",
+                        );
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn("⚠️ Erro na verificação de integridade:", error);
+        }
+
+        // 🚨 CIRCUIT BREAKER DEFINITIVO: Parar verificações após período inicial
+        totalVerificacoes++;
+
+        // Dar tempo inicial para estabilizar (50 verificações = ~5 segundos)
+        if (totalVerificacoes > 50) {
+            console.log(
+                "⏹️ VERIFICAÇÃO PERIÓDICA FINALIZADA: Sistema estabilizado após 50 verificações",
+            );
+            verificacaoAtiva = false;
+            return; // Para definitivamente as verificações
+        }
+
+        // Verificar se ambas as funções estão estáveis (são nossas)
+        const funcaoDocumentoAtual = window.switchRelevanciaDocumento;
+        const funcaoEventoAtual = window.switchRelevanciaEvento;
+
+        const documentoEstavel =
+            funcaoDocumentoAtual && funcaoDocumentoAtual.__eprobeInterceptada;
+        const eventoEstavel =
+            funcaoEventoAtual && funcaoEventoAtual.__eprobeInterceptadaEvento;
+
+        if (documentoEstavel && eventoEstavel && totalVerificacoes > 10) {
+            console.log(
+                "✅ SISTEMA ESTÁVEL: Ambas funções são nossas, parando verificações periódicas",
+            );
+            verificacaoAtiva = false;
+            return; // Para as verificações quando tudo está estável
+        }
+
+        // Continuar verificações apenas se necessário
+        if (totalVerificacoes <= 50 && verificacaoAtiva) {
+            setTimeout(verificarIntegridade, 200); // Verificar menos frequentemente
+        }
+    };
+
+    // Iniciar verificação imediata
+    setTimeout(verificarIntegridade, 50);
+
+    // 🎯 INTERCEPTAÇÃO ADICIONAL - Window.prototype - DESABILITADA
+    const originalDefineProperty = Object.defineProperty;
+
+    // ️ INTERCEPTAÇÃO DE EVAL E NEW FUNCTION - DESABILITADA
+    const originalEval = window.eval;
+
+    // 🔍 INTERCEPTAÇÃO ADICIONAL - QUALQUER FUNÇÃO COM 'switchRelevancia'
+    // Interceptar QUALQUER definição de função que contenha 'switchRelevancia'
+    const monitorarDefinicoesFuncoes = () => {
+        const originalFunction = window.Function;
+        window.Function = function (...args) {
+            const codigo = args[args.length - 1] || "";
+            if (
+                codigo.includes("switchRelevancia") &&
+                codigo.includes("substring")
+            ) {
+                logCritical(
+                    "🚨 FUNÇÃO PROBLEMÁTICA DETECTADA VIA Function():",
+                    codigo.substring(0, 200),
+                );
+                // Retornar nossa função segura em vez da problemática
+                return function (idEvento, relevancia, tipo, urlAjax) {
+                    if (codigo.includes("switchRelevanciaEvento")) {
+                        return switchRelevanciaEventoUltraSegura(
+                            idEvento,
+                            relevancia,
+                            tipo,
+                            urlAjax,
+                        );
+                    } else {
+                        return switchRelevanciaDocumentoUltraSegura(
+                            idEvento,
+                            relevancia,
+                            tipo,
+                            urlAjax,
+                        );
+                    }
+                };
+            }
+            return originalFunction.apply(this, args);
+        };
+    };
+
+    // DESABILITADO: Não monitorar definições de funções para switchRelevanciaEvento
+    // monitorarDefinicoesFuncoes();
+
+    // 🕷️ INTERCEPTAÇÃO DE SCRIPT TAGS - Última linha de defesa
+    const observarScripts = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === "childList") {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.tagName === "SCRIPT" && node.textContent) {
+                        const conteudo = node.textContent;
+                        if (
+                            conteudo.includes("switchRelevancia") &&
+                            conteudo.includes("substring")
+                        ) {
+                            logCritical(
+                                "🚨 SCRIPT PROBLEMÁTICO DETECTADO E REMOVIDO!",
+                            );
+                            node.remove();
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // 🎯 INTERCEPTAÇÃO ULTRA-AGRESSIVA - Monitorar TODA criação de propriedade no window
+    const monitorarPropriedadesWindow = () => {
+        const todasPropriedades = Object.getOwnPropertyNames(window);
+
+        const verificarNovasPropriedades = () => {
+            try {
+                const novasPropriedades = Object.getOwnPropertyNames(window);
+                const adicionadas = novasPropriedades.filter(
+                    (prop) => !todasPropriedades.includes(prop),
+                );
+
+                adicionadas.forEach((prop) => {
+                    if (
+                        prop.includes("switchRelevancia") &&
+                        typeof window[prop] === "function"
+                    ) {
+                        const funcaoString = window[prop].toString();
+                        if (funcaoString.includes("substring")) {
+                            logCritical(
+                                `🚨 FUNÇÃO PROBLEMÁTICA DETECTADA DINAMICAMENTE: ${prop}`,
+                            );
+
+                            // DESABILITADO: Não substituir switchRelevanciaEvento
+                            if (prop.includes("Evento")) {
+                                // NÃO substituir - deixar função original funcionar
+                                logCritical(
+                                    `⚠️ ${prop} detectada, mas NÃO substituída para preservar funcionalidade`,
+                                );
+                            } else {
+                                window[prop] =
+                                    switchRelevanciaDocumentoUltraSegura;
+                                logCritical(
+                                    `✅ ${prop} substituída por versão segura!`,
+                                );
+                            }
+                        }
+                    }
+                    todasPropriedades.push(prop);
+                });
+            } catch (error) {
+                // Ignorar erros de acesso a propriedades
+            }
+        };
+
+        // Verificar a cada 50ms inicialmente (mais agressivo)
+        const intervaloRapido = setInterval(verificarNovasPropriedades, 50);
+
+        // Depois de 5 segundos, reduzir para 200ms
+        setTimeout(() => {
+            clearInterval(intervaloRapido);
+            setInterval(verificarNovasPropriedades, 200);
+        }, 5000);
+    };
+
+    // DESABILITADO: Não monitorar propriedades para switchRelevanciaEvento
+    // monitorarPropriedadesWindow();
+
+    logCritical(
+        "🔒 INTERCEPTAÇÃO ATIVADA: switchRelevanciaDocumento protegida (switchRelevanciaEvento REMOVIDA)!",
+    );
+    logCritical(
+        "✅ switchRelevanciaDocumento substituída:",
+        typeof window.switchRelevanciaDocumento,
+    );
+    // REMOVIDO: verificação de switchRelevanciaEvento
+
+    // Testar apenas switchRelevanciaDocumento
+    setTimeout(() => {
+        logCritical("🧪 TESTE IMEDIATO DA INTERCEPTAÇÃO DE DOCUMENTO:");
+        logCritical(
+            "  - switchRelevanciaDocumento existe:",
+            typeof window.switchRelevanciaDocumento === "function",
+        );
+        logCritical(
+            "  - switchRelevanciaDocumento é nossa:",
+            window.switchRelevanciaDocumento &&
+                window.switchRelevanciaDocumento
+                    .toString()
+                    .includes("ULTRA-SEGURA"),
+        );
+        // REMOVIDO: testes de switchRelevanciaEvento
+        logCritical(
+            "  - Tentativas bloqueadas (Documento):",
+            tentativasRedefinicao,
+        );
+        // COMENTADO: Tentativas de evento (variável não existe mais)
+        // logCritical(
+        //     "  - Tentativas bloqueadas (Evento):",
+        //     tentativasRedefinicaoEvento
+        // );
+
+        // 🔍 VERIFICAÇÃO ADICIONAL - Detectar funções problemáticas que podem ter escapado
+        setTimeout(() => {
+            logCritical(
+                "🔍 VERIFICAÇÃO FINAL - Buscando funções problemáticas...",
+            );
+
+            // Verificar se há funções problemáticas no window
+            for (const prop in window) {
+                try {
+                    if (
+                        typeof window[prop] === "function" &&
+                        window[prop].toString().includes("substring") &&
+                        prop.includes("switchRelevancia")
+                    ) {
+                        logCritical(
+                            `🚨 FUNÇÃO PROBLEMÁTICA ENCONTRADA: ${prop}`,
+                        );
+                        logCritical("🔧 Substituindo por versão segura...");
+
+                        if (prop.includes("Evento")) {
+                            // DESABILITADO: Não substituir switchRelevanciaEvento
+                            logCritical(
+                                `⚠️ ${prop} detectada, mas NÃO substituída - preservando funcionalidade original`,
+                            );
+                        } else {
+                            window[prop] = switchRelevanciaDocumentoUltraSegura;
+                        }
+
+                        logCritical(`✅ ${prop} substituída com sucesso!`);
+                    }
+                } catch (e) {
+                    // Ignorar erros de acesso a propriedades
+                }
+            }
+        }, 100);
+    }, 10);
+})();
 
 // ===== PERSONALIZAÇÃO VISUAL DAS ESTRELAS - SEM INTERFERIR NAS FUNÇÕES =====
 (function personalizarEstrelasEventos() {
@@ -2443,7 +3372,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Vista",
                     },
-                    {
+                                        {
                         nome: "Pedido de Vista em Mesa",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Pedido de Vista em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Vista",
@@ -2453,7 +3382,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Convertido em Diligência em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Diligência",
                     },
-                    {
+                                       {
                         nome: "Convertido em Diligência em Mesa",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Convertido em Diligência em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Diligência",
@@ -2463,7 +3392,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Julgado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Julgado",
                     },
-                    {
+                                        {
                         nome: "Julgado em Mesa",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Julgado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Julgado",
@@ -2473,7 +3402,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
                     },
-                    {
+                                        {
                         nome: "Retirado em Mesa",
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
@@ -7583,6 +8512,337 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
             }
 
+            // ❌ DESABILITADO: Função para adicionar interface de separadores na página de localizadores
+            /*
+            function adicionarInterfaceSeparadores(tabela) {
+                log("🛠️ LOCALIZADORES: Adicionando interface para separadores");
+
+                // Adicionar texto informativo no lugar do botão
+                adicionarTextoInformativoSeparadores(tabela);
+
+                // Adicionar menu de contexto nas linhas da tabela
+                adicionarMenuContextoLinhas(tabela);
+            }
+            */
+
+            // ❌ DESABILITADO: Função para adicionar texto informativo sobre separadores
+            /*
+            function adicionarTextoInformativoSeparadores(tabela) {
+                // Procurar container adequado para o texto (acima da tabela)
+                const containerTabela =
+                    tabela.closest(".infraAreaTabela") || tabela.parentElement;
+
+                if (!containerTabela) {
+                    log("⚠️ LOCALIZADORES: Container da tabela não encontrado");
+                    return;
+                }
+
+                // Verificar se já existe o texto informativo
+                if (document.getElementById("eprobe-info-separadores")) {
+                    return;
+                }
+
+                // Criar container para o texto informativo
+                const containerInfo = document.createElement("div");
+                containerInfo.id = "eprobe-info-separadores";
+                containerInfo.style.cssText = `
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            color: #000000;
+            font-size: 14px;
+        `;
+
+                // Criar ícone
+                const icone = document.createElement("span");
+                icone.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-satellite" style="vertical-align: middle;">
+                <path d="m13.5 6.5-3.148-3.148a1.205 1.205 0 0 0-1.704 0L6.352 5.648a1.205 1.205 0 0 0 0 1.704L9.5 10.5"/>
+                <path d="M16.5 7.5 19 5"/>
+                <path d="m17.5 10.5 3.148 3.148a1.205 1.205 0 0 1 0 1.704l-2.296 2.296a1.205 1.205 0 0 1-1.704 0L13.5 14.5"/>
+                <path d="M9 21a6 6 0 0 0-6-6"/>
+                <path d="M9.352 10.648a1.205 1.205 0 0 0 0 1.704l2.296 2.296a1.205 1.205 0 0 0 1.704 0l4.296-4.296a1.205 1.205 0 0 0 0-1.704l-2.296-2.296a1.205 1.205 0 0 0-1.704 0z"/>
+            </svg>
+        `;
+
+                // Criar texto
+                const textoInfo = document.createElement("span");
+                textoInfo.innerHTML =
+                    'Função <strong><span style="color: #134377;">eProbe</span></strong>: clique com o botão direito em qualquer localizador para adicionar um separador';
+
+                // Adicionar elementos ao container
+                containerInfo.appendChild(icone);
+                containerInfo.appendChild(textoInfo);
+
+                // Inserir antes da tabela
+                containerTabela.insertBefore(containerInfo, tabela);
+
+                log(
+                    "✅ LOCALIZADORES: Texto informativo de separadores adicionado"
+                );
+            }
+            */
+
+            // ❌ DESABILITADO: Função para adicionar menu de contexto nas linhas
+            /*
+            function adicionarMenuContextoLinhas(tabela) {
+                const linhas = tabela.querySelectorAll(
+                    "tbody tr:not(.eprobe-divisor-linha)"
+                );
+
+                console.log(
+                    `🔍 LOCALIZADORES: Adicionando menu de contexto a ${linhas.length} linhas`
+                );
+
+                linhas.forEach((linha, index) => {
+                    // Remover event listeners existentes para evitar duplicação
+                    const novaLinha = linha.cloneNode(true);
+                    linha.parentNode.replaceChild(novaLinha, linha);
+
+                    // Adicionar evento de clique direito na nova linha
+                    novaLinha.addEventListener(
+                        "contextmenu",
+                        function (e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log(
+                                `🖱️ LOCALIZADORES: Clique direito na linha ${
+                                    index + 1
+                                }`
+                            );
+                            mostrarMenuContextoSeparador(
+                                e,
+                                novaLinha,
+                                tabela,
+                                index + 1
+                            );
+                        },
+                        { passive: false }
+                    ); // Importante: não é passivo para permitir preventDefault
+
+                    // Adicionar indicação visual de que é clicável
+                    novaLinha.style.cursor = "context-menu";
+                    novaLinha.title =
+                        "Clique com o botão direito para adicionar separador";
+                });
+
+                console.log(
+                    `✅ LOCALIZADORES: Menu de contexto adicionado a ${linhas.length} linhas`
+                );
+            }
+            */
+
+            // ❌ DESABILITADO: Função para mostrar menu de contexto para separador
+            /*
+            function mostrarMenuContextoSeparador(
+                event,
+                linha,
+                tabela,
+                numeroLinha
+            ) {
+                console.log(
+                    `🎯 LOCALIZADORES: Criando menu de contexto para linha ${numeroLinha}`
+                );
+
+                // IMPERATIVO: Prevenir menu nativo PRIMEIRO
+                event.preventDefault();
+                event.stopPropagation();
+                event.stopImmediatePropagation();
+
+                // Remover menu existente se houver
+                const menuExistente = document.getElementById(
+                    "eprobe-menu-contexto-separador"
+                );
+                if (menuExistente) {
+                    menuExistente.remove();
+                    console.log("🗑️ LOCALIZADORES: Menu existente removido");
+                }
+
+                // TRUQUE: Criar overlay para bloquear menu nativo
+                const overlay = document.createElement("div");
+                overlay.id = "eprobe-menu-overlay";
+                overlay.style.cssText = `
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 9999998 !important;
+            background: transparent !important;
+            pointer-events: auto !important;
+        `;
+                document.body.appendChild(overlay);
+
+                // Criar menu de contexto
+                const menu = document.createElement("div");
+                menu.id = "eprobe-menu-contexto-separador";
+                menu.style.cssText = `
+            position: fixed !important;
+            top: ${event.clientY + 2}px !important;
+            left: 500px !important;
+            background: white !important;
+            border: 1px solid #ccc !important;
+            border-radius: 6px !important;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+            z-index: 9999999 !important;
+            min-width: 220px !important;
+            max-width: 320px !important;
+            font-family: 'Roboto', 'Segoe UI', sans-serif !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: scale(1) !important;
+            margin: 0 !important;
+            padding: 4px 0 !important;
+            backdrop-filter: blur(8px) !important;
+            user-select: none !important;
+        `;
+
+                // Criar opção do menu
+                const opcaoSeparador = document.createElement("div");
+                opcaoSeparador.style.cssText = `
+            padding: 12px 16px !important;
+            cursor: pointer !important;
+            border-bottom: 1px solid #f0f0f0 !important;
+            font-size: 14px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            background: white !important;
+            color: #333 !important;
+            text-decoration: none !important;
+            transition: all 0.15s ease !important;
+            margin: 0 !important;
+            border-radius: 0 !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            font-weight: 500 !important;
+            line-height: 1.4 !important;
+        `;
+
+                // Adicionar hover effect via JavaScript para garantir funcionamento
+                opcaoSeparador.addEventListener("mouseenter", function () {
+                    this.style.backgroundColor = "#f8f9fa !important";
+                    this.style.color = "#1a73e8 !important";
+                });
+
+                opcaoSeparador.addEventListener("mouseleave", function () {
+                    this.style.backgroundColor = "white !important";
+                    this.style.color = "#333 !important";
+                });
+
+                opcaoSeparador.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+                <path d="m16 16-4 4-4-4"/>
+                <path d="M3 12h18"/>
+                <path d="m8 8 4-4 4 4"/>
+            </svg>
+            <span>Adicionar separador após linha ${numeroLinha}</span>
+        `;
+
+                // Evento da opção
+                opcaoSeparador.addEventListener("click", function () {
+                    console.log("📝 LOCALIZADORES: Opção do menu clicada");
+
+                    // Remover overlay e menu imediatamente
+                    overlay.remove();
+                    menu.remove();
+
+                    const nomeSecao = prompt(
+                        "Digite o nome da seção:",
+                        "Nova Seção"
+                    );
+                    if (nomeSecao !== null && nomeSecao.trim() !== "") {
+                        console.log(
+                            `🎯 LOCALIZADORES: Criando separador "${nomeSecao}" após linha ${numeroLinha}`
+                        );
+                        try {
+                            const separadorCriado = criarDivisorEditavel(
+                                tabela,
+                                linha,
+                                nomeSecao.trim()
+                            );
+                            if (separadorCriado) {
+                                console.log(
+                                    `✅ LOCALIZADORES: Separador "${nomeSecao}" criado com sucesso`
+                                );
+                            } else {
+                                console.error(
+                                    "❌ LOCALIZADORES: Falha ao criar separador"
+                                );
+                            }
+                        } catch (error) {
+                            console.error(
+                                "❌ LOCALIZADORES: Erro ao criar separador:",
+                                error
+                            );
+                        }
+                    } else {
+                        console.log(
+                            "ℹ️ LOCALIZADORES: Criação de separador cancelada pelo usuário"
+                        );
+                    }
+                });
+
+                // Adicionar opção ao menu
+                menu.appendChild(opcaoSeparador);
+
+                // Adicionar menu ao overlay (que já está no body)
+                overlay.appendChild(menu);
+                console.log("📋 LOCALIZADORES: Menu adicionado ao overlay");
+
+                // Remover menu ao clicar fora (no overlay)
+                overlay.addEventListener("click", function (e) {
+                    if (e.target === overlay) {
+                        overlay.remove();
+                        console.log(
+                            "🗑️ LOCALIZADORES: Menu removido por clique no overlay"
+                        );
+                    }
+                });
+
+                // Escape key para fechar
+                const fecharComEscape = function (e) {
+                    if (e.key === "Escape") {
+                        overlay.remove();
+                        document.removeEventListener(
+                            "keydown",
+                            fecharComEscape
+                        );
+                        console.log(
+                            "🗑️ LOCALIZADORES: Menu removido por Escape"
+                        );
+                    }
+                };
+                document.addEventListener("keydown", fecharComEscape);
+
+                // Ajustar posição se sair da tela
+                setTimeout(() => {
+                    const rect = menu.getBoundingClientRect();
+                    let newTop = event.clientY + 2;
+                    let newLeft = event.clientX + 2;
+
+                    if (rect.right > window.innerWidth) {
+                        newLeft = event.clientX - rect.width - 2;
+                    }
+                    if (rect.bottom > window.innerHeight) {
+                        newTop = event.clientY - rect.height - 2;
+                    }
+
+                    menu.style.top = newTop + "px";
+                    menu.style.left = newLeft + "px";
+                }, 10);
+
+                console.log(
+                    "✅ LOCALIZADORES: Menu de contexto criado e posicionado com overlay"
+                );
+            }
+            */
+
             // Sistema robusto de criação de botão com múltiplas tentativas
             let buttonCreationAttempts = 0;
             const MAX_BUTTON_CREATION_ATTEMPTS = 5;
@@ -11718,6 +12978,17 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 return keywordCount >= 2; // Pelo menos 2 palavras-chave jurídicas
             }
 
+            // Função auxiliar: Limpar texto extraído
+            function cleanExtractedText(text) {
+                return text
+                    .replace(/[\u200B-\u200D\uFEFF]/g, "") // Remove zero-width chars
+                    .replace(/[\u00A0]/g, " ") // Replace non-breaking space
+                    .replace(/[\u2000-\u200A]/g, " ") // Replace unicode spaces
+                    .replace(/[\u2028\u2029]/g, "\n") // Replace line/paragraph separators
+                    .replace(/\s+/g, " ") // Normalize multiple spaces
+                    .trim();
+            }
+
             // 🔧 FUNÇÃO ALTERNATIVA PARA PDF (SEM PDF.JS EXTERNO - CSP SAFE)
             async function loadPDFJS() {
                 return new Promise((resolve, reject) => {
@@ -15578,6 +16849,83 @@ ${texto}`;
             }
 
             // Debug: verificar se o botão foi criado
+            function debugButtonStatus() {
+                setTimeout(() => {
+                    const button = document.getElementById("sent1-auto-button");
+                    const integratedButton = document.getElementById(
+                        "documento-relevante-auto-button",
+                    );
+
+                    log("=== DEBUG STATUS DO BOTÃO ===");
+                    log("Página atual:", window.location.href);
+                    log("Tipo de página detectado:", detectPageType());
+                    log("Página é válida para botão:", isValidPageForButton());
+
+                    if (button) {
+                        log(" Botão SENT1 encontrado:", button);
+                        const isFloating = button.style.position === "fixed";
+                        log(
+                            " Tipo de botão:",
+                            isFloating ? "Flutuante" : "Integrado",
+                        );
+
+                        if (isFloating) {
+                            log(" Posição do botão flutuante:", {
+                                top: button.style.top,
+                                right: button.style.right,
+                                zIndex: button.style.zIndex,
+                                display: getComputedStyle(button).display,
+                                visibility: getComputedStyle(button).visibility,
+                            });
+                        } else {
+                            log(" Informações do botão integrado:", {
+                                parentElement: button.parentElement?.tagName,
+                                parentClass: button.parentElement?.className,
+                                display: getComputedStyle(button).display,
+                                visibility: getComputedStyle(button).visibility,
+                            });
+                        }
+                    } else if (integratedButton) {
+                        log(" Botão integrado encontrado:", integratedButton);
+                    } else {
+                        log(" NENHUM BOTÃO ENCONTRADO!");
+                        log(" Tentando criar botão agora...");
+
+                        // Tentar criar botão imediatamente no debug
+                        try {
+                            if (
+                                typeof shouldShowIntegratedButton ===
+                                    "function" &&
+                                shouldShowIntegratedButton()
+                            ) {
+                                log(
+                                    " Página atende critérios para botão integrado - tentando criar...",
+                                );
+                                createAutomationButton();
+                            } else if (
+                                typeof shouldShowFloatingButton ===
+                                    "function" &&
+                                shouldShowFloatingButton()
+                            ) {
+                                log(
+                                    " Página atende critérios para botão flutuante - tentando criar...",
+                                );
+                                createFloatingButton();
+                            } else {
+                                log(
+                                    " Página não atende critérios para nenhum botão",
+                                );
+                            }
+                        } catch (e) {
+                            console.warn(
+                                "⚠️ Erro ao verificar critérios do botão:",
+                                e.message,
+                            );
+                        }
+                    }
+                    log("=== FIM DEBUG STATUS ===");
+                }, 2000);
+            }
 
             // Debug avançado da API com logging estruturado
             function debugApiCall(requestId, phase, data) {
@@ -16742,6 +18090,256 @@ ${texto}`;
                 }
 
                 log(" === FIM DEBUG ESTRUTURA ===");
+            }
+
+            // Função aprimorada para encontrar descrição do evento
+            function findEventDescription(linkElement) {
+                const strategies = [
+                    () => findEventDescriptionInSameRow(linkElement),
+                    () => findEventDescriptionInPreviousRows(linkElement),
+                    () => findEventDescriptionByTextPattern(linkElement),
+                    () => findEventDescriptionInTableStructure(linkElement),
+                    () => findEventDescriptionByProximity(linkElement),
+                ];
+
+                for (let i = 0; i < strategies.length; i++) {
+                    try {
+                        log(`Executando estratégia ${i + 1} para descrição...`);
+                        const result = strategies[i]();
+                        if (result && result.trim().length > 3) {
+                            log(`Estratégia ${i + 1} bem-sucedida:`, result);
+                            return result.trim();
+                        }
+                    } catch (e) {
+                        log(`Erro na estratégia ${i + 1}:`, e);
+                    }
+                }
+
+                log("Nenhuma estratégia encontrou descrição válida");
+                return "";
+            }
+
+            // Estratégia 1: Buscar na mesma linha do link
+            function findEventDescriptionInSameRow(linkElement) {
+                const currentRow = linkElement.closest("tr");
+                if (!currentRow) return "";
+
+                log("Buscando na linha atual...");
+
+                // Buscar por seletores conhecidos
+                const selectors = [
+                    "td.infraEventoDescricao",
+                    "label.infraEventoDescricao",
+                    "td[class*='evento'][class*='descricao']",
+                    "td[class*='Evento'][class*='Descricao']",
+                ];
+
+                for (const selector of selectors) {
+                    const element = currentRow.querySelector(selector);
+                    if (element) {
+                        const text = element.textContent.trim();
+                        if (text && !text.toLowerCase().includes("sent")) {
+                            log(`Encontrado via seletor ${selector}:`, text);
+                            return text;
+                        }
+                    }
+                }
+
+                return "";
+            }
+
+            // Estratégia 2: Buscar em linhas anteriores (evento pode estar em linha separada)
+            function findEventDescriptionInPreviousRows(linkElement) {
+                const currentRow = linkElement.closest("tr");
+                if (!currentRow) return "";
+
+                log("Buscando em linhas anteriores...");
+
+                let previousRow = currentRow.previousElementSibling;
+                let attempts = 0;
+
+                while (previousRow && attempts < 10) {
+                    attempts++;
+
+                    // Verificar se esta linha contém descrição de evento
+                    const eventDescSelectors = [
+                        "td.infraEventoDescricao",
+                        "label.infraEventoDescricao",
+                        "td[class*='evento']",
+                        "td[class*='Evento']",
+                    ];
+
+                    for (const selector of eventDescSelectors) {
+                        const element = previousRow.querySelector(selector);
+                        if (element) {
+                            const text = element.textContent.trim();
+                            if (
+                                text &&
+                                text.length > 5 &&
+                                !text.toLowerCase().includes("sent")
+                            ) {
+                                log(
+                                    `Encontrado em linha anterior (${attempts}):`,
+                                    text,
+                                );
+                                return text;
+                            }
+                        }
+                    }
+
+                    previousRow = previousRow.previousElementSibling;
+                }
+
+                return "";
+            }
+
+            // Estratégia 3: Buscar por padrões de texto típicos de descrição de evento
+            function findEventDescriptionByTextPattern(linkElement) {
+                const currentRow = linkElement.closest("tr");
+                if (!currentRow) return "";
+
+                log("Buscando por padrões de texto...");
+
+                // Expandir busca para linhas próximas
+                const rowsToCheck = [];
+
+                // Adicionar linha atual
+                rowsToCheck.push(currentRow);
+
+                // Adicionar linhas anteriores
+                let prevRow = currentRow.previousElementSibling;
+                for (let i = 0; i < 5 && prevRow; i++) {
+                    rowsToCheck.unshift(prevRow);
+                    prevRow = prevRow.previousElementSibling;
+                }
+
+                // Adicionar linhas posteriores
+                let nextRow = currentRow.nextElementSibling;
+                for (let i = 0; i < 2 && nextRow; i++) {
+                    rowsToCheck.push(nextRow);
+                    nextRow = nextRow.nextElementSibling;
+                }
+
+                // Padrões que indicam descrição de evento judicial
+                const eventPatterns = [
+                    /julgamento/i,
+                    /decisão/i,
+                    /sentença/i,
+                    /prolação/i,
+                    /publicação/i,
+                    /audiência/i,
+                    /despacho/i,
+                    /determinação/i,
+                    /intimação/i,
+                    /citação/i,
+                    /distribuição/i,
+                    /remessa/i,
+                    /devolução/i,
+                    /conclusão/i,
+                ];
+
+                for (const row of rowsToCheck) {
+                    const cells = row.querySelectorAll("td");
+                    for (const cell of cells) {
+                        const text = cell.textContent.trim();
+
+                        // Verificar se o texto tem tamanho razoável e contém padrões de evento
+                        if (text.length > 10 && text.length < 200) {
+                            for (const pattern of eventPatterns) {
+                                if (
+                                    pattern.test(text) &&
+                                    !text.toLowerCase().includes("sent1")
+                                ) {
+                                    log(
+                                        `Encontrado por padrão "${pattern}":`,
+                                        text,
+                                    );
+                                    return text;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return "";
+            }
+
+            // Estratégia 4: Analisar estrutura da tabela para encontrar coluna de descrição
+            function findEventDescriptionInTableStructure(linkElement) {
+                const table = linkElement.closest("table");
+                if (!table) return "";
+
+                log("Analisando estrutura da tabela...");
+
+                const currentRow = linkElement.closest("tr");
+                const linkCellIndex = Array.from(currentRow.cells).findIndex(
+                    (cell) => cell.contains(linkElement),
+                );
+
+                // Buscar na mesma linha, mas em células que podem conter descrição
+                for (let i = 0; i < currentRow.cells.length; i++) {
+                    if (i === linkCellIndex) continue; // Pular célula do link
+
+                    const cell = currentRow.cells[i];
+                    const text = cell.textContent.trim();
+
+                    // Verificar se parece uma descrição (texto médio, não apenas números/datas)
+                    if (text.length > 15 && text.length < 150) {
+                        // Verificar se não é apenas data, números ou links
+                        if (
+                            !/^\d+[\d\/\-\s]*$/.test(text) &&
+                            !text.toLowerCase().includes("sent") &&
+                            !/^https?:\/\//.test(text)
+                        ) {
+                            log(
+                                `Encontrado na estrutura da tabela (célula ${i}):`,
+                                text,
+                            );
+                            return text;
+                        }
+                    }
+                }
+
+                return "";
+            }
+
+            // Estratégia 5: Buscar por proximidade usando XPath-like logic
+            function findEventDescriptionByProximity(linkElement) {
+                log("Buscando por proximidade...");
+
+                // Buscar elementos próximos que podem conter descrição
+                const parent =
+                    linkElement.closest("td") || linkElement.closest("tr");
+                if (!parent) return "";
+
+                // Buscar em elementos irmãos
+                const siblings = parent.parentElement
+                    ? Array.from(parent.parentElement.children)
+                    : [];
+
+                for (const sibling of siblings) {
+                    if (sibling === parent) continue;
+
+                    const text = sibling.textContent.trim();
+                    if (
+                        text.length > 20 &&
+                        text.length < 200 &&
+                        !text.toLowerCase().includes("sent") &&
+                        !/^\d+[\d\/\-\s]*$/.test(text)
+                    ) {
+                        // Verificar se contém palavras típicas de processo judicial
+                        if (
+                            /julgamento|decisão|sentença|audiência|despacho|intimação|publicação|prolação/i.test(
+                                text,
+                            )
+                        ) {
+                            log(`Encontrado por proximidade:`, text);
+                            return text;
+                        }
+                    }
+                }
+
+                return "";
             }
 
             // Observador de mudanças na página - VERSÃO ULTRA-ROBUSTA
@@ -19745,6 +21343,466 @@ ${texto}`;
 
                 return statusDetectado;
             }
+
+            // ========================================
+            // ❌ SEÇÃO COMENTADA: FUNÇÕES DUPLICADAS DE PDF
+            // ========================================
+            // ✅ Nossa implementação principal está nas linhas 8061-8175
+            // ❌ Estas funções eram parte do sistema antigo complexo
+
+            /*
+        **
+         * ESTRATÉGIA 1: Extrair texto via seleção automática
+         *
+        async function tryExtractTextViaSelection(pdfElement) {
+            try {
+                log("  Tentando extração via seleção automática...");
+
+                // Focar no elemento PDF
+                pdfElement.focus();
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Simular Ctrl+A para selecionar todo o texto
+                const selectAllEvent = new KeyboardEvent("keydown", {
+                    key: "a",
+                    code: "KeyA",
+                    ctrlKey: true,
+                    metaKey: false,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                pdfElement.dispatchEvent(selectAllEvent);
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+
+                // Tentar obter texto selecionado
+                const selectedText = window.getSelection().toString();
+                if (selectedText && selectedText.length > 50) {
+                    log(" Texto obtido via getSelection()");
+                    return selectedText;
+                }
+
+                // Simular Ctrl+C para copiar
+                const copyEvent = new KeyboardEvent("keydown", {
+                    key: "c",
+                    code: "KeyC",
+                    ctrlKey: true,
+                    metaKey: false,
+                    bubbles: true,
+                    cancelable: true,
+                });
+
+                pdfElement.dispatchEvent(copyEvent);
+                await new Promise((resolve) => setTimeout(resolve, 500));
+
+                // Tentar ler do clipboard
+                try {
+                    const clipboardText = await navigator.clipboard.readText();
+                    if (clipboardText && clipboardText.length > 50) {
+                        log(" Texto obtido via clipboard após Ctrl+C");
+                        return clipboardText;
+                    }
+                } catch (clipError) {
+                    log(" Acesso negado ao clipboard");
+                }
+
+                return null;
+            } catch (error) {
+                log(` Erro na seleção automática: ${error.message}`);
+                return null;
+            }
+        }
+
+        /**
+         * ESTRATÉGIA 2: Extrair texto via PDF.js
+         */
+            async function tryExtractTextViaPdfJs(pdfElement) {
+                try {
+                    log("📚 Tentando extração via PDF.js...");
+
+                    const pdfUrl = pdfElement.src;
+                    if (
+                        !pdfUrl ||
+                        pdfUrl.startsWith("blob:") ||
+                        pdfUrl.startsWith("data:")
+                    ) {
+                        log(" URL do PDF não é adequada para PDF.js");
+                        return null;
+                    }
+
+                    // Carregar PDF.js se necessário
+                    if (typeof pdfjsLib === "undefined") {
+                        log("📦 Carregando PDF.js...");
+                        await loadPdfJsLibrary();
+                    }
+
+                    log(`  Processando PDF: ${pdfUrl}`);
+                    const pdf = await pdfjsLib.getDocument(pdfUrl).promise;
+                    let fullText = "";
+
+                    // Extrair texto de todas as páginas (limitado a 10 páginas para performance)
+                    const numPages = Math.min(pdf.numPages, 10);
+                    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+                        const page = await pdf.getPage(pageNum);
+                        const textContent = await page.getTextContent();
+
+                        const pageText = textContent.items
+                            .filter(
+                                (item) =>
+                                    item.str && item.str.trim().length > 0,
+                            )
+                            .map((item) => item.str)
+                            .join(" ");
+
+                        if (pageText.trim()) {
+                            fullText += pageText + "\n\n";
+                        }
+
+                        // Mostrar progresso
+                        if (numPages > 1) {
+                            showNotification(
+                                ` Processando página ${pageNum}/${numPages}...`,
+                                "info",
+                            );
+                        }
+                    }
+
+                    if (fullText.trim().length > 50) {
+                        log(
+                            ` PDF.js extraiu ${fullText.length} caracteres de ${numPages} páginas`,
+                        );
+                        return fullText.trim();
+                    }
+
+                    return null;
+                } catch (error) {
+                    log(` Erro no PDF.js: ${error.message}`);
+                    return null;
+                }
+            }
+
+            /**
+             * ❌ ESTRATÉGIA DESABILITADA: Fetch direto do PDF (violava políticas do eProc)
+             */
+            async function tryExtractTextViaFetch(pdfElement) {
+                console.log(
+                    "❌ FETCH PDF DESABILITADO: Esta função foi desabilitada por violação às políticas do eProc",
+                );
+                return null; // Sempre retorna null
+            }
+
+            /**
+             * ESTRATÉGIA 4: Extrair via clipboard com comandos específicos
+             */
+            async function tryExtractTextViaClipboard(pdfElement) {
+                try {
+                    log(" Tentando extração via clipboard...");
+
+                    // Limpar clipboard primeiro
+                    try {
+                        await navigator.clipboard.writeText("");
+                    } catch (e) {
+                        log(" Não foi possível limpar clipboard");
+                    }
+
+                    // Focar e tentar diferentes combinações de teclas
+                    pdfElement.focus();
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+
+                    // Tentar Ctrl+A seguido de Ctrl+C
+                    document.execCommand("selectAll");
+                    await new Promise((resolve) => setTimeout(resolve, 300));
+                    document.execCommand("copy");
+                    await new Promise((resolve) => setTimeout(resolve, 500));
+
+                    // Verificar clipboard
+                    try {
+                        const clipboardText =
+                            await navigator.clipboard.readText();
+                        if (clipboardText && clipboardText.trim().length > 50) {
+                            log(" Texto obtido via execCommand");
+                            return clipboardText.trim();
+                        }
+                    } catch (clipError) {
+                        log(" Acesso negado ao clipboard após execCommand");
+                    }
+
+                    return null;
+                } catch (error) {
+                    log(` Erro na extração via clipboard: ${error.message}`);
+                    return null;
+                }
+            }
+
+            /**
+             * Carrega a biblioteca PDF.js dinamicamente
+             */
+            async function loadPdfJsLibrary() {
+                if (typeof pdfjsLib !== "undefined") {
+                    return;
+                }
+
+                log("📦 Carregando PDF.js...");
+
+                // Carregar PDF.js da CDN
+                const script = document.createElement("script");
+                script.src =
+                    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+                document.head.appendChild(script);
+
+                await new Promise((resolve, reject) => {
+                    script.onload = () => {
+                        log(" PDF.js carregado com sucesso");
+                        // Configurar worker
+                        if (typeof pdfjsLib !== "undefined") {
+                            pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+                        }
+                        resolve();
+                    };
+                    script.onerror = () => {
+                        log(" Erro ao carregar PDF.js");
+                        reject(new Error("Falha ao carregar PDF.js"));
+                    };
+                });
+
+                // Aguardar inicialização
+                await new Promise((resolve) => setTimeout(resolve, 1000));
+            }
+
+            /**
+             * Limpa e normaliza texto extraído de PDF
+             */
+            function cleanExtractedText(text) {
+                return text
+                    .replace(/\r\n/g, "\n") // Normalizar quebras de linha
+                    .replace(/\r/g, "\n") // Normalizar quebras de linha
+                    .replace(/\n{3,}/g, "\n\n") // Reduzir quebras de linha excessivas
+                    .replace(/\s+/g, " ") // Normalizar espaços múltiplos
+                    .replace(/([.!?])\s*([A-ZÁÊÇ])/g, "$1\n\n$2") // Quebrar em parágrafos
+                    .trim();
+            }
+
+            /**
+             * Trata erros na extração de texto e oferece soluções
+             */
+            async function handleTextExtractionError(error, pdfElement) {
+                const pdfUrl = pdfElement?.src || "";
+
+                log(" Tentativas diretas falharam, oferecendo alternativas");
+
+                showNotification(
+                    " Extração automática não foi possível!\n\n" +
+                        "Métodos alternativos:\n" +
+                        "1. Selecione o texto manualmente no PDF (Ctrl+A, Ctrl+C)\n" +
+                        "2. Baixe o PDF e use Perplexity/Claude com upload\n" +
+                        "3. Use ferramenta de conversão PDF para texto\n\n" +
+                        " Alguns PDFs têm proteções que impedem extração automática.",
+                    "warning",
+                );
+
+                // Tentar iniciar download automático como fallback
+                await tryAutoDownloadPDF(pdfUrl);
+
+                return null;
+            }
+
+            /**
+             * Tenta extrair texto direto do PDF usando APIs nativas
+             */
+            async function tryExtractDirectPdfText(pdfElement) {
+                try {
+                    log(" Tentando extração direta de texto do PDF...");
+
+                    // Verificar se é um PDF embedado do Chrome
+                    if (
+                        pdfElement.type === "application/pdf" ||
+                        pdfElement.type === "application/x-google-chrome-pdf"
+                    ) {
+                        // Tentar selecionar tudo no PDF e copiar
+                        pdfElement.focus();
+
+                        // Simular Ctrl+A para selecionar todo o texto
+                        const selectAllEvent = new KeyboardEvent("keydown", {
+                            key: "a",
+                            ctrlKey: true,
+                            bubbles: true,
+                        });
+                        pdfElement.dispatchEvent(selectAllEvent);
+
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, 500),
+                        );
+
+                        // Tentar ler da clipboard se possível
+                        try {
+                            if (
+                                navigator.clipboard &&
+                                navigator.clipboard.readText
+                            ) {
+                                const clipboardText =
+                                    await navigator.clipboard.readText();
+                                if (
+                                    clipboardText &&
+                                    clipboardText.length > 100
+                                ) {
+                                    log(" Texto extraído via clipboard");
+                                    return clipboardText;
+                                }
+                            }
+                        } catch (clipboardError) {
+                            log(" Acesso ao clipboard negado");
+                        }
+                    }
+
+                    // Tentar outras abordagens para PDFs
+                    const pdfUrl = pdfElement.src;
+                    if (pdfUrl && !pdfUrl.startsWith("blob:")) {
+                        // Tentar carregar PDF.js se disponível
+                        if (typeof pdfjsLib !== "undefined") {
+                            log("📚 Tentando PDF.js para extração...");
+                            const pdf =
+                                await pdfjsLib.getDocument(pdfUrl).promise;
+                            const page = await pdf.getPage(1);
+                            const textContent = await page.getTextContent();
+
+                            const text = textContent.items
+                                .map((item) => item.str)
+                                .join(" ");
+                            if (text.length > 100) {
+                                log(" Texto extraído via PDF.js");
+                                return text;
+                            }
+                        }
+                    }
+
+                    return null;
+                } catch (error) {
+                    log(` Extração direta falhou: ${error.message}`);
+                    return null;
+                }
+            }
+
+            /**
+             * Captura imagem do PDF para OCR usando múltiplas estratégias
+             */
+            async function captureImageForOCR(pdfElement) {
+                try {
+                    showNotification("  Capturando imagem do PDF...", "info");
+
+                    // Método 1: html2canvas (mais confiável)
+                    const canvasFromHtml2Canvas =
+                        await tryHtml2Canvas(pdfElement);
+                    if (canvasFromHtml2Canvas) {
+                        log(" Captura via html2canvas bem-sucedida");
+                        return canvasFromHtml2Canvas;
+                    }
+
+                    // Método 2: Canvas nativo
+                    log(" Tentando captura via canvas nativo...");
+                    const canvasNativo = await tryNativeCanvas(pdfElement);
+                    if (canvasNativo) {
+                        log(" Captura via canvas nativo bem-sucedida");
+                        return canvasNativo;
+                    }
+
+                    // Método 3: Usar screenshot da viewport
+                    log(" Tentando captura da viewport...");
+                    const viewportCanvas = await tryViewportCapture(pdfElement);
+                    if (viewportCanvas) {
+                        log(" Captura da viewport bem-sucedida");
+                        return viewportCanvas;
+                    }
+
+                    throw new Error("Todos os métodos de captura falharam");
+                } catch (error) {
+                    log(` Erro na captura de imagem: ${error.message}`);
+                    return null;
+                }
+            }
+
+            /**
+             * Tenta download automático do PDF
+             */
+            async function tryAutoDownloadPDF(pdfUrl) {
+                if (
+                    !pdfUrl ||
+                    pdfUrl.startsWith("blob:") ||
+                    pdfUrl.startsWith("chrome-extension:")
+                ) {
+                    return;
+                }
+
+                try {
+                    log(" Tentando download automático do PDF...");
+                    const link = document.createElement("a");
+                    link.href = pdfUrl;
+                    link.download = "documento-eproc.pdf";
+                    link.style.display = "none";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+
+                    showNotification(
+                        "Download iniciado! Use o arquivo com Perplexity/Claude.",
+                        "info",
+                    );
+                } catch (downloadError) {
+                    log(
+                        ` Download automático falhou: ${downloadError.message}`,
+                    );
+                }
+            }
+
+            // Modal customizado para opções de preview
+            function showPreviewOptionsModal() {
+                return new Promise((resolve) => {
+                    const overlay = document.createElement("div");
+                    overlay.className = "help-modal-overlay";
+                    overlay.innerHTML = `
+ <div class="help-modal" style="max-width: 420px;">
+ <div class="help-modal-header">
+ <h2 style="font-size:1.1rem;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.2em;height:1.2em;">
+ <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+ <circle cx="12" cy="12" r="3"/>
+ </svg>
+ Texto Extraído
+ </h2>
+ <button class="help-close-btn" aria-label="Fechar">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12" /><path d="m6 6 12 12" /></svg>
+ </button>
+ </div>
+ <div class="help-modal-content" style="padding:24px 20px 20px 20px;">
+ <div style="margin-bottom:18px;display:flex;align-items:center;gap:8px;">
+ <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:1.1em;height:1.1em;color:#134377;"><polyline points="20 6 9 17 4 12" /></svg>
+ <span style="color:rgb(var(--color-text-main));font-size:1rem;">Texto extraído com sucesso!</span>
+ </div>
+ <p style="color:rgb(var(--color-text-muted));margin-bottom:20px;line-height:1.5;">Deseja visualizar o preview do texto antes de copiar?</p>
+ <div style="display:flex;gap:12px;justify-content:flex-end;">
+ <button class="btn primary" id="preview-yes-btn" style="min-width:100px;">Ver Preview</button>
+ <button class="btn" id="preview-no-btn" style="min-width:120px;">Copiar Direto</button>
+ </div>
+ </div>
+ </div>
+ `;
+                    document.body.appendChild(overlay);
+                    const close = (result) => {
+                        document.body.removeChild(overlay);
+                        resolve(result);
+                    };
+                    overlay.querySelector(".help-close-btn").onclick = () =>
+                        close(false);
+                    overlay.querySelector("#preview-yes-btn").onclick = () =>
+                        close(true);
+                    overlay.querySelector("#preview-no-btn").onclick = () =>
+                        close(false);
+                    overlay.addEventListener("click", (e) => {
+                        if (e.target === overlay) close(false);
+                    });
+                });
+            }
+
             // Modal customizado para opções de processamento de documento
             function showDocumentProcessingModal() {
                 return new Promise((resolve) => {
@@ -26704,8 +28762,8 @@ ${texto}`;
                 }
             }
 
-            // 🔄 OBSERVADOR ESPECÍFICO: Monitorar atualizações de icones na seção legMinutas
-            function setupObservadorLegendMinutasIcones() {
+            // 🔄 OBSERVADOR ESPECÍFICO: Monitorar atualizações na seção legMinutas
+            function setupObservadorLegendMinutas() {
                 try {
                     const legMinutas = document.getElementById("legMinutas");
 
@@ -28131,6 +30189,29 @@ ${texto}`;
                         newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
                         name: "Lupa",
                     },
+                    // DESABILITADO: Ícones de estrela para preservar funcionalidade do eProc
+                    /*
+                    {
+                        // Ícones de estrela acesa (preenchida)
+                        selectors: [
+                            'img[src*="EstrelaAcesa.gif"]',
+                            'img[alt*="Evento relevante"]',
+                            'img[title*="Relevante"]',
+                        ],
+                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+                        name: "Estrela Acesa",
+                    },
+                    {
+                        // Ícones de estrela apagada (só contorno)
+                        selectors: [
+                            'img[src*="EstrelaApagada.gif"]',
+                            'img[src*="estrela_apagada.gif"]',
+                            'img[alt*="Evento normal"]',
+                        ],
+                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
+                        name: "Estrela Apagada",
+                    },
+                    */ // FIM DAS SUBSTITUIÇÕES DE ESTRELA DESABILITADAS
                     {
                         // Ícones de vídeo/televisão
                         selectors: [
@@ -29680,14 +31761,12 @@ ${texto}`;
                     );
                     try {
                         if (
-                            typeof setupObservadorLegendMinutasIcones ===
-                            "function"
+                            typeof setupObservadorLegendMinutas === "function"
                         ) {
-                            const observer =
-                                setupObservadorLegendMinutasIcones();
+                            const observer = setupObservadorLegendMinutas();
                             if (observer) {
                                 log(
-                                    "✅ MINUTAS: Observer icones legMinutas inicializado",
+                                    "✅ MINUTAS: Observer para legMinutas inicializado com sucesso",
                                 );
                             } else {
                                 log(
@@ -29696,7 +31775,7 @@ ${texto}`;
                             }
                         } else {
                             console.warn(
-                                "⚠️ MINUTAS: Função setupObservadorLegendMinutasIcones não encontrada",
+                                "⚠️ MINUTAS: Função setupObservadorLegendMinutas não encontrada",
                             );
                         }
                     } catch (error) {
@@ -36057,15 +38136,6 @@ ${texto}`;
                               "setupObservadorLegendMinutas não disponível",
                           ),
 
-            // Observador de icones em legMinutas
-            setupObservadorLegendMinutasIcones:
-                typeof setupObservadorLegendMinutasIcones === "function"
-                    ? setupObservadorLegendMinutasIcones
-                    : () =>
-                          console.log(
-                              "setupObservadorLegendMinutasIcones não disponível",
-                          ),
-
             //  🔧 Função para corrigir alinhamento em divListaRecursosMinuta
             corrigirAlinhamentoRecursosMinuta:
                 typeof corrigirAlinhamentoRecursosMinuta === "function"
@@ -36646,3 +38716,734 @@ ${texto}`;
         );
     }
 });
+
+// � CRIAÇÃO GLOBAL DO NAMESPACE - FORA DA IIFE!
+// Este namespace é criado FORA da IIFE para garantir exposição global
+(function criarNamespaceGlobal() {
+    console.log("🚀 CRIANDO NAMESPACE GLOBAL: window.SENT1_AUTO...");
+
+    // Função de correção de cores (sempre disponível)
+    const corrigirCorDeFundoConservadora = function () {
+        console.log("🎨 CORREÇÃO: Alterando cor de fundo dos elementos...");
+
+        const elementos = document.querySelectorAll("*");
+        let elementosProcessados = 0;
+
+        elementos.forEach((el) => {
+            const style = window.getComputedStyle(el);
+            const bgColor = style.backgroundColor;
+
+            if (bgColor === "rgb(235, 242, 223)") {
+                elementosProcessados++;
+
+                console.log(`📦 ELEMENTO ${elementosProcessados}:`, {
+                    tag: el.tagName,
+                    classe: el.className,
+                    corOriginal: bgColor,
+                });
+
+                try {
+                    el.style.setProperty(
+                        "background-color",
+                        "#C8E6C9",
+                        "important",
+                    );
+                    console.log(
+                        `✅ ELEMENTO ${elementosProcessados}: Cor alterada para #C8E6C9!`,
+                    );
+                } catch (error) {
+                    console.error(
+                        `❌ ERRO no elemento ${elementosProcessados}:`,
+                        error,
+                    );
+                }
+            }
+        });
+
+        console.log(`\n📊 RESUMO FINAL:`);
+        console.log(`  ✅ Elementos processados: ${elementosProcessados}`);
+        console.log(`  🎯 Nova cor aplicada: #C8E6C9 (verde suave)`);
+
+        return { processados: elementosProcessados };
+    };
+
+    // Criar namespace global
+    window.SENT1_AUTO = {
+        corrigirCorDeFundoConservadora: corrigirCorDeFundoConservadora,
+        status: "namespace_global_ativo",
+        versao: "2.0.0-global",
+        timestamp: new Date().toISOString(),
+    };
+
+    console.log(
+        "✅ NAMESPACE GLOBAL CRIADO! window.SENT1_AUTO disponível globalmente",
+    );
+    console.log("🎯 Funções disponíveis:", Object.keys(window.SENT1_AUTO));
+})();
+
+// �🚨 INTERCEPTAÇÃO FINAL BRUTAL - ÚLTIMA LINHA DE DEFESA
+(function interceptacaoFinalBrutal() {
+    console.log(
+        "🔥 INTERCEPTAÇÃO FINAL: Substituição brutal de switchRelevanciaEvento",
+    );
+
+    // Função ultra-segura local
+    function switchRelevanciaEventoSegura(idEvento, relevancia, tipo, urlAjax) {
+        console.log(
+            "✅ FUNÇÃO SEGURA FINAL: switchRelevanciaEvento executada sem erros",
+        );
+
+        // Validação extrema
+        if (!idEvento || !urlAjax) {
+            console.warn("⚠️ Parâmetros inválidos, abortando operação segura");
+            return false;
+        }
+
+        try {
+            // Construir URL segura
+            const url =
+                String(urlAjax) +
+                (String(urlAjax).includes("?") ? "&" : "?") +
+                `idEvento=${encodeURIComponent(String(idEvento))}&` +
+                `relevancia=${encodeURIComponent(String(relevancia || ""))}&` +
+                `tipo=${encodeURIComponent(String(tipo || ""))}`;
+
+            // AJAX seguro
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(
+                        "✅ Requisição switchRelevanciaEvento bem-sucedida",
+                    );
+
+                    // MANTER FUNCIONALIDADE ORIGINAL: Atualizar visual da estrela
+                    try {
+                        const estrelaElement = document.querySelector(
+                            `a[onclick*="${idEvento}"]`,
+                        );
+                        if (estrelaElement) {
+                            const icon =
+                                estrelaElement.querySelector(".material-icons");
+                            if (icon) {
+                                // Alternar entre estrela vazia e cheia
+                                icon.textContent =
+                                    relevancia === "1" ? "star" : "star_border";
+                                console.log(
+                                    "✅ Visual da estrela atualizado:",
+                                    relevancia === "1"
+                                        ? "ativada"
+                                        : "desativada",
+                                );
+                            }
+                        }
+                    } catch (updateError) {
+                        console.warn(
+                            "⚠️ Não foi possível atualizar visual da estrela:",
+                            updateError,
+                        );
+                    }
+                }
+            };
+            xhr.send();
+
+            return true;
+        } catch (error) {
+            console.error("❌ Erro na função segura final:", error);
+            return false;
+        }
+    }
+
+    // REMOVIDO: Interceptação final de switchRelevanciaEvento (causava erro)
+    console.log("✅ INTERCEPTAÇÃO FINAL: Desabilitada para evitar erros");
+    /*
+    // SUBSTITUIR COM CONTROLE DE TEMPO - SEM LOOP INFINITO
+    let tentativasSubstituicao = 0;
+    const maxTentativas = 50; // Máximo 50 tentativas = ~250ms total
+
+    const substituirComControle = () => {
+        tentativasSubstituicao++;
+
+        // PARAR após limite de tentativas
+        if (tentativasSubstituicao > maxTentativas) {
+            console.log("✅ INTERCEPTAÇÃO FINAL: Parada após 50 tentativas");
+            return; // PARAR definitivamente
+        }
+
+        // REMOVIDO: window.switchRelevanciaEvento = switchRelevanciaEventoSegura;
+        // REMOVIDO: window.switchRelevanciaEvento.__eprobeSeguraFinal = true;
+
+        // Log apenas nas primeiras 5 tentativas
+        if (tentativasSubstituicao <= 5) {
+            console.log(
+                "🔄 switchRelevanciaEvento substituída pela função segura final"
+            );
+        }
+
+        // Continuar apenas se dentro do limite
+        if (tentativasSubstituicao <= maxTentativas) {
+            setTimeout(substituirComControle, 5);
+        }
+    };
+
+    // INICIAR UMA VEZ
+    substituirComControle();
+
+    console.log(
+        "🛡️ INTERCEPTAÇÃO FINAL ATIVADA: switchRelevanciaEvento protegida continuamente"
+    );
+    */
+})();
+
+// 🚨 INTERCEPTAÇÃO DEFINITIVA VIA Object.defineProperty - IMPOSSÍVEL DE QUEBRAR
+(function interceptacaoDefinitiva() {
+    console.log(
+        "  INTERCEPTAÇÃO REMOVIDA: switchRelevanciaEvento não será mais interceptada",
+    );
+
+    // Função ultra-segura
+    function switchRelevanciaEventoDefinitiva(
+        idEvento,
+        relevancia,
+        tipo,
+        urlAjax,
+    ) {
+        console.log(
+            "✅ FUNÇÃO DEFINITIVA: switchRelevanciaEvento executada via defineProperty",
+        );
+
+        // Validação extrema
+        if (!idEvento || !urlAjax) {
+            console.warn("⚠️ Parâmetros inválidos na função definitiva");
+            return false;
+        }
+
+        try {
+            // Construir URL segura
+            const url =
+                String(urlAjax) +
+                (String(urlAjax).includes("?") ? "&" : "?") +
+                `idEvento=${encodeURIComponent(String(idEvento))}&` +
+                `relevancia=${encodeURIComponent(String(relevancia || ""))}&` +
+                `tipo=${encodeURIComponent(String(tipo || ""))}`;
+
+            // AJAX seguro
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log("✅ AJAX definitivo bem-sucedido");
+
+                    // Atualizar visual da estrela
+                    try {
+                        const estrelaElement = document.querySelector(
+                            `a[onclick*="${idEvento}"]`,
+                        );
+                        if (estrelaElement) {
+                            const icon =
+                                estrelaElement.querySelector(".material-icons");
+                            if (icon) {
+                                icon.textContent =
+                                    relevancia === "1" ? "star" : "star_border";
+                                console.log(
+                                    "✅ Estrela atualizada:",
+                                    relevancia === "1"
+                                        ? "ativada"
+                                        : "desativada",
+                                );
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("⚠️ Erro ao atualizar estrela:", err);
+                    }
+                }
+            };
+            xhr.send();
+            return true;
+        } catch (error) {
+            console.error("❌ Erro na função definitiva:", error);
+            return false;
+        }
+    }
+
+    // DESABILITADO: Não redefinir switchRelevanciaEvento para preservar funcionalidade
+    try {
+        // DESABILITADO: Não deletar função original do eProc
+        // delete window.switchRelevanciaEvento;
+
+        // Redefinir com nossa função
+        // REMOVIDO: Object.defineProperty para switchRelevanciaEvento
+        /*
+        Object.defineProperty(window, "switchRelevanciaEvento", {
+            value: switchRelevanciaEventoDefinitiva,
+            writable: false, // NÃO pode ser sobrescrita
+            configurable: false, // NÃO pode ser redefinida
+            enumerable: true,
+        });
+        */
+
+        console.log(
+            "✅ PERSONALIZAÇÃO: Apenas aparência das estrelas será customizada",
+        );
+    } catch (error) {
+        console.error("❌ Erro ao aplicar defineProperty:", error);
+        // REMOVIDO: Fallback de switchRelevanciaEvento (não mais necessário)
+    }
+})();
+
+// 🎨 SISTEMA FUNCIONAL DE GRADIENTES - VERSÃO QUE FUNCIONA
+(function criarSistemaGradientesCompleto() {
+    console.log("🎨 SISTEMA FUNCIONAL: Iniciando gradientes + observer...");
+
+    function aplicarGradientes() {
+        let processadosTotal = 0;
+
+        // 1. PROCESSAR LEGMINUTAS (como antes)
+        const elementos = document.querySelectorAll(
+            'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio',
+        );
+
+        const coresLegMinutas = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)",
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)",
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)",
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)",
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)",
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)",
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)",
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)",
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)",
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)",
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)",
+        };
+
+        elementos.forEach((el, i) => {
+            const cor = window.getComputedStyle(el).backgroundColor;
+            if (cor !== "rgba(0, 0, 0, 0)") {
+                const gradiente =
+                    coresLegMinutas[cor] || "linear-gradient(#FFDE8F, #FFB84D)";
+                el.style.setProperty("background", gradiente, "important");
+                console.log(
+                    `✅ eProbe GRADIENTE: legMinutas ${i + 1} aplicado!`,
+                );
+                processadosTotal++;
+            }
+        });
+
+        // 2. PROCESSAR INFRATRCLARA E INFRATRESCU
+        const containersMinutas = document.querySelectorAll(
+            '[id^="conteudoInternoMinutas_"]',
+        );
+
+        // Mapeamento para infraTrClara (tons claros)
+        const coresInfraTrClara = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)", // VERDE
+        };
+
+        // Mapeamento para infraTrEscura (tons escuros) - CONFORME DOCUMENTAÇÃO
+        const coresInfraTrEscura = {
+            "rgb(122, 197, 205)": "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL #7AC5CD
+            "rgb(205, 129, 98)": "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO #CD8162
+            "rgb(205, 170, 125)": "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO #CDAA7D
+            "rgb(205, 155, 29)": "linear-gradient(#FFA93A, #FF9520)", // DOURADO #CD9B1D
+            "rgb(139, 123, 139)": "linear-gradient(#B593B5, #A082A0)", // LILÁS #8B7B8B
+            "rgb(169, 169, 169)": "linear-gradient(#8A9EA5, #778C93)", // CINZA #A9A9A9
+            "rgb(205, 85, 85)": "linear-gradient(#F47A7A, #F15858)", // VERMELHA #CD5555
+            "rgb(205, 205, 0)": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMÃO #CDCD00
+            "rgb(205, 150, 205)": "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO #CD96CD
+            "rgb(205, 198, 115)": "linear-gradient(#F5DC7A, #F3D058)", // AMARELA #CDC673
+            "rgb(124, 205, 124)": "linear-gradient(#7AF381, #58EF5F)", // VERDE #7CCD7C
+            // 🎯 TRATAMENTO ESPECIAL PARA CORES TRANSPARENTES/CINZA CLARO
+            "rgba(0, 0, 0, 0.05)": "linear-gradient(#F5F5F5, #E8E8E8)", // CINZA MUITO CLARO
+        };
+
+        containersMinutas.forEach((container, containerIndex) => {
+            // Processar infraTrClara
+            const linhasClaras = container.querySelectorAll("tr.infraTrClara");
+            linhasClaras.forEach((linha, linhaIndex) => {
+                const cor = window.getComputedStyle(linha).backgroundColor;
+                if (cor !== "rgba(0, 0, 0, 0)" && coresInfraTrClara[cor]) {
+                    linha.style.setProperty(
+                        "background",
+                        coresInfraTrClara[cor],
+                        "important",
+                    );
+                    console.log(
+                        `✅ eProbe CLARA: Container ${
+                            containerIndex + 1
+                        } linha ${linhaIndex + 1} aplicado!`,
+                    );
+                    processadosTotal++;
+                }
+            });
+
+            // Processar infraTrEscura
+            const linhasEscuras =
+                container.querySelectorAll("tr.infraTrEscura");
+            linhasEscuras.forEach((linha, linhaIndex) => {
+                const cor = window.getComputedStyle(linha).backgroundColor;
+                if (cor !== "rgba(0, 0, 0, 0)" && coresInfraTrEscura[cor]) {
+                    linha.style.setProperty(
+                        "background",
+                        coresInfraTrEscura[cor],
+                        "important",
+                    );
+                    console.log(
+                        `✅ eProbe ESCURA: Container ${
+                            containerIndex + 1
+                        } linha ${linhaIndex + 1} aplicado!`,
+                    );
+                    processadosTotal++;
+                }
+            });
+        });
+
+        if (processadosTotal > 0) {
+            console.log(
+                `🎉 eProbe GRADIENTES: ${processadosTotal} elementos processados (legMinutas + tabelas)!`,
+            );
+        }
+        return processadosTotal;
+    }
+
+    // 🎨 FUNÇÃO PARA GRADIENTES DA CAPA DO PROCESSO - OTIMIZADA PARA PERFORMANCE
+    function aplicarGradientesCapaProcesso() {
+        // Early exit agressivo para performance
+        const urlAtual = window.location.href;
+        if (!urlAtual.includes("controlador.php?acao=processo_selecionar&")) {
+            return 0;
+        }
+
+        // 🚀 THROTTLING: Verificar se já processamos recentemente
+        if (!window.eProbeLastGradientRun) window.eProbeLastGradientRun = 0;
+        const agora = Date.now();
+        if (agora - window.eProbeLastGradientRun < 1000) {
+            return 0; // Throttle de 1 segundo
+        }
+        window.eProbeLastGradientRun = agora;
+
+        // Mapeamento das 4 cores específicas da capa
+        const coresCapaProcesso = {
+            "rgb(35, 110, 142)": "linear-gradient(#5A8DB5, #4A7DA5)", // AZUL
+            "rgb(142, 53, 35)": "linear-gradient(#D6807A, #C26B58)", // VERMELHA
+            "rgb(89, 89, 89)": "linear-gradient(#8A9EA5, #778C93)", // CINZA
+            "rgb(105, 142, 35)": "linear-gradient(#8AAE85, #759B70)", // VERDE OLIVA
+        };
+
+        // Buscar APENAS elementos mais específicos para reduzir carga
+        const areaGlobal = document.querySelector("#divInfraAreaGlobal");
+        if (!areaGlobal) return 0;
+
+        // 🚀 OTIMIZAÇÃO: Buscar apenas elementos com classes específicas
+        const elementosEspecificos = areaGlobal.querySelectorAll(
+            ".infraNomeParte, .infraEventoDescricao",
+        );
+
+        let processados = 0;
+        const maxProcessamento = PERFORMANCE_CONFIG.maxElementsToProcess;
+
+        // Early exit se muitos elementos
+        if (elementosEspecificos.length > maxProcessamento) {
+            return 0;
+        }
+
+        // 🚀 USAR REQUESTIDLECALLBACK PARA PROCESSAMENTO NÃO-BLOQUEANTE
+        if (
+            window.requestIdleCallback &&
+            PERFORMANCE_CONFIG.enableLazyLoading
+        ) {
+            window.requestIdleCallback(
+                (deadline) => {
+                    const elementosModificados = [];
+
+                    for (
+                        let i = 0;
+                        i < elementosEspecificos.length && i < maxProcessamento;
+                        i++
+                    ) {
+                        if (deadline.timeRemaining() <= 0) break;
+
+                        const elemento = elementosEspecificos[i];
+                        const cor =
+                            window.getComputedStyle(elemento).backgroundColor;
+
+                        if (coresCapaProcesso[cor]) {
+                            // 🎭 REGISTRAR NO SISTEMA ANTI-FLASH ANTES DE MODIFICAR
+                            AntiFlashCoordinator.register(
+                                elemento,
+                                "gradients-batch",
+                            );
+
+                            elemento.style.setProperty(
+                                "background",
+                                coresCapaProcesso[cor],
+                                "important",
+                            );
+                            elementosModificados.push(elemento);
+                            processados++;
+                        }
+                    }
+
+                    // 🎆 REVELAR TODOS OS GRADIENTES SIMULTANEAMENTE APÓS PROCESSAMENTO
+                    if (elementosModificados.length > 0) {
+                        requestAnimationFrame(() => {
+                            window.eProbeAntiFlash.revealGroup(
+                                "gradients-batch",
+                            );
+                            logCritical(
+                                `🎨 GRADIENTS: ${elementosModificados.length} elementos revelados em lote`,
+                            );
+                        });
+                    }
+                },
+                { timeout: PERFORMANCE_CONFIG.idleCallbackTimeout },
+            );
+        } else {
+            // Fallback síncrono limitado com batch processing
+            const elementosModificados = [];
+
+            for (
+                let i = 0;
+                i < elementosEspecificos.length && i < maxProcessamento;
+                i++
+            ) {
+                const elemento = elementosEspecificos[i];
+                const cor = window.getComputedStyle(elemento).backgroundColor;
+                if (coresCapaProcesso[cor]) {
+                    // 🎭 REGISTRAR NO SISTEMA ANTI-FLASH
+                    AntiFlashCoordinator.register(
+                        elemento,
+                        "gradients-batch-sync",
+                    );
+
+                    elemento.style.setProperty(
+                        "background",
+                        coresCapaProcesso[cor],
+                        "important",
+                    );
+                    elementosModificados.push(elemento);
+                    processados++;
+                }
+            }
+
+            // 🎆 REVELAR LOTE SÍNCRONO
+            if (elementosModificados.length > 0) {
+                requestAnimationFrame(() => {
+                    window.eProbeAntiFlash.revealGroup("gradients-batch-sync");
+                    logCritical(
+                        `🎨 GRADIENTS SYNC: ${elementosModificados.length} elementos revelados em lote`,
+                    );
+                });
+            }
+        }
+
+        return processados;
+    }
+
+    // Aplicar imediatamente
+    aplicarGradientes();
+    aplicarGradientesCapaProcesso();
+
+    // Observer funcional
+    const container = document.querySelector("#conteudoMinutas");
+    if (container) {
+        const observer = new MutationObserver(() => {
+            console.log(
+                "🔄 eProbe OBSERVER: Mudança detectada, reaplicando...",
+            );
+            aplicarGradientes();
+            aplicarGradientesCapaProcesso(); // Aplicar também na capa
+            setTimeout(aplicarGradientes, 50);
+            setTimeout(aplicarGradientesCapaProcesso, 50);
+            setTimeout(aplicarGradientes, 150);
+            setTimeout(aplicarGradientesCapaProcesso, 150);
+        });
+
+        observer.observe(container, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+        });
+
+        // Observer adicional para toda a área global da página - OTIMIZADO PARA PERFORMANCE
+        const areaGlobal = document.querySelector("#divInfraAreaGlobal");
+        if (areaGlobal) {
+            let capaDebounceTimer = null;
+            let processandoCapa = false;
+            let ultimaExecucao = 0;
+
+            const observerCapa = new MutationObserver((mutations) => {
+                // Early exit - evitar processamento desnecessário
+                if (processandoCapa) return;
+
+                // 🚀 THROTTLE ADICIONAL: Limitar frequência de execução
+                const agora = Date.now();
+                if (agora - ultimaExecucao < PERFORMANCE_CONFIG.debounceDelay) {
+                    return;
+                }
+
+                // 🚀 FILTRAR MUTATIONS RELEVANTES: Reduzir processamento
+                const mutationsRelevantes = mutations.filter(
+                    (mutation) =>
+                        mutation.type === "childList" &&
+                        mutation.addedNodes.length > 0,
+                );
+
+                if (mutationsRelevantes.length === 0) return;
+
+                // Limpar timer anterior
+                if (capaDebounceTimer) {
+                    clearTimeout(capaDebounceTimer);
+                }
+
+                // Debounce obrigatório de 500ms (aumentado para melhor performance)
+                capaDebounceTimer = setTimeout(() => {
+                    processandoCapa = true;
+                    aplicarGradientesCapaProcesso();
+                    processandoCapa = false;
+                    ultimaExecucao = Date.now();
+                }, 500);
+            });
+
+            observerCapa.observe(areaGlobal, {
+                childList: true,
+                subtree: false, // 🚀 OTIMIZAÇÃO: Desabilitar observação em subárvore
+                attributes: false,
+                attributeOldValue: false,
+                characterData: false,
+                characterDataOldValue: false,
+            });
+
+            // 🚀 CLEANUP AUTOMÁTICO: Desconectar observer após 2 minutos
+            setTimeout(() => {
+                if (observerCapa) {
+                    observerCapa.disconnect();
+                    console.log(
+                        "🧹 CLEANUP: Observer de gradientes desconectado automaticamente",
+                    );
+                }
+            }, 120000);
+        }
+
+        // Click listener com debounce
+        let clickDebounceTimer = null;
+        document.addEventListener(
+            "click",
+            (e) => {
+                if (
+                    e.target.closest(
+                        'input[type="image"][title*="Atualizar"]',
+                    ) ||
+                    e.target.closest('input[onclick*="atualizaMinutas"]')
+                ) {
+                    // Debounce para clicks
+                    if (clickDebounceTimer) {
+                        clearTimeout(clickDebounceTimer);
+                    }
+
+                    clickDebounceTimer = setTimeout(() => {
+                        aplicarGradientes();
+                    }, 100);
+                }
+            },
+            { passive: true },
+        );
+
+        console.log("✅ eProbe GRADIENTES: Sistema completo configurado!");
+        window.eProbeGradientesFuncional = {
+            aplicar: aplicarGradientes,
+            aplicarCapa: aplicarGradientesCapaProcesso,
+            observer: observer,
+            status: () => console.log("✅ Sistema de gradientes ativo!"),
+        };
+    }
+
+    console.log("🚀 eProbe GRADIENTES: Sistema inicializado com sucesso!");
+})();
+
+// 🚀 FUNÇÃO GLOBAL INDEPENDENTE - SEMPRE DISPONÍVEL
+// Esta função funciona independentemente do namespace SENT1_AUTO
+window.aplicarGradientesLegMinutasGlobal = function () {
+    console.log("🎨 GRADIENTES GLOBAL: Iniciando aplicação independente...");
+
+    try {
+        // Buscar TODOS os elementos legMinutas
+        const elementosLegMinutas = document.querySelectorAll(
+            'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio',
+        );
+
+        console.log(
+            `🔍 GLOBAL: Encontrados ${elementosLegMinutas.length} elementos legMinutas`,
+        );
+
+        if (elementosLegMinutas.length === 0) {
+            console.log("❌ GLOBAL: Nenhum elemento legMinutas encontrado");
+            return { sucesso: false, processados: 0 };
+        }
+
+        // Mapa de cores RGB para gradientes
+        const cores = {
+            "rgb(152, 245, 255)": "linear-gradient(#AFCFFA, #8DC0F7)", // AZUL #98F5FF
+            "rgb(255, 160, 122)": "linear-gradient(#FFB8AF, #FF9C8D)", // LARANJA INTENSO #FFA07A
+            "rgb(255, 211, 155)": "linear-gradient(#FAD3AF, #F7C68D)", // LARANJA CLARO #FFD39B
+            "rgb(255, 193, 37)": "linear-gradient(#FFDE8F, #FFB84D)", // DOURADO #FFC125
+            "rgb(205, 181, 205)": "linear-gradient(#D8C7D8, #C4A5C4)", // LILÁS #CDB5CD
+            "rgb(211, 211, 211)": "linear-gradient(#B5C9CF, #9CB0B7)", // CINZA #D3D3D3
+            "rgb(238, 99, 99)": "linear-gradient(#FAAFAF, #F78D8D)", // VERMELHA #EE6363
+            "rgb(255, 255, 0)": "linear-gradient(#FFFF8F, #F0F04D)", // VERDE LIMÃO #FFFF00
+            "rgb(255, 187, 255)": "linear-gradient(#FFC9FF, #FF9CFF)", // ROSA CLARO #FFBBFF
+            "rgb(255, 246, 143)": "linear-gradient(#F9EFAF, #F7E98D)", // AMARELA #FFF68F
+            "rgb(144, 238, 144)": "linear-gradient(#AFFAB6, #8DF792)", // VERDE #90EE90
+        };
+
+        let processados = 0;
+
+        // Processar cada elemento
+        elementosLegMinutas.forEach((legMinutas, index) => {
+            const corAtual =
+                window.getComputedStyle(legMinutas).backgroundColor;
+
+            if (cores[corAtual]) {
+                legMinutas.style.setProperty(
+                    "background",
+                    cores[corAtual],
+                    "important",
+                );
+                console.log(
+                    `✅ GLOBAL: legMinutas ${
+                        index + 1
+                    } - Gradiente aplicado para ${corAtual}!`,
+                );
+                processados++;
+            } else {
+                console.log(
+                    `⚠️ GLOBAL: legMinutas ${
+                        index + 1
+                    } - Cor não mapeada: ${corAtual}`,
+                );
+            }
+        });
+
+        console.log(
+            `🎉 GLOBAL: ${processados}/${elementosLegMinutas.length} elementos processados com sucesso!`,
+        );
+        return { sucesso: processados > 0, processados: processados };
+    } catch (error) {
+        console.error("❌ GLOBAL: Erro:", error);
+        return { sucesso: false, processados: 0, erro: error.message };
+    }
+};
+
+console.log(
+    "🚀 FUNÇÃO GLOBAL CRIADA: window.aplicarGradientesLegMinutasGlobal disponível!",
+);
