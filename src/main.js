@@ -2128,9 +2128,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             // Namespace mínimo mas funcional - APENAS SE NÃO EXISTIR
             if (typeof window.SENT1_AUTO === "undefined") {
                 window.SENT1_AUTO = {
-                    // Funções essenciais que sempre devem existir
+                    // Funcoes de emergencia - nao tem acesso ao escopo da IIFE #10
                     detectarCardSessaoSimplificado: () => {
-                        return detectarSessoesUnificado();
+                        if (
+                            typeof window.SENT1_AUTO
+                                .detectarSessoesUnificado === "function"
+                        ) {
+                            return window.SENT1_AUTO.detectarSessoesUnificado();
+                        }
+                        console.log(
+                            "detectarSessoesUnificado nao disponivel no modo emergencia",
+                        );
+                        return null;
                     },
                     testarDeteccaoRobusta: () => {
                         console.log(
@@ -5498,7 +5507,12 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
                     // Tentar detectar dados primeiro
                     log("  INTERFACE: Tentando detectar dados de sessão...");
-                    const dadosDetectados = detectarCardSessaoSimplificado();
+                    const dadosDetectados =
+                        typeof window.SENT1_AUTO !== "undefined" &&
+                        typeof window.SENT1_AUTO.detectarSessoesUnificado ===
+                            "function"
+                            ? window.SENT1_AUTO.detectarSessoesUnificado()
+                            : null;
 
                     if (!dadosDetectados) {
                         logError(
@@ -5672,8 +5686,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
             // Testar detecção em detectarCardSessaoSimplificado
             try {
-                logCritical("🔍 TESTANDO: detectarCardSessaoSimplificado...");
-                const resultado1 = detectarCardSessaoSimplificado();
+                logCritical("TESTANDO: detectarSessoesUnificado...");
+                const resultado1 =
+                    typeof window.SENT1_AUTO !== "undefined" &&
+                    typeof window.SENT1_AUTO.detectarSessoesUnificado ===
+                        "function"
+                        ? window.SENT1_AUTO.detectarSessoesUnificado()
+                        : null;
                 logCritical(
                     `📊 RESULTADO Card Sessão: ${JSON.stringify(resultado1)}`,
                 );
@@ -11333,6 +11352,18 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
 
             // Estratégia 1: Eventos de teclado diretos no iframe
+            // Limpar texto extraido de PDF - remover caracteres invisveis e normalizar
+            function cleanExtractedText(text) {
+                if (!text) return text;
+                return text
+                    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+                    .replace(/[\u00A0]/g, " ")
+                    .replace(/[\u2000-\u200A]/g, " ")
+                    .replace(/[\u2028\u2029]/g, "\n")
+                    .replace(/\n{3,}/g, "\n\n")
+                    .trim();
+            }
+
             async function tentarSelecaoViaEventos(iframe) {
                 console.log("🔄 Tentando seleção via eventos de teclado...");
 
@@ -20809,12 +20840,11 @@ ${texto}`;
                     debounceGlobal(
                         () => {
                             if (
-                                typeof detectarCardSessaoSimplificado ===
-                                "function"
+                                typeof detectarSessoesUnificado === "function"
                             ) {
-                                detectarCardSessaoSimplificado();
+                                detectarSessoesUnificado();
                                 log(
-                                    "✅ INICIALIZAÇÃO: Detecção de card de sessão iniciada",
+                                    "INICIALIZACAO: Deteccao de card de sessao iniciada",
                                 );
                             }
 
@@ -30904,10 +30934,9 @@ ${texto}`;
                     resultados.testes.diagnosticoDOM =
                         diagnosticarEstruturaDOMMinutas();
 
-                    // TESTE 2: Detecção simplificada
-                    log("🔍 TESTE 2: Detecção simplificada de sessão...");
-                    const deteccaoSimplificada =
-                        detectarCardSessaoSimplificado();
+                    // TESTE 2: Deteccao simplificada
+                    log("TESTE 2: Deteccao simplificada de sessao...");
+                    const deteccaoSimplificada = detectarSessoesUnificado();
                     resultados.testes.deteccaoSimplificada = {
                         sucesso: !!deteccaoSimplificada,
                         dados: deteccaoSimplificada,
@@ -30981,8 +31010,8 @@ ${texto}`;
             // 🔧 FIM DAS IMPLEMENTAÇÕES - FUNÇÕES PRONTAS PARA NAMESPACE
             // ============================================================
 
-            // ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-            // TEMPORÁRIO: Salvar funções em variável para exposição após IIFE
+            // ##### INICIO DO NAMESPACE CONSOLIDADO #####
+            // Namespace consolidado - exposto como window.SENT1_AUTO antes do fechamento da IIFE
 
             const eProbeNamespaceFunctions = {
                 runFullAutomation: nsRunFullAutomation,
@@ -31557,8 +31586,8 @@ ${texto}`;
 
                 // 🔍 FUNÇÕES DE DEBUG PARA STATUS DE SESSÃO - IMPLEMENTAÇÕES DIRETAS
                 debugDeteccaoStatusSessao: function () {
-                    log("🔍 DEBUG: Detectando status de sessão manualmente...");
-                    return detectarCardSessaoSimplificado();
+                    log("DEBUG: Detectando status de sessao manualmente...");
+                    return detectarSessoesUnificado();
                 },
                 debugStatusSessao: function () {
                     log(
@@ -35305,6 +35334,10 @@ ${texto}`;
             };
 
             // Fim da seção de funcionalidades
+
+            // Exportar namespace consolidado para escopo global
+            window.SENT1_AUTO = eProbeNamespaceFunctions;
+
             // ##### FIM DO NAMESPACE CONSOLIDADO #####
         })(); // ← FECHAMENTO DA FUNÇÃO ASYNC INTERNA
 
@@ -35806,809 +35839,94 @@ ${texto}`;
             return tentarAplicarGradientes();
         }
 
-        // 🚀 EXPOSIÇÃO GLOBAL DO NAMESPACE - CRÍTICO!
-        // Criar namespace com funções essenciais diretamente
+        // Adicionar funcoes do escopo externo (IIFE #9) ao namespace ja exportado pela IIFE #10
+        // Estas funcoes estao definidas FORA da IIFE interna e precisam ser adicionadas separadamente
+        Object.assign(window.SENT1_AUTO, {
+            // Funcoes de controle de processo (escopo IIFE #9, definidas antes da IIFE #10)
+            corrigirCorDeFundoConservadora: corrigirCorDeFundoConservadora,
+            processoJaFoiProcessado: processoJaFoiProcessado,
+            marcarProcessoComoProcessado: marcarProcessoComoProcessado,
 
-        window.SENT1_AUTO = {
-            // Funções principais detectadas e disponíveis
-            detectarSessoesUnificado:
-                typeof detectarSessoesUnificado === "function"
-                    ? detectarSessoesUnificado
-                    : () =>
-                          console.log(
-                              "detectarSessoesUnificado não disponível",
-                          ),
-            aplicarTooltipUnificado:
-                typeof aplicarTooltipUnificado === "function"
-                    ? aplicarTooltipUnificado
-                    : () =>
-                          console.log("aplicarTooltipUnificado não disponível"),
-            criarCardSessaoMaterial:
-                typeof criarCardSessaoMaterial === "function"
-                    ? criarCardSessaoMaterial
-                    : () =>
-                          console.log("criarCardSessaoMaterial não disponível"),
-
-            // Funções de teste e debug
-            testarRegexEspecifica:
-                typeof testarRegexEspecifica === "function"
-                    ? testarRegexEspecifica
-                    : () => console.log("testarRegexEspecifica não disponível"),
-            testarExtracaoTipos:
-                typeof testarExtracaoTipos === "function"
-                    ? testarExtracaoTipos
-                    : () => console.log("testarExtracaoTipos não disponível"),
-            debugTooltipComTipo:
-                typeof debugTooltipComTipo === "function"
-                    ? debugTooltipComTipo
-                    : () => console.log("debugTooltipComTipo não disponível"),
-            debugDeteccaoSessaoRapida:
-                typeof debugDeteccaoSessaoRapida === "function"
-                    ? debugDeteccaoSessaoRapida
-                    : () =>
-                          console.log(
-                              "debugDeteccaoSessaoRapida não disponível",
-                          ),
-
-            // 🔍 NOVA FUNÇÃO DEBUG - INVESTIGAR ELEMENTOS PDF
-            debugElementosPDF: function () {
-                console.log(
-                    "🔍 DEBUG: Investigando todos os elementos PDF na página...",
-                );
-
-                const seletoresPDF = [
-                    "#pdf-embed",
-                    'embed[type="application/x-google-chrome-pdf"]',
-                    'embed[type="application/pdf"]',
-                    'iframe[src*="acessar_documento"]',
-                    'iframe[src*="pdf"]',
-                    'object[type="application/pdf"]',
-                    "embed",
-                    "iframe",
-                ];
-
-                const resultados = {};
-
-                for (const seletor of seletoresPDF) {
-                    const elementos = document.querySelectorAll(seletor);
-                    resultados[seletor] = [];
-
-                    console.log(
-                        `🔍 Seletor "${seletor}": ${elementos.length} elemento(s)`,
-                    );
-
-                    elementos.forEach((el, index) => {
-                        const info = {
-                            id: el.id || "sem id",
-                            type: el.type || "sem type",
-                            src: el.src || "sem src",
-                            tagName: el.tagName,
-                            className: el.className || "sem class",
-                        };
-
-                        resultados[seletor].push(info);
-                        console.log(`  [${index}]`, info);
-                    });
-                }
-
-                console.log("📊 RESULTADO COMPLETO:", resultados);
-                return resultados;
-            },
-
-            // 🎯 NOVA FUNÇÃO DE TESTE - ESTRATÉGIA PDF FOCADA
-            testarExtracaoPDFFocada:
-                typeof extractTextFromPDF === "function"
-                    ? extractTextFromPDF
-                    : () =>
-                          console.log(
-                              "⚠️ extractTextFromPDF não disponível - use em página de PDF",
-                          ),
-
-            diagnosticarSistemaCompleto:
-                typeof diagnosticarSistemaCompleto === "function"
-                    ? diagnosticarSistemaCompleto
-                    : () =>
-                          console.log(
-                              "diagnosticarSistemaCompleto não disponível",
-                          ),
-
-            // Funções de dados
+            // Funcoes de dados de sessao (escopo IIFE #9, declaradas antecipadamente)
             hasDataSessaoPautado: hasDataSessaoPautado,
             getDataSessaoPautado: getDataSessaoPautado,
             resetDataSessaoPautado: resetDataSessaoPautado,
             resetControlesRequisicao: resetControlesRequisicao,
             obterNumeroProcesso: obterNumeroProcesso,
-
-            // Funções de interface
             inserirDataSessaoNaInterface: inserirDataSessaoNaInterface,
-            inserirCardNaInterface:
-                typeof inserirCardNaInterface === "function"
-                    ? inserirCardNaInterface
-                    : () =>
-                          console.log("inserirCardNaInterface não disponível"),
-            testarDeteccaoDinamicaFieldset:
-                typeof testarDeteccaoDinamicaFieldset === "function"
-                    ? testarDeteccaoDinamicaFieldset
-                    : () =>
-                          console.log(
-                              "testarDeteccaoDinamicaFieldset não disponível",
-                          ),
 
-            // Funções de tema
-            applyThemeStyles:
-                typeof applyThemeStyles === "function"
-                    ? applyThemeStyles
-                    : window.applyThemeStyles ||
-                      (() => console.log("applyThemeStyles não disponível")),
-            unificarNavbarStyles:
-                typeof unificarNavbarStyles === "function"
-                    ? unificarNavbarStyles
-                    : window.unificarNavbarStyles ||
-                      (() =>
-                          console.log("unificarNavbarStyles não disponível")),
-            corrigirCorDeFundoConservadora: corrigirCorDeFundoConservadora,
-            debugEncontrarCores:
-                typeof debugEncontrarCores === "function"
-                    ? debugEncontrarCores
-                    : () => console.log("debugEncontrarCores não disponível"),
-            testarCorrecaoCorFundo:
-                typeof testarCorrecaoCorFundo === "function"
-                    ? testarCorrecaoCorFundo
-                    : () =>
-                          console.log("testarCorrecaoCorFundo não disponível"),
-
-            // 🎨 GRADIENTES PARA CAPA DO PROCESSO
-            aplicarGradientesCapaProcesso:
-                typeof aplicarGradientesCapaProcesso === "function"
-                    ? aplicarGradientesCapaProcesso
-                    : () =>
-                          console.log(
-                              "aplicarGradientesCapaProcesso não disponível",
-                          ),
+            // Funcoes de gradientes (definidas apos IIFE #10, escopo IIFE #9)
+            isCapaProcessoPage: isCapaProcessoPage,
+            aplicarGradientesCapaProcesso: aplicarGradientesCapaProcesso,
             aplicarGradientesCapaProcessoRobusta:
-                typeof aplicarGradientesCapaProcessoRobusta === "function"
-                    ? aplicarGradientesCapaProcessoRobusta
-                    : () =>
-                          console.log(
-                              "aplicarGradientesCapaProcessoRobusta não disponível",
-                          ),
-            aplicarGradientesLegMinutas:
-                typeof aplicarGradientesLegMinutas === "function"
-                    ? aplicarGradientesLegMinutas
-                    : () =>
-                          console.log(
-                              "aplicarGradientesLegMinutas não disponível",
-                          ),
+                aplicarGradientesCapaProcessoRobusta,
+            aplicarGradientesLegMinutas: aplicarGradientesLegMinutas,
             aplicarGradientesLegMinutasRobusta:
-                typeof aplicarGradientesLegMinutasRobusta === "function"
-                    ? aplicarGradientesLegMinutasRobusta
-                    : () =>
-                          console.log(
-                              "aplicarGradientesLegMinutasRobusta não disponível",
-                          ),
-            forcarFlexboxNavbar: () => {
-                const elementosNavbar =
-                    document.querySelectorAll(".d-none.d-md-flex");
-                elementosNavbar.forEach((elemento) => {
-                    elemento.style.setProperty("display", "flex", "important");
-                    elemento.style.setProperty(
-                        "align-items",
-                        "center",
-                        "important",
-                    );
-                    elemento.style.setProperty(
-                        "visibility",
-                        "visible",
-                        "important",
-                    );
-                    elemento.style.setProperty("opacity", "1", "important");
-                });
-                return elementosNavbar.length;
-            },
+                aplicarGradientesLegMinutasRobusta,
 
-            // Funções de controle de processo
-            processoJaFoiProcessado: processoJaFoiProcessado,
-            marcarProcessoComoProcessado: marcarProcessoComoProcessado,
-
-            // Funções auxiliares
-            traduzirSiglaOrgao:
-                typeof traduzirSiglaOrgao === "function"
-                    ? traduzirSiglaOrgao
-                    : () => console.log("traduzirSiglaOrgao não disponível"),
-            extrairTipoSessao:
-                typeof extrairTipoSessao === "function"
-                    ? extrairTipoSessao
-                    : () => console.log("extrairTipoSessao não disponível"),
-            obterCorPorStatus:
-                typeof obterCorPorStatus === "function"
-                    ? obterCorPorStatus
-                    : () => console.log("obterCorPorStatus não disponível"),
-
-            // Função para verificar se é página de capa do processo
-            isCapaProcessoPage:
-                typeof isCapaProcessoPage === "function"
-                    ? isCapaProcessoPage
-                    : () => console.log("isCapaProcessoPage não disponível"),
-
-            // 📏 Função para aplicar dimensionamento específico em divListaRecursosMinuta
-            aplicarDimensionamentoRecursosMinuta:
-                typeof aplicarDimensionamentoRecursosMinuta === "function"
-                    ? aplicarDimensionamentoRecursosMinuta
-                    : () =>
-                          console.log(
-                              "aplicarDimensionamentoRecursosMinuta não disponível",
-                          ),
-
-            // 👁️ Função para configurar observador específico de divListaRecursosMinuta
-            setupObservadorRecursosMinuta:
-                typeof setupObservadorRecursosMinuta === "function"
-                    ? setupObservadorRecursosMinuta
-                    : () =>
-                          console.log(
-                              "setupObservadorRecursosMinuta não disponível",
-                          ),
-
-            //   Função para configurar observador de legMinutas (Histórico)
-            setupObservadorLegendMinutas:
-                typeof setupObservadorLegendMinutas === "function"
-                    ? setupObservadorLegendMinutas
-                    : () =>
-                          console.log(
-                              "setupObservadorLegendMinutas não disponível",
-                          ),
-
-            // Observador de icones em legMinutas
-            setupObservadorLegendMinutasIcones:
-                typeof setupObservadorLegendMinutasIcones === "function"
-                    ? setupObservadorLegendMinutasIcones
-                    : () =>
-                          console.log(
-                              "setupObservadorLegendMinutasIcones não disponível",
-                          ),
-
-            //  🔧 Função para corrigir alinhamento em divListaRecursosMinuta
-            corrigirAlinhamentoRecursosMinuta:
-                typeof corrigirAlinhamentoRecursosMinuta === "function"
-                    ? corrigirAlinhamentoRecursosMinuta
-                    : () =>
-                          console.log(
-                              "corrigirAlinhamentoRecursosMinuta não disponível",
-                          ),
-
-            // Funções específicas do teste
-            detectarCardSessaoSimplificado: () => {
-                console.log(
-                    "🔄 detectarCardSessaoSimplificado: redirecionando para detectarSessoesUnificado",
-                );
-                if (typeof detectarSessoesUnificado === "function") {
-                    return detectarSessoesUnificado();
-                } else {
-                    console.log(
-                        "⚠️ detectarSessoesUnificado não está disponível",
-                    );
-                    return null;
-                }
-            },
-            testarPadraoInclusoMesa: () => {
-                console.log("🧪 TESTE: Validando padrão 'Incluído em Mesa'...");
-
-                const exemplosMesa = [
-                    "Juízo de Retratação (Incluído em Mesa em 21/08/2025 - CAMPUB5)",
-                    "Mérito (Incluído em Mesa em 15/09/2025 - CAMCIV2)",
-                    "Preliminar (Incluído em Mesa em 10/10/2025 - SORGESP)",
-                ];
-
-                const padraoMesa =
-                    /^([A-Za-zÀ-ÿ\s]+?)\s*\(Incluído em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi;
-
-                let testesPassaram = 0;
-
-                exemplosMesa.forEach((exemplo, index) => {
-                    padraoMesa.lastIndex = 0; // Reset regex
-                    const match = padraoMesa.exec(exemplo);
-
-                    if (match) {
-                        console.log(`✅ Teste ${index + 1}: PASSOU`);
-                        console.log(`   Tipo: "${match[1]}"`);
-                        console.log(`   Data: "${match[2]}"`);
-                        console.log(`   Órgão: "${match[3]}"`);
-                        testesPassaram++;
-                    } else {
-                        console.log(
-                            `❌ Teste ${index + 1}: FALHOU - ${exemplo}`,
-                        );
-                    }
-                });
-
-                const resultado = {
-                    totalTestes: exemplosMesa.length,
-                    testesPassaram: testesPassaram,
-                    sucesso: testesPassaram === exemplosMesa.length,
-                };
-
-                console.log(
-                    `🎯 RESULTADO: ${testesPassaram}/${exemplosMesa.length} testes passaram`,
-                );
-                return resultado;
-            },
-            testarDeteccaoRobusta: () => {
-                console.log(
-                    "🧪 testarDeteccaoRobusta: Executando teste de detecção robusta",
-                );
-                try {
-                    if (typeof detectarSessoesUnificado === "function") {
-                        const resultado = detectarSessoesUnificado(true);
-                        console.log(
-                            "✅ Teste de detecção robusta concluído:",
-                            resultado,
-                        );
-                        return resultado;
-                    } else {
-                        console.log(
-                            "⚠️ detectarSessoesUnificado não disponível para teste",
-                        );
-                        return false;
-                    }
-                } catch (error) {
-                    console.error(
-                        "❌ Erro no teste de detecção robusta:",
-                        error,
-                    );
-                    return false;
-                }
-            },
-            diagnosticarEstruturaDOMMinutas: () => {
-                console.log(
-                    "🔍 diagnosticarEstruturaDOMMinutas: Analisando estrutura DOM",
-                );
-                try {
-                    const minutas = document.querySelector("#fldMinutas");
-                    const resultado = {
-                        minutasEncontradas: !!minutas,
-                        conteudo: minutas
-                            ? minutas.textContent?.length || 0
-                            : 0,
-                        estrutura: minutas ? "Presente" : "Ausente",
-                    };
-                    console.log("📊 Diagnóstico DOM Minutas:", resultado);
-                    return resultado;
-                } catch (error) {
-                    console.error("❌ Erro no diagnóstico DOM:", error);
-                    return { erro: error.message };
-                }
-            },
-
-            // Função de debug PDF
-            debugPDFExtracao: () => {
-                console.log(
-                    "🔍 debugPDFExtracao: Analisando capacidades de extração de PDF",
-                );
-                try {
-                    const pdfElements = document.querySelectorAll(
-                        'iframe[src*="pdf"], embed[type="application/pdf"], object[type="application/pdf"]',
-                    );
-                    const resultado = {
-                        elementosPDF: pdfElements.length,
-                        urlAtual: window.location.href,
-                        isDocumento:
-                            window.location.href.includes("acessar_documento"),
-                        estrategias: [
-                            "Fetch + Response",
-                            "Seleção DOM",
-                            "Clipboard",
-                            "URL Direta",
-                        ],
-                    };
-                    console.log("📊 Debug PDF Extração:", resultado);
-                    return resultado;
-                } catch (error) {
-                    console.error("❌ Erro no debug PDF:", error);
-                    return { erro: error.message };
-                }
-            },
-
-            // 🐛 DEBUG: Função específica para analisar eventos problemáticos
-            debugEventoProblematico: () => {
-                console.log(
-                    "🐛 DEBUG: Analisando evento problemático de mesa...",
-                );
-                try {
-                    // Procurar pelo evento trEvento37 especificamente
-                    const evento37 = document.querySelector("#trEvento37");
-                    if (evento37) {
-                        const textoEvento = evento37.textContent.trim();
-                        const htmlCompleto = evento37.innerHTML;
-
-                        console.log("🔍 Evento trEvento37 encontrado:");
-                        console.log("📝 Texto:", textoEvento);
-                        console.log("🔧 HTML:", htmlCompleto);
-
-                        // Testar padrões de extração
-                        const padroes = {
-                            sessaoFisica:
-                                /<b>Sessão Ordinária Física<\/b><br>Data da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                            sessaoVirtual:
-                                /<b>Sessão Virtual[^<]*<\/b><br>Período da sessão: <b>(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                            sequencial: /Sequencial:\s*(\d+)/i,
-                            // Padrões alternativos mais flexíveis
-                            fisicoAlt:
-                                /[Ss]essão.*[Ff]ísica.*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                            virtualAlt:
-                                /[Ss]essão.*[Vv]irtual.*?(\d{1,2}\/\d{1,2}\/\d{4})/i,
-                            dataGenerica:
-                                /(\d{1,2}\/\d{1,2}\/\d{4})\s*\d{1,2}:\d{2}/i,
-                        };
-
-                        const resultados = {};
-                        Object.keys(padroes).forEach((nome) => {
-                            const match = htmlCompleto.match(padroes[nome]);
-                            resultados[nome] = match
-                                ? { match: match[0], grupo1: match[1] }
-                                : null;
-                            console.log(
-                                `🔍 Padrão ${nome}:`,
-                                resultados[nome]
-                                    ? `✅ ${match[0]}`
-                                    : "❌ Não encontrado",
-                            );
-                        });
-
-                        return {
-                            evento: "trEvento37",
-                            texto: textoEvento,
-                            html: htmlCompleto,
-                            padroes: resultados,
-                        };
-                    } else {
-                        console.log("❌ Evento trEvento37 não encontrado");
-
-                        // Procurar por qualquer evento de mesa
-                        const eventosTabela =
-                            document.querySelectorAll('tr[id^="trEvento"]');
-                        const eventosMesa = [];
-
-                        eventosTabela.forEach((evento) => {
-                            const texto = evento.textContent.trim();
-                            if (texto.includes("mesa para julgamento")) {
-                                eventosMesa.push({
-                                    id: evento.id,
-                                    texto: texto,
-                                    html: evento.innerHTML,
-                                });
-                            }
-                        });
-
-                        console.log(
-                            `🔍 Encontrados ${eventosMesa.length} eventos de mesa:`,
-                            eventosMesa,
-                        );
-                        return { eventosMesa };
-                    }
-                } catch (error) {
-                    console.error("❌ Erro no debug do evento:", error);
-                    return { erro: error.message };
-                }
-            },
-
-            // 🔧 FORÇAR: Função para forçar processamento de botões "Ler Mais"
-            forcarProcessamentoBotoesLerMais: () => {
-                console.log(
-                    "🔧 FORÇA: Forçando processamento de botões 'Ler Mais'...",
-                );
-                try {
-                    // Buscar todos os botões "Ler mais" não processados
-                    const botoesLerMais = Array.from(
-                        document.querySelectorAll(
-                            "div.botaoLerMais:not([data-eprobe-expandir-replaced])",
-                        ),
-                    ).filter((botao) => {
-                        const texto = (botao.textContent || "").toLowerCase();
-                        return (
-                            texto.includes("ler mais") ||
-                            texto.includes("...ler mais") ||
-                            texto.includes("... ler mais")
-                        );
-                    });
-
-                    console.log(
-                        `🔍 FORÇA: ${botoesLerMais.length} botões "Ler mais" não processados encontrados`,
-                    );
-
-                    if (botoesLerMais.length === 0) {
-                        console.log(
-                            "✅ FORÇA: Todos os botões já foram processados",
-                        );
-                        return { processados: 0, jaProcessados: true };
-                    }
-
-                    // Forçar execução da função de estilização
-                    if (
-                        typeof aplicarEstilizacaoImediataLembretes ===
-                        "function"
-                    ) {
-                        aplicarEstilizacaoImediataLembretes();
-
-                        // Verificar novamente após processamento
-                        setTimeout(() => {
-                            const restantes = document.querySelectorAll(
-                                "div.botaoLerMais:not([data-eprobe-expandir-replaced])",
-                            ).length;
-                            console.log(
-                                `🔍 FORÇA: ${restantes} botões restantes após processamento`,
-                            );
-                        }, 500);
-
-                        return {
-                            inicialNaoProcessados: botoesLerMais.length,
-                            funcaoExecutada: true,
-                            timestamp: new Date().toLocaleString("pt-BR"),
-                        };
-                    } else {
-                        console.error(
-                            "❌ FORÇA: Função aplicarEstilizacaoImediataLembretes não disponível",
-                        );
-                        return { erro: "Função não disponível" };
-                    }
-                } catch (error) {
-                    console.error("❌ Erro ao forçar processamento:", error);
-                    return { erro: error.message };
-                }
-            },
-
-            // 🚨 MONITOR AGRESSIVO: Função para monitorar continuamente botões "Ler Mais"
-            iniciarMonitorBotoesLerMais: () => {
-                console.log(
-                    "🚨 MONITOR: Iniciando monitoramento agressivo de botões 'Ler Mais'...",
-                );
-
-                let contadorVerificacoes = 0;
-                const maxVerificacoes = 50; // 50 verificações = ~25 segundos
-
-                // Cleanup de monitor anterior se existir
-                if (window.eProbeMonitorLerMais) {
-                    clearInterval(window.eProbeMonitorLerMais);
-                }
-
-                // Monitor por polling a cada 500ms
-                window.eProbeMonitorLerMais = setInterval(() => {
-                    contadorVerificacoes++;
-
-                    const botoesNaoProcessados = Array.from(
-                        document.querySelectorAll(
-                            "div.botaoLerMais:not([data-eprobe-expandir-replaced])",
-                        ),
-                    ).filter((botao) => {
-                        const texto = (botao.textContent || "").toLowerCase();
-                        return (
-                            texto.includes("ler mais") ||
-                            texto.includes("...ler mais") ||
-                            texto.includes("... ler mais")
-                        );
-                    });
-
-                    if (botoesNaoProcessados.length > 0) {
-                        console.log(
-                            `🚨 MONITOR: ${botoesNaoProcessados.length} botões não processados encontrados na verificação ${contadorVerificacoes}`,
-                        );
-
-                        // Forçar processamento imediato
-                        if (
-                            typeof aplicarEstilizacaoImediataLembretes ===
-                            "function"
-                        ) {
-                            aplicarEstilizacaoImediataLembretes();
-                        }
-                    }
-
-                    // Parar monitor após máximo de verificações
-                    if (contadorVerificacoes >= maxVerificacoes) {
-                        clearInterval(window.eProbeMonitorLerMais);
-                        console.log(
-                            `🚨 MONITOR: Finalizando após ${contadorVerificacoes} verificações`,
-                        );
-                    }
-                }, 500);
-
-                return {
-                    monitorAtivo: true,
-                    maxVerificacoes: maxVerificacoes,
-                    intervalo: "500ms",
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                };
-            },
-
-            // 🛑 PARAR MONITOR: Função para parar o monitor
-            pararMonitorBotoesLerMais: () => {
-                if (window.eProbeMonitorLerMais) {
-                    clearInterval(window.eProbeMonitorLerMais);
-                    window.eProbeMonitorLerMais = null;
-                    console.log(
-                        "🛑 MONITOR: Monitor de botões parado manualmente",
-                    );
-                    return { parado: true };
-                } else {
-                    console.log("🛑 MONITOR: Nenhum monitor ativo para parar");
-                    return { parado: false, motivo: "Nenhum monitor ativo" };
-                }
-            },
-
-            // Funções experimentais
-            experimental: {
-                detectarDataSessaoComIA:
-                    typeof detectarDataSessaoComIA === "function"
-                        ? detectarDataSessaoComIA
-                        : () =>
-                              console.log(
-                                  "detectarDataSessaoComIA não disponível",
-                              ),
-                semanticKernel: window.eProbeSemanticKernel || null,
-            },
+            // Tema (exposto globalmente via window em themeApply.js)
+            applyThemeStyles:
+                window.applyThemeStyles ||
+                (() => console.log("applyThemeStyles nao disponivel")),
 
             // Metadados
-            status: "sistema-principal-corrigido",
-            versao: "1.0.0-fix",
+            status: "sistema-principal-ativo",
+            versao: "2.0.0",
             timestamp: new Date().toISOString(),
-            totalFuncoes: 0, // Será calculado abaixo
-        };
+        });
 
-        // Calcular total de funções disponíveis
+        // Calcular total de funcoes disponiveis
         window.SENT1_AUTO.totalFuncoes = Object.keys(window.SENT1_AUTO).filter(
             (key) => typeof window.SENT1_AUTO[key] === "function",
         ).length;
 
         console.log(
-            "✅ NAMESPACE CORRIGIDO: window.SENT1_AUTO criado com",
+            "NAMESPACE: window.SENT1_AUTO criado com",
             window.SENT1_AUTO.totalFuncoes,
-            "funções disponíveis",
+            "funcoes disponiveis",
         );
 
-        // 🔧 TESTE: Listar funções disponíveis no namespace
-        console.log(
-            "🔍 Funções disponíveis no SENT1_AUTO:",
-            Object.keys(window.SENT1_AUTO),
-        );
-
-        // 🚨 EXECUÇÃO IMEDIATA DAS CORREÇÕES CRÍTICAS
-        logCritical(
-            "🔧 EXECUÇÃO IMEDIATA: Aplicando correções críticas na inicialização...",
-        );
-
-        // Executar correções de pointer-events imediatamente
-        try {
-            if (typeof corrigirPointerEventsBotoes === "function") {
-                const resultadoPointer = corrigirPointerEventsBotoes();
-                logCritical(
-                    "✅ CORREÇÃO IMEDIATA: Pointer-events corrigidos:",
-                    resultadoPointer,
-                );
-            }
-        } catch (error) {
-            console.error(
-                "❌ ERRO na correção imediata de pointer-events:",
-                error,
-            );
-        }
-
-        // Executar correção de switchRelevanciaDocumento imediatamente (VERSÃO ROBUSTA)
+        // Executar correcoes criticas via namespace
         try {
             if (
-                typeof corrigirSwitchRelevanciaDocumentoRobusta === "function"
+                typeof window.SENT1_AUTO.corrigirPointerEventsBotoes ===
+                "function"
             ) {
-                // DESABILITADO: const resultadoSwitch = corrigirSwitchRelevanciaDocumentoRobusta();
-                logCritical(
-                    "⚠️ CORREÇÃO DESABILITADA: switchRelevanciaDocumento NÃO corrigido para preservar funcionalidade",
-                );
-            } else if (
-                typeof corrigirSwitchRelevanciaDocumento === "function"
-            ) {
-                const resultadoSwitch = corrigirSwitchRelevanciaDocumento();
-                logCritical(
-                    "✅ CORREÇÃO IMEDIATA: switchRelevanciaDocumento corrigido:",
-                    resultadoSwitch,
-                );
+                window.SENT1_AUTO.corrigirPointerEventsBotoes();
             }
         } catch (error) {
-            console.error(
-                "❌ ERRO na correção imediata de switchRelevanciaDocumento:",
-                error,
-            );
+            console.error("Erro na correcao de pointer-events:", error);
         }
 
-        // Aguardar um pouco e executar novamente (para casos onde as funções do eProc ainda não existem)
-        setTimeout(() => {
-            logCritical(
-                "🔧 SEGUNDA TENTATIVA ROBUSTA: Reaplicando correções após delay...",
-            );
-            try {
-                if (
-                    typeof corrigirSwitchRelevanciaDocumentoRobusta ===
-                    "function"
-                ) {
-                    // DESABILITADO: const resultado = corrigirSwitchRelevanciaDocumentoRobusta();
-                    logCritical(
-                        "⚠️ SEGUNDA TENTATIVA DESABILITADA: switchRelevanciaDocumento NÃO re-corrigido para preservar funcionalidade",
-                    );
-                } else if (
-                    typeof corrigirSwitchRelevanciaDocumento === "function"
-                ) {
-                    const resultado = corrigirSwitchRelevanciaDocumento();
-                    logCritical(
-                        "✅ SEGUNDA TENTATIVA: switchRelevanciaDocumento re-corrigido:",
-                        resultado,
-                    );
-                }
-            } catch (error) {
-                console.error(
-                    "❌ ERRO na segunda tentativa de correção:",
-                    error,
-                );
-            }
-        }, 2000);
-
         logCritical(
-            "✅ eProbe Extension carregada com sucesso - Sistema completo inicializado!",
+            "eProbe Extension carregada com sucesso - Sistema completo inicializado!",
         );
 
-        // ========================================
-        // 🔧 TESTE DE NAMESPACE - VALIDAÇÃO IMEDIATA
-        // ========================================
-
-        // Teste imediato das funções críticas
+        // Teste imediato das funcoes criticas
         setTimeout(() => {
             try {
                 if (typeof window.SENT1_AUTO === "object") {
                     const funcoesCriticas = [
                         "detectarCardSessaoSimplificado",
-                        "testarDeteccaoRobusta",
-                        "diagnosticarEstruturaDOMMinutas",
-                        "debugPDFExtracao",
                         "detectarSessoesUnificado",
+                        "runFullAutomation",
                         "forcarFlexboxNavbar",
                     ];
                     const resultados = funcoesCriticas.map((nome) => {
                         const existe =
                             typeof window.SENT1_AUTO[nome] === "function";
-                        return `${existe ? "✅" : "❌"} ${nome}: ${
-                            existe ? "OK" : "AUSENTE"
-                        }`;
+                        return `${existe ? "[OK]" : "[AUSENTE]"} ${nome}`;
                     });
-                    logCritical("🔍 TESTE NAMESPACE IMEDIATO:");
+                    logCritical("TESTE NAMESPACE:");
                     resultados.forEach((r) => logCritical(`  ${r}`));
-
-                    if (resultados.every((r) => r.includes("✅"))) {
-                        logCritical(
-                            "🎉 SUCESSO: Todas as funções críticas estão disponíveis!",
-                        );
-                    } else {
-                        console.warn(
-                            "⚠️ AVISO: Algumas funções críticas estão ausentes, mas o sistema funciona com fallbacks",
-                        );
-                        // Listar funções funcionais
-                        const funcionaisFuncionais = resultados.filter((r) =>
-                            r.includes("✅"),
-                        ).length;
-                        console.log(
-                            `📊 Status: ${funcionaisFuncionais}/${funcoesCriticas.length} funções críticas disponíveis`,
-                        );
-                    }
-                } else {
-                    console.error(
-                        "❌ CRÍTICO: window.SENT1_AUTO não foi criado!",
+                    logCritical(
+                        "Total funcoes: " + window.SENT1_AUTO.totalFuncoes,
                     );
                 }
             } catch (error) {
-                console.error("❌ ERRO no teste de namespace:", error);
+                console.error("Erro no teste de namespace:", error);
             }
         }, 100);
-
-        // ========================================
-        // 🔧 FUNÇÕES FINAIS - APENAS VALIDAÇÃO
-        // ========================================
-
-        // 🎯 SUCESSO - IIFE completou sem erros
-        logCritical(
-            "✅ IIFE: Execução completada com sucesso - criando namespace completo",
-        );
 
         // ✅ MARCAR EXECUÇÃO COMO COMPLETA E CANCELAR TIMEOUT DE EMERGÊNCIA
         mainExecutionCompleted = true;

@@ -53,19 +53,41 @@ function existingWorkingFunction() {
 
 ### Rule 4: Consolidated Namespace Architecture
 
-**Single namespace location** in `src/main.js` lines 33039-37365:
+**Two-layer namespace system** in `src/main.js`:
+
+**Layer 1 (IIFE #10 - internal async)**: `eProbeNamespaceFunctions` object, exported as `window.SENT1_AUTO` before the IIFE closes. Contains ~150 functions from the internal scope.
+
+**Layer 2 (IIFE #9 - external)**: `Object.assign(window.SENT1_AUTO, {...})` adds functions defined in the outer scope (gradients, process control, theme).
+
+**To add a NEW public function:**
+
+1. Define the function inside the IIFE #10 (between `// INICIO DO SISTEMA DE PROCESSAMENTO` and `// FIM DO NAMESPACE CONSOLIDADO`)
+2. Add it to the `eProbeNamespaceFunctions` object (search for `##### INICIO DO NAMESPACE CONSOLIDADO #####`)
+3. Done - it will be available via `window.SENT1_AUTO.myFunction`
 
 ```javascript
-// ##### INÍCIO DO NAMESPACE CONSOLIDADO #####
-window.SENT1_AUTO = {
-    myNewFunction, // <- Add ALL public functions here
-    // ...all functions in ONE place...
+// Inside IIFE #10, define your function:
+function myNewFunction() {
+    /* implementation */
+}
+
+// Then add to eProbeNamespaceFunctions:
+const eProbeNamespaceFunctions = {
+    // ...existing functions...
+    myNewFunction: myNewFunction, // <- ADD HERE
+    // ...rest...
 };
-// ##### FIM DO NAMESPACE CONSOLIDADO #####
 ```
 
-❌ Never: `window.SENT1_AUTO.newFunc = ...` scattered throughout file  
-✅ Always: Declare function first, then add to consolidated namespace
+**If the function needs variables from the OUTER scope (IIFE #9)**:
+Add it to `Object.assign(window.SENT1_AUTO, {...})` instead (search for `Object.assign(window.SENT1_AUTO`).
+
+```javascript
+// NEVER do these:
+window.SENT1_AUTO.newFunc = ...;  // scattered assignment
+window._myGlobalFunc = ...;       // global workaround
+window.SENT1_AUTO = { ... };      // overwrite entire namespace
+```
 
 ### Rule 5: Variable Declaration Required
 
@@ -96,9 +118,9 @@ if (window.SENT1_AUTO.functionName) {
 
 **Confirmed working functions**:
 
--   `detectarCardSessaoSimplificado()`
--   `testarDeteccaoRobusta()`
--   `diagnosticarEstruturaDOMMinutas()`
+- `detectarCardSessaoSimplificado()`
+- `testarDeteccaoRobusta()`
+- `diagnosticarEstruturaDOMMinutas()`
 
 ❌ Never assume a function exists without checking
 
@@ -108,14 +130,14 @@ if (window.SENT1_AUTO.functionName) {
 
 **Content Script**: `src/main.js` injected at document_end
 
--   Anti-flash injection via `document.write` before DOM render (lines 1-60)
--   Ultra-early eProc function interception
--   Global namespace `window.SENT1_AUTO` with fallback system
+- Anti-flash injection via `document.write` before DOM render (lines 1-60)
+- Ultra-early eProc function interception
+- Global namespace `window.SENT1_AUTO` with fallback system
 
 **Popup**: `src/popup.html` + `src/popup.js` (CSP-compliant, no inline scripts)
 
--   Message passing: `chrome.tabs.sendMessage()` → `main.js` listener
--   Theme system: popup.js → main.js → `window.applyThemeStyles()` in themeApply.js
+- Message passing: `chrome.tabs.sendMessage()` → `main.js` listener
+- Theme system: popup.js → main.js → `window.applyThemeStyles()` in themeApply.js
 
 **Theme Application**: `src/themeApply.js` exposes `window.applyThemeStyles(themeName)`
 
@@ -240,9 +262,9 @@ function hasDataSessaoPautado() {
 
 ### Error Resilience
 
--   Try-catch everywhere around DOM queries and eProc API calls
--   Fallback chain: API → Clipboard → Manual instructions
--   Cache validation: Always check cached data matches current process
+- Try-catch everywhere around DOM queries and eProc API calls
+- Fallback chain: API → Clipboard → Manual instructions
+- Cache validation: Always check cached data matches current process
 
 ## Anti-Patterns - Never Do This
 
@@ -263,10 +285,10 @@ function hasDataSessaoPautado() {
 
 **Stable Features**:
 
--   Ultra-early function interception
--   Instant theme application
--   Robust eProc page detection
--   Emergency namespace fallback
+- Ultra-early function interception
+- Instant theme application
+- Robust eProc page detection
+- Emergency namespace fallback
 
 ---
 
@@ -274,10 +296,10 @@ function hasDataSessaoPautado() {
 
 ### Current Documentation Structure
 
--   `md/Anotações.md` - Domain requirements for session detection
--   `md/BUSCA_DADOS_SESSAO.md` - Session data extraction specifications
--   `md/EXTRACAO_MINUTAS_DETALHADAS.md` - Court minutes extraction details
--   **New documentation**: Should follow this pattern and be placed in `md/`
+- `md/Anotações.md` - Domain requirements for session detection
+- `md/BUSCA_DADOS_SESSAO.md` - Session data extraction specifications
+- `md/EXTRACAO_MINUTAS_DETALHADAS.md` - Court minutes extraction details
+- **New documentation**: Should follow this pattern and be placed in `md/`
 
 ## File Priority for Understanding
 
@@ -294,8 +316,8 @@ function hasDataSessaoPautado() {
 
 **Problem Solved**: `ReferenceError: jQueryDetected is not defined` and performance issues
 
--   **Before**: Variables referenced without declaration causing runtime errors
--   **After**: Strict variable declaration and scoping practices implemented
+- **Before**: Variables referenced without declaration causing runtime errors
+- **After**: Strict variable declaration and scoping practices implemented
 
 **Critical Fixes**:
 
@@ -308,8 +330,8 @@ function hasDataSessaoPautado() {
 
 **Problem Solved**: CSP violations and broken theme functionality
 
--   **Before**: Inline scripts in popup.html causing CSP errors
--   **After**: Clean separation with all JS in popup.js
+- **Before**: Inline scripts in popup.html causing CSP errors
+- **After**: Clean separation with all JS in popup.js
 
 **Architecture Flow**:
 
@@ -321,23 +343,23 @@ function hasDataSessaoPautado() {
 
 **Files Modified**:
 
--   `popup.html`: Removed all inline scripts
--   `popup.js`: Complete rewrite - clean, functional version (12KB)
--   `popup_old.js`: Backup of problematic version (38KB) moved to src/old/
+- `popup.html`: Removed all inline scripts
+- `popup.js`: Complete rewrite - clean, functional version (12KB)
+- `popup_old.js`: Backup of problematic version (38KB) moved to src/old/
 
 ### Function Organization Cleanup
 
 **Switch Configuration Handlers**:
 
--   `highlight-session-date`: Controls session date highlighting
--   `auto-session-requests`: Controls automatic API requests
--   Both use chrome.storage.sync for persistence and chrome.tabs.sendMessage for communication
+- `highlight-session-date`: Controls session date highlighting
+- `auto-session-requests`: Controls automatic API requests
+- Both use chrome.storage.sync for persistence and chrome.tabs.sendMessage for communication
 
 **Theme Management**:
 
--   4 themes: blue (default), dark, light, violet
--   Persistent storage with fallback to blue
--   Visual feedback with text-white and underline classes
+- 4 themes: blue (default), dark, light, violet
+- Persistent storage with fallback to blue
+- Visual feedback with text-white and underline classes
 
 ### Development Patterns & Anti-Patterns
 
@@ -345,11 +367,11 @@ function hasDataSessaoPautado() {
 
 **✅ Do:**
 
--   Keep all JavaScript in separate .js files
--   Use data attributes for theme configuration (`data-theme`, `data-index`)
--   Implement proper message passing between popup and content script
--   Store theme preferences in chrome.storage.sync
--   Expose theme functions globally (window.applyThemeStyles)
+- Keep all JavaScript in separate .js files
+- Use data attributes for theme configuration (`data-theme`, `data-index`)
+- Implement proper message passing between popup and content script
+- Store theme preferences in chrome.storage.sync
+- Expose theme functions globally (window.applyThemeStyles)
 
 ## Recent Updates & Lessons Learned (Agosto 2025)
 
@@ -364,17 +386,17 @@ function hasDataSessaoPautado() {
 
 **❌ NUNCA MAIS FAZER:**
 
--   Modificações extensivas em código que já funciona
--   Adicionar complexidade desnecessária a sistemas simples
--   Ignorar erros de sintaxe durante desenvolvimento
--   Assumir que funções existem sem verificar
+- Modificações extensivas em código que já funciona
+- Adicionar complexidade desnecessária a sistemas simples
+- Ignorar erros de sintaxe durante desenvolvimento
+- Assumir que funções existem sem verificar
 
 **✅ SEMPRE FAZER:**
 
--   Mudanças cirúrgicas e mínimas
--   Verificar sintaxe antes de cada commit
--   Preservar arquiteturas funcionais existentes
--   Testar funções do namespace antes de sugerir
+- Mudanças cirúrgicas e mínimas
+- Verificar sintaxe antes de cada commit
+- Preservar arquiteturas funcionais existentes
+- Testar funções do namespace antes de sugerir
 
 ### 🎯 Foco Atual do Projeto
 
@@ -387,22 +409,22 @@ function hasDataSessaoPautado() {
 
 **Funcionalidades Estáveis:**
 
--   Sistema de interceptação ultra-precoce
--   Aplicação de temas instantânea
--   Detecção robusta de páginas do eProc
--   Namespace com fallback de emergência
+- Sistema de interceptação ultra-precoce
+- Aplicação de temas instantânea
+- Detecção robusta de páginas do eProc
+- Namespace com fallback de emergência
 
 ### 📋 Status de Desenvolvimento
 
--   **Extensão**: ✅ Totalmente funcional
--   **Sintaxe**: ✅ Sem erros críticos
--   **Performance**: ✅ Otimizada com debounce e anti-flash
--   **Compatibilidade**: ✅ eProc1g e eProc2g
--   **Temas**: ✅ 4 temas disponíveis (blue, dark, light, violet)
-    // 1. Declare variables before using
-    let myVariable = false;
-    let attempts = 0;
-    const maxAttempts = 5;
+- **Extensão**: ✅ Totalmente funcional
+- **Sintaxe**: ✅ Sem erros críticos
+- **Performance**: ✅ Otimizada com debounce e anti-flash
+- **Compatibilidade**: ✅ eProc1g e eProc2g
+- **Temas**: ✅ 4 temas disponíveis (blue, dark, light, violet)
+  // 1. Declare variables before using
+  let myVariable = false;
+  let attempts = 0;
+  const maxAttempts = 5;
 
 // 2. Initialize function variables properly
 const myFunction = () => {
