@@ -870,9 +870,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 url.includes("consultar_processo") ||
                 url.includes("processo_selecionar") ||
                 url.includes("acessar_documento") ||
-                document.querySelector("#legMinutas") ||
-                document.querySelector(".infraFieldset") ||
-                document.querySelector('a[aria-label*="Lembrete"]');
+                document.querySelector("#fldCapa") ||
+                document.querySelector("#divInfraAreaProcesso");
 
             if (isPaginaProcesso) {
                 document.body.setAttribute("data-eprobe-processo-page", "true");
@@ -2031,10 +2030,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
     setTimeout(() => {
         try {
             // Navbar já está com CSS completo aplicado - apenas verificar
-            const navbar =
-                document.querySelector("#navbar.navbar.bg-instancia") ||
-                document.querySelector(".navbar.bg-instancia") ||
-                document.querySelector("nav.navbar.bg-instancia");
+            // Seletor unificado - .navbar.bg-instancia cobre todos os casos
+            const navbar = document.querySelector(".navbar.bg-instancia");
 
             if (navbar) {
                 log(
@@ -3197,13 +3194,13 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         textoEncontrado: null,
                     };
 
-                    // Verificar fieldset
+                    // Verificar fieldset (usar classe em vez de ID duplicado)
                     const fieldset = minuta.querySelector(
-                        "fieldset#fldMinutas",
+                        "fieldset.infraFieldset",
                     );
                     resultado.temFieldset = !!fieldset;
                     console.log(
-                        `   📄 Fieldset #fldMinutas: ${resultado.temFieldset}`,
+                        `   📄 Fieldset .infraFieldset: ${resultado.temFieldset}`,
                     );
 
                     if (fieldset) {
@@ -4739,7 +4736,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 "🔍 DEBUG: Procurando elementos com cores específicas...",
             );
 
-            const elementos = document.querySelectorAll("*");
+            // Limitar escopo para area do processo (performance)
+            const elementos = document.querySelectorAll(
+                "#divInfraAreaProcesso *",
+            );
             let elementosEncontrados = 0;
             let coresEncontradas = new Set();
 
@@ -4799,7 +4799,10 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         function corrigirCorDeFundoConservadora() {
             console.log("🎨 CORREÇÃO: Alterando cor de fundo dos elementos...");
 
-            const elementos = document.querySelectorAll("*");
+            // Limitar escopo para area do processo (performance)
+            const elementos = document.querySelectorAll(
+                "#divInfraAreaProcesso *",
+            );
             let elementosProcessados = 0;
 
             elementos.forEach((el) => {
@@ -5587,59 +5590,57 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
         };
 
-        // 🎯 FUNÇÃO SIMPLIFICADA DE INSERÇÃO DE CARD
+        // FUNCAO DE INSERCAO DE CARD - abordagem conservadora (nao move elementos do DOM original)
         function inserirCardNaInterface(card) {
             try {
                 logCritical(
                     "🎯 INSERÇÃO: Procurando local para inserir card...",
                 );
 
-                // Buscar local de inserção no eProc - MÉTODO ESPECÍFICO PARA txtMagistrado
+                // Buscar local de inserção no eProc - txtMagistrado
                 const txtMagistrado = document.getElementById("txtMagistrado");
                 if (txtMagistrado) {
                     logCritical(
                         "🎯 INSERÇÃO: txtMagistrado encontrado, posicionando ao lado direito...",
                     );
 
-                    // 🎭 CRIAR WRAPPER COM SISTEMA ANTI-FLASH
-                    const wrapper = window.eProbeAntiFlash.createElement(
-                        "div",
-                        {
-                            groupId: "wrappers", // Agrupar wrappers
-                        },
-                    );
-
-                    wrapper.style.cssText = `
-                        display: flex !important;
-                        align-items: center !important;
-                        gap: 12px !important;
-                        flex-wrap: wrap !important;
-                        width: 100% !important;
-                    `;
-
-                    // Encontrar o container do txtMagistrado
+                    // Obter o container pai para posicionamento (abordagem conservadora)
                     const parentContainer = txtMagistrado.parentNode;
                     if (parentContainer) {
-                        // Inserir o wrapper antes do txtMagistrado
-                        parentContainer.insertBefore(wrapper, txtMagistrado);
+                        // Aplicar flex no container pai SEM mover elementos
+                        parentContainer.style.setProperty(
+                            "display",
+                            "flex",
+                            "important",
+                        );
+                        parentContainer.style.setProperty(
+                            "align-items",
+                            "center",
+                            "important",
+                        );
+                        parentContainer.style.setProperty(
+                            "gap",
+                            "12px",
+                            "important",
+                        );
+                        parentContainer.style.setProperty(
+                            "flex-wrap",
+                            "wrap",
+                            "important",
+                        );
 
-                        // Mover o txtMagistrado para dentro do wrapper
-                        wrapper.appendChild(txtMagistrado);
-
-                        // Adicionar o card ao lado direito no wrapper
-                        wrapper.appendChild(card);
-
-                        // Garantir que o card tenha estilo inline adequado
+                        // Configurar o card para posicionamento
                         card.style.cssText += `
                             margin-left: auto !important;
                             flex-shrink: 0 !important;
-                            position: relative !important;
+                            position: static !important;
                         `;
 
-                        // 🎭 REVELAR WRAPPER APÓS TODAS AS CONFIGURAÇÕES
-                        requestAnimationFrame(() => {
-                            window.eProbeAntiFlash.reveal(wrapper);
-                        });
+                        // Inserir o card DEPOIS do txtMagistrado (lado direito)
+                        txtMagistrado.parentNode.insertBefore(
+                            card,
+                            txtMagistrado.nextSibling,
+                        );
 
                         logCritical(
                             "✅ INSERÇÃO: Card posicionado ao lado direito do txtMagistrado",
@@ -8484,11 +8485,14 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             }
 
                             // Buscar informações do magistrado/vara
+                            // DOM real: td > div > label.infraEventoUsuario (classe esta na label, nao na td)
                             const magistradoCell =
                                 eventRow.querySelector(
                                     "label.infraEventoUsuario",
                                 ) ||
-                                eventRow.querySelector("td.infraEventoUsuario");
+                                eventRow.querySelector(
+                                    "td:has(label.infraEventoUsuario)",
+                                );
 
                             log(
                                 `🔍 Debug Magistrado - Célula encontrada: ${!!magistradoCell} (${
@@ -25951,6 +25955,61 @@ ${texto}`;
 
                 log("✅ GRADIENTES CAPA: Fieldset encontrado:", fieldsetCapa);
 
+                // DETECCAO PRIMARIA: Usar data-classe (robusto, nao depende de cor)
+                const dataClasse = fieldsetCapa.getAttribute("data-classe");
+                const dataCompetencia =
+                    fieldsetCapa.getAttribute("data-competencia");
+                log(
+                    "🔍 GRADIENTES CAPA: data-classe:",
+                    dataClasse,
+                    "data-competencia:",
+                    dataCompetencia,
+                );
+
+                // Mapeamento de data-classe para gradientes (metodo primario)
+                const mapeamentoClasses = {
+                    // Classes criminais (rosa)
+                    94: "linear-gradient(#FBAFDF, #F78DC7)",
+                    283: "linear-gradient(#FBAFDF, #F78DC7)",
+                    // Adicionar mais classes conforme documentadas
+                };
+
+                // Tentar deteccao por data-classe primeiro
+                if (dataClasse && mapeamentoClasses[dataClasse]) {
+                    const gradiente = mapeamentoClasses[dataClasse];
+                    log(
+                        `🎉 GRADIENTES CAPA: Match por data-classe=${dataClasse}`,
+                    );
+                    log(`   Gradiente: ${gradiente}`);
+                    try {
+                        fieldsetCapa.style.setProperty(
+                            "background",
+                            gradiente,
+                            "important",
+                        );
+                        log(
+                            "✅ GRADIENTES CAPA: Gradiente aplicado via data-classe!",
+                        );
+                        return {
+                            sucesso: true,
+                            metodo: "data-classe",
+                            classe: dataClasse,
+                            gradienteAplicado: gradiente,
+                            elemento: fieldsetCapa,
+                        };
+                    } catch (error) {
+                        logError(
+                            "❌ GRADIENTES CAPA: Erro ao aplicar gradiente via data-classe:",
+                            error,
+                        );
+                    }
+                }
+
+                // FALLBACK: Deteccao por cor computada (metodo legado)
+                log(
+                    "🔄 GRADIENTES CAPA: data-classe nao mapeada, usando fallback por cor...",
+                );
+
                 // Obter estilo computed atual
                 const estiloComputado = window.getComputedStyle(fieldsetCapa);
                 const corAtual = estiloComputado.backgroundColor;
@@ -35932,6 +35991,59 @@ ${texto}`;
             }
 
             log("✅ GRADIENTES CAPA: Fieldset encontrado:", fieldsetCapa);
+
+            // DETECCAO PRIMARIA: Usar data-classe (robusto, nao depende de cor)
+            const dataClasse = fieldsetCapa.getAttribute("data-classe");
+            const dataCompetencia =
+                fieldsetCapa.getAttribute("data-competencia");
+            log(
+                "🔍 GRADIENTES CAPA: data-classe:",
+                dataClasse,
+                "data-competencia:",
+                dataCompetencia,
+            );
+
+            // Mapeamento de data-classe para gradientes (metodo primario)
+            const mapeamentoClasses = {
+                // Classes criminais (rosa)
+                94: "linear-gradient(#FBAFDF, #F78DC7)",
+                283: "linear-gradient(#FBAFDF, #F78DC7)",
+                // Adicionar mais classes conforme documentadas
+            };
+
+            // Tentar deteccao por data-classe primeiro
+            if (dataClasse && mapeamentoClasses[dataClasse]) {
+                const gradiente = mapeamentoClasses[dataClasse];
+                log(`🎉 GRADIENTES CAPA: Match por data-classe=${dataClasse}`);
+                log(`   Gradiente: ${gradiente}`);
+                try {
+                    fieldsetCapa.style.setProperty(
+                        "background",
+                        gradiente,
+                        "important",
+                    );
+                    log(
+                        "✅ GRADIENTES CAPA: Gradiente aplicado via data-classe!",
+                    );
+                    return {
+                        sucesso: true,
+                        metodo: "data-classe",
+                        classe: dataClasse,
+                        gradienteAplicado: gradiente,
+                        elemento: fieldsetCapa,
+                    };
+                } catch (error) {
+                    logError(
+                        "❌ GRADIENTES CAPA: Erro ao aplicar gradiente via data-classe:",
+                        error,
+                    );
+                }
+            }
+
+            // FALLBACK: Deteccao por cor computada (metodo legado)
+            log(
+                "🔄 GRADIENTES CAPA: data-classe nao mapeada, usando fallback por cor...",
+            );
 
             // Obter estilo computed atual
             const estiloComputado = window.getComputedStyle(fieldsetCapa);
