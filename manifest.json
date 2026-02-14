@@ -5,12 +5,7 @@
     "description": "Extensão para servidores do TJSC: detecta documentos no eProc, extrai texto, organiza localizadores e facilita resumos com IA.",
     "author": "Alexandre Claudino Simas Santos",
     "homepage_url": "https://e-probe.vercel.app/",
-    "permissions": [
-        "activeTab",
-        "storage",
-        "tabs",
-        "clipboardWrite"
-    ],
+    "permissions": ["activeTab", "storage", "tabs", "clipboardWrite"],
     "host_permissions": [
         "https://eproc1g.tjsc.jus.br/*",
         "https://eproc2g.tjsc.jus.br/*",
@@ -24,10 +19,17 @@
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ],
-            "js": [
-                "src/main.js"
-            ],
+            "js": ["src/main.js"],
             "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "https://eproc1g.tjsc.jus.br/*",
+                "https://eproc2g.tjsc.jus.br/*"
+            ],
+            "js": ["src/debug-bridge.js"],
+            "run_at": "document_idle",
+            "world": "MAIN"
         }
     ],
     "action": {
