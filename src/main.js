@@ -21343,6 +21343,17 @@ ${texto}`;
                                 );
                             }
 
+                            // Aplicar gradientes nos detalhes da capa (cores partes, descricoes, etc.)
+                            if (
+                                typeof aplicarGradientesDetalhesCapaRobusta ===
+                                "function"
+                            ) {
+                                aplicarGradientesDetalhesCapaRobusta();
+                                log(
+                                    "✅ INICIALIZAÇÃO: Gradientes detalhes da capa iniciados",
+                                );
+                            }
+
                             // ⚡ NOVO: Aplicar estilização IMEDIATA para eliminar flash
                             if (
                                 typeof aplicarEstilizacaoImediataLembretes ===
@@ -26048,7 +26059,7 @@ ${texto}`;
                 },
                 // Histórico/Lista
                 historico: {
-                    newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M11 21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1"/><path d="M16 16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1"/><path d="M21 6a2 2 0 0 0-.586-1.414l-2-2A2 2 0 0 0 17 2h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1z"/></svg>',
                     selector: 'img[src*="valores.gif"]',
                 },
                 // Nova Minuta
@@ -26971,6 +26982,147 @@ ${texto}`;
                     });
                 }
 
+                return true;
+            }
+
+            /**
+             * FUNCAO PARA PADRONIZAR CORES DE BACKGROUND NA CAPA DO PROCESSO
+             * Substitui cores solidas do eProc por gradientes suaves em TODOS os elementos
+             * Documentacao: development/Anotacoes/cores detalhes capa do processo.md
+             */
+            function aplicarGradientesDetalhesCapa() {
+                log("GRADIENTES DETALHES: Iniciando padronizacao de cores...");
+
+                if (!isCapaProcessoPage()) {
+                    return false;
+                }
+
+                // Cores RGB normalizadas (como getComputedStyle retorna)
+                var mapeamentoRGB = {
+                    "35,110,142": "linear-gradient(#5A8DB5, #4A7DA5)", // AZUL
+                    "142,53,35": "linear-gradient(#D6807A, #C26B58)", // VERMELHO
+                    "89,89,89": "linear-gradient(#8A9EA5, #778C93)", // CINZA
+                    "105,142,35": "linear-gradient(#8CBF5A, #7AAF4A)", // VERDE
+                };
+
+                function extrairRGB(cor) {
+                    if (!cor) return null;
+                    var m = cor.match(
+                        /rgb[a]?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/,
+                    );
+                    if (m) return m[1] + "," + m[2] + "," + m[3];
+                    return null;
+                }
+
+                function buscarGradiente(corComputed) {
+                    var rgb = extrairRGB(corComputed);
+                    if (!rgb) return null;
+                    return mapeamentoRGB[rgb] || null;
+                }
+
+                var processados = 0;
+
+                try {
+                    // Estrategia: varrer elementos especificos na pagina inteira
+                    // usando seletores direcionados para performance
+                    var todosElementos = document.querySelectorAll(
+                        "#fldCapa *, #divInfraAreaProcesso *, label.infraEventoDescricao, span.infraEventoDescricao, a.infraNomeParte, #tblEventos *, #divInfraAreaTeor *",
+                    );
+
+                    log(
+                        "GRADIENTES DETALHES: " +
+                            todosElementos.length +
+                            " elementos para verificar",
+                    );
+
+                    for (var i = 0; i < todosElementos.length; i++) {
+                        var el = todosElementos[i];
+
+                        // Pular se ja tem gradiente aplicado
+                        var bgAtual = el.style.background || "";
+                        if (bgAtual.indexOf("gradient") !== -1) continue;
+
+                        // Verificar computed style
+                        var computed = window.getComputedStyle(el);
+                        var corBg = computed.backgroundColor;
+
+                        var gradiente = buscarGradiente(corBg);
+                        if (gradiente) {
+                            el.style.setProperty(
+                                "background",
+                                gradiente,
+                                "important",
+                            );
+                            processados++;
+                            log(
+                                "GRADIENTES DETALHES: " +
+                                    el.tagName +
+                                    (el.className
+                                        ? "." + el.className.split(" ")[0]
+                                        : "") +
+                                    " " +
+                                    corBg +
+                                    " -> gradiente",
+                            );
+                        }
+                    }
+
+                    log(
+                        "GRADIENTES DETALHES: " +
+                            processados +
+                            " elementos padronizados",
+                    );
+                    return {
+                        sucesso: processados > 0,
+                        processados: processados,
+                    };
+                } catch (error) {
+                    console.error("GRADIENTES DETALHES: Erro:", error);
+                    return {
+                        sucesso: false,
+                        motivo: error.message,
+                        processados: processados,
+                    };
+                }
+            }
+
+            function aplicarGradientesDetalhesCapaRobusta() {
+                if (!isCapaProcessoPage()) {
+                    return false;
+                }
+
+                var tentativas = 0;
+                var maxTentativas = 4;
+                var intervalo = 800;
+
+                var tentarAplicar = function () {
+                    tentativas++;
+                    log(
+                        "GRADIENTES DETALHES: Tentativa " +
+                            tentativas +
+                            "/" +
+                            maxTentativas,
+                    );
+
+                    var resultado = aplicarGradientesDetalhesCapa();
+                    var sucesso = resultado && resultado.sucesso;
+
+                    if (sucesso) {
+                        log(
+                            "GRADIENTES DETALHES ROBUSTA: " +
+                                resultado.processados +
+                                " elementos padronizados",
+                        );
+                    } else if (tentativas < maxTentativas) {
+                        setTimeout(tentarAplicar, intervalo);
+                    } else {
+                        log(
+                            "GRADIENTES DETALHES ROBUSTA: Nenhum elemento encontrado apos todas tentativas",
+                        );
+                    }
+                };
+
+                tentarAplicar();
                 return true;
             }
 
@@ -32891,6 +33043,8 @@ ${texto}`;
                 aplicarGradientesCapaProcessoRobusta, // 🔄 NOVA: Aplicação robusta com retry automático
                 aplicarGradientesLegMinutas, // 🎯 NOVA: Aplica gradientes nas legendas e tabelas de minutas
                 aplicarGradientesLegMinutasRobusta, // 🔄 NOVA: Aplicação robusta com retry para minutas
+                aplicarGradientesDetalhesCapa, // Padroniza cores de background na capa (partes, descricoes)
+                aplicarGradientesDetalhesCapaRobusta, // Aplicacao robusta com retry para detalhes capa
 
                 // 🧠 NOVA DETECÇÃO INTELIGENTE DE LEMBRETES
                 detectarTiposLembretesNaPagina,
@@ -36971,6 +37125,129 @@ ${texto}`;
             return tentarAplicarGradientes();
         }
 
+        /**
+         * FUNCAO PARA PADRONIZAR CORES DE BACKGROUND NA CAPA DO PROCESSO
+         * Substitui cores solidas do eProc por gradientes suaves em TODOS os elementos
+         * Documentacao: development/Anotacoes/cores detalhes capa do processo.md
+         */
+        function aplicarGradientesDetalhesCapa() {
+            log("GRADIENTES DETALHES: Iniciando padronizacao de cores...");
+
+            if (!isCapaProcessoPage()) {
+                return false;
+            }
+
+            var mapeamentoRGB = {
+                "35,110,142": "linear-gradient(#5A8DB5, #4A7DA5)",
+                "142,53,35": "linear-gradient(#D6807A, #C26B58)",
+                "89,89,89": "linear-gradient(#8A9EA5, #778C93)",
+                "105,142,35": "linear-gradient(#8CBF5A, #7AAF4A)",
+            };
+
+            function extrairRGB(cor) {
+                if (!cor) return null;
+                var m = cor.match(/rgb[a]?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+                if (m) return m[1] + "," + m[2] + "," + m[3];
+                return null;
+            }
+
+            function buscarGradiente(corComputed) {
+                var rgb = extrairRGB(corComputed);
+                if (!rgb) return null;
+                return mapeamentoRGB[rgb] || null;
+            }
+
+            var processados = 0;
+
+            try {
+                var todosElementos = document.querySelectorAll(
+                    "#fldCapa *, #divInfraAreaProcesso *, label.infraEventoDescricao, span.infraEventoDescricao, a.infraNomeParte, #tblEventos *, #divInfraAreaTeor *",
+                );
+
+                log(
+                    "GRADIENTES DETALHES: " +
+                        todosElementos.length +
+                        " elementos para verificar",
+                );
+
+                for (var i = 0; i < todosElementos.length; i++) {
+                    var el = todosElementos[i];
+                    var bgAtual = el.style.background || "";
+                    if (bgAtual.indexOf("gradient") !== -1) continue;
+
+                    var computed = window.getComputedStyle(el);
+                    var corBg = computed.backgroundColor;
+
+                    var gradiente = buscarGradiente(corBg);
+                    if (gradiente) {
+                        el.style.setProperty(
+                            "background",
+                            gradiente,
+                            "important",
+                        );
+                        processados++;
+                    }
+                }
+
+                log(
+                    "GRADIENTES DETALHES: " +
+                        processados +
+                        " elementos padronizados",
+                );
+                return { sucesso: processados > 0, processados: processados };
+            } catch (error) {
+                console.error("GRADIENTES DETALHES: Erro:", error);
+                return {
+                    sucesso: false,
+                    motivo: error.message,
+                    processados: processados,
+                };
+            }
+        }
+
+        /**
+         * Aplicacao robusta de gradientes nos detalhes da capa com retry
+         */
+        function aplicarGradientesDetalhesCapaRobusta() {
+            if (!isCapaProcessoPage()) {
+                return false;
+            }
+
+            var tentativas = 0;
+            var maxTentativas = 4;
+            var intervalo = 800;
+
+            var tentarAplicar = function () {
+                tentativas++;
+                log(
+                    "GRADIENTES DETALHES: Tentativa " +
+                        tentativas +
+                        "/" +
+                        maxTentativas,
+                );
+
+                var resultado = aplicarGradientesDetalhesCapa();
+                var sucesso = resultado && resultado.sucesso;
+
+                if (sucesso) {
+                    log(
+                        "GRADIENTES DETALHES ROBUSTA: " +
+                            resultado.processados +
+                            " elementos padronizados",
+                    );
+                } else if (tentativas < maxTentativas) {
+                    setTimeout(tentarAplicar, intervalo);
+                } else {
+                    log(
+                        "GRADIENTES DETALHES ROBUSTA: Nenhum elemento encontrado apos todas tentativas",
+                    );
+                }
+            };
+
+            tentarAplicar();
+            return true;
+        }
+
         // Adicionar funcoes do escopo externo (IIFE #9) ao namespace ja exportado pela IIFE #10
         // Estas funcoes estao definidas FORA da IIFE interna e precisam ser adicionadas separadamente
         Object.assign(window.SENT1_AUTO, {
@@ -36995,6 +37272,9 @@ ${texto}`;
             aplicarGradientesLegMinutas: aplicarGradientesLegMinutas,
             aplicarGradientesLegMinutasRobusta:
                 aplicarGradientesLegMinutasRobusta,
+            aplicarGradientesDetalhesCapa: aplicarGradientesDetalhesCapa,
+            aplicarGradientesDetalhesCapaRobusta:
+                aplicarGradientesDetalhesCapaRobusta,
 
             // Tema (exposto globalmente via window em themeApply.js)
             applyThemeStyles:
