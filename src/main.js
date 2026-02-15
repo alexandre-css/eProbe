@@ -17068,6 +17068,7 @@ ${texto}`;
                 // 📋 DETECÇÃO E PROCESSAMENTO DA PÁGINA DE LOCALIZADORES (MANTIDA - não interfere na navbar)
                 setTimeout(() => {
                     detectarPaginaLocalizadores();
+                    adicionarFiltroBuscaLocalizador();
                 }, 1000);
             }
 
@@ -17546,12 +17547,353 @@ ${texto}`;
 
             // 🧪 EXPOR FUNÇÕES DE TESTE NO NAMESPACE (movidas para namespace principal)
 
+            // =============================================
+            // FILTRO DE BUSCA NA TABELA DE PROCESSOS DO LOCALIZADOR
+            // =============================================
+            function adicionarFiltroBuscaLocalizador() {
+                var currentUrl = window.location.href;
+                if (!currentUrl.includes("acao=localizador_processos_lista")) {
+                    return false;
+                }
+
+                var tabela = document.getElementById("tabelaLocalizadores");
+                if (!tabela) {
+                    tabela = document.querySelector(
+                        'table.infraTable[summary*="Processos por Localizador"]',
+                    );
+                }
+                if (!tabela) {
+                    console.log(
+                        "FILTRO LOCALIZADOR: Tabela de processos nao encontrada",
+                    );
+                    return false;
+                }
+
+                // Evitar duplicacao
+                if (document.getElementById("eprobe-filtro-localizador")) {
+                    return true;
+                }
+
+                console.log(
+                    "FILTRO LOCALIZADOR: Adicionando campo de busca na tabela de processos",
+                );
+
+                // Criar container do filtro
+                var container = document.createElement("div");
+                container.id = "eprobe-filtro-localizador";
+                container.style.cssText =
+                    "display:flex;align-items:center;gap:8px;padding:8px 12px;" +
+                    "background:#f0f4f8;border:1px solid #c8d6e5;" +
+                    "border-radius:6px;font-family:inherit;box-sizing:border-box;";
+
+                // Label
+                var label = document.createElement("label");
+                label.setAttribute("for", "eprobe-filtro-input");
+                label.style.cssText =
+                    "font-weight:600;font-size:13px;color:#2c3e50;" +
+                    "white-space:nowrap;margin:0;";
+                label.textContent = "Filtrar processos:";
+
+                // Input de busca
+                var input = document.createElement("input");
+                input.type = "text";
+                input.id = "eprobe-filtro-input";
+                input.placeholder = "digite o termo de busca";
+                input.style.cssText =
+                    "flex:1;padding:6px 10px;border:1px solid #b0c4de;" +
+                    "border-radius:4px;font-size:13px;outline:none;" +
+                    "transition:border-color 0.2s;min-width:0;";
+                input.setAttribute("autocomplete", "off");
+
+                // Contador de resultados
+                var contador = document.createElement("span");
+                contador.id = "eprobe-filtro-contador";
+                contador.style.cssText =
+                    "font-size:12px;color:#555;white-space:nowrap;";
+
+                // Botao selecionar filtrados
+                var btnSelecionar = document.createElement("button");
+                btnSelecionar.type = "button";
+                btnSelecionar.id = "eprobe-filtro-selecionar";
+                btnSelecionar.textContent = "Selecionar filtrados";
+                btnSelecionar.style.cssText =
+                    "padding:5px 10px;background:#2980b9;color:#fff;" +
+                    "border:none;border-radius:4px;font-size:12px;" +
+                    "cursor:pointer;font-weight:600;display:none;" +
+                    "white-space:nowrap;";
+
+                // Botao limpar
+                var btnLimpar = document.createElement("button");
+                btnLimpar.type = "button";
+                btnLimpar.textContent = "Limpar";
+                btnLimpar.style.cssText =
+                    "padding:5px 10px;background:#e74c3c;color:#fff;" +
+                    "border:none;border-radius:4px;font-size:12px;" +
+                    "cursor:pointer;font-weight:600;display:none;" +
+                    "white-space:nowrap;";
+
+                container.appendChild(label);
+                container.appendChild(input);
+                container.appendChild(contador);
+                container.appendChild(btnSelecionar);
+                container.appendChild(btnLimpar);
+
+                // Extrair total de registros do caption antes de modificar
+                var caption = tabela.querySelector("caption");
+                var totalRegistros = 0;
+                var paginaInfo = "";
+                if (caption) {
+                    var captionText = caption.textContent || "";
+                    var matchTotal = captionText.match(
+                        /\((\d+)\s*registros?\s*-\s*(\d+)\s*a\s*(\d+)\)/,
+                    );
+                    if (matchTotal) {
+                        totalRegistros = parseInt(matchTotal[1], 10);
+                        paginaInfo =
+                            matchTotal[2] +
+                            " a " +
+                            matchTotal[3] +
+                            " de " +
+                            matchTotal[1];
+                    }
+                }
+
+                // Inserir filtro como tr no topo do tbody da tabela (antes do cabecalho)
+                var tbody = tabela.querySelector("tbody");
+                if (tbody) {
+                    var trFiltro = document.createElement("tr");
+                    trFiltro.id = "eprobe-filtro-tr";
+                    var tdFiltro = document.createElement("td");
+                    tdFiltro.colSpan = 13;
+                    tdFiltro.style.cssText =
+                        "padding:6px 4px;border:none;background:transparent;";
+                    tdFiltro.appendChild(container);
+                    trFiltro.appendChild(tdFiltro);
+                    // Inserir antes da primeira tr (cabecalho)
+                    var primeiroTr = tbody.querySelector("tr");
+                    if (primeiroTr) {
+                        tbody.insertBefore(trFiltro, primeiroTr);
+                    } else {
+                        tbody.appendChild(trFiltro);
+                    }
+                } else {
+                    tabela.parentNode.insertBefore(container, tabela);
+                }
+
+                // Coletar todas as linhas de dados (exclui cabecalho e separadores eprobe)
+                var tbody = tabela.querySelector("tbody");
+                var linhasData = [];
+                if (tbody) {
+                    var todasLinhas = tbody.querySelectorAll("tr");
+                    for (var i = 0; i < todasLinhas.length; i++) {
+                        var tr = todasLinhas[i];
+                        if (
+                            tr.classList.contains("infraTrClara") ||
+                            tr.classList.contains("infraTrEscura")
+                        ) {
+                            linhasData.push(tr);
+                        }
+                    }
+                }
+
+                var totalProcessos = linhasData.length;
+                var textoBase = totalProcessos + " processos";
+                if (totalRegistros > 0 && totalRegistros !== totalProcessos) {
+                    textoBase =
+                        totalProcessos +
+                        " nesta pagina | " +
+                        totalRegistros +
+                        " total";
+                }
+                contador.textContent = textoBase;
+
+                // Funcao para normalizar texto (remover acentos)
+                function normalizar(texto) {
+                    if (!texto) return "";
+                    return texto
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "");
+                }
+
+                // Estado do filtro ativo
+                var filtroAtivo = false;
+
+                // Funcao de filtragem com debounce
+                var timerFiltro = null;
+                function filtrar() {
+                    var termo = normalizar(input.value.trim());
+
+                    if (!termo) {
+                        // Mostrar todas
+                        for (var i = 0; i < linhasData.length; i++) {
+                            linhasData[i].style.display = "";
+                        }
+                        contador.textContent = textoBase;
+                        contador.style.color = "#555";
+                        btnLimpar.style.display = "none";
+                        btnSelecionar.style.display = "none";
+                        filtroAtivo = false;
+                        return;
+                    }
+
+                    // Suporte a multiplos termos separados por virgula
+                    var termos = termo.split(",");
+                    for (var t = 0; t < termos.length; t++) {
+                        termos[t] = termos[t].trim();
+                    }
+                    var termosValidos = [];
+                    for (var t = 0; t < termos.length; t++) {
+                        if (termos[t].length > 0) {
+                            termosValidos.push(termos[t]);
+                        }
+                    }
+                    if (termosValidos.length === 0) {
+                        for (var i = 0; i < linhasData.length; i++) {
+                            linhasData[i].style.display = "";
+                        }
+                        contador.textContent = textoBase;
+                        contador.style.color = "#555";
+                        btnLimpar.style.display = "none";
+                        btnSelecionar.style.display = "none";
+                        filtroAtivo = false;
+                        return;
+                    }
+
+                    var visiveis = 0;
+                    for (var i = 0; i < linhasData.length; i++) {
+                        var tr = linhasData[i];
+                        // Buscar apenas no texto visivel das celulas (sem tooltips)
+                        var celulas = tr.querySelectorAll("td");
+                        var textoLinha = "";
+                        for (var c = 0; c < celulas.length; c++) {
+                            textoLinha +=
+                                " " + normalizar(celulas[c].textContent);
+                        }
+
+                        // Verificar se TODOS os termos aparecem (AND logic)
+                        var match = true;
+                        for (var t = 0; t < termosValidos.length; t++) {
+                            if (textoLinha.indexOf(termosValidos[t]) === -1) {
+                                match = false;
+                                break;
+                            }
+                        }
+
+                        if (match) {
+                            tr.style.display = "";
+                            visiveis++;
+                        } else {
+                            tr.style.display = "none";
+                        }
+                    }
+
+                    // Atualizar contador
+                    var sufixo =
+                        totalRegistros > totalProcessos
+                            ? " nesta pag. (" + totalRegistros + " total)"
+                            : " de " + totalProcessos;
+                    contador.textContent = visiveis + sufixo;
+                    contador.style.color =
+                        visiveis === 0 ? "#e74c3c" : "#27ae60";
+                    btnLimpar.style.display = "inline-block";
+                    btnSelecionar.style.display =
+                        visiveis > 0 ? "inline-block" : "none";
+                    filtroAtivo = true;
+                }
+
+                // Funcao para selecionar apenas os processos filtrados (visiveis)
+                function selecionarFiltrados() {
+                    // Primeiro desmarcar todos
+                    for (var i = 0; i < linhasData.length; i++) {
+                        var chk = linhasData[i].querySelector(
+                            'input[type="checkbox"].infraCheckbox',
+                        );
+                        if (chk && chk.checked) {
+                            chk.checked = false;
+                        }
+                    }
+                    // Marcar apenas os visiveis
+                    var selecionados = 0;
+                    for (var i = 0; i < linhasData.length; i++) {
+                        if (linhasData[i].style.display !== "none") {
+                            var chk = linhasData[i].querySelector(
+                                'input[type="checkbox"].infraCheckbox',
+                            );
+                            if (chk) {
+                                chk.checked = true;
+                                selecionados++;
+                            }
+                        }
+                    }
+                    // Atualizar icone do "Selecionar Tudo" do eProc
+                    var imgCheck = document.getElementById("imgInfraCheck");
+                    if (imgCheck) {
+                        imgCheck.src = "infra_css/imagens/uncheck.gif";
+                        imgCheck.title = "Deselecionar Tudo";
+                        imgCheck.alt = "Deselecionar Tudo";
+                    }
+                    // Feedback visual no botao
+                    btnSelecionar.textContent =
+                        selecionados + " selecionado(s)";
+                    setTimeout(function () {
+                        btnSelecionar.textContent = "Selecionar filtrados";
+                    }, 2000);
+                }
+
+                // Event listeners
+                input.addEventListener("input", function () {
+                    if (timerFiltro) {
+                        clearTimeout(timerFiltro);
+                    }
+                    timerFiltro = setTimeout(filtrar, 200);
+                });
+
+                input.addEventListener("keydown", function (e) {
+                    if (e.key === "Escape") {
+                        input.value = "";
+                        filtrar();
+                        input.blur();
+                    }
+                });
+
+                btnLimpar.addEventListener("click", function () {
+                    input.value = "";
+                    filtrar();
+                    input.focus();
+                });
+
+                btnSelecionar.addEventListener("click", function () {
+                    selecionarFiltrados();
+                });
+
+                // Focus styling
+                input.addEventListener("focus", function () {
+                    input.style.borderColor = "#3498db";
+                    input.style.boxShadow = "0 0 0 2px rgba(52,152,219,0.2)";
+                });
+                input.addEventListener("blur", function () {
+                    input.style.borderColor = "#b0c4de";
+                    input.style.boxShadow = "none";
+                });
+
+                console.log(
+                    "FILTRO LOCALIZADOR: Campo de busca adicionado com sucesso (" +
+                        totalProcessos +
+                        " processos detectados)",
+                );
+
+                return true;
+            }
+
             // ✅ EXPOSIÇÃO GLOBAL DAS FUNÇÕES DE LOCALIZADORES
             // Expor as funções de localizadores globalmente para uso no namespace
             window.detectarPaginaLocalizadores = detectarPaginaLocalizadores;
             window.processarTabelaLocalizadores = processarTabelaLocalizadores;
             window.destacarLocalizadoresUrgentes =
                 destacarLocalizadoresUrgentes;
+            window.adicionarFiltroBuscaLocalizador =
+                adicionarFiltroBuscaLocalizador;
 
             // ========================================
             // VARIÁVEIS GLOBAIS PARA DADOS DE SESSÃO
@@ -31876,6 +32218,8 @@ ${texto}`;
                     window.processarTabelaLocalizadores,
                 destacarLocalizadoresUrgentes:
                     window.destacarLocalizadoresUrgentes,
+                adicionarFiltroBuscaLocalizador:
+                    window.adicionarFiltroBuscaLocalizador,
                 debugLocalizadores: function () {
                     const currentUrl = window.location.href;
                     const isLocalizadoresPage = currentUrl.includes(
