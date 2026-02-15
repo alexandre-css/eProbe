@@ -5720,6 +5720,112 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             );
         }
 
+        // FUNCAO: CARD CLICAVEL - ABRE SESSAO DE JULGAMENTO COM 1 CLIQUE
+        // Usa fetch silencioso para obter o link da sessao mais recente
+        function tornarCardSessaoClicavel() {
+            var card = document.getElementById("eprobe-card-sessao-material");
+            if (!card) {
+                log("CARD CLICAVEL: Card nao encontrado no DOM");
+                return false;
+            }
+
+            // Evitar duplicacao
+            if (card.dataset.eprobeClickable === "true") {
+                log("CARD CLICAVEL: Card ja esta clicavel");
+                return true;
+            }
+
+            // ESTRATEGIA: Extrair a URL completa do onclick do SVG/elemento
+            // que ja existe no DOM com o hash correto para julgamento_historico_listar
+            // (cada acao no eProc tem seu proprio hash - nao podemos reusar o da URL)
+            var urlHistorico = null;
+            var elementosOnclick = document.querySelectorAll(
+                '[onclick*="julgamento_historico_listar"]',
+            );
+            for (var idx = 0; idx < elementosOnclick.length; idx++) {
+                var onclickStr =
+                    elementosOnclick[idx].getAttribute("onclick") || "";
+                var urlMatch = onclickStr.match(
+                    /exibirSubFrm\s*\(\s*'([^']+julgamento_historico_listar[^']*)'/,
+                );
+                if (urlMatch && urlMatch[1]) {
+                    urlHistorico = urlMatch[1];
+                    urlHistorico = urlHistorico.replace(/&amp;/g, "&");
+                    logCritical(
+                        "CARD CLICAVEL: URL do historico extraida do onclick do DOM",
+                    );
+                    break;
+                }
+            }
+
+            if (!urlHistorico) {
+                log(
+                    "CARD CLICAVEL: Nenhum onclick com julgamento_historico_listar encontrado no DOM",
+                );
+                return false;
+            }
+
+            // Extrair id_julgamento da URL para registro
+            var idJulgMatch = urlHistorico.match(/id_julgamento=(\d+)/);
+            var idJulgamento = idJulgMatch ? idJulgMatch[1] : "desconhecido";
+
+            // Aplicar cursor e estilo clicavel
+            card.style.cursor = "pointer";
+            card.dataset.eprobeClickable = "true";
+            card.dataset.eprobeIdJulgamento = idJulgamento;
+            card.title = "Clique para abrir a sessao de julgamento";
+
+            // Evento de clique - injeta script no contexto MAIN da pagina
+            // (necessario porque main.js roda no mundo ISOLATED e exibirSubFrm
+            // so existe no mundo MAIN)
+            card.addEventListener("click", function cardClickHandler(e) {
+                // Nao interceptar cliques em links/botoes internos
+                if (e.target.closest && e.target.closest("a, button")) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+
+                logCritical(
+                    "CARD CLICAVEL: Clique detectado - disparando evento para MAIN world",
+                );
+
+                // Disparar CustomEvent para debug-bridge.js (mundo MAIN)
+                // que ira chamar exibirSubFrm e navegar para a sessao
+                document.dispatchEvent(
+                    new CustomEvent("eprobe-abrir-sessao-julgamento", {
+                        detail: { url: urlHistorico },
+                    }),
+                );
+            });
+
+            // Feedback visual no hover (passivo para performance)
+            card.addEventListener(
+                "mouseenter",
+                function () {
+                    card.style.transform = "translateY(-1px)";
+                    card.style.transition =
+                        "transform 0.15s ease, box-shadow 0.15s ease";
+                },
+                { passive: true },
+            );
+
+            card.addEventListener(
+                "mouseleave",
+                function () {
+                    card.style.transform = "";
+                },
+                { passive: true },
+            );
+
+            logCritical(
+                "CARD CLICAVEL: Card tornado clicavel (id_julgamento: " +
+                    idJulgamento +
+                    ")",
+            );
+            return true;
+        }
+
         // 🎨 FUNÇÃO PARA CRIAR CARD MATERIAL DE SESSÃO - DESIGN FIGMA
         function criarCardSessaoMaterial(cardInfo) {
             try {
@@ -5954,6 +6060,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 }
 
                 logCritical("✅ CARD MATERIAL: Criação concluída com sucesso!");
+
+                // Tornar card clicavel para abrir sessao de julgamento diretamente
+                try {
+                    tornarCardSessaoClicavel();
+                } catch (errClick) {
+                    logError(
+                        "CARD CLICAVEL: Erro ao configurar clique:",
+                        errClick,
+                    );
+                }
 
                 // 🎭 REVELAR CARD APÓS TODAS AS CONFIGURAÇÕES
                 // Aguardar próximo frame para garantir que tudo esteja pronto
@@ -24370,6 +24486,11 @@ ${texto}`;
             }
 
             /**
+             * Torna o card de sessao clicavel - abre sessao de julgamento diretamente
+             * Usa fetch silencioso para obter o link da sessao mais recente
+             * sem exibir o modal intermediario do historico
+             */
+            /**
              * Remove o card Material Design da interface
              */
             function removerCardMaterialDesign() {
@@ -32382,6 +32503,7 @@ ${texto}`;
                     }
                 },
                 criarCardSessaoMaterial: criarCardSessaoMaterial,
+                tornarCardSessaoClicavel: tornarCardSessaoClicavel,
 
                 // 🔍 FUNÇÕES DE DIAGNÓSTICO E TESTE IMPLEMENTADAS
                 diagnosticarEstruturaDOMMinutas:

@@ -529,6 +529,94 @@
     window.SENT1_AUTO.exportarEstruturaDOM_copyMarkdown =
         exportarEstruturaDOM_copyMarkdown;
 
+    // ============================================================
+    // BRIDGE: Listener para abrir sessao de julgamento
+    // main.js (ISOLATED) dispara CustomEvent -> debug-bridge (MAIN) executa
+    // ============================================================
+    document.addEventListener("eprobe-abrir-sessao-julgamento", function (e) {
+        var urlHistorico = e.detail && e.detail.url;
+        if (!urlHistorico) {
+            console.log("CARD CLICAVEL BRIDGE: URL nao recebida no evento");
+            return;
+        }
+
+        console.log(
+            "CARD CLICAVEL BRIDGE: Evento recebido, abrindo historico...",
+        );
+
+        if (typeof exibirSubFrm !== "function") {
+            console.log(
+                "CARD CLICAVEL BRIDGE: exibirSubFrm nao disponivel, abrindo direto",
+            );
+            window.open(urlHistorico, "_blank", "width=1200,height=700");
+            return;
+        }
+
+        // Abrir modal do historico de julgamento
+        exibirSubFrm(urlHistorico, 1200, 700);
+        console.log("CARD CLICAVEL BRIDGE: Modal aberto, aguardando links...");
+
+        // Polling: esperar os links da sessao aparecerem no modal
+        var tentativas = 0;
+        var maxTentativas = 30;
+        var intervalo = setInterval(function () {
+            tentativas++;
+            if (tentativas > maxTentativas) {
+                clearInterval(intervalo);
+                console.log(
+                    "CARD CLICAVEL BRIDGE: Timeout - modal aberto para uso manual",
+                );
+                return;
+            }
+
+            // Buscar link da sessao no documento e em iframes
+            var links = document.querySelectorAll(
+                'a[href*="sessao_julgamento_exibir_painel"]',
+            );
+
+            if (links.length === 0) {
+                var iframes = document.querySelectorAll("iframe");
+                for (var i = 0; i < iframes.length; i++) {
+                    try {
+                        var iframeLinks = iframes[
+                            i
+                        ].contentDocument.querySelectorAll(
+                            'a[href*="sessao_julgamento_exibir_painel"]',
+                        );
+                        if (iframeLinks.length > 0) {
+                            links = iframeLinks;
+                            break;
+                        }
+                    } catch (err) {
+                        // iframe cross-origin, ignorar
+                    }
+                }
+            }
+
+            if (links.length > 0) {
+                clearInterval(intervalo);
+                var href = links[0].href || links[0].getAttribute("href");
+                console.log(
+                    "CARD CLICAVEL BRIDGE: Link encontrado! Navegando para sessao...",
+                );
+
+                // Fechar modal/subform
+                if (typeof fecharSubFormModal === "function") {
+                    try {
+                        fecharSubFormModal();
+                    } catch (err2) {}
+                } else if (typeof fecharSubFrm === "function") {
+                    try {
+                        fecharSubFrm();
+                    } catch (err3) {}
+                }
+
+                // Navegar para a sessao
+                window.open(href, "_blank");
+            }
+        }, 200);
+    });
+
     console.log(
         "eProbe Debug Bridge: exportarEstruturaDOM e exportarEstruturaDOM_copyMarkdown disponiveis no console",
     );

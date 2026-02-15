@@ -124,22 +124,127 @@ if (window.SENT1_AUTO.functionName) {
 
 ❌ Never assume a function exists without checking
 
+### Rule 7: Execution Worlds - ISOLATED vs MAIN
+
+**`main.js` roda no mundo ISOLATED** (default do Manifest V3). **`debug-bridge.js` roda no mundo MAIN** (`"world": "MAIN"` no manifest).
+
+Isso significa:
+
+- `main.js` **NAO tem acesso** a funcoes nativas do eProc (`exibirSubFrm`, `fecharSubFrm`, `infraTooltipMostrar`, etc.)
+- `main.js` **NAO pode** injetar `<script>` inline (CSP bloqueia)
+- `debug-bridge.js` **TEM acesso** a tudo do contexto da pagina
+- Ambos compartilham o mesmo DOM - **CustomEvent funciona entre mundos**
+
+**Para executar funcoes do eProc a partir de main.js, use CustomEvent bridge:**
+
+```javascript
+// Em main.js (ISOLATED) - DISPARAR evento:
+document.dispatchEvent(
+    new CustomEvent("eprobe-meu-evento", {
+        detail: { param1: "valor1" },
+    }),
+);
+
+// Em debug-bridge.js (MAIN) - RECEBER e executar:
+document.addEventListener("eprobe-meu-evento", function (e) {
+    var param1 = e.detail.param1;
+    // Aqui TEM acesso a funcoes do eProc
+    exibirSubFrm(url, 1200, 700);
+});
+```
+
+**NUNCA fazer:**
+
+```javascript
+// Em main.js:
+var script = document.createElement("script");
+script.textContent = "exibirSubFrm(...)"; // CSP BLOQUEIA!
+document.body.appendChild(script);
+
+// Em main.js:
+if (typeof exibirSubFrm === "function") // SEMPRE false no ISOLATED!
+```
+
+### Rule 8: Escopos e Closures em main.js
+
+**main.js tem multiplos escopos aninhados.** Funcoes definidas dentro da IIFE #10 (indentacao 12 espacos) NAO sao visiveis no escopo externo (indentacao 8 espacos), e vice-versa.
+
+**Se uma funcao precisa ser chamada de um escopo**, ela DEVE ser definida nesse escopo ou em um escopo pai.
+
+```javascript
+// ESCOPO EXTERNO (8 espacos) - criarCardSessaoMaterial() vive aqui
+function minhaFuncao() {
+    /* ... */
+}
+function criarCardSessaoMaterial() {
+    minhaFuncao(); // OK - mesmo escopo
+}
+
+// IIFE #10 (12 espacos) - namespace vive aqui
+function outraFuncao() {
+    /* ... */
+}
+const eProbeNamespaceFunctions = {
+    outraFuncao: outraFuncao,
+    minhaFuncao: minhaFuncao, // OK - closure do escopo pai
+};
+```
+
+**try-catch engole erros de escopo!** Se uma funcao e chamada dentro de try-catch e nao existe naquele escopo, o erro `ReferenceError` e silenciado e parece que "nada aconteceu".
+
+### Rule 9: Hashes do eProc sao por Acao
+
+**Cada acao no eProc tem seu proprio hash.** O hash da URL atual (ex: `processo_selecionar`) NAO funciona para outras acoes (ex: `julgamento_historico_listar`).
+
+**Para obter o hash correto de outra acao:**
+
+- Extrair do atributo `onclick` de elementos DOM que ja usam essa acao
+- NUNCA reusar `window.location.href.match(/hash=([a-f0-9]+)/)`
+
+```javascript
+// ERRADO: hash da pagina atual
+var hashMatch = window.location.href.match(/hash=([a-f0-9]+)/);
+var url = "controlador.php?acao=OUTRA_ACAO&hash=" + hashMatch[1]; // INVALIDO!
+
+// CORRETO: extrair do onclick que ja tem o hash certo
+var el = document.querySelector('[onclick*="OUTRA_ACAO"]');
+var onclick = el.getAttribute("onclick");
+var urlMatch = onclick.match(/exibirSubFrm\s*\(\s*'([^']+)'/);
+var urlCorreta = urlMatch[1]; // Ja tem hash valido!
+```
+
 ## Architecture Essentials
 
 ### Entry Points & Message Flow
 
-**Content Script**: `src/main.js` injected at document_end
+**Content Script**: `src/main.js` injected at document_end (world: **ISOLATED**)
 
 - Anti-flash injection via `document.write` before DOM render (lines 1-60)
 - Ultra-early eProc function interception
 - Global namespace `window.SENT1_AUTO` with fallback system
+- **NAO tem acesso a funcoes nativas do eProc** (usar CustomEvent bridge)
+
+**Debug Bridge**: `src/debug-bridge.js` injected at document_idle (world: **MAIN**)
+
+- Acesso completo ao contexto da pagina e funcoes do eProc
+- Listener de CustomEvent para executar acoes solicitadas por main.js
+- Funcoes de debug expostas no console (`exportarEstruturaDOM`, etc.)
 
 **Popup**: `src/popup.html` + `src/popup.js` (CSP-compliant, no inline scripts)
 
-- Message passing: `chrome.tabs.sendMessage()` → `main.js` listener
-- Theme system: popup.js → main.js → `window.applyThemeStyles()` in themeApply.js
+- Message passing: `chrome.tabs.sendMessage()` -> `main.js` listener
+- Theme system: popup.js -> main.js -> `window.applyThemeStyles()` in themeApply.js
 
 **Theme Application**: `src/themeApply.js` exposes `window.applyThemeStyles(themeName)`
+
+### Communication Between Worlds
+
+```
+main.js (ISOLATED)  ---CustomEvent--->  debug-bridge.js (MAIN)
+                    <---DOM sharing---
+```
+
+**Padrao implementado:** Card de sessao clicavel usa `eprobe-abrir-sessao-julgamento` CustomEvent.
 
 ### Core Systems
 
@@ -269,12 +374,37 @@ function hasDataSessaoPautado() {
 ## Anti-Patterns - Never Do This
 
 ❌ Inline scripts in HTML (CSP violation)  
+❌ `document.createElement("script")` com `textContent` em main.js (CSP bloqueia no ISOLATED)  
 ❌ `window.SENT1_AUTO.func =` outside consolidated section  
 ❌ Assuming jQuery availability without checking  
+❌ Assuming eProc native functions exist in main.js (`exibirSubFrm`, `fecharSubFrm` - mundo ISOLATED!)  
+❌ Reusing URL hash for different eProc actions (each action has its own hash)  
+❌ Defining function in IIFE #10 and calling from outer scope without namespace  
+❌ Using try-catch around function calls without logging the error (silences ReferenceErrors)  
+❌ Using `fetch()` for eProc pages that load content via AJAX (HTML returned has no dynamic data)  
 ❌ Reprocessing same document multiple times (check `processosJaProcessados` Set)  
 ❌ Emojis or special Unicode in JavaScript code  
 ❌ Extensive refactoring of working code  
 ❌ Creating `.md` files outside `md/` directory
+
+## Recent Updates (Feb 2026)
+
+**Card Sessao Clicavel**: Card de sessao abre sessao de julgamento com 1 clique
+
+- CustomEvent bridge entre mundos ISOLATED (main.js) e MAIN (debug-bridge.js)
+- Extrai URL do onclick do SVG no DOM (hash correto por acao)
+- Polling no modal para encontrar link da sessao mais recente
+- Fallback: deixa modal aberto para uso manual se timeout
+
+**Licoes aprendidas:**
+
+1. main.js roda em ISOLATED - nao tem acesso a funcoes do eProc
+2. Script injection via createElement("script") e bloqueado por CSP
+3. CustomEvent e o canal correto entre mundos (compartilham DOM)
+4. Hashes do eProc sao unicos por acao - nao reusar hash da URL
+5. try-catch sem log engole ReferenceError e parece "nada aconteceu"
+6. Funcoes em escopos diferentes nao se enxergam - verificar indentacao
+7. fetch de paginas eProc retorna HTML sem dados dinamicos (AJAX)
 
 ## Recent Updates (Dec 2025)
 
