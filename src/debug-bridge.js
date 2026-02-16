@@ -617,6 +617,26 @@
         }, 200);
     });
 
+    // ============================================================
+    // BRIDGE GENERICO: Executar onclick de icones substituidos
+    // main.js (ISOLATED) dispara CustomEvent -> debug-bridge (MAIN) executa
+    // Suporta exibirSubFrm e qualquer funcao nativa do eProc
+    // ============================================================
+    document.addEventListener("eprobe-executar-onclick", function (e) {
+        var onclickCode = e.detail && e.detail.onclick;
+        if (!onclickCode) {
+            console.log("BRIDGE ONCLICK: Codigo onclick nao recebido");
+            return;
+        }
+        try {
+            // Executar o onclick no contexto MAIN (tem acesso a exibirSubFrm etc)
+            var fn = new Function(onclickCode);
+            fn();
+        } catch (err) {
+            console.warn("BRIDGE ONCLICK: Erro ao executar onclick:", err);
+        }
+    });
+
     console.log(
         "eProbe Debug Bridge: exportarEstruturaDOM e exportarEstruturaDOM_copyMarkdown disponiveis no console",
     );

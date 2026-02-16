@@ -213,6 +213,109 @@ var urlMatch = onclick.match(/exibirSubFrm\s*\(\s*'([^']+)'/);
 var urlCorreta = urlMatch[1]; // Ja tem hash valido!
 ```
 
+### Rule 10: Substituicao de Elementos DOM - Transferir Interatividade
+
+**Ao substituir `<img>` por `<span><svg></span>`**, SEMPRE transferir atributos interativos do elemento original:
+
+1. **`title`** - tooltip informativo
+2. **`onclick`** - funcao de clique (USAR CustomEvent bridge!)
+3. **`cursor: pointer`** - indicador visual de clicabilidade
+
+**Imgs do eProc podem ter `onclick` direto** (sem `<a>` pai). Exemplo: `minuta_historico.gif` tem `onclick="exibirSubFrm(...)"`.
+
+```javascript
+// CORRETO: Transferir title e onclick via bridge
+var imgTitle = img.getAttribute("title");
+if (imgTitle) span.setAttribute("title", imgTitle);
+
+var imgOnclick = img.getAttribute("onclick");
+if (imgOnclick) {
+    span.style.cursor = "pointer";
+    (function (onclickCode) {
+        span.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            document.dispatchEvent(
+                new CustomEvent("eprobe-executar-onclick", {
+                    detail: { onclick: onclickCode },
+                }),
+            );
+        });
+    })(imgOnclick);
+}
+```
+
+**NUNCA usar `setAttribute("onclick", ...)` em main.js** - o codigo seria executado no ISOLATED e nao teria acesso a funcoes do eProc.
+
+### Rule 11: pointer-events em Icones Substituidos
+
+**`pointer-events: none`** deve ser aplicado APENAS em elementos visuais (SVG, img). NUNCA em containers (`span`).
+
+```javascript
+// CORRETO: SVG nao intercepta cliques, span permite bubble
+svg.style.pointerEvents = "none"; // Visual - nao intercepta
+span.style.pointerEvents = "auto"; // Container - permite bubble ate <a>
+
+// ERRADO: Bloqueia cliques no container
+span.style.pointerEvents = "none"; // Cliques NUNCA chegam ao <a> pai!
+```
+
+**Fluxo correto de clique:**
+
+```
+Clique no SVG (none) -> ignora -> bubble para span (auto) -> bubble para <a> (auto) -> dispara
+```
+
+### Rule 12: Substituicao de <img> do eProc - Tres Categorias
+
+Os `<img>` do eProc se dividem em 3 categorias com estrategias DIFERENTES:
+
+**Categoria A: `name="imgRecursoMinutaAjax"`** (brasao.png, left.gif no divListaRecursosMinuta)
+
+- Tem event listeners registrados via JS do eProc no mundo MAIN
+- Usa atributos customizados: `urlajax`, `acao`, `sin_solicitar_confirmacao`, etc.
+- **ESTRATEGIA: Hide + insertBefore** - esconder img original (position:absolute, opacity:0, width:0, height:0) e inserir SVG ao lado. Click no SVG dispara `originalImg.click()`
+- **NUNCA usar replaceChild** - perde listeners do mundo MAIN
+
+```javascript
+img.style.cssText =
+    "width:0 !important;height:0 !important;overflow:hidden !important;position:absolute !important;opacity:0 !important;pointer-events:none !important;";
+img.parentNode.insertBefore(span, img);
+span.addEventListener("click", function (ev) {
+    ev.stopPropagation();
+    ev.preventDefault();
+    originalImg.click(); // Dispara handler do eProc no mundo MAIN
+});
+```
+
+**Categoria B: `name="imgRecursoMinuta"`** (historico, alterar, conferir, etc.)
+
+- Acao esta no `onclick` do img (transferivel via CustomEvent bridge) ou no `href` do `<a>` pai
+- **ESTRATEGIA: replaceChild normal** - substituir img por span+SVG
+
+**Categoria C: Imgs sem name especial** (setas, estrelas, icones gerais)
+
+- **ESTRATEGIA: replaceChild normal**
+
+### Rule 13: Transferir id e Observar title ao Substituir <img>
+
+**SEMPRE transferir `id` do `<img>` original para o `<span>` substituto.**
+
+O eProc usa `getElementById("imgMinutas_...")` para encontrar o icone de expandir/recolher e chamar `.setAttribute("src", ...)` e `.title = ...`. Se o id nao for transferido, `getElementById` retorna null e causa TypeError.
+
+**O eProc alterna `.src` e `.title` para trocar entre expandir/ocultar.** Mas `.src` em `<span>` e um expando JS (NAO reflete no atributo HTML), entao MutationObserver no atributo `src` NAO funciona. Ja `.title` e um IDL attribute refletido em TODOS os HTMLElement.
+
+```javascript
+// ERRADO: Observar src em <span> - nunca dispara
+observer.observe(span, { attributes: true, attributeFilter: ["src"] });
+
+// CORRETO: Observar title - dispara quando eProc muda title
+observer.observe(span, { attributes: true, attributeFilter: ["title"] });
+// title "Expandir" -> mostrar SVG ver_tudo
+// title "Ocultar"  -> mostrar SVG ver_resumo
+```
+
+**Tambem copiar `src` original** para o span (como atributo) para que o eProc possa le-lo.
+
 ## Architecture Essentials
 
 ### Entry Points & Message Flow
@@ -245,6 +348,7 @@ main.js (ISOLATED)  ---CustomEvent--->  debug-bridge.js (MAIN)
 ```
 
 **Padrao implementado:** Card de sessao clicavel usa `eprobe-abrir-sessao-julgamento` CustomEvent.
+**Bridge generico:** `eprobe-executar-onclick` executa qualquer onclick de imgs substituidas.
 
 ### Core Systems
 
@@ -373,19 +477,25 @@ function hasDataSessaoPautado() {
 
 ## Anti-Patterns - Never Do This
 
-❌ Inline scripts in HTML (CSP violation)  
-❌ `document.createElement("script")` com `textContent` em main.js (CSP bloqueia no ISOLATED)  
-❌ `window.SENT1_AUTO.func =` outside consolidated section  
-❌ Assuming jQuery availability without checking  
-❌ Assuming eProc native functions exist in main.js (`exibirSubFrm`, `fecharSubFrm` - mundo ISOLATED!)  
-❌ Reusing URL hash for different eProc actions (each action has its own hash)  
-❌ Defining function in IIFE #10 and calling from outer scope without namespace  
-❌ Using try-catch around function calls without logging the error (silences ReferenceErrors)  
-❌ Using `fetch()` for eProc pages that load content via AJAX (HTML returned has no dynamic data)  
-❌ Reprocessing same document multiple times (check `processosJaProcessados` Set)  
-❌ Emojis or special Unicode in JavaScript code  
-❌ Extensive refactoring of working code  
-❌ Creating `.md` files outside `md/` directory
+- Inline scripts in HTML (CSP violation)
+- `document.createElement("script")` com `textContent` em main.js (CSP bloqueia no ISOLATED)
+- `window.SENT1_AUTO.func =` outside consolidated section
+- Assuming jQuery availability without checking
+- Assuming eProc native functions exist in main.js (`exibirSubFrm`, `fecharSubFrm` - mundo ISOLATED!)
+- Reusing URL hash for different eProc actions (each action has its own hash)
+- Defining function in IIFE #10 and calling from outer scope without namespace
+- Using try-catch around function calls without logging the error (silences ReferenceErrors)
+- Using `fetch()` for eProc pages that load content via AJAX (HTML returned has no dynamic data)
+- Reprocessing same document multiple times (check `processosJaProcessados` Set)
+- Emojis or special Unicode in JavaScript code
+- Extensive refactoring of working code
+- Creating `.md` files outside `md/` directory
+- Substituir `<img>` do DOM sem transferir `onclick`, `title`, `id` e cursor do original
+- Aplicar `pointer-events: none` em containers (`span`) - apenas em SVGs/imgs visuais
+- Usar `setAttribute("onclick", ...)` em main.js para funcoes do eProc (mundo ISOLATED!)
+- Usar replaceChild em `imgRecursoMinutaAjax` (perde listeners AJAX do eProc no mundo MAIN)
+- Observar atributo `src` via MutationObserver em `<span>` (.src nao reflete - usar `title`)
+- Esconder img original com `display:none` (CSS do eProc sobrepoe - usar position:absolute+opacity:0+width:0)
 
 ## Recent Updates (Feb 2026)
 
@@ -396,6 +506,14 @@ function hasDataSessaoPautado() {
 - Polling no modal para encontrar link da sessao mais recente
 - Fallback: deixa modal aberto para uso manual se timeout
 
+**Correcao pointer-events em Icones Substituidos:**
+
+- Removido `pointer-events: none` de containers `span[data-eprobe-icon-container]`
+- Mantido `pointer-events: none` apenas em SVGs/imgs (elementos visuais)
+- Transferencia de `onclick` e `title` de `<img>` original para `<span>` substituto
+- Bridge generico `eprobe-executar-onclick` em debug-bridge.js para executar onclick no mundo MAIN
+- Documentado em `md/CORRECAO_POINTER_EVENTS_ICONES_SUBSTITUIDOS.md`
+
 **Licoes aprendidas:**
 
 1. main.js roda em ISOLATED - nao tem acesso a funcoes do eProc
@@ -405,6 +523,17 @@ function hasDataSessaoPautado() {
 5. try-catch sem log engole ReferenceError e parece "nada aconteceu"
 6. Funcoes em escopos diferentes nao se enxergam - verificar indentacao
 7. fetch de paginas eProc retorna HTML sem dados dinamicos (AJAX)
+8. Ao substituir `<img>` do DOM, SEMPRE transferir onclick, title, id e cursor
+9. pointer-events: none em containers (span) bloqueia cliques - usar apenas em SVGs
+10. onclick de funcoes nativas do eProc DEVE usar CustomEvent bridge, nao setAttribute
+11. `imgRecursoMinutaAjax` tem listeners JS no mundo MAIN - NUNCA remover do DOM (usar hide+insertBefore)
+12. `imgRecursoMinuta` (sem Ajax) pode ser substituido normalmente (acao no onclick/href)
+13. `.src` em `<span>` e expando JS (NAO reflete no atributo) - MutationObserver no src NAO funciona
+14. `.title` e IDL attribute refletido em TODOS os HTMLElement - observer funciona para detectar toggle
+15. `display:none` em img do eProc e sobreposto por CSS !important do eProc - usar position:absolute+opacity:0+width:0
+16. Ao transferir id do img para span, o `infraAbrirFecharElementoHTML` do eProc consegue encontrar o elemento
+17. Observer no `#conteudoMinutas` (nao apenas `#legMinutas`) captura TODAS as mudancas AJAX de minutas
+18. Icones de minuta com variantes de cor (\_verde, \_azul) precisam de seletores especificos ANTES do generico
 
 ## Recent Updates (Dec 2025)
 

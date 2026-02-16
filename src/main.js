@@ -1,4 +1,4 @@
-﻿// ⚡ ANTI-FLASH RADICAL - INJEÇÃO NO HTML ANTES DO RENDER
+// ⚡ ANTI-FLASH RADICAL - INJEÇÃO NO HTML ANTES DO RENDER
 (function antiFlashRadical() {
     const navbarDesabilitada =
         localStorage.getItem("eprobe_navbar_enabled") === "false";
@@ -1756,6 +1756,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         span[data-eprobe-icon-container] svg {
             flex-shrink: 0 !important;
             vertical-align: middle !important;
+            pointer-events: none !important;
         }
         
         /* Alinhamento específico para ícones de ação */
@@ -6518,27 +6519,19 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             font-family: "Roboto", -apple-system, system-ui, sans-serif !important;
         }
         
-        /* CORREÇÃO CRÍTICA: Ícones substituídos não devem interceptar cliques */
+        /* CORRECAO: Icones substituidos nao devem interceptar cliques */
         .substituted-icon:not(.clickable-icon) {
             pointer-events: none !important;
         }
         
-        /* Material Icons substituídos também não devem interceptar cliques */
+        /* Material Icons substituidos tambem nao devem interceptar cliques */
         .material-symbols-outlined.substituted-icon:not(.clickable-icon) {
             pointer-events: none !important;
         }
 
-        /* CRÍTICO: Containers de ícones substituídos também não devem interceptar cliques */
-        span:has(.substituted-icon:not(.clickable-icon)) {
-            pointer-events: none !important;
-        }
-        
-        /* Fallback para navegadores que não suportam :has() */
-        .eprobe-icon-container:not(.clickable-container) {
-            pointer-events: none !important;
-        }
-        
-        /* FORÇA MÁXIMA: SVGs de ícones eProbe (mas não os em links) */
+        /* Containers de icones NAO bloqueiam cliques - herdam pointer-events do pai */
+
+        /* SVGs de icones eProbe */
         svg.substituted-icon:not(.clickable-icon) {
             pointer-events: none !important;
         }
@@ -6547,26 +6540,22 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             pointer-events: none !important;
         }
         
-        /* Especificamente para elementos com data-eprobe-icon-replaced (mas não em links) */
+        /* Elementos com data-eprobe-icon-replaced */
         [data-eprobe-icon-replaced="true"]:not(.clickable-icon) {
             pointer-events: none !important;
         }
         
-        /* PRESERVAR clicabilidade para ícones dentro de botões e links - CORREÇÃO CRÍTICA */
-        button .substituted-icon,
-        button .iconeFerramentas,
-        button [data-eprobe-icon-replaced="true"],
-        button span,
-        a .substituted-icon,
-        a .iconeFerramentas,
-        a [data-eprobe-icon-replaced="true"],
-        .infraLegendObrigatorio button .substituted-icon,
-        .infraLegendObrigatorio button .iconeFerramentas,
-        .infraLegendObrigatorio button [data-eprobe-icon-replaced="true"],
-        .infraLegendObrigatorio button span,
-        .infraLegendObrigatorio .substituted-icon,
-        .infraLegendObrigatorio .iconeFerramentas,
-        .infraLegendObrigatorio [data-eprobe-icon-replaced="true"] {
+        /* Containers de icones eProbe devem ser clicaveis (herdam do link pai) */
+        span[data-eprobe-icon-container] {
+            pointer-events: auto !important;
+        }
+
+        /* Links e botoes devem ser clicaveis */
+        a,
+        button,
+        a[data-eprobe-intercepted],
+        .infraLegendObrigatorio a,
+        .infraLegendObrigatorio button {
             pointer-events: auto !important;
         }
 
@@ -18047,25 +18036,9 @@ ${texto}`;
                                 resultado,
                             );
 
-                            // ✨ NOVO: Aplicar também substituição de ícones de lembretes
-                            if (
-                                typeof substituirIconesLembretes ===
-                                    "function" &&
-                                isCapaProcessoPage()
-                            ) {
-                                const iconesSubstituidos =
-                                    substituirIconesLembretes();
-                                if (iconesSubstituidos > 0) {
-                                    log(
-                                        `🔄 OBSERVER: ${iconesSubstituidos} ícones de lembretes substituídos após mudança no DOM`,
-                                    );
-                                }
-                            } else if (
-                                typeof substituirIconesLembretes === "function"
-                            ) {
-                                log(
-                                    "⛔ OBSERVER: Personalização de ícones restrita - página atual não é capa do processo",
-                                );
+                            // Reaplicar icones via funcao unificada
+                            if (isCapaProcessoPage()) {
+                                substituirTodosIcones();
                             }
                         }, debounceDelay + 100); // Pequeno delay adicional para lembretes
                     }
@@ -18230,9 +18203,9 @@ ${texto}`;
                     document.querySelectorAll("[data-eprobe-icon-replaced]")
                         .length === 0
                 ) {
-                    log("🎨 Aplicando substituição de ícones...");
+                    log("Aplicando substituicao de icones...");
                     try {
-                        substituirIconesFieldsetAcoes();
+                        substituirTodosIcones();
                         resultadoCorrecao.acoes.push({
                             acao: "Substituição de ícones",
                             status: "Executada",
@@ -18287,14 +18260,10 @@ ${texto}`;
              * Garante que botões importantes como LegNovaMinuta sejam clicáveis
              */
             function corrigirPointerEventsBotoes() {
-                console.log(
-                    "🔧 CORREÇÃO: Iniciando correção de pointer-events em botões críticos...",
-                );
+                var correcoesAplicadas = [];
 
-                const correcoesAplicadas = [];
-
-                // 🚫 PROTEÇÃO: Não aplicar correções em elementos select2
-                const isSelect2Element = (element) => {
+                // Protecao: Nao aplicar em elementos select2
+                var isSelect2Element = function (element) {
                     return (
                         element.classList.contains(
                             "select2-search-choice-close",
@@ -18304,154 +18273,94 @@ ${texto}`;
                     );
                 };
 
-                // 1. Corrigir especificamente o botão LegNovaMinuta
-                const botaoLegNovaMinuta = document.querySelector(
+                // Funcao auxiliar: garante que o link/botao e clicavel
+                // SVGs/imgs nao interceptam cliques; spans HERDAM do pai
+                var corrigirElementoClicavel = function (el) {
+                    if (!el || isSelect2Element(el)) return;
+                    el.style.setProperty("pointer-events", "auto", "important");
+                    // Apenas SVGs e imgs ficam com pointer-events: none
+                    var filhosVisuais = el.querySelectorAll(
+                        "svg, img, [data-eprobe-icon-replaced]",
+                    );
+                    filhosVisuais.forEach(function (filho) {
+                        filho.style.setProperty(
+                            "pointer-events",
+                            "none",
+                            "important",
+                        );
+                    });
+                    // Containers de icones devem ser clicaveis
+                    var containers = el.querySelectorAll(
+                        "span[data-eprobe-icon-container]",
+                    );
+                    containers.forEach(function (container) {
+                        container.style.setProperty(
+                            "pointer-events",
+                            "auto",
+                            "important",
+                        );
+                    });
+                };
+
+                // 1. Corrigir botao LegNovaMinuta
+                var botaoLegNovaMinuta = document.querySelector(
                     "#LegNovaMinuta button",
                 );
-                if (
-                    botaoLegNovaMinuta &&
-                    !isSelect2Element(botaoLegNovaMinuta)
-                ) {
-                    // Corrigir o botão e todos os seus elementos filhos
-                    botaoLegNovaMinuta.style.setProperty(
-                        "pointer-events",
-                        "auto",
-                        "important",
-                    );
-                    const spansDoBotao =
-                        botaoLegNovaMinuta.querySelectorAll("span");
-                    spansDoBotao.forEach((span) => {
-                        span.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
-                    });
-                    const iconesDoBotao = botaoLegNovaMinuta.querySelectorAll(
-                        "svg, img, [data-eprobe-icon-replaced]",
-                    );
-                    iconesDoBotao.forEach((icone) => {
-                        icone.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
-                    });
+                if (botaoLegNovaMinuta) {
+                    corrigirElementoClicavel(botaoLegNovaMinuta);
                     correcoesAplicadas.push("LegNovaMinuta button");
-                    console.log("✅ CORREÇÃO: Botão LegNovaMinuta corrigido");
                 }
 
-                // 2. Corrigir todos os botões com classe infraLegendObrigatorio
-                const botoesInfraLegend = document.querySelectorAll(
-                    ".infraLegendObrigatorio button",
-                );
-                botoesInfraLegend.forEach((botao, index) => {
-                    if (isSelect2Element(botao)) {
-                        console.log(
-                            `⚠️ CORREÇÃO: Pulando botão select2 ${index + 1}`,
-                        );
-                        return;
-                    }
-
-                    botao.style.setProperty(
-                        "pointer-events",
-                        "auto",
-                        "important",
-                    );
-                    const spans = botao.querySelectorAll("span");
-                    spans.forEach((span) => {
-                        span.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
+                // 2. Corrigir botoes infraLegendObrigatorio
+                document
+                    .querySelectorAll(".infraLegendObrigatorio button")
+                    .forEach(function (botao) {
+                        corrigirElementoClicavel(botao);
                     });
-                    const icones = botao.querySelectorAll(
-                        "svg, img, [data-eprobe-icon-replaced]",
-                    );
-                    icones.forEach((icone) => {
+
+                // 3. Corrigir links com icones eProbe substituidos
+                document
+                    .querySelectorAll("a:has(span[data-eprobe-icon-container])")
+                    .forEach(function (link) {
+                        corrigirElementoClicavel(link);
+                    });
+
+                // 4. Corrigir icones de estrela protegidos
+                document
+                    .querySelectorAll('img[data-eprobe-protected="true"]')
+                    .forEach(function (icone) {
                         icone.style.setProperty(
                             "pointer-events",
                             "auto",
                             "important",
                         );
+                        var parentLink = icone.closest("a");
+                        if (parentLink) {
+                            parentLink.style.setProperty(
+                                "pointer-events",
+                                "auto",
+                                "important",
+                            );
+                        }
                     });
-                    correcoesAplicadas.push(
-                        `infraLegendObrigatorio button ${index + 1}`,
-                    );
-                });
 
-                // 3. Corrigir especificamente ícones de estrela protegidos
-                const iconesEstrelaProtegidos = document.querySelectorAll(
-                    'img[data-eprobe-protected="true"]',
-                );
-                iconesEstrelaProtegidos.forEach((icone, index) => {
-                    icone.style.setProperty(
-                        "pointer-events",
-                        "auto",
-                        "important",
-                    );
-                    const parentLink = icone.closest("a");
-                    if (parentLink) {
-                        parentLink.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
-                    }
-                    correcoesAplicadas.push(
-                        `Ícone estrela protegido ${index + 1}`,
-                    );
-                });
-
-                // 4. Corrigir botões btn-link que podem estar bloqueados (EXCETO select2)
-                const botoesBtnLink =
-                    document.querySelectorAll("button.btn-link");
-                botoesBtnLink.forEach((botao, index) => {
-                    // 🚫 EXCEÇÃO: Não interferir em botões select2
-                    if (
-                        botao.classList.contains("select2-search-choice-close")
-                    ) {
-                        console.log(
-                            "🛡️ PROTEÇÃO: Botão select2-search-choice-close ignorado para preservar funcionalidade",
-                        );
-                        return; // Pular este botão
-                    }
-
-                    botao.style.setProperty(
-                        "pointer-events",
-                        "auto",
-                        "important",
-                    );
-                    const spans = botao.querySelectorAll("span");
-                    spans.forEach((span) => {
-                        span.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
+                // 5. Corrigir botoes btn-link (exceto select2)
+                document
+                    .querySelectorAll("button.btn-link")
+                    .forEach(function (botao) {
+                        corrigirElementoClicavel(botao);
                     });
-                    const icones = botao.querySelectorAll(
-                        "svg, img, [data-eprobe-icon-replaced]",
-                    );
-                    icones.forEach((icone) => {
-                        icone.style.setProperty(
-                            "pointer-events",
-                            "auto",
-                            "important",
-                        );
-                    });
-                });
 
-                console.log(
-                    `✅ CORREÇÃO: ${correcoesAplicadas.length} correções aplicadas:`,
-                    correcoesAplicadas,
-                );
+                // 6. Corrigir links com classe infraLegendObrigatorio diretamente
+                document
+                    .querySelectorAll("a.infraLegendObrigatorio")
+                    .forEach(function (link) {
+                        corrigirElementoClicavel(link);
+                    });
 
                 return {
                     status: "sucesso",
                     correcoesAplicadas: correcoesAplicadas.length,
-                    detalhes: correcoesAplicadas,
                 };
             }
 
@@ -19019,112 +18928,8 @@ ${texto}`;
              * Esta função pode estar interferindo com os ícones de estrela do eProc
              */
             function forcarReaplicacaoIcones() {
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
-                if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Forçar reaplicação de ícones restrito apenas à página de capa do processo - URL atual não permitida",
-                    );
-                    log("📍 URL atual:", window.location.href);
-                    return {
-                        fieldsetAcoes: 0,
-                        ferramentas: 0,
-                        erros: [],
-                        bloqueado: true,
-                        motivo: "url_nao_permitida",
-                    };
-                }
-
-                log("🔄 ÍCONES: Forçando reaplicação de ícones...");
-
-                // Remover marcações existentes
-                const iconesJaSubstituidos = document.querySelectorAll(
-                    "[data-eprobe-icon-replaced]",
-                );
-                iconesJaSubstituidos.forEach((icone) => {
-                    icone.removeAttribute("data-eprobe-icon-replaced");
-                    icone.removeAttribute("data-original-text");
-                });
-
-                let resultados = {
-                    fieldsetAcoes: 0,
-                    ferramentas: 0,
-                    erros: [],
-                };
-
-                // Executar substituição no fieldset de ações
-                try {
-                    const fieldsetAcoes = document.querySelector(
-                        "#fldAcoes.infraFieldset",
-                    );
-                    if (fieldsetAcoes) {
-                        log("🎨 Reaplicando ícones no fieldset de ações...");
-                        substituirIconesFieldsetAcoes();
-                        // Adicionar substituição global
-                        substituirIconesGlobalmente();
-                        // ✨ NOVO: Adicionar substituição de ícones de lembretes
-                        if (typeof substituirIconesLembretes === "function") {
-                            substituirIconesLembretes();
-                        }
-                        resultados.fieldsetAcoes = document.querySelectorAll(
-                            "#fldAcoes [data-eprobe-icon-replaced]",
-                        ).length;
-                    }
-                } catch (error) {
-                    console.error("❌ Erro na reaplicação do fieldset:", error);
-                    resultados.erros.push(`Fieldset: ${error.message}`);
-                }
-
-                // Executar substituição nas ferramentas
-                try {
-                    log("🛠️ Reaplicando ícones das ferramentas...");
-                    if (typeof substituirIconesFerramentas === "function") {
-                        const sucessoFerramentas =
-                            substituirIconesFerramentas();
-                        // Executar também a substituição global
-                        substituirIconesGlobalmente();
-                        // ✨ NOVO: Executar substituição específica de ícones de lembretes
-                        if (typeof substituirIconesLembretes === "function") {
-                            substituirIconesLembretes();
-                            log("✅ ÍCONES: Ícones de lembretes aplicados");
-                        }
-                        if (sucessoFerramentas) {
-                            // Contar ícones de ferramentas substituídos (subtrair os de fieldset)
-                            const totalIcones = document.querySelectorAll(
-                                "[data-eprobe-icon-replaced]",
-                            ).length;
-                            const iconesFieldset = document.querySelectorAll(
-                                "#fldAcoes [data-eprobe-icon-replaced]",
-                            ).length;
-                            resultados.ferramentas =
-                                totalIcones - iconesFieldset;
-                            log(
-                                `✅ ÍCONES: ${resultados.ferramentas} ícones de ferramentas aplicados`,
-                            );
-                        } else {
-                            resultados.ferramentas = 0;
-                            log(
-                                "⚠️ ÍCONES: Nenhum ícone de ferramenta foi substituído",
-                            );
-                        }
-                    } else {
-                        console.warn(
-                            "⚠️ ÍCONES: Função substituirIconesFerramentas não está disponível",
-                        );
-                        resultados.erros.push(
-                            "Função substituirIconesFerramentas não encontrada",
-                        );
-                    }
-                } catch (error) {
-                    console.error(
-                        "❌ Erro na reaplicação das ferramentas:",
-                        error,
-                    );
-                    resultados.erros.push(`Ferramentas: ${error.message}`);
-                    resultados.ferramentas = 0;
-                }
-
-                log("✅ ÍCONES: Reaplicação concluída:", resultados);
-                return resultados;
+                // Delega para substituirTodosIcones com force mode
+                return substituirTodosIcones(document, { force: true });
             }
 
             /**
@@ -19132,217 +18937,29 @@ ${texto}`;
              * Função principal que coordena toda a substituição
              */
             function inicializarSubstituicaoIcones() {
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
                 if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Sistema de personalização de ícones restrito apenas à página de capa do processo - URL atual não permitida",
-                    );
-                    log("📍 URL atual:", window.location.href);
-                    return {
-                        timestamp: new Date().toLocaleString("pt-BR"),
-                        execucoes: [],
-                        totalSubstituicoes: 0,
-                        bloqueado: true,
-                        motivo: "url_nao_permitida",
-                    };
-                }
-
-                log("🎨 ÍCONES: Inicializando sistema de substituição...");
-
-                if (MODO_ULTRA_PERFORMANCE) {
-                    log(
-                        "⚠️ ÍCONES: Modo ultra-performance ativo - substituição bloqueada",
-                    );
                     return false;
                 }
-
-                const resultados = {
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                    execucoes: [],
-                    totalSubstituicoes: 0,
-                };
-
-                // 1. Substituir ícones do fieldset de ações
-                try {
-                    const antes = document.querySelectorAll(
-                        "[data-eprobe-icon-replaced]",
-                    ).length;
-                    substituirIconesFieldsetAcoes();
-                    const depois = document.querySelectorAll(
-                        "[data-eprobe-icon-replaced]",
-                    ).length;
-                    const substituicoes = depois - antes;
-
-                    resultados.execucoes.push({
-                        tipo: "Fieldset Ações",
-                        substituicoes: substituicoes,
-                        sucesso: true,
-                    });
-                    resultados.totalSubstituicoes += substituicoes;
-                } catch (error) {
-                    console.error(
-                        "❌ Erro na substituição do fieldset:",
-                        error,
-                    );
-                    resultados.execucoes.push({
-                        tipo: "Fieldset Ações",
-                        substituicoes: 0,
-                        sucesso: false,
-                        erro: error.message,
-                    });
+                if (MODO_ULTRA_PERFORMANCE) {
+                    return false;
                 }
-
-                // 2. Substituir ícones das ferramentas
-                try {
-                    if (typeof substituirIconesFerramentas === "function") {
-                        const antes = document.querySelectorAll(
-                            "[data-eprobe-icon-replaced]",
-                        ).length;
-                        substituirIconesFerramentas();
-                        // ✨ NOVO: Aplicar também ícones de lembretes aqui
-                        if (typeof substituirIconesLembretes === "function") {
-                            substituirIconesLembretes();
-                        }
-                        const depois = document.querySelectorAll(
-                            "[data-eprobe-icon-replaced]",
-                        ).length;
-                        const substituicoes = depois - antes;
-
-                        resultados.execucoes.push({
-                            tipo: "Ferramentas",
-                            substituicoes: substituicoes,
-                            sucesso: true,
-                        });
-                        resultados.totalSubstituicoes += substituicoes;
-                    }
-                } catch (error) {
-                    console.error(
-                        "❌ Erro na substituição de ferramentas:",
-                        error,
-                    );
-                    resultados.execucoes.push({
-                        tipo: "Ferramentas",
-                        substituicoes: 0,
-                        sucesso: false,
-                        erro: error.message,
-                    });
-                }
-
-                log("🎨 ÍCONES: Inicialização concluída:", resultados);
-
-                // 📏 CORREÇÃO FINAL: Aplicar correção de alinhamento em divListaRecursosMinuta
-                try {
-                    if (
-                        typeof corrigirAlinhamentoRecursosMinuta === "function"
-                    ) {
-                        setTimeout(() => {
-                            const correcaoAlinhamento =
-                                corrigirAlinhamentoRecursosMinuta();
-                            if (
-                                correcaoAlinhamento.encontrado &&
-                                correcaoAlinhamento.iconesCorrigidos > 0
-                            ) {
-                                log(
-                                    `📏 ÍCONES: Alinhamento corrigido em divListaRecursosMinuta - ${correcaoAlinhamento.iconesCorrigidos} ícones processados`,
-                                );
-                            }
-                        }, 100); // Pequeno delay para garantir que os ícones foram renderizados
-                    }
-                } catch (error) {
-                    console.warn(
-                        "⚠️ ÍCONES: Erro na correção de alinhamento:",
-                        error,
-                    );
-                }
-
-                return resultados;
+                // Delega para funcao unificada
+                var resultado = substituirTodosIcones();
+                log(
+                    "ICONES: Inicializacao concluida -",
+                    resultado,
+                    "icones substituidos",
+                );
+                return resultado;
             }
 
             /**
              * Diagnóstico específico para problemas com ícones CSS
              * Analisa o estado atual dos ícones na página
              */
+            // Diagnostico de icones - delega para funcao unificada
             function diagnosticarIconesCSS() {
-                log("🔍 DIAGNÓSTICO: Analisando estado dos ícones CSS...");
-
-                const diagnostico = {
-                    timestamp: new Date().toLocaleString("pt-BR"),
-                    url: window.location.href,
-                    fieldsetAcoes: null,
-                    iconesGIF: 0,
-                    iconesSVG: 0,
-                    iconesSubstituidos: 0,
-                    problemas: [],
-                    recomendacoes: [],
-                };
-
-                // Analisar fieldset de ações
-                const fieldsetAcoes = document.querySelector(
-                    "#fldAcoes.infraFieldset",
-                );
-                if (fieldsetAcoes) {
-                    diagnostico.fieldsetAcoes = {
-                        encontrado: true,
-                        children: fieldsetAcoes.children.length,
-                        links: fieldsetAcoes.querySelectorAll("a").length,
-                    };
-
-                    // Contar tipos de ícones
-                    const iconesGIF =
-                        fieldsetAcoes.querySelectorAll('img[src*=".gif"]');
-                    const iconesSVG =
-                        fieldsetAcoes.querySelectorAll("svg.lucide");
-                    const iconesSubstituidos = fieldsetAcoes.querySelectorAll(
-                        "[data-eprobe-icon-replaced]",
-                    );
-
-                    diagnostico.iconesGIF = iconesGIF.length;
-                    diagnostico.iconesSVG = iconesSVG.length;
-                    diagnostico.iconesSubstituidos = iconesSubstituidos.length;
-
-                    // Identificar problemas
-                    if (iconesGIF.length > 0 && iconesSVG.length === 0) {
-                        diagnostico.problemas.push(
-                            "Ícones GIF não foram substituídos por SVG",
-                        );
-                        diagnostico.recomendacoes.push(
-                            "Execute window.SENT1_AUTO.forcarReaplicacaoIcones()",
-                        );
-                    }
-
-                    if (
-                        iconesSubstituidos.length === 0 &&
-                        iconesGIF.length > 0
-                    ) {
-                        diagnostico.problemas.push(
-                            "Nenhum ícone foi marcado como substituído",
-                        );
-                        diagnostico.recomendacoes.push(
-                            "Execute window.SENT1_AUTO.inicializarSubstituicaoIcones()",
-                        );
-                    }
-                } else {
-                    diagnostico.fieldsetAcoes = { encontrado: false };
-                    diagnostico.problemas.push(
-                        "Fieldset #fldAcoes não encontrado",
-                    );
-                    diagnostico.recomendacoes.push(
-                        "Verifique se está na página correta do eProc",
-                    );
-                }
-
-                // Verificar se modo ultra-performance está bloqueando
-                if (MODO_ULTRA_PERFORMANCE) {
-                    diagnostico.problemas.push(
-                        "Modo ultra-performance ativo bloqueando substituições",
-                    );
-                    diagnostico.recomendacoes.push(
-                        "Execute window.SENT1_AUTO.desativarModoUltraPerformance()",
-                    );
-                }
-
-                log("🔍 DIAGNÓSTICO COMPLETO:", diagnostico);
-                return diagnostico;
+                return debugIcones();
             }
 
             // ========================================
@@ -21362,15 +20979,7 @@ ${texto}`;
                                 aplicarEstilizacaoImediataLembretes();
                             }
 
-                            // ✨ NOVO: Aplicar substituição de ícones de lembretes
-                            if (
-                                typeof substituirIconesLembretes === "function"
-                            ) {
-                                substituirIconesLembretes();
-                                log(
-                                    "✅ INICIALIZAÇÃO: Ícones de lembretes substituídos",
-                                );
-                            }
+                            // Aplicar substituicao de icones unificada\n                            if (isCapaProcessoPage()) {\n                                substituirTodosIcones();\n                            }
                         },
                         "deteccao-card-instantanea",
                         50,
@@ -23178,101 +22787,16 @@ ${texto}`;
              * Versão ultra-rápida da substituição de ícones para eliminar flash
              */
             function substituirIconesLembretesImediato() {
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                // Restricao: So na pagina de capa do processo
                 if (!isCapaProcessoPage()) {
-                    return false; // Retorno silencioso para não gerar logs excessivos
+                    return false;
                 }
 
                 try {
-                    // 1. Substituir ícones de editar
-                    const iconesEditar = document.querySelectorAll(
-                        'a[aria-label="Alterar Lembrete"] span.material-icons, a[href*="processo_lembrete_destino_alterar"] span.material-icons',
-                    );
+                    // Delegar substituicao de icones para funcao unificada
+                    substituirTodosIcones();
 
-                    iconesEditar.forEach((icone) => {
-                        if (
-                            icone.textContent.trim() === "edit" &&
-                            !icone.hasAttribute("data-eprobe-icon-replaced")
-                        ) {
-                            const svgContainer = document.createElement("span");
-                            svgContainer.innerHTML =
-                                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
-                            const svg = svgContainer.firstElementChild;
-                            if (icone.className) {
-                                svg.setAttribute(
-                                    "class",
-                                    icone.className +
-                                        " eprobe-substituted-icon",
-                                );
-                            } else {
-                                svg.classList.add(
-                                    "material-icons",
-                                    "eprobe-substituted-icon",
-                                );
-                            }
-                            svg.setAttribute(
-                                "data-eprobe-icon-replaced",
-                                "true",
-                            );
-
-                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                            aplicarDimensionamentoRecursosMinuta(svg);
-
-                            icone.parentNode.replaceChild(svg, icone);
-                        }
-                    });
-
-                    // 2. Substituir ícones de excluir
-                    const iconesExcluir = document.querySelectorAll(
-                        'a[aria-label="Desativar Lembrete"] span.material-icons, a[onclick*="desativarLembrete"] span.material-icons',
-                    );
-
-                    iconesExcluir.forEach((icone) => {
-                        if (
-                            icone.textContent.trim() === "delete" &&
-                            !icone.hasAttribute("data-eprobe-icon-replaced")
-                        ) {
-                            const svgContainer = document.createElement("span");
-                            svgContainer.innerHTML =
-                                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
-                            const svg = svgContainer.firstElementChild;
-                            if (icone.className) {
-                                svg.setAttribute(
-                                    "class",
-                                    icone.className +
-                                        " eprobe-substituted-icon",
-                                );
-                            } else {
-                                svg.classList.add(
-                                    "material-icons",
-                                    "eprobe-substituted-icon",
-                                );
-                            }
-                            if (icone.title)
-                                svg.setAttribute("title", icone.title);
-                            if (icone.getAttribute("alt"))
-                                svg.setAttribute(
-                                    "alt",
-                                    icone.getAttribute("alt"),
-                                );
-                            if (icone.getAttribute("aria-hidden"))
-                                svg.setAttribute(
-                                    "aria-hidden",
-                                    icone.getAttribute("aria-hidden"),
-                                );
-                            svg.setAttribute(
-                                "data-eprobe-icon-replaced",
-                                "true",
-                            );
-
-                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                            aplicarDimensionamentoRecursosMinuta(svg);
-
-                            icone.parentNode.replaceChild(svg, icone);
-                        }
-                    });
-
-                    // 3. Substituir botões "Ler mais" por ícone expand_all (apenas quando necessário)
+                    // 3. Substituir botoes "Ler mais" por icone expand_all (apenas quando necessario)
                     let botoesLerMais = Array.from(
                         document.querySelectorAll("div.botaoLerMais"),
                     ).filter((botao) => {
@@ -25976,117 +25500,331 @@ ${texto}`;
             window.personalizarCampoPesquisaNavbar =
                 personalizarCampoPesquisaNavbar;
 
-            // 🎨 SISTEMA DE SUBSTITUIÇÃO DE ÍCONES NO FIELDSET DE AÇÕES
+            // =====================================================================
+            // SISTEMA UNIFICADO DE SUBSTITUICAO DE ICONES - EPROBE
+            // Fonte unica de verdade para todos os mapeamentos de icones.
+            // Seletores exclusivamente por src/alt/id - sem wildcards genericos.
+            // Ordem: seletores mais especificos primeiro (minuta_* antes de genericos).
+            // =====================================================================
 
-            // Mapeamento de ícones antigos para novos SVGs
-            const ICON_REPLACEMENTS = {
-                // Árvore
-                "arvore documento_listar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-network-icon lucide-network"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>',
-                    selector: 'img[alt="arvore documento_listar"]',
+            const EPROBE_ICON_MAP = [
+                // --- MINUTA-specific (devem vir antes dos genericos para evitar conflito) ---
+                {
+                    selector: 'img[src*="minuta_historico.gif"]',
+                    name: "Historico Julgamento",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>',
                 },
-                // Cancelar Movimentação
-                "processo movimento_desativar_consulta": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x-icon lucide-x"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
-                    selector:
-                        'img[alt="processo movimento_desativar_consulta"]',
+                {
+                    selector: 'img[src*="minuta_versoes.gif"]',
+                    name: "Versoes Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 7h-3a2 2 0 0 1-2-2V2"/><path d="M21 6v6.5c0 .8-.7 1.5-1.5 1.5h-7c-.8 0-1.5-.7-1.5-1.5v-9c0-.8.7-1.5 1.5-1.5H17Z"/><path d="M7 8v8.8c0 .3.2.6.4.8.2.2.5.4.8.4H15"/><path d="M3 12v8.8c0 .3.2.6.4.8.2.2.5.4.8.4H11"/></svg>',
                 },
-                // Audiência
-                "audiencia listar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-audio-lines-icon lucide-audio-lines"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>',
-                    selector: 'img[alt="audiencia listar"]',
+                {
+                    selector: 'img[src*="minuta_alterar.gif"]',
+                    name: "Editar Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
                 },
-                // Download Completo
-                "selecionar processos_agendar_arquivo_completo": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2 2v-4"/><path d="m7 10 5 5 5-5"/></svg>',
-                    selector:
-                        'img[alt="selecionar processos_agendar_arquivo_completo"]',
+                {
+                    selector: 'img[src*="minuta_editar.gif"]',
+                    name: "Editar Minuta (editar)",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
                 },
-                // Enviar E-mail
-                "processo enviar_email_listar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-at-sign-icon lucide-at-sign"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>',
-                    selector: 'img[alt="processo enviar_email_listar"]',
+                {
+                    selector: 'img[src*="minuta_assinar2.gif"]',
+                    name: "Assinar Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
                 },
-                // Expedir Carta
-                "processo expedir_carta_subform": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mail-icon lucide-mail"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>',
-                    selector: 'img[alt="processo expedir_carta_subform"]',
+
+                // --- Icones genericos por src ---
+                {
+                    selector: 'img[src*="configuracao.gif"]',
+                    name: "Configuracao",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
                 },
-                // Gerenciar Situação das Partes
-                "gerenciamento partes_situacao_listar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-pen-icon lucide-user-round-pen"><path d="M2 21a8 8 0 0 1 10.821-7.487"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="8" r="5"/></svg>',
-                    selector: 'img[alt="gerenciamento partes_situacao_listar"]',
+                {
+                    selector: 'img[src*="refresh.gif"]',
+                    name: "Refresh",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
                 },
-                // Intimar
-                "processo intimacao": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll-text-icon lucide-scroll-text"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
-                    selector: 'img[alt="processo intimacao"]',
-                },
-                // Nomear Peritos/Dativos
-                "processo intimacao_bloco": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-microscope-icon lucide-microscope"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>',
-                    selector: 'img[alt="processo intimacao_bloco"]',
-                },
-                // Retificar Autuação
-                "processo edicao": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-spell-check-icon lucide-spell-check"><path d="m6 16 6-12 6 12"/><path d="M8 12h8"/><path d="m16 20 2 2 4-4"/></svg>',
-                    selector: 'img[alt="processo edicao"]',
-                },
-                // Suscitar IRDR
-                "processo cadastrar": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale-icon lucide-scale"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
-                    selector: 'img[alt="processo cadastrar"]',
-                },
-                // Redistribuição
-                "redistribuicao processo": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-pull-request-arrow-icon lucide-git-pull-request-arrow"><circle cx="5" cy="6" r="3"/><path d="M5 9v12"/><circle cx="19" cy="18" r="3"/><path d="m15 9-3-3 3-3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/></svg>',
-                    selector: 'img[alt="redistribuicao processo"]',
-                },
-                // Citar
-                "processo citacao": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scroll-icon lucide-scroll"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
-                    selector: 'img[alt="processo citacao"]',
-                },
-                // Ações Preferenciais
-                "acoes preferenciais": {
-                    newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-                    selector: 'img[alt="acoes preferenciais"]',
-                },
-                // Atualizar/Refresh
-                refresh: {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
-                    selector: 'img[id="refresh"]',
-                },
-                // Histórico/Lista
-                historico: {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M11 21a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1"/><path d="M16 16a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1"/><path d="M21 6a2 2 0 0 0-.586-1.414l-2-2A2 2 0 0 0 17 2h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1z"/></svg>',
+                {
                     selector: 'img[src*="valores.gif"]',
+                    name: "Valores",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
                 },
-                // Nova Minuta
-                "Nova Minuta": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
+                {
+                    selector: 'img[src*="remover.gif"]',
+                    name: "Remover",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+                },
+                {
+                    selector: 'img[src*="receber.gif"]',
+                    name: "Receber",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="mais.gif"]',
+                    name: "Mais",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>',
+                },
+                {
+                    selector: 'img[src*="microphone.png"]',
+                    name: "Audiencia",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 10v3"/><path d="M6 6v11"/><path d="M10 3v18"/><path d="M14 8v7"/><path d="M18 5v13"/><path d="M22 10v3"/></svg>',
+                },
+                {
+                    selector: 'img[src*="pdf.gif"]',
+                    name: "PDF",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="anexos.gif"]',
+                    name: "Anexos",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/></svg>',
+                },
+                {
+                    selector: 'img[src*="email.gif"]',
+                    name: "Email",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>',
+                },
+                {
+                    selector: 'img[src*="marcar.gif"]',
+                    name: "Marcar",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21a8 8 0 0 1 10.821-7.487"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="8" r="5"/></svg>',
+                },
+                {
+                    selector: 'img[src*="encaminhar.gif"]',
+                    name: "Encaminhar",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 12h-5"/><path d="M15 8h-5"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
+                },
+                {
+                    selector: 'img[src*="assinar.gif"]',
+                    name: "Assinar",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 16 6-12 6 12"/><path d="M8 12h8"/><path d="m16 20 2 2 4-4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="atualizar.gif"]',
+                    name: "Atualizar",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
+                },
+                {
+                    selector: 'img[src*="predio.png"]',
+                    name: "Predio",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="hierarquia.gif"]',
+                    name: "Hierarquia",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="3"/><path d="M5 9v12"/><circle cx="19" cy="18" r="3"/><path d="m15 9-3-3 3-3"/><path d="M12 6h5a2 2 0 0 1 2 2v7"/></svg>',
+                },
+                {
+                    selector: 'img[src*="newspaper.png"]',
+                    name: "Citacao",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 17V5a2 2 0 0 0-2-2H4"/><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"/></svg>',
+                },
+                {
+                    selector: 'img[src*="novo.gif"]',
+                    name: "Novo",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
+                },
+                {
+                    selector: 'img[src*="alterar.gif"]',
+                    name: "Alterar",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
+                },
+                {
+                    selector: 'img[src*="balao.gif"]',
+                    name: "Balao",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="linkeditor.png"]',
+                    name: "Link",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
+                },
+                {
+                    selector: 'img[src*="html.gif"]',
+                    name: "HTML",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
+                },
+                {
+                    selector: 'img[src*="tooltip.gif"]',
+                    name: "Tooltip",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="duvida.png"]',
+                    name: "Ajuda",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+                },
+                {
+                    selector: 'img[src*="lupa.gif"]',
+                    name: "Lupa",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
+                },
+                {
+                    selector: 'img[src*="oral_video.png"]',
+                    name: "Video",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
+                },
+                {
+                    selector: 'img[src*="menos.gif"]',
+                    name: "Menos",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>',
+                },
+
+                // --- Seletores por alt (para icones do fieldset sem src obvio) ---
+                {
+                    selector: 'img[alt="arvore documento_listar"]',
+                    name: "Arvore",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>',
+                },
+                {
+                    selector: 'img[alt="processo intimacao_bloco"]',
+                    name: "Peritos",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18h8"/><path d="M3 22h18"/><path d="M14 22a7 7 0 1 0 0-14h-1"/><path d="M9 14h2"/><path d="M9 12a2 2 0 0 1-2-2V6h6v4a2 2 0 0 1-2 2Z"/><path d="M12 6V3a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3"/></svg>',
+                },
+                {
+                    selector: 'img[alt="acoes preferenciais"]',
+                    name: "AcoesPreferenciais",
+                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+                },
+                {
+                    selector: 'img[id="refresh"]',
+                    name: "RefreshId",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
+                },
+                {
                     selector: 'img[alt="Nova Minuta"]',
+                    name: "NovaMinutaAlt",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
                 },
+
+                // --- Novos icones de minuta (Lucide) ---
+                {
+                    selector: 'img[src*="minuta_conferir.gif"]',
+                    name: "Conferir Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="m9 15 2 2 4-4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_paraconferir.gif"]',
+                    name: "Encaminhar para Conferencia",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_lembrete.gif"]',
+                    name: "Gerenciar Lembretes",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_paraassinar.gif"]',
+                    name: "Encaminhar para Assinatura",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m18.226 5.226-2.52-2.52A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.351"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_devolver.gif"]',
+                    name: "Devolver Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_disponibilizar_verde.gif"]',
+                    name: "Minuta Disponibilizada",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_disponibilizar.gif"]',
+                    name: "Disponibilizar Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_excluir.gif"]',
+                    name: "Excluir Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_imprimir.gif"]',
+                    name: "Imprimir Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_inserir_sessao_julgamento"]',
+                    name: "Inserir em Sessao",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_atualizar_cabecalho.gif"]',
+                    name: "Atualizar Cabecalho",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M12 12v6"/><path d="m15 15-3-3-3 3"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_transferir.png"]',
+                    name: "Transferir Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z"/><path d="M6 12h16"/></svg>',
+                },
+
+                // --- Novos icones utilitarios (Lucide) ---
+                {
+                    selector: 'img[src*="salvarcomomodelo.png"]',
+                    name: "Salvar como Modelo",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M12 7v6"/><path d="M15 10H9"/><path d="M17 3a2 2 0 0 1 2 2v15a1 1 0 0 1-1.496.868l-4.512-2.578a2 2 0 0 0-1.984 0l-4.512 2.578A1 1 0 0 1 5 20V5a2 2 0 0 1 2-2z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="brasao.png"]',
+                    name: "Atualizar Timbre",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="inteiro_teor.png"]',
+                    name: "Inteiro Teor",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="evento_automatizado.png"]',
+                    name: "Evento Automatizado",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></svg>',
+                },
+                {
+                    selector: 'img[src*="transferir_item.png"]',
+                    name: "Abrir em Nova Aba",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>',
+                },
+                {
+                    selector: 'img[src*="ver_tudo.gif"]',
+                    name: "Mostrar Tudo",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg>',
+                },
+                {
+                    selector: 'img[src*="ver_resumo.gif"]',
+                    name: "Ocultar Lista",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M16 5H3"/><path d="M11 12H3"/><path d="M16 19H3"/><path d="m15.5 9.5 5 5"/><path d="m20.5 9.5-5 5"/></svg>',
+                },
+                {
+                    selector: 'img[src*="seta_acima.gif"]',
+                    name: "Ordenar Ascendente",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m18 15-6-6-6 6"/></svg>',
+                },
+                {
+                    selector: 'img[src*="seta_abaixo_selecionada.gif"]',
+                    name: "Ordenar Descendente Ativo",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m6 9 6 6 6-6"/></svg>',
+                },
+                {
+                    selector: 'img[src*="seta_abaixo.gif"]',
+                    name: "Ordenar Descendente",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m6 9 6 6 6-6"/></svg>',
+                },
+            ];
+
+            // Mapeamento por texto do link (para links sem imagem identificavel por src)
+            const EPROBE_ICON_TEXT_MAP = {
+                "Incluir em Pauta/Mesa":
+                    '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>',
             };
 
-            // Mapeamentos adicionais por texto do link
-            const ICON_REPLACEMENTS_BY_TEXT = {
-                "Incluir em Pauta/Mesa": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-plus-icon lucide-calendar-plus"><path d="M16 19h6"/><path d="M16 2v4"/><path d="M19 16v6"/><path d="M21 12.598V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8.5"/><path d="M3 10h18"/><path d="M8 2v4"/></svg>',
-                },
-                "Movimentar Processo": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-right-icon lucide-arrow-left-right"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg>',
-                },
-                "Associar Procurador Parte": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus-icon lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>',
-                },
-                "Permissão/Negação Expressa": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ban-icon lucide-ban"><circle cx="12" cy="12" r="10"/><path d="m4.9 4.9 14.2 14.2"/></svg>',
-                },
-                "Requisição Un. Externa": {
-                    newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building2-icon lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
-                },
-            };
+            // SVGs para lembretes Material Icons
+            var LEMBRETE_EDIT_SVG =
+                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
+            var LEMBRETE_DELETE_SVG =
+                '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
 
             // 🎨 FUNÇÃO UTILITÁRIA: Aplicar estilos padronizados aos containers de ícones
             function applyStandardIconStyles(container) {
@@ -27411,151 +27149,101 @@ ${texto}`;
             // 🔄 OBSERVADOR ESPECÍFICO: Monitorar atualizações de icones na seção legMinutas
             function setupObservadorLegendMinutasIcones() {
                 try {
-                    const legMinutas = document.getElementById("legMinutas");
+                    // Observar #conteudoMinutas (abrange TUDO: legends, tabelas, botoes AJAX)
+                    // Antes observava apenas legMinutas, que nao capturava mudancas no corpo das minutas
+                    var containerMinutas =
+                        document.getElementById("conteudoMinutas");
+                    // Fallback para legMinutas se conteudoMinutas nao existir
+                    if (!containerMinutas) {
+                        containerMinutas =
+                            document.getElementById("legMinutas");
+                    }
 
-                    if (!legMinutas) {
+                    if (!containerMinutas) {
                         log(
-                            "📋 MINUTAS: legMinutas não encontrado - observer não configurado",
+                            "MINUTAS: conteudoMinutas/legMinutas nao encontrado - observer nao configurado",
                         );
                         return false;
                     }
 
                     log(
-                        "👁️ MINUTAS: Configurando observador para legMinutas (Histórico)",
+                        "MINUTAS: Configurando observador para " +
+                            containerMinutas.id +
+                            " (icones)",
                     );
 
                     const observer = new MutationObserver((mutations) => {
                         let needsReprocessing = false;
 
-                        mutations.forEach((mutation) => {
-                            // Detectar quando conteúdo é atualizado (botão "Atualizar Minutas")
+                        for (var mi = 0; mi < mutations.length; mi++) {
+                            var mutation = mutations[mi];
                             if (mutation.type === "childList") {
-                                // Verificar se novos elementos foram adicionados ou se conteúdo foi modificado
-                                if (
-                                    mutation.addedNodes.length > 0 ||
-                                    mutation.removedNodes.length > 0
+                                // Verificar se novos nodes <img> foram adicionados (eProc AJAX reinsere imgs)
+                                for (
+                                    var ni = 0;
+                                    ni < mutation.addedNodes.length;
+                                    ni++
                                 ) {
-                                    needsReprocessing = true;
-                                    log(
-                                        "🔄 MINUTAS: Conteúdo da seção legMinutas foi atualizado - reprocessando ícones...",
-                                    );
+                                    var node = mutation.addedNodes[ni];
+                                    if (node.nodeType === 1) {
+                                        if (
+                                            node.tagName === "IMG" ||
+                                            (node.querySelectorAll &&
+                                                node.querySelectorAll("img")
+                                                    .length > 0)
+                                        ) {
+                                            needsReprocessing = true;
+                                            break;
+                                        }
+                                    }
                                 }
+                                if (needsReprocessing) break;
                             }
-
-                            // Detectar mudanças no innerHTML (via AJAX)
-                            if (mutation.type === "characterData") {
-                                needsReprocessing = true;
-                                log(
-                                    "🔄 MINUTAS: Texto da seção legMinutas foi modificado - reprocessando...",
-                                );
-                            }
-                        });
+                        }
 
                         if (needsReprocessing) {
-                            // Debounce para evitar múltiplas execuções simultâneas
                             clearTimeout(observer.debounceTimer);
                             observer.debounceTimer = setTimeout(() => {
                                 log(
-                                    "🎨 MINUTAS: Reaplicando personalizações de ícones após atualização...",
+                                    "MINUTAS: Reaplicando icones apos atualizacao AJAX...",
                                 );
 
                                 try {
-                                    let totalReaplicados = 0;
-
-                                    // 1. Reaplicar ícones de ferramentas
-                                    if (
-                                        typeof substituirIconesFerramentas ===
-                                        "function"
-                                    ) {
-                                        const antes =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        substituirIconesFerramentas();
-                                        const depois =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        totalReaplicados += depois - antes;
-                                    }
-
-                                    // 2. Reaplicar ícones de lembretes
-                                    if (
-                                        typeof substituirIconesLembretes ===
-                                        "function"
-                                    ) {
-                                        const antes =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        substituirIconesLembretes();
-                                        const depois =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        totalReaplicados += depois - antes;
-                                    }
-
-                                    // 3. Reaplicar ícones globais
-                                    if (
-                                        typeof substituirIconesGlobalmente ===
-                                        "function"
-                                    ) {
-                                        const antes =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        substituirIconesGlobalmente();
-                                        const depois =
-                                            legMinutas.querySelectorAll(
-                                                '[data-eprobe-icon-replaced="true"]',
-                                            ).length;
-                                        totalReaplicados += depois - antes;
-                                    }
-
-                                    // 4. Corrigir alinhamento se necessário
-                                    if (
-                                        typeof corrigirAlinhamentoRecursosMinuta ===
-                                        "function"
-                                    ) {
-                                        const divListaRecursos =
-                                            legMinutas.querySelector(
-                                                "#divListaRecursosMinuta",
-                                            );
-                                        if (divListaRecursos) {
-                                            corrigirAlinhamentoRecursosMinuta();
-                                        }
-                                    }
+                                    var totalReaplicados =
+                                        substituirTodosIcones(
+                                            containerMinutas,
+                                            {
+                                                force: true,
+                                            },
+                                        );
 
                                     if (totalReaplicados > 0) {
                                         log(
-                                            `✅ MINUTAS: ${totalReaplicados} ícones reaplicados com sucesso após atualização`,
-                                        );
-                                    } else {
-                                        log(
-                                            "⚠️ MINUTAS: Nenhum ícone foi reaplicado - possível problema na detecção",
+                                            "MINUTAS: " +
+                                                totalReaplicados +
+                                                " icones reaplicados apos atualizacao",
                                         );
                                     }
                                 } catch (error) {
                                     console.error(
-                                        "❌ MINUTAS: Erro na reaplicação de ícones:",
+                                        "MINUTAS: Erro na reaplicacao de icones:",
                                         error,
                                     );
                                 }
-                            }, 500); // 500ms de delay para garantir que a atualização AJAX foi concluída
+                            }, 400);
                         }
                     });
 
-                    // Observar mudanças na seção legMinutas completa
-                    observer.observe(legMinutas, {
+                    observer.observe(containerMinutas, {
                         childList: true,
                         subtree: true,
-                        characterData: true,
-                        attributes: false, // Não precisamos de atributos, só conteúdo
+                        characterData: false,
+                        attributes: false,
                     });
 
                     log(
-                        "✅ MINUTAS: Observador configurado com sucesso para legMinutas",
+                        "MINUTAS: Observador configurado com sucesso para " +
+                            containerMinutas.id,
                     );
                     return observer;
                 } catch (error) {
@@ -27587,305 +27275,88 @@ ${texto}`;
                 }
             }
 
-            //  🔄 REAPLICAR ÍCONES: Força a reaplicação de ícones após atualização AJAX
+            //  Reaplicar icones: forca a reaplicacao apos atualizacao AJAX
             function reaplicarIconesAposAtualizacao(containerElement) {
-                log(
-                    "🔄 REAPLICAÇÃO: Iniciando reaplicação forçada de ícones após atualização...",
-                );
-
                 if (!containerElement) {
-                    console.warn("⚠️ REAPLICAÇÃO: Container não fornecido");
                     return 0;
                 }
-
-                let totalReaplicados = 0;
-
-                try {
-                    // 1. Reaplicar ícones de lembretes (forçando bypass da restrição de URL)
-                    if (typeof substituirIconesLembretes === "function") {
-                        // Guardar verificação original e criar bypass temporário
-                        const originalIsCapaProcessoPage =
-                            window.isCapaProcessoPage;
-                        window.isCapaProcessoPage = () => true; // Bypass temporário
-
-                        try {
-                            const iconesLembretes = substituirIconesLembretes();
-                            totalReaplicados += iconesLembretes;
-                            log(
-                                `🎨 REAPLICAÇÃO: ${iconesLembretes} ícones de lembretes reaplicados`,
-                            );
-                        } finally {
-                            // Restaurar verificação original
-                            window.isCapaProcessoPage =
-                                originalIsCapaProcessoPage;
-                        }
-                    }
-
-                    // 2. Reaplicar ícones de ferramentas globalmente
-                    if (typeof substituirIconesGlobalmente === "function") {
-                        const iconesGlobais = substituirIconesGlobalmente();
-                        totalReaplicados += iconesGlobais;
-                        log(
-                            `🔧 REAPLICAÇÃO: ${iconesGlobais} ícones globais reaplicados`,
-                        );
-                    }
-
-                    // 3. Reaplicar ícones específicos do fieldset de ações
-                    if (typeof substituirIconesFieldsetAcoes === "function") {
-                        const originalIsCapaProcessoPage =
-                            window.isCapaProcessoPage;
-                        window.isCapaProcessoPage = () => true; // Bypass temporário
-
-                        try {
-                            const iconesFieldset =
-                                substituirIconesFieldsetAcoes();
-                            if (iconesFieldset) {
-                                totalReaplicados += 1; // função retorna boolean
-                                log(
-                                    "🏗️ REAPLICAÇÃO: Ícones do fieldset de ações reaplicados",
-                                );
-                            }
-                        } finally {
-                            window.isCapaProcessoPage =
-                                originalIsCapaProcessoPage;
-                        }
-                    }
-
-                    // 4. Verificar especificamente por ícones que precisam ser substituídos no container
-                    const iconesOriginais = containerElement.querySelectorAll(
-                        'span.material-icons:not([data-eprobe-icon-replaced="true"])',
-                    );
-                    iconesOriginais.forEach((icone) => {
-                        // Tentar detectar e substituir ícones que voltaram ao estado original
-                        const textoIcone = icone.textContent.trim();
-                        const parentElement = icone.parentElement;
-
-                        // Verificar se é um ícone de lembrete que precisa ser resubstituído
-                        if (
-                            textoIcone === "edit" &&
-                            parentElement &&
-                            (parentElement
-                                .getAttribute("aria-label")
-                                ?.includes("Alterar Lembrete") ||
-                                parentElement.href?.includes(
-                                    "processo_lembrete_destino_alterar",
-                                ))
-                        ) {
-                            log(
-                                "🔍 REAPLICAÇÃO: Ícone 'edit' de lembrete detectado para resubstituição",
-                            );
-                        }
-
-                        if (
-                            textoIcone === "delete" &&
-                            parentElement &&
-                            (parentElement
-                                .getAttribute("aria-label")
-                                ?.includes("Desativar Lembrete") ||
-                                parentElement.onclick
-                                    ?.toString()
-                                    .includes("desativarLembrete"))
-                        ) {
-                            log(
-                                "🔍 REAPLICAÇÃO: Ícone 'delete' de lembrete detectado para resubstituição",
-                            );
-                        }
-                    });
-
-                    log(
-                        `✅ REAPLICAÇÃO: Total de ${totalReaplicados} ícones reaplicados com sucesso`,
-                    );
-                    return totalReaplicados;
-                } catch (error) {
-                    console.error(
-                        "❌ REAPLICAÇÃO: Erro durante reaplicação de ícones:",
-                        error,
-                    );
-                    return 0;
-                }
+                // Delega para funcao unificada com force mode
+                return substituirTodosIcones(containerElement, { force: true });
             }
 
             // 🔄 INTERCEPTOR MÚLTIPLO: Interceptar TODOS os botões "Atualizar Minutas" (individuais por minuta)
             function setupInterceptorTodosBotoesAtualizar() {
                 try {
-                    // Buscar todos os botões de atualizar minutas (principal + individuais)
-                    const botoesAtualizar = document.querySelectorAll(
+                    // Buscar todos os botoes de atualizar minutas (principal + individuais)
+                    var botoesAtualizar = document.querySelectorAll(
                         'a[aria-label="Atualizar Minutas"]',
                     );
 
                     if (botoesAtualizar.length === 0) {
-                        log(
-                            "🔄 MINUTAS MÚLTIPLAS: Nenhum botão de atualizar minutas encontrado",
-                        );
                         return 0;
                     }
 
-                    let interceptadosCount = 0;
+                    var interceptadosCount = 0;
 
-                    botoesAtualizar.forEach((botao, index) => {
-                        // Verificar se já foi interceptado
+                    botoesAtualizar.forEach(function (botao, index) {
+                        // Verificar se ja foi interceptado
                         if (botao.hasAttribute("data-eprobe-intercepted")) {
-                            log(
-                                `🔄 MINUTAS MÚLTIPLAS: Botão ${index} já interceptado`,
-                            );
                             return;
                         }
 
-                        log(
-                            `🎯 MINUTAS MÚLTIPLAS: Configurando interceptor para botão ${index}`,
-                        );
-
-                        // Guardar função/atributo onclick original
-                        const onclickOriginal = botao.onclick;
-                        const onclickAttrOriginal =
-                            botao.getAttribute("onclick");
-
-                        // Criar função interceptora
-                        botao.onclick = function (event) {
+                        // NAO substituir onclick (main.js roda em ISOLATED, nao tem acesso a atualizaMinutas)
+                        // O onclick original do eProc permanece intacto no mundo MAIN
+                        // Usamos um listener adicional para agendar reaplicacao apos o AJAX
+                        botao.addEventListener("click", function () {
                             log(
-                                `🔄 MINUTAS MÚLTIPLAS: Botão ${index} clicado - preparando reaplicação...`,
+                                "MINUTAS: Botao Atualizar clicado - agendando reaplicacao...",
                             );
 
-                            try {
-                                // Executar função original primeiro
-                                if (onclickOriginal) {
-                                    onclickOriginal.call(this, event);
-                                } else if (onclickAttrOriginal) {
-                                    // CSP-safe: executar atualizaMinutas diretamente
-                                    log(
-                                        "🔄 MINUTAS MÚLTIPLAS: Executando função original (CSP-safe)...",
-                                    );
-
+                            // Agendar multiplas tentativas de reaplicacao apos AJAX
+                            var tentativas = [800, 1500, 3000];
+                            tentativas.forEach(function (delay) {
+                                setTimeout(function () {
                                     try {
-                                        if (
-                                            typeof window.atualizaMinutas ===
-                                            "function"
-                                        ) {
-                                            // Extrair parâmetros do onclick original
-                                            const params =
-                                                onclickAttrOriginal.match(
-                                                    /atualizaMinutas\(([^)]+)\)/,
+                                        var legMinutas =
+                                            document.getElementById(
+                                                "legMinutas",
+                                            );
+                                        if (legMinutas) {
+                                            var resultado =
+                                                substituirTodosIcones(
+                                                    legMinutas,
+                                                    { force: true },
                                                 );
-                                            if (params && params[1]) {
-                                                const cleanParams = params[1]
-                                                    .split(",")
-                                                    .map((p) =>
-                                                        p
-                                                            .trim()
-                                                            .replace(
-                                                                /['"]/g,
-                                                                "",
-                                                            ),
-                                                    );
+                                            if (resultado > 0) {
                                                 log(
-                                                    `🎯 MINUTAS MÚLTIPLAS: Executando atualizaMinutas com parâmetros:`,
-                                                    cleanParams,
+                                                    "MINUTAS: " +
+                                                        resultado +
+                                                        " icones reaplicados (delay=" +
+                                                        delay +
+                                                        "ms)",
                                                 );
-                                                window.atualizaMinutas.apply(
-                                                    this,
-                                                    cleanParams,
-                                                );
-                                            } else {
-                                                window.atualizaMinutas();
                                             }
-                                        } else {
-                                            console.warn(
-                                                "⚠️ MINUTAS MÚLTIPLAS: Função atualizaMinutas não encontrada",
-                                            );
                                         }
-                                    } catch (originalError) {
+                                    } catch (err) {
                                         console.warn(
-                                            "⚠️ MINUTAS MÚLTIPLAS: Erro ao executar função original:",
-                                            originalError,
+                                            "MINUTAS: Erro na reaplicacao:",
+                                            err,
                                         );
                                     }
-                                }
-
-                                // Aguardar AJAX completar e reaplicar ícones
-                                setTimeout(() => {
-                                    log(
-                                        `🎨 MINUTAS MÚLTIPLAS: Reaplicando ícones após botão ${index}...`,
-                                    );
-
-                                    // ⚡ APLICAR ANTI-FLASH ANTES da reaplicação
-                                    aplicarAntiFlashIcones();
-
-                                    const legMinutas =
-                                        document.getElementById("legMinutas");
-                                    if (!legMinutas) {
-                                        console.warn(
-                                            "⚠️ MINUTAS MÚLTIPLAS: legMinutas não encontrado",
-                                        );
-                                        return;
-                                    }
-
-                                    // Reaplicar ícones
-                                    const iconesReaplicados =
-                                        reaplicarIconesAposAtualizacao(
-                                            legMinutas,
-                                        );
-
-                                    if (iconesReaplicados > 0) {
-                                        log(
-                                            `✅ MINUTAS MÚLTIPLAS: ${iconesReaplicados} ícones reaplicados após botão ${index}`,
-                                        );
-                                    } else {
-                                        log(
-                                            `⚠️ MINUTAS MÚLTIPLAS: Nenhum ícone reaplicado após botão ${index}`,
-                                        );
-                                    }
-
-                                    // Corrigir alinhamento se necessário
-                                    const divListaRecursos =
-                                        legMinutas.querySelector(
-                                            "#divListaRecursosMinuta",
-                                        );
-                                    if (
-                                        divListaRecursos &&
-                                        typeof corrigirAlinhamentoRecursosMinuta ===
-                                            "function"
-                                    ) {
-                                        const resultado =
-                                            corrigirAlinhamentoRecursosMinuta();
-                                        if (
-                                            resultado.encontrado &&
-                                            resultado.iconesCorrigidos > 0
-                                        ) {
-                                            log(
-                                                `📏 MINUTAS MÚLTIPLAS: Alinhamento corrigido - ${resultado.iconesCorrigidos} ícones`,
-                                            );
-                                        }
-                                    }
-                                }, 1000); // 1 segundo para AJAX completar
-                            } catch (error) {
-                                console.error(
-                                    `❌ MINUTAS MÚLTIPLAS: Erro no interceptor ${index}:`,
-                                    error,
-                                );
-                            }
-                        };
+                                }, delay);
+                            });
+                        }); // fim addEventListener
 
                         // Marcar como interceptado
                         botao.setAttribute("data-eprobe-intercepted", "true");
                         botao.setAttribute(
                             "data-eprobe-interceptor-index",
-                            index,
-                        );
-                        botao.setAttribute(
-                            "title",
-                            (botao.title || "Atualizar") +
-                                " (eProbe: Ícones reaplicados automaticamente)",
+                            String(index),
                         );
 
                         interceptadosCount++;
-                        log(
-                            `✅ MINUTAS MÚLTIPLAS: Botão ${index} interceptado com sucesso`,
-                        );
                     });
 
-                    log(
-                        `🎯 MINUTAS MÚLTIPLAS: ${interceptadosCount} botões interceptados de ${botoesAtualizar.length} encontrados`,
-                    );
                     return interceptadosCount;
                 } catch (error) {
                     console.error(
@@ -27896,2248 +27367,693 @@ ${texto}`;
                 }
             }
 
-            // 🔄 INTERCEPTOR ESPECÍFICO: Interceptar clique no botão "Atualizar Minutas" PRINCIPAL
+            // Interceptor para botao principal atualizaMinutas
+            // NAO substituir onclick (main.js roda em ISOLATED, nao tem acesso a atualizaMinutas)
+            // Usa addEventListener para agendar reaplicacao apos AJAX concluir
             function setupInterceptorAtualizarMinutas() {
                 try {
-                    const botaoAtualizar =
+                    var botaoAtualizar =
                         document.getElementById("atualizaMinutas");
-
                     if (!botaoAtualizar) {
-                        log(
-                            "🔄 MINUTAS: Botão atualizaMinutas não encontrado - interceptor não configurado",
-                        );
                         return false;
                     }
-
-                    // Verificar se já foi interceptado para evitar duplicação
                     if (
                         botaoAtualizar.hasAttribute("data-eprobe-intercepted")
                     ) {
-                        log(
-                            "🔄 MINUTAS: Botão atualizaMinutas já interceptado",
-                        );
                         return true;
                     }
 
-                    log(
-                        "🎯 MINUTAS: Configurando interceptor para botão atualizaMinutas",
-                    );
-
-                    // Guardar a função onclick original
-                    const onclickOriginal = botaoAtualizar.onclick;
-                    const onclickAttrOriginal =
-                        botaoAtualizar.getAttribute("onclick");
-
-                    // Criar nova função que inclui reaplicação de ícones
-                    botaoAtualizar.onclick = function (event) {
+                    botaoAtualizar.addEventListener("click", function () {
                         log(
-                            '🔄 MINUTAS: Botão "Atualizar Minutas" clicado - preparando reaplicação de ícones...',
+                            "MINUTAS: Botao Atualizar principal clicado - agendando reaplicacao...",
                         );
-
-                        try {
-                            // Executar a função original primeiro
-                            if (onclickOriginal) {
-                                onclickOriginal.call(this, event);
-                            } else if (onclickAttrOriginal) {
-                                // ✅ CSP COMPLIANCE: Em vez de eval(), simular o clique no botão original
-                                log(
-                                    "🔄 MINUTAS: Simulando clique original (CSP-safe)...",
-                                );
-
-                                // Criar evento de clique sintético
-                                const syntheticEvent = new MouseEvent("click", {
-                                    bubbles: true,
-                                    cancelable: true,
-                                    view: window,
-                                });
-
-                                // Temporariamente remover nosso interceptor
-                                const tempOnclick = this.onclick;
-                                this.onclick = null;
-
-                                // Tentar executar a função original do atributo onclick de forma segura
+                        var tentativas = [800, 1500, 3000];
+                        tentativas.forEach(function (delay) {
+                            setTimeout(function () {
                                 try {
-                                    // Buscar pela função atualizaMinutas no escopo global
-                                    if (
-                                        typeof window.atualizaMinutas ===
-                                        "function"
-                                    ) {
-                                        // Extrair os parâmetros do onclick original
-                                        const params =
-                                            onclickAttrOriginal.match(
-                                                /atualizaMinutas\(([^)]+)\)/,
-                                            );
-                                        if (params && params[1]) {
-                                            // Limpar as aspas dos parâmetros
-                                            const cleanParams = params[1]
-                                                .split(",")
-                                                .map((p) =>
-                                                    p
-                                                        .trim()
-                                                        .replace(/['"]/g, ""),
-                                                );
+                                    var legMinutas =
+                                        document.getElementById("legMinutas");
+                                    if (legMinutas) {
+                                        var resultado = substituirTodosIcones(
+                                            legMinutas,
+                                            { force: true },
+                                        );
+                                        if (resultado > 0) {
                                             log(
-                                                "🎯 MINUTAS: Executando atualizaMinutas com parâmetros:",
-                                                cleanParams,
+                                                "MINUTAS: " +
+                                                    resultado +
+                                                    " icones reaplicados (delay=" +
+                                                    delay +
+                                                    "ms)",
                                             );
-                                            window.atualizaMinutas.apply(
-                                                this,
-                                                cleanParams,
-                                            );
-                                        } else {
-                                            window.atualizaMinutas();
                                         }
-                                    } else {
-                                        console.warn(
-                                            "⚠️ MINUTAS: Função atualizaMinutas não encontrada no escopo global",
-                                        );
                                     }
-                                } catch (originalError) {
+                                } catch (err) {
                                     console.warn(
-                                        "⚠️ MINUTAS: Erro ao executar função original (continuando):",
-                                        originalError,
-                                    );
-                                } finally {
-                                    // Restaurar nosso interceptor
-                                    this.onclick = tempOnclick;
-                                }
-                            }
-
-                            // Aguardar um pouco para a requisição AJAX completar, então reaplicar ícones
-                            setTimeout(() => {
-                                log(
-                                    "🎨 MINUTAS: Reaplicando ícones personalizados após atualização...",
-                                );
-
-                                // ⚡ APLICAR ANTI-FLASH ANTES da reaplicação
-                                aplicarAntiFlashIcones();
-
-                                const legMinutas =
-                                    document.getElementById("legMinutas");
-                                if (!legMinutas) {
-                                    console.warn(
-                                        "⚠️ MINUTAS: legMinutas não encontrado após atualização",
-                                    );
-                                    return;
-                                }
-
-                                let totalReaplicados = 0;
-
-                                // 1. Reaplicar ícones de ferramentas (FORÇADO após atualização)
-                                const antesTotal = legMinutas.querySelectorAll(
-                                    '[data-eprobe-icon-replaced="true"]',
-                                ).length;
-
-                                // Reaplicar diretamente no legMinutas sem restrições de URL
-                                const iconesReaplicados =
-                                    reaplicarIconesAposAtualizacao(legMinutas);
-                                totalReaplicados += iconesReaplicados;
-
-                                const depoisTotal = legMinutas.querySelectorAll(
-                                    '[data-eprobe-icon-replaced="true"]',
-                                ).length;
-
-                                // 4. Corrigir alinhamento em divListaRecursosMinuta se existir
-                                const divListaRecursos =
-                                    legMinutas.querySelector(
-                                        "#divListaRecursosMinuta",
-                                    );
-                                if (
-                                    divListaRecursos &&
-                                    typeof corrigirAlinhamentoRecursosMinuta ===
-                                        "function"
-                                ) {
-                                    const resultado =
-                                        corrigirAlinhamentoRecursosMinuta();
-                                    if (
-                                        resultado.encontrado &&
-                                        resultado.iconesCorrigidos > 0
-                                    ) {
-                                        log(
-                                            `📏 MINUTAS: Alinhamento corrigido - ${resultado.iconesCorrigidos} ícones processados`,
-                                        );
-                                    }
-                                }
-
-                                if (totalReaplicados > 0) {
-                                    log(
-                                        `✅ MINUTAS: ${totalReaplicados} ícones reaplicados com sucesso após "Atualizar Minutas"`,
-                                    );
-                                } else {
-                                    log(
-                                        "⚠️ MINUTAS: Nenhum ícone foi reaplicado - possível problema na detecção",
+                                        "MINUTAS: Erro na reaplicacao:",
+                                        err,
                                     );
                                 }
-                            }, 1000); // 1 segundo de delay para garantir que a atualização AJAX foi completada
-                        } catch (error) {
-                            console.error(
-                                "❌ MINUTAS: Erro durante interceptação:",
-                                error,
-                            );
-                        }
-                    };
+                            }, delay);
+                        });
+                    });
 
-                    // Marcar como interceptado
                     botaoAtualizar.setAttribute(
                         "data-eprobe-intercepted",
                         "true",
                     );
-                    botaoAtualizar.setAttribute(
-                        "title",
-                        (botaoAtualizar.title || "Atualizar") +
-                            " (eProbe: Ícones serão reaplicados automaticamente)",
-                    );
-
-                    log(
-                        "✅ MINUTAS: Interceptor configurado com sucesso para botão atualizaMinutas",
-                    );
                     return true;
                 } catch (error) {
                     console.error(
-                        "❌ MINUTAS: Erro ao configurar interceptor:",
+                        "MINUTAS: Erro ao configurar interceptor:",
                         error,
                     );
                     return false;
                 }
             }
 
-            // Função para substituir ícones no fieldset de ações
-            function substituirIconesFieldsetAcoes() {
-                const currentUrl = window.location.href;
+            // =====================================================================
+            // FUNCAO UNIFICADA DE SUBSTITUICAO DE ICONES
+            // Substitui todas as imagens GIF/PNG do eProc por SVGs modernos.
+            // Usa EPROBE_ICON_MAP (por src/alt/id) + EPROBE_ICON_TEXT_MAP (por texto do link)
+            // + substituicao de Material Icons em lembretes.
+            // =====================================================================
+            function substituirTodosIcones(containerEl, options) {
+                var forceMode = options && options.force;
 
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
+                // Restricao: So personalizar icones na pagina de capa do processo
                 if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Personalização de ícones restrita apenas à página de capa do processo - URL atual não permitida",
+                    return false;
+                }
+
+                // Excecao: Nao substituir em paginas de cadastro de minutas
+                if (window.location.href.includes("minuta_cadastrar")) {
+                    return false;
+                }
+
+                var container = containerEl || document;
+                var substituicoes = 0;
+
+                // Se force mode, limpar marcacoes para re-aplicar
+                if (forceMode) {
+                    // Remover spans SVG anteriores (imgs ocultos serao re-exibidos pelo eProc via AJAX)
+                    var spansAntigos = container.querySelectorAll(
+                        'span[data-eprobe-icon-container="true"]',
                     );
-                    log("📍 URL atual:", currentUrl);
-                    return false;
-                }
-
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
-                if (currentUrl.includes("minuta_cadastrar")) {
-                    log(
-                        "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições",
+                    for (var s = 0; s < spansAntigos.length; s++) {
+                        var spanAntigo = spansAntigos[s];
+                        if (spanAntigo.parentNode) {
+                            spanAntigo.parentNode.removeChild(spanAntigo);
+                        }
+                    }
+                    // Re-exibir imgs que estavam ocultas
+                    var imgsOcultas = container.querySelectorAll(
+                        'img[data-eprobe-icon-replaced="true"]',
                     );
-                    return false;
+                    for (var h = 0; h < imgsOcultas.length; h++) {
+                        imgsOcultas[h].style.cssText = "";
+                        imgsOcultas[h].removeAttribute(
+                            "data-eprobe-icon-replaced",
+                        );
+                    }
+                    // Limpar marcacoes SVG restantes
+                    var marcados = container.querySelectorAll(
+                        'svg[data-eprobe-icon-replaced="true"]',
+                    );
+                    for (var m = 0; m < marcados.length; m++) {
+                        marcados[m].removeAttribute(
+                            "data-eprobe-icon-replaced",
+                        );
+                    }
                 }
 
-                log(
-                    "🎨 ÍCONES: Iniciando substituição de ícones no fieldset de ações",
-                );
-
-                const fieldset = document.querySelector(
-                    "#fldAcoes.infraFieldset",
-                );
-                if (!fieldset) {
-                    logError("❌ ÍCONES: Fieldset #fldAcoes não encontrado");
-                    return false;
-                }
-
-                let substituicoesRealizadas = 0;
-
-                // Substituir ícones por atributo alt
-                Object.values(ICON_REPLACEMENTS).forEach((replacement) => {
-                    const img = fieldset.querySelector(replacement.selector);
-                    if (img) {
-                        // 🛡️ PROTEÇÃO: Verificar se elemento ainda é válido
-                        if (!img.parentNode || !img.src) {
-                            console.warn(
-                                "⚠️ ÍCONES: Elemento img inválido, pulando substituição",
-                            );
-                            return;
-                        }
-
-                        // 🛡️ PROTEÇÃO: Marcar elemento como processado para evitar problemas
-                        if (img.hasAttribute("data-eprobe-processing")) {
-                            log(
-                                "ℹ️ ÍCONES: Elemento já sendo processado, pulando",
-                            );
-                            return;
-                        }
-                        img.setAttribute("data-eprobe-processing", "true");
+                // 1. Substituir imagens por EPROBE_ICON_MAP (src/alt/id selectors)
+                for (var i = 0; i < EPROBE_ICON_MAP.length; i++) {
+                    var entry = EPROBE_ICON_MAP[i];
+                    var imgs = container.querySelectorAll(entry.selector);
+                    for (var j = 0; j < imgs.length; j++) {
+                        var img = imgs[j];
+                        // Skip se ja substituido (a menos que force mode, ja limpou marcas)
+                        if (img.hasAttribute("data-eprobe-icon-replaced"))
+                            continue;
+                        // Skip estrelas (protegidas de substituicao)
+                        if (
+                            img.src &&
+                            (img.src.indexOf("EstrelaAcesa") !== -1 ||
+                                img.src.indexOf("EstrelaApagada") !== -1)
+                        )
+                            continue;
+                        // Skip se nao tem parent
+                        if (!img.parentNode) continue;
 
                         try {
-                            const container = document.createElement("span");
-                            container.innerHTML = replacement.newSvg;
-
-                            // 🎨 APLICAR ESTILOS PADRONIZADOS
-                            applyStandardIconStyles(container);
-
-                            // 🛡️ PROTEÇÃO: Marcar container como modificado pela extensão
-                            container.setAttribute(
-                                "data-eprobe-modified",
+                            var span = document.createElement("span");
+                            span.setAttribute(
+                                "data-eprobe-icon-container",
                                 "true",
                             );
-                            container.setAttribute(
-                                "data-original-alt",
-                                img.alt || "",
-                            );
+                            span.style.display = "inline-flex";
+                            span.style.alignItems = "center";
+                            span.style.margin = "0";
+                            span.style.verticalAlign = "middle";
+                            span.style.justifyContent = "center";
+                            span.style.lineHeight = "1";
+                            span.style.pointerEvents = "auto";
 
-                            // Preservar classes e atributos importantes
-                            const svg = container.firstElementChild;
+                            span.innerHTML = entry.svg;
+                            var svg = span.firstElementChild;
                             if (svg) {
-                                // 🛡️ PROTEÇÃO: Usar setAttribute para SVG className
-                                svg.setAttribute("class", "iconeAcao");
-                                svg.setAttribute("data-eprobe-icon", "true");
-                                svg.style.width = "18px";
-                                svg.style.height = "18px";
-                            }
-
-                            // 🛡️ PROTEÇÃO: Substituição mais segura com verificação
-                            if (
-                                img.parentNode &&
-                                img.parentNode.contains(img)
-                            ) {
-                                img.parentNode.replaceChild(container, img);
-                                substituicoesRealizadas++;
-                                // Log compacto apenas para os primeiros
-                                if (substituicoesRealizadas <= 3) {
-                                    log(
-                                        `✅ ÍCONES: Substituído ${img.alt} (${substituicoesRealizadas})`,
-                                    );
-                                }
-                            } else {
-                                console.warn(
-                                    "⚠️ ÍCONES: Elemento não mais no DOM, cancelando substituição",
-                                );
-                            }
-                        } catch (error) {
-                            console.error(
-                                "❌ ÍCONES: Erro durante substituição:",
-                                error,
-                            );
-                            // Remove marca de processamento em caso de erro
-                            img.removeAttribute("data-eprobe-processing");
-                        }
-                    }
-                });
-
-                // Substituir ícones por texto do link
-                Object.entries(ICON_REPLACEMENTS_BY_TEXT).forEach(
-                    ([text, replacement]) => {
-                        // Buscar especificamente por links com classe infraButton
-                        const links =
-                            fieldset.querySelectorAll("a.infraButton, a");
-                        links.forEach((link) => {
-                            // Verificar se o texto do link termina com o texto procurado
-                            const linkText = link.textContent.trim();
-                            if (
-                                linkText.includes(text) ||
-                                linkText.endsWith(text)
-                            ) {
-                                const img =
-                                    link.querySelector("img.iconeAcao, img");
-                                if (img) {
-                                    // 🛡️ PROTEÇÃO: Verificar se elemento ainda é válido
-                                    if (!img.parentNode || !img.src) {
-                                        console.warn(
-                                            "⚠️ ÍCONES: Elemento img inválido no link, pulando substituição",
-                                        );
-                                        return;
-                                    }
-
-                                    // 🛡️ PROTEÇÃO: Marcar elemento como processado
-                                    if (
-                                        img.hasAttribute(
-                                            "data-eprobe-processing",
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    img.setAttribute(
-                                        "data-eprobe-processing",
-                                        "true",
-                                    );
-
-                                    try {
-                                        const container =
-                                            document.createElement("span");
-                                        container.innerHTML =
-                                            replacement.newSvg;
-                                        container.style.display = "inline-flex";
-                                        container.style.alignItems = "center";
-                                        container.style.marginRight = "4px";
-
-                                        // 🛡️ PROTEÇÃO: Marcar container como modificado
-                                        container.setAttribute(
-                                            "data-eprobe-modified",
-                                            "true",
-                                        );
-                                        container.setAttribute(
-                                            "data-original-text",
-                                            text,
-                                        );
-
-                                        const svg = container.firstElementChild;
-                                        if (svg) {
-                                            // 🛡️ PROTEÇÃO: Usar setAttribute para SVG className
-                                            svg.setAttribute(
-                                                "class",
-                                                "iconeAcao",
-                                            );
-                                            svg.style.width = "18px";
-                                            svg.style.height = "18px";
-                                            svg.setAttribute(
-                                                "data-eprobe-icon-replaced",
-                                                "true",
-                                            );
-                                            svg.setAttribute(
-                                                "data-original-text",
-                                                text,
-                                            );
-
-                                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                                            aplicarDimensionamentoRecursosMinuta(
-                                                svg,
-                                            );
-                                        }
-
-                                        // 🛡️ PROTEÇÃO: Substituição mais segura
-                                        if (
-                                            img.parentNode &&
-                                            img.parentNode.contains(img)
-                                        ) {
-                                            img.parentNode.replaceChild(
-                                                container,
-                                                img,
-                                            );
-                                            substituicoesRealizadas++;
-                                            log(
-                                                `✅ ÍCONES: Substituído ícone para "${text}"`,
-                                            );
-                                        } else {
-                                            console.warn(
-                                                "⚠️ ÍCONES: Elemento img não mais no DOM",
-                                            );
-                                        }
-                                    } catch (error) {
-                                        console.error(
-                                            "❌ ÍCONES: Erro durante substituição por texto:",
-                                            error,
-                                        );
-                                        img.removeAttribute(
-                                            "data-eprobe-processing",
-                                        );
-                                    }
-                                }
-                            }
-                        });
-                    },
-                );
-
-                // Substituições específicas por src de imagem
-                const imgsBySrc = [
-                    {
-                        selector: 'img[src*="remover.gif"]',
-                        newSvg: ICON_REPLACEMENTS[
-                            "processo movimento_desativar_consulta"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="receber.gif"]',
-                        newSvg: ICON_REPLACEMENTS_BY_TEXT["Movimentar Processo"]
-                            .newSvg,
-                    },
-                    {
-                        selector: 'img[src*="mais.gif"]',
-                        newSvg: ICON_REPLACEMENTS_BY_TEXT[
-                            "Associar Procurador Parte"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="microphone.png"]',
-                        newSvg: ICON_REPLACEMENTS["audiencia listar"].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="pdf.gif"]',
-                        newSvg: ICON_REPLACEMENTS[
-                            "selecionar processos_agendar_arquivo_completo"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="anexos.gif"]',
-                        newSvg: ICON_REPLACEMENTS[
-                            "processo enviar_email_listar"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="email.gif"]',
-                        newSvg: ICON_REPLACEMENTS[
-                            "processo expedir_carta_subform"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="marcar.gif"]',
-                        newSvg: ICON_REPLACEMENTS[
-                            "gerenciamento partes_situacao_listar"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="encaminhar.gif"]',
-                        newSvg: ICON_REPLACEMENTS["processo intimacao"].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="assinar.gif"]',
-                        newSvg: ICON_REPLACEMENTS["processo edicao"].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="atualizar.gif"]',
-                        newSvg: ICON_REPLACEMENTS["processo cadastrar"].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="predio.png"]',
-                        newSvg: ICON_REPLACEMENTS_BY_TEXT[
-                            "Requisição Un. Externa"
-                        ].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="hierarquia.gif"]',
-                        newSvg: ICON_REPLACEMENTS["redistribuicao processo"]
-                            .newSvg,
-                    },
-                    {
-                        selector: 'img[src*="newspaper.png"]',
-                        newSvg: ICON_REPLACEMENTS["processo citacao"].newSvg,
-                    },
-                    {
-                        selector: 'img[src*="configuracao.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="eprobe-svg-icon eprobe-svg-config" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="refresh.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="valores.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="minuta_historico.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="novo.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="minuta_alterar.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="minuta_assinar2.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="alterar.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="balao.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="eprobe-svg-icon eprobe-svg-bubble" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="linkeditor.png"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="html.gif"]',
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="tooltip.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="duvida.png"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
-                    },
-                    /*             {
-                selector: 'img[src*="ver_resumo.gif"]',
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>',
-            },
-            {
-                selector: 'img[src*="ver_tudo.gif"]',
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
-            }, */
-                    {
-                        selector: 'img[src*="lupa.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
-                    },
-                    // DESABILITADO: Substituições de estrelas para preservar funcionalidade do eProc
-                    /*
-                    {
-                        selector: 'img[src*="EstrelaAcesa.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="EstrelaApagada.gif"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>',
-                    },
-                    */
-                    {
-                        selector: 'img[src*="oral_video.png"]',
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
-                    },
-                    {
-                        selector: 'img[src*="menos.gif"]',
-                        newSvg: ICON_REPLACEMENTS_BY_TEXT[
-                            "Permissão/Negação Expressa"
-                        ].newSvg,
-                    },
-                ];
-
-                imgsBySrc.forEach(({ selector, newSvg }) => {
-                    // 🚨 PROTEÇÃO CRÍTICA: NUNCA substituir ícones de estrela
-                    if (
-                        selector &&
-                        (selector.includes("Estrela") ||
-                            selector.includes("star"))
-                    ) {
-                        console.log(
-                            "🛡️ PROTEÇÃO: Bloqueando substituição de estrela:",
-                            selector,
-                        );
-                        return; // Pular esta substituição
-                    }
-
-                    const img = fieldset.querySelector(selector);
-                    if (img) {
-                        // 🚨 VERIFICAÇÃO ADICIONAL: Verificar se é ícone de estrela
-                        if (
-                            (img.src &&
-                                (img.src.includes("Estrela") ||
-                                    img.src.includes("star"))) ||
-                            (img.alt &&
-                                (img.alt.includes("Evento relevante") ||
-                                    img.alt.includes("relevante")))
-                        ) {
-                            console.log(
-                                "🛡️ PROTEÇÃO: Bloqueando substituição de elemento estrela encontrado",
-                            );
-                            return; // Pular esta substituição
-                        }
-
-                        const container = document.createElement("span");
-                        container.innerHTML = newSvg;
-
-                        // 🎨 APLICAR ESTILOS PADRONIZADOS
-                        applyStandardIconStyles(container);
-
-                        const svg = container.firstElementChild;
-                        if (svg) {
-                            svg.classList.add("iconeAcao");
-                            svg.style.width = "18px";
-                            svg.style.height = "18px";
-                        }
-
-                        // Funcionalidade especial para ícones mais.gif e menos.gif
-                        if (
-                            selector.includes("mais.gif") ||
-                            selector.includes("menos.gif")
-                        ) {
-                            // Verificar se o elemento é seguro para processar
-                            if (isElementSafeForToggle(img)) {
-                                log(
-                                    `🔄 ALTERNÂNCIA: Detectado ícone expansível válido: ${selector}`,
-                                );
-                                implementarAlternanciaExpandirRetrair(
-                                    img,
-                                    container,
-                                    selector,
-                                );
-                            } else {
-                                log(
-                                    `⚠️ ALTERNÂNCIA: Ignorando ícone inseguro: ${selector}`,
-                                );
-                            }
-                        }
-
-                        img.parentNode.replaceChild(container, img);
-                        substituicoesRealizadas++;
-                        log(`✅ ÍCONES: Substituído ícone ${selector}`);
-                    }
-                });
-
-                // Estratégia específica para "Incluir em Pauta/Mesa"
-                const linksPauta = fieldset.querySelectorAll("a.infraButton");
-                linksPauta.forEach((link) => {
-                    if (
-                        link.textContent
-                            .trim()
-                            .endsWith("Incluir em Pauta/Mesa")
-                    ) {
-                        // Verificar se já foi processado
-                        if (link.classList.contains("icon-processed")) {
-                            return;
-                        }
-
-                        const img = link.querySelector("img");
-
-                        if (
-                            img &&
-                            !img.classList.contains("substituted-icon")
-                        ) {
-                            // Caso 1: Link tem imagem - substituir a imagem
-                            const container = document.createElement("span");
-                            container.innerHTML =
-                                ICON_REPLACEMENTS_BY_TEXT[
-                                    "Incluir em Pauta/Mesa"
-                                ].newSvg;
-                            container.style.display = "inline-flex";
-                            container.style.alignItems = "center";
-                            container.style.marginRight = "4px";
-
-                            const svg = container.firstElementChild;
-                            if (svg) {
-                                svg.classList.add(
-                                    "iconeAcao",
-                                    "substituted-icon",
-                                );
-                                svg.style.width = "18px";
-                                svg.style.height = "18px";
-                            }
-
-                            img.parentNode.replaceChild(container, img);
-                            link.classList.add("icon-processed");
-                            substituicoesRealizadas++;
-                            log(
-                                `✅ ÍCONES: Substituído ícone "Incluir em Pauta/Mesa" (com imagem)`,
-                            );
-                        } else if (!img) {
-                            // Caso 2: Link apenas texto - adicionar ícone no início
-                            const container = document.createElement("span");
-                            container.innerHTML =
-                                ICON_REPLACEMENTS_BY_TEXT[
-                                    "Incluir em Pauta/Mesa"
-                                ].newSvg;
-                            container.style.display = "inline-flex";
-                            container.style.alignItems = "center";
-                            container.style.marginRight = "6px";
-
-                            const svg = container.firstElementChild;
-                            if (svg) {
-                                svg.classList.add(
-                                    "iconeAcao",
-                                    "substituted-icon",
-                                );
-                                svg.style.width = "18px";
-                                svg.style.height = "18px";
+                                svg.style.pointerEvents = "none";
+                                svg.style.flexShrink = "0";
                                 svg.style.verticalAlign = "middle";
-                            }
-
-                            // Inserir o ícone no início do link
-                            link.insertBefore(container, link.firstChild);
-                            link.style.display = "inline-flex";
-                            link.style.alignItems = "center";
-                            link.classList.add("icon-processed");
-                            substituicoesRealizadas++;
-                            log(
-                                `✅ ÍCONES: Adicionado ícone "Incluir em Pauta/Mesa" (link texto)`,
-                            );
-                        }
-                    }
-                });
-
-                log(
-                    `🎨 ÍCONES: Concluída substituição - ${substituicoesRealizadas} ícones substituídos`,
-                );
-                return substituicoesRealizadas > 0;
-            }
-
-            // Função adicional para substituição global de ícones específicos
-            function substituirIconesGlobalmente() {
-                const currentUrl = window.location.href;
-
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
-                if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Personalização de ícones globais restrita apenas à página de capa do processo - URL atual não permitida",
-                    );
-                    log("📍 URL atual:", currentUrl);
-                    return false;
-                }
-
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
-                if (currentUrl.includes("minuta_cadastrar")) {
-                    log(
-                        "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições globais",
-                    );
-                    return false;
-                }
-
-                log(
-                    "🎨 ÍCONES: Iniciando substituição global de ícones específicos",
-                );
-
-                let substituicoesRealizadas = 0;
-
-                // Mapeamento global para ícones específicos que podem aparecer em qualquer lugar
-                const iconesGlobais = [
-                    {
-                        // Ícones de configuração
-                        selectors: [
-                            'img[src*="configuracao.gif"]',
-                            'img[title*="Ações Preferenciais"]',
-                            'img[alt*="Ações Preferenciais"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-                        name: "Configuração",
-                    },
-                    {
-                        // Ícones de refresh
-                        selectors: [
-                            'img[src*="refresh.gif"]',
-                            'img[id="refresh"]',
-                            'img[title*="Atualizar"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>',
-                        name: "Refresh",
-                    },
-                    {
-                        // Ícones de histórico/lista
-                        selectors: [
-                            'img[src*="valores.gif"]',
-                            'img[src*="minuta_historico.gif"]',
-                            'img[alt*="Histórico"]',
-                            'img[title*="Histórico"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
-                        name: "Histórico",
-                    },
-                    {
-                        // Ícones de nova minuta/documento
-                        selectors: [
-                            'img[src*="novo.gif"]',
-                            'img[alt*="Nova Minuta"]',
-                            'img[title*="Nova Minuta"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>',
-                        name: "Nova Minuta",
-                    },
-                    {
-                        // Ícones de editar minuta
-                        selectors: [
-                            'img[src*="minuta_alterar.gif"]',
-                            'img[title*="Alterar Julgamento"]',
-                            'img[alt*="Alterar Julgamento"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
-                        name: "Editar Minuta",
-                    },
-                    {
-                        // Ícones de assinar minuta
-                        selectors: [
-                            'img[src*="minuta_assinar2.gif"]',
-                            'img[title*="Assinar Minuta"]',
-                            'img[alt*="Assinar Minuta"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
-                        name: "Assinar Minuta",
-                    },
-                    {
-                        // Ícones de editar genérico
-                        selectors: [
-                            'img[src*="alterar.gif"]',
-                            'img[title*="Alterar"]',
-                            'img[alt*="Alterar"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
-                        name: "Editar",
-                    },
-                    {
-                        // Ícones de balão/memo
-                        selectors: [
-                            'img[src*="balao.gif"]',
-                            'img[alt*="Incluir Memo"]',
-                            'img[title*="Memo"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-                        name: "Memo Balão",
-                    },
-                    {
-                        // Ícones de link
-                        selectors: [
-                            'img[src*="linkeditor.png"]',
-                            'img[alt*="Link"]',
-                            'img[title*="Link"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
-                        name: "Link",
-                    },
-                    {
-                        // Ícones de visualizar documento HTML
-                        selectors: [
-                            'img[src*="html.gif"]',
-                            'img[title*="Visualizar Documento"]',
-                            'img[alt*="Visualizar"]',
-                        ],
-                        newSvg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>',
-                        name: "Visualizar HTML",
-                    },
-                    {
-                        // Ícones de PDF
-                        selectors: [
-                            'img[src*="pdf.gif"]',
-                            'img[title*="PDF"]',
-                            'img[alt*="PDF"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/></svg>',
-                        name: "PDF",
-                    },
-                    {
-                        // Ícones de tooltip/memo
-                        selectors: [
-                            'img[src*="tooltip.gif"]',
-                            'img[alt*="Incluir Memo"]',
-                            'img[title*="Tooltip"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>',
-                        name: "Memo Tooltip",
-                    },
-                    {
-                        // Ícones de ajuda/interrogação
-                        selectors: [
-                            'img[src*="duvida.png"]',
-                            'img[alt*="Ajuda"]',
-                            'img[title*="Ajuda"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
-                        name: "Ajuda",
-                    },
-                    /*             {
-                // Ícones de ocultar/resumo
-                selectors: [
-                    'img[src*="ver_resumo.gif"]',
-                    'img[title*="Ocultar"]',
-                    'img[alt*="Resumo"]',
-                ],
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>',
-                name: "Ocultar",
-            },
-            {
-                // Ícones de mostrar/ver tudo
-                selectors: [
-                    'img[src*="ver_tudo.gif"]',
-                    'img[title*="Mostrar"]',
-                    'img[alt*="Ver Tudo"]',
-                ],
-                newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>',
-                name: "Mostrar",
-            }, */
-                    {
-                        // Ícones de lupa/busca
-                        selectors: [
-                            'img[src*="lupa.gif"]',
-                            'img[alt*="Informações do Evento"]',
-                            'img[title*="Buscar"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>',
-                        name: "Lupa",
-                    },
-                    {
-                        // Ícones de vídeo/televisão
-                        selectors: [
-                            'img[src*="oral_video.png"]',
-                            'img[alt*="Vídeo"]',
-                            'img[title*="Vídeo"]',
-                        ],
-                        newSvg: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>',
-                        name: "Vídeo",
-                    },
-                ];
-
-                iconesGlobais.forEach((icone) => {
-                    icone.selectors.forEach((selector) => {
-                        const elementos = document.querySelectorAll(selector);
-
-                        elementos.forEach((img) => {
-                            // Verificar se já foi substituído
-                            if (
-                                img.hasAttribute("data-eprobe-icon-replaced") ||
-                                img.classList.contains("substituted-icon")
-                            ) {
-                                return;
-                            }
-
-                            // 🚨 PROTEÇÃO CRÍTICA: NÃO substituir ícones de estrela que são interativos
-                            // Verifica se é um ícone de estrela e se tem funcionalidade de clique
-                            const isEstrelaIcon =
-                                selector.includes("Estrela") ||
-                                img.src.includes("EstrelaAcesa") ||
-                                img.src.includes("EstrelaApagada") ||
-                                img.alt.includes("Evento relevante") ||
-                                img.alt.includes("Evento normal");
-
-                            if (isEstrelaIcon) {
-                                // Verificar se tem onclick ou está em link com javascript
-                                const hasOnclick =
-                                    img.onclick || img.hasAttribute("onclick");
-                                const parentLink = img.closest(
-                                    "a[href*='javascript:'], a[onclick]",
+                                svg.style.display = "inline-block";
+                                svg.style.margin = "0";
+                                svg.style.padding = "0";
+                                svg.style.lineHeight = "1";
+                                svg.setAttribute(
+                                    "data-eprobe-icon-replaced",
+                                    "true",
+                                );
+                                svg.classList.add(
+                                    "infraImg",
+                                    "substituted-icon",
                                 );
 
-                                if (hasOnclick || parentLink) {
-                                    console.log(
-                                        "🛡️ PROTEÇÃO: Ícone de estrela interativo preservado:",
-                                        {
-                                            src: img.src,
-                                            hasOnclick: !!hasOnclick,
-                                            parentLink: !!parentLink,
-                                            linkHref: parentLink?.href || "N/A",
-                                        },
-                                    );
-
-                                    // Apenas adicionar visual feedback que está sendo protegido
-                                    img.style.filter =
-                                        "drop-shadow(0 0 2px rgba(224, 187, 0, 0.3))";
-                                    img.setAttribute(
-                                        "data-eprobe-protected",
-                                        "true",
-                                    );
-                                    img.setAttribute(
-                                        "title",
-                                        (img.title || img.alt) +
-                                            " (Protegido pelo eProbe)",
-                                    );
-                                    return; // NÃO substituir
-                                }
-                            }
-
-                            try {
-                                // Preservar todas as propriedades originais
-                                const originalWidth =
-                                    img.style.width ||
-                                    img.getAttribute("width") ||
-                                    getComputedStyle(img).width ||
-                                    "1.1em";
-                                const originalHeight =
-                                    img.style.height ||
-                                    img.getAttribute("height") ||
-                                    getComputedStyle(img).height ||
-                                    "1.1em";
-                                const originalOpacity =
-                                    img.style.opacity || "1";
-                                const originalBorderWidth =
-                                    img.style.borderWidth || "0";
-                                const originalPaddingRight =
-                                    img.style.paddingRight || "";
-
-                                // Criar container SVG
-                                const container =
-                                    document.createElement("span");
-                                container.innerHTML = icone.newSvg;
-
-                                // 🎨 APLICAR ESTILOS PADRONIZADOS
-                                applyStandardIconStyles(container);
-
-                                const svg = container.firstElementChild;
-                                if (svg) {
-                                    // Aplicar todas as propriedades preservadas
-                                    svg.style.width = originalWidth;
-                                    svg.style.height = originalHeight;
-                                    svg.style.opacity = originalOpacity;
-                                    svg.style.borderWidth = originalBorderWidth;
-                                    if (originalPaddingRight) {
-                                        svg.style.paddingRight =
-                                            originalPaddingRight;
-                                    }
-
-                                    // Preservar classes CSS - CORRIGIDO para SVG
-                                    if (img.className) {
-                                        // SVG usa setAttribute para classes, não className
-                                        svg.setAttribute(
-                                            "class",
-                                            img.className + " substituted-icon",
-                                        );
-                                    } else {
-                                        svg.classList.add("substituted-icon");
-                                    }
-
-                                    // Preservar atributos importantes
-                                    [
-                                        "title",
-                                        "alt",
-                                        "aria-hidden",
-                                        "role",
-                                        "id",
-                                    ].forEach((attr) => {
-                                        const value = img.getAttribute(attr);
-                                        if (value) {
-                                            svg.setAttribute(attr, value);
-                                        }
-                                    });
-
-                                    // Adicionar atributos de controle
-                                    svg.setAttribute(
-                                        "data-eprobe-icon-replaced",
-                                        "true",
-                                    );
-                                    svg.setAttribute(
-                                        "data-original-name",
-                                        icone.name,
-                                    );
-                                    svg.setAttribute(
-                                        "data-original-selector",
-                                        selector,
-                                    );
-
-                                    // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
+                                // Dimensionamento especial para divListaRecursosMinuta
+                                if (
+                                    typeof aplicarDimensionamentoRecursosMinuta ===
+                                    "function"
+                                ) {
                                     aplicarDimensionamentoRecursosMinuta(svg);
-
-                                    // Preservar eventos
-                                    if (img.onclick) {
-                                        svg.onclick = img.onclick;
-                                    }
-
-                                    // Realizar substituição
-                                    img.parentNode.replaceChild(container, img);
-                                    substituicoesRealizadas++;
-                                    log(
-                                        `✅ ÍCONES GLOBAL: Substituído ${icone.name} via "${selector}"`,
-                                    );
                                 }
-                            } catch (error) {
-                                console.warn(
-                                    `⚠️ ÍCONES GLOBAL: Erro ao substituir ${icone.name}:`,
-                                    error,
-                                );
                             }
-                        });
-                    });
-                });
 
-                // ========================================
-                // 🎨 SUBSTITUIÇÃO ESPECÍFICA PARA ÍCONES DE LEMBRETES
-                // ========================================
-
-                // Substituir ícones Material Icons para Material Symbols nos lembretes
-                // 1. Ícone de editar: "edit" → "ink_pen"
-                const iconesEditarLembrete = document.querySelectorAll(
-                    'a[aria-label="Alterar Lembrete"] span.material-icons',
-                );
-
-                iconesEditarLembrete.forEach((icone) => {
-                    if (icone.textContent === "edit") {
-                        // Verificar se já foi substituído
-                        if (icone.hasAttribute("data-eprobe-icon-replaced")) {
-                            return;
-                        }
-
-                        // Criar novo SVG Material Symbol "ink_pen"
-                        const svgContainer = document.createElement("span");
-                        svgContainer.innerHTML =
-                            '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
-
-                        const svg = svgContainer.firstElementChild;
-
-                        // Preservar classes e atributos do ícone original
-                        svg.classList.add("material-icons"); // Manter compatibilidade
-                        svg.setAttribute("data-eprobe-icon-replaced", "true");
-                        svg.setAttribute("data-original-icon", "edit");
-                        svg.setAttribute("data-new-icon", "ink_pen");
-
-                        // Substituir o ícone
-                        icone.parentNode.replaceChild(svg, icone);
-                        substituicoesRealizadas++;
-                        log(
-                            "✅ LEMBRETES: Ícone 'edit' substituído por Material Symbol 'ink_pen'",
-                        );
-                    }
-                });
-
-                // 2. Ícone de excluir: "delete" → "delete" (mesmo nome, mas Material Symbol)
-                const iconesExcluirLembrete = document.querySelectorAll(
-                    'a[aria-label="Desativar Lembrete"] span.material-icons',
-                );
-
-                iconesExcluirLembrete.forEach((icone) => {
-                    if (icone.textContent === "delete") {
-                        // Verificar se já foi substituído
-                        if (icone.hasAttribute("data-eprobe-icon-replaced")) {
-                            return;
-                        }
-
-                        // Criar novo SVG Material Symbol "delete"
-                        const svgContainer = document.createElement("span");
-                        svgContainer.innerHTML =
-                            '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
-
-                        const svg = svgContainer.firstElementChild;
-
-                        // Preservar classes e atributos do ícone original
-                        svg.classList.add("material-icons"); // Manter compatibilidade
-                        svg.setAttribute("data-eprobe-icon-replaced", "true");
-
-                        // ⚡ SISTEMA ANTI-FLASH: Revelar ícone personalizado
-                        if (window.eprobeAntiFlash) {
-                            window.eprobeAntiFlash.revelarIcone(svg);
-                        }
-
-                        svg.setAttribute("data-original-icon", "delete");
-                        svg.setAttribute(
-                            "data-new-icon",
-                            "delete_material_symbol",
-                        );
-
-                        // Preservar atributos importantes do ícone original
-                        if (icone.title) svg.setAttribute("title", icone.title);
-                        if (icone.getAttribute("alt"))
-                            svg.setAttribute("alt", icone.getAttribute("alt"));
-                        if (icone.getAttribute("aria-hidden"))
-                            svg.setAttribute(
-                                "aria-hidden",
-                                icone.getAttribute("aria-hidden"),
-                            );
-
-                        // Substituir o ícone
-                        icone.parentNode.replaceChild(svg, icone);
-                        substituicoesRealizadas++;
-                        log(
-                            "✅ LEMBRETES: Ícone 'delete' substituído por Material Symbol 'delete'",
-                        );
-                    }
-                });
-
-                log(
-                    `🎨 ÍCONES GLOBAL: ${substituicoesRealizadas} ícones substituídos globalmente`,
-                );
-                return substituicoesRealizadas > 0;
-            }
-
-            // Função de teste para debug de ícones
-            function debugIconesSubstituicao() {
-                log("🔍 DEBUG ÍCONES: Analisando página atual...");
-
-                const iconesTeste = [
-                    'img[src*="configuracao.gif"]',
-                    'img[src*="refresh.gif"]',
-                    'img[src*="valores.gif"]',
-                    'img[src*="minuta_historico.gif"]',
-                    'img[src*="novo.gif"]',
-                    'img[src*="minuta_alterar.gif"]',
-                    'img[src*="minuta_assinar2.gif"]',
-                    'img[src*="alterar.gif"]',
-                    'img[src*="balao.gif"]',
-                    'img[src*="linkeditor.png"]',
-                    'img[src*="html.gif"]',
-                    'img[src*="pdf.gif"]',
-                    'img[src*="tooltip.gif"]',
-                    'img[src*="duvida.png"]',
-                    'img[src*="ver_resumo.gif"]',
-                    'img[src*="ver_tudo.gif"]',
-                    'img[src*="lupa.gif"]',
-                    'img[src*="EstrelaAcesa.gif"]',
-                    'img[src*="EstrelaApagada.gif"]',
-                    'img[src*="oral_video.png"]',
-                    'img[title*="Ações Preferenciais"]',
-                    'img[title*="Atualizar"]',
-                    'img[title*="Alterar Julgamento"]',
-                    'img[title*="Visualizar Documento"]',
-                    'img[title*="Ajuda"]',
-                    'img[title*="Ocultar"]',
-                    'img[title*="Mostrar"]',
-                    'img[title*="Buscar"]',
-                    'img[title*="Relevante"]',
-                    'img[title*="Vídeo"]',
-                    'img[alt*="Nova Minuta"]',
-                    'img[alt*="Incluir Memo"]',
-                    'img[alt*="Visualizar"]',
-                    'img[alt*="Ajuda"]',
-                    'img[alt*="Resumo"]',
-                    'img[alt*="Ver Tudo"]',
-                    'img[alt*="Informações do Evento"]',
-                    'img[alt*="Evento relevante"]',
-                    'img[alt*="Evento normal"]',
-                    'img[alt*="Vídeo"]',
-                    'img[id="refresh"]',
-                ];
-
-                log("📊 ESTATÍSTICAS DE ÍCONES:");
-                iconesTeste.forEach((selector) => {
-                    const elementos = document.querySelectorAll(selector);
-                    const substituidos = document.querySelectorAll(
-                        selector.replace("img", "[data-eprobe-icon-replaced]"),
-                    );
-
-                    log(
-                        `${selector}: ${elementos.length} encontrados, ${substituidos.length} já substituídos`,
-                    );
-
-                    if (elementos.length > 0) {
-                        elementos.forEach((img, i) => {
-                            log(`  - Item ${i + 1}:`, {
-                                src: img.src,
-                                alt: img.alt,
-                                title: img.title,
-                                id: img.id,
-                                className: img.className,
-                                substituido: img.hasAttribute(
-                                    "data-eprobe-icon-replaced",
-                                ),
-                            });
-                        });
-                    }
-                });
-
-                // Executar todas as funções de substituição
-                log("🔄 EXECUTANDO SUBSTITUIÇÕES...");
-                try {
-                    const resultados = {
-                        fieldset: substituirIconesFieldsetAcoes(),
-                        ferramentas: substituirIconesFerramentas(),
-                        global: substituirIconesGlobalmente(),
-                    };
-
-                    log("✅ RESULTADOS:", resultados);
-
-                    // Estatísticas finais
-                    const totalSubstituidos = document.querySelectorAll(
-                        "[data-eprobe-icon-replaced]",
-                    ).length;
-                    log(
-                        `🎯 TOTAL DE ÍCONES SUBSTITUÍDOS: ${totalSubstituidos}`,
-                    );
-
-                    return resultados;
-                } catch (error) {
-                    console.error("❌ ERRO NO DEBUG:", error);
-                    return { erro: error.message };
-                }
-            }
-
-            /**
-             * 🎨 FUNÇÃO ESPECÍFICA PARA SUBSTITUIÇÃO DE ÍCONES DOS LEMBRETES
-             * Substitui Material Icons por Material Symbols nos botões de editar e excluir lembretes
-             * PRESERVA 100% das funcionalidades originais
-             */
-            function substituirIconesLembretes() {
-                // ⚡ ANTI-FLASH: Aplicar CSS crítico ANTES de qualquer processamento
-                aplicarAntiFlashIcones();
-
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
-                if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Personalização de ícones de lembretes restrita apenas à página de capa do processo - URL atual não permitida",
-                    );
-                    log("📍 URL atual:", window.location.href);
-                    return 0;
-                }
-
-                log(
-                    "🎨 LEMBRETES: Iniciando substituição específica de ícones dos lembretes...",
-                );
-
-                let substituicoesRealizadas = 0;
-
-                try {
-                    // 1. Substituir ícone de EDITAR LEMBRETE: "edit" → "ink_pen"
-                    const iconesEditarLembrete = document.querySelectorAll(
-                        'a[aria-label="Alterar Lembrete"] span.material-icons, a[href*="processo_lembrete_destino_alterar"] span.material-icons',
-                    );
-
-                    iconesEditarLembrete.forEach((icone) => {
-                        if (
-                            icone.textContent.trim() === "edit" &&
-                            !icone.hasAttribute("data-eprobe-icon-replaced")
-                        ) {
-                            try {
-                                // Criar novo SVG Material Symbol "ink_pen"
-                                const svgContainer =
-                                    document.createElement("span");
-                                svgContainer.innerHTML =
-                                    '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="m478.61-517.54 41.62 41.62L736.31-692l-41.62-41.62-216.08 216.08ZM218.69-216h41.62l223.77-223.77-41.62-41.62-223.77 223.77V-216Zm320.62-204.69L423.77-536.61l148.31-148.31-43.69-43.69q-3.08-3.08-9.23-3.08-6.16 0-9.24 3.08L320.85-539.54l-37.15-36.38 191.23-189.85q18.69-18.69 45.3-18.69 26.62 0 45.31 18.69l43.69 43.69 54.54-54.53q12.85-12.85 31.11-12.85 18.27 0 31.12 12.85l54.84 54.84q12.85 12.85 11.97 29.85-.89 17-12.73 30.84L539.31-420.69ZM282.23-164H166.69v-115.54l256.7-257.07 115.92 115.92L282.23-164Z"/></svg>';
-
-                                const svg = svgContainer.firstElementChild;
-
-                                // Preservar TODAS as classes e atributos do ícone original
-                                if (icone.className) {
-                                    svg.setAttribute(
-                                        "class",
-                                        icone.className +
-                                            " eprobe-substituted-icon",
-                                    );
-                                } else {
-                                    svg.classList.add(
-                                        "material-icons",
-                                        "eprobe-substituted-icon",
-                                    );
-                                }
-
-                                // Marcar como substituído
-                                svg.setAttribute(
-                                    "data-eprobe-icon-replaced",
-                                    "true",
-                                );
-
-                                // ⚡ SISTEMA ANTI-FLASH: Revelar ícone personalizado
-                                if (window.eprobeAntiFlash) {
-                                    window.eprobeAntiFlash.revelarIcone(svg);
-                                }
-
-                                svg.setAttribute("data-original-icon", "edit");
-                                svg.setAttribute("data-new-icon", "ink_pen");
-                                svg.setAttribute(
-                                    "data-icon-type",
-                                    "lembrete-editar",
-                                );
-
-                                // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                                aplicarDimensionamentoRecursosMinuta(svg);
-
-                                // Substituir o ícone mantendo o link funcional
-                                icone.parentNode.replaceChild(svg, icone);
-                                substituicoesRealizadas++;
-                                log(
-                                    "✅ LEMBRETES: Ícone 'edit' substituído por Material Symbol 'ink_pen'",
-                                );
-                            } catch (error) {
-                                console.warn(
-                                    "⚠️ LEMBRETES: Erro ao substituir ícone de editar:",
-                                    error,
-                                );
+                            // Transferir title do img original para o span
+                            var imgTitle = img.getAttribute("title");
+                            if (imgTitle) {
+                                span.setAttribute("title", imgTitle);
                             }
-                        }
-                    });
 
-                    // 2. Substituir ícone de EXCLUIR LEMBRETE: "delete" → "delete" (Material Symbol)
-                    const iconesExcluirLembrete = document.querySelectorAll(
-                        'a[aria-label="Desativar Lembrete"] span.material-icons, a[onclick*="desativarLembrete"] span.material-icons',
-                    );
-
-                    iconesExcluirLembrete.forEach((icone) => {
-                        if (
-                            icone.textContent.trim() === "delete" &&
-                            !icone.hasAttribute("data-eprobe-icon-replaced")
-                        ) {
-                            try {
-                                // Criar novo SVG Material Symbol "delete"
-                                const svgContainer =
-                                    document.createElement("span");
-                                svgContainer.innerHTML =
-                                    '<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 -960 960 960" width="20px" fill="#545454"><path d="M324.31-164q-26.62 0-45.47-18.84Q260-201.69 260-228.31V-696h-48v-52h172v-43.38h192V-748h172v52h-48v467.26q0 27.74-18.65 46.24Q662.7-164 635.69-164H324.31ZM648-696H312v467.69q0 5.39 3.46 8.85t8.85 3.46h311.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46V-696ZM400.16-288h51.99v-336h-51.99v336Zm107.69 0h51.99v-336h-51.99v336ZM312-696v480-480Z"/></svg>';
-
-                                const svg = svgContainer.firstElementChild;
-
-                                // Preservar TODAS as classes e atributos do ícone original
-                                if (icone.className) {
-                                    svg.setAttribute(
-                                        "class",
-                                        icone.className +
-                                            " eprobe-substituted-icon",
-                                    );
-                                } else {
-                                    svg.classList.add(
-                                        "material-icons",
-                                        "eprobe-substituted-icon",
-                                    );
+                            // Transferir id do img para o span
+                            // (infraAbrirFecharElementoHTML busca por id como imgMinutas_*)
+                            var imgId = img.getAttribute("id");
+                            if (imgId) {
+                                span.setAttribute("id", imgId);
+                                // Copiar src original para que eProc possa ler/alterar
+                                var imgSrc = img.getAttribute("src");
+                                if (imgSrc) {
+                                    span.setAttribute("src", imgSrc);
                                 }
 
-                                // Preservar atributos importantes
-                                if (icone.title)
-                                    svg.setAttribute("title", icone.title);
-                                if (icone.getAttribute("alt"))
-                                    svg.setAttribute(
-                                        "alt",
-                                        icone.getAttribute("alt"),
-                                    );
-                                if (icone.getAttribute("aria-hidden"))
-                                    svg.setAttribute(
-                                        "aria-hidden",
-                                        icone.getAttribute("aria-hidden"),
-                                    );
-
-                                // Marcar como substituído
-                                svg.setAttribute(
-                                    "data-eprobe-icon-replaced",
-                                    "true",
-                                );
-                                svg.setAttribute(
-                                    "data-original-icon",
-                                    "delete",
-                                );
-                                svg.setAttribute(
-                                    "data-new-icon",
-                                    "delete_material_symbol",
-                                );
-                                svg.setAttribute(
-                                    "data-icon-type",
-                                    "lembrete-excluir",
-                                );
-
-                                // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                                aplicarDimensionamentoRecursosMinuta(svg);
-
-                                // Substituir o ícone mantendo o link funcional
-                                icone.parentNode.replaceChild(svg, icone);
-                                substituicoesRealizadas++;
-                                log(
-                                    "✅ LEMBRETES: Ícone 'delete' substituído por Material Symbol 'delete'",
-                                );
-                            } catch (error) {
-                                console.warn(
-                                    "⚠️ LEMBRETES: Erro ao substituir ícone de excluir:",
-                                    error,
-                                );
-                            }
-                        }
-                    });
-
-                    // 3. MARCAR TODOS OS LEMBRETES COMO PROCESSADOS PARA ELIMINAR FLASH
-                    const lembretes = document.querySelectorAll(
-                        ".lista-lembretes .lembrete",
-                    );
-                    lembretes.forEach((lembrete) => {
-                        if (
-                            !lembrete.classList.contains(
-                                "eprobe-lembrete-processado",
-                            )
-                        ) {
-                            lembrete.classList.add(
-                                "eprobe-lembrete-processado",
-                            );
-                            log(
-                                "🎯 LEMBRETES: Lembrete marcado como processado",
-                            );
-                        }
-                    });
-
-                    log(
-                        `🎨 LEMBRETES: ${substituicoesRealizadas} ícones de lembretes substituídos com sucesso`,
-                    );
-                    return substituicoesRealizadas;
-                } catch (error) {
-                    console.error(
-                        "❌ LEMBRETES: Erro geral na substituição de ícones:",
-                        error,
-                    );
-                    return 0;
-                }
-            }
-
-            /**
-             * 🧪 FUNÇÃO DE TESTE PARA ÍCONES DE LEMBRETES
-             * Testa e debug específico para ícones de lembretes
-             */
-            function testarIconesLembretes() {
-                log(
-                    "🧪 TESTE LEMBRETES: Iniciando diagnóstico de ícones de lembretes...",
-                );
-
-                // Buscar todos os links de lembretes
-                const linksEditarLembrete = document.querySelectorAll(
-                    'a[aria-label="Alterar Lembrete"], a[href*="processo_lembrete_destino_alterar"]',
-                );
-                const linksExcluirLembrete = document.querySelectorAll(
-                    'a[aria-label="Desativar Lembrete"], a[onclick*="desativarLembrete"]',
-                );
-
-                log(
-                    `📊 TESTE LEMBRETES: Encontrados ${linksEditarLembrete.length} links de editar e ${linksExcluirLembrete.length} links de excluir`,
-                );
-
-                // Analisar ícones de editar
-                linksEditarLembrete.forEach((link, index) => {
-                    const icone = link.querySelector("span.material-icons");
-                    log(`🔍 EDITAR ${index + 1}:`, {
-                        link: link.outerHTML.substring(0, 100) + "...",
-                        icone: icone ? icone.textContent : "sem ícone",
-                        substituido: icone
-                            ? icone.hasAttribute("data-eprobe-icon-replaced")
-                            : false,
-                    });
-                });
-
-                // Analisar ícones de excluir
-                linksExcluirLembrete.forEach((link, index) => {
-                    const icone = link.querySelector("span.material-icons");
-                    log(`🗑️ EXCLUIR ${index + 1}:`, {
-                        link: link.outerHTML.substring(0, 100) + "...",
-                        icone: icone ? icone.textContent : "sem ícone",
-                        substituido: icone
-                            ? icone.hasAttribute("data-eprobe-icon-replaced")
-                            : false,
-                    });
-                });
-
-                // Executar substituição
-                const resultado = substituirIconesLembretes();
-                log(
-                    `✅ TESTE LEMBRETES: Resultado da substituição: ${resultado} ícones substituídos`,
-                );
-
-                return {
-                    linksEditar: linksEditarLembrete.length,
-                    linksExcluir: linksExcluirLembrete.length,
-                    substituidos: resultado,
-                };
-            }
-
-            // ===== SISTEMA DE THROTTLING ULTRA-OTIMIZADO PARA PERFORMANCE =====
-            let ultimaSubstituicaoIcones = 0;
-            let contadorSubstituicoes = 0;
-            const THROTTLE_ICONES_MS = 10000; // ✅ 10 segundos mínimo entre execuções (otimizado)
-            const MAX_SUBSTITUICOES_POR_MINUTO = 3; // ✅ Máximo 3 execuções por minuto (otimizado)
-            let historicoSubstituicoes = [];
-            let executandoSubstituicao = false; // Flag para evitar execuções simultâneas
-
-            // Função para substituir ícones de ferramentas em toda a página
-            function substituirIconesFerramentas() {
-                const currentUrl = window.location.href;
-
-                // ⛔ RESTRIÇÃO: Só personalizar ícones na página de capa do processo
-                if (!isCapaProcessoPage()) {
-                    log(
-                        "⛔ ÍCONES: Personalização de ícones restrita apenas à página de capa do processo - URL atual não permitida",
-                    );
-                    log("📍 URL atual:", currentUrl);
-                    return {
-                        ignorado: true,
-                        motivo: "url_nao_permitida",
-                    };
-                }
-
-                // ⛔ EXCEÇÃO: Não substituir ícones em páginas de cadastro de minutas
-                if (currentUrl.includes("minuta_cadastrar")) {
-                    log(
-                        "⛔ ÍCONES: Página de cadastro de minutas detectada - ignorando substituições",
-                    );
-                    return {
-                        ignorado: true,
-                        motivo: "pagina_minuta_cadastrar",
-                    };
-                }
-
-                const agora = Date.now();
-
-                // ===== CONTROLE DE THROTTLING ULTRA-RIGOROSO =====
-
-                // 0. Verificar se já está executando
-                if (executandoSubstituicao) {
-                    log("⏸️ ÍCONES: Ignorando execução - já está em andamento");
-                    return { ignorado: true, motivo: "em_andamento" };
-                }
-
-                // 1. Verificar intervalo mínimo
-                if (agora - ultimaSubstituicaoIcones < THROTTLE_ICONES_MS) {
-                    log(
-                        "⏱️ ÍCONES: Ignorando execução - muito frequente (throttle)",
-                    );
-                    return { ignorado: true, motivo: "throttle_tempo" };
-                }
-
-                // 2. Limpar histórico antigo (mais de 1 minuto)
-                historicoSubstituicoes = historicoSubstituicoes.filter(
-                    (timestamp) => agora - timestamp < 60000,
-                );
-
-                // 3. Verificar limite por minuto
-                if (
-                    historicoSubstituicoes.length >=
-                    MAX_SUBSTITUICOES_POR_MINUTO
-                ) {
-                    log(
-                        "⏱️ ÍCONES: Ignorando execução - limite por minuto atingido",
-                    );
-                    return { ignorado: true, motivo: "limite_minuto" };
-                }
-
-                // 4. Marcar como executando e registrar
-                executandoSubstituicao = true;
-                ultimaSubstituicaoIcones = agora;
-                historicoSubstituicoes.push(agora);
-                contadorSubstituicoes++;
-
-                log(
-                    `🎨 ÍCONES: Iniciando substituição otimizada #${contadorSubstituicoes} (${historicoSubstituicoes.length}/${MAX_SUBSTITUICOES_POR_MINUTO} este minuto)`,
-                );
-
-                let substituicoesRealizadas = 0;
-                let errosEncontrados = [];
-
-                try {
-                    // ===============================
-                    // DEFINIÇÃO DOS ÍCONES DE FERRAMENTAS - VERSÃO EXPANDIDA
-                    // ===============================
-                    const ferramentasIcones = {
-                        // Ícones de configuração/ferramentas (chave inglesa)
-                        Configuracao: {
-                            selectors: [
-                                'img[src*="configuracao.gif"]',
-                                'img[title*="Ações Preferenciais"]',
-                                'img[alt*="Ações Preferenciais"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
-                        },
-                        // Ícones de refresh/atualização
-                        Refresh: {
-                            selectors: [
-                                'img[src*="refresh.gif"]',
-                                'img[id="refresh"]',
-                                'img[title*="Atualizar"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-refresh-ccw-icon lucide-refresh-ccw"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 16h5v5"/></svg>`,
-                        },
-                        // Ícones de lista/histórico (valores.gif)
-                        Historico: {
-                            selectors: [
-                                'img[src*="valores.gif"]',
-                                'img[src*="minuta_historico.gif"]',
-                                'img[alt*="Histórico"]',
-                                'img[title*="Histórico"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
-                        },
-                        // Ícones de nova minuta/novo documento
-                        "Nova Minuta": {
-                            selectors: [
-                                'img[src*="novo.gif"]',
-                                'img[alt*="Nova Minuta"]',
-                                'img[title*="Nova Minuta"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-plus-2"><path d="M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M3 15h6"/><path d="M6 12v6"/></svg>`,
-                        },
-                        // Ícones de editar minuta
-                        "Editar Minuta": {
-                            selectors: [
-                                'img[src*="minuta_alterar.gif"]',
-                                'img[title*="Alterar Julgamento"]',
-                                'img[alt*="Alterar Julgamento"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line-icon lucide-file-pen-line"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>`,
-                        },
-                        // Ícones de assinar minuta
-                        "Assinar Minuta": {
-                            selectors: [
-                                'img[src*="minuta_assinar2.gif"]',
-                                'img[title*="Assinar Minuta"]',
-                                'img[alt*="Assinar Minuta"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>`,
-                        },
-                        // Ícones de editar genérico
-                        Editar: {
-                            selectors: [
-                                'img[src*="alterar.gif"]',
-                                'img[title*="Alterar"]',
-                                'img[alt*="Alterar"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`,
-                        },
-                        // Ícones de balão/memo
-                        "Memo Balão": {
-                            selectors: [
-                                'img[src*="balao.gif"]',
-                                'img[alt*="Incluir Memo"]',
-                                'img[title*="Memo"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="#FEF3C7" stroke="#D97706" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
-                        },
-                        // Ícones de link
-                        Link: {
-                            selectors: [
-                                'img[src*="linkeditor.png"]',
-                                'img[alt*="Link"]',
-                                'img[title*="Link"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: auto; width: 1.1em; height: 1.1em; opacity: 1; cursor: pointer;" class="clickable-icon substituted-icon" data-eprobe-icon-replaced="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`,
-                        },
-                        // Ícones de visualizar documento HTML
-                        "Visualizar HTML": {
-                            selectors: [
-                                'img[src*="html.gif"]',
-                                'img[title*="Visualizar Documento"]',
-                                'img[alt*="Visualizar"]',
-                            ],
-                            newSvg: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>`,
-                        },
-                        // Ícones de PDF
-                        PDF: {
-                            selectors: [
-                                'img[src*="pdf.gif"]',
-                                'img[title*="PDF"]',
-                                'img[alt*="PDF"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"/></svg>`,
-                        },
-                        // Ícones de tooltip/memo
-                        "Memo Tooltip": {
-                            selectors: [
-                                'img[src*="tooltip.gif"]',
-                                'img[alt*="Incluir Memo"]',
-                                'img[title*="Tooltip"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sticky-note-icon lucide-sticky-note"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8Z"/><path d="M15 3v4a2 2 0 0 0 2 2h4"/></svg>`,
-                        },
-                        // Ícones de ajuda/interrogação
-                        Ajuda: {
-                            selectors: [
-                                'img[src*="duvida.png"]',
-                                'img[alt*="Ajuda"]',
-                                'img[title*="Ajuda"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-circle-question-mark-icon lucide-circle-question-mark"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>`,
-                        },
-                        // Ícones de ocultar/resumo
-                        /*                 Ocultar: {
-                    selectors: [
-                        'img[src*="ver_resumo.gif"]',
-                        'img[title*="Ocultar"]',
-                        'img[alt*="Resumo"]',
-                    ],
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-minus-icon lucide-square-minus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/></svg>`,
-                },
-                // Ícones de mostrar/ver tudo
-                Mostrar: {
-                    selectors: [
-                        'img[src*="ver_tudo.gif"]',
-                        'img[title*="Mostrar"]',
-                        'img[alt*="Ver Tudo"]',
-                    ],
-                    newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-plus-icon lucide-square-plus"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>`,
-                }, */
-                        // Ícones de lupa/busca
-                        Lupa: {
-                            selectors: [
-                                'img[src*="lupa.gif"]',
-                                'img[alt*="Informações do Evento"]',
-                                'img[title*="Buscar"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>`,
-                        },
-                        // ⚠️ ESTRELAS DESABILITADAS: Preservando funcionalidade original do eProc
-                        /*
-                        "Estrela Acesa": {
-                            selectors: [
-                                'img[src*="EstrelaAcesa.gif"]',
-                                'img[alt*="Evento relevante"]',
-                                'img[title*="Relevante"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#e0bb00" stroke="#e0bb00" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star" style="pointer-events: none;"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
-                            preserveOriginal: true,
-                        },
-                        "Estrela Apagada": {
-                            selectors: [
-                                'img[src*="EstrelaApagada.gif"]',
-                                'img[src*="estrela_apagada.gif"]',
-                                'img[alt*="Evento normal"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-star-icon lucide-star" style="pointer-events: none;"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>`,
-                            preserveOriginal: true,
-                        },
-                        */ // FIM DAS DEFINIÇÕES DE ESTRELAS DESABILITADAS
-                        // Ícones de vídeo/televisão
-                        Vídeo: {
-                            selectors: [
-                                'img[src*="oral_video.png"]',
-                                'img[alt*="Vídeo"]',
-                                'img[title*="Vídeo"]',
-                            ],
-                            newSvg: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-video-icon lucide-video"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>`,
-                        },
-                    };
-
-                    // ===============================
-                    // SUBSTITUIÇÃO PRINCIPAL - VERSÃO MELHORADA
-                    // ===============================
-                    Object.entries(ferramentasIcones).forEach(
-                        ([nome, config]) => {
-                            try {
-                                // Tentar cada seletor até encontrar elementos
-                                config.selectors.forEach((selector) => {
-                                    const elementos =
-                                        document.querySelectorAll(selector);
-
-                                    elementos.forEach((img) => {
-                                        // Verificar se já foi substituído
-                                        if (
-                                            img.hasAttribute(
-                                                "data-eprobe-icon-replaced",
-                                            ) ||
-                                            img.classList.contains(
-                                                "substituted-icon",
-                                            )
+                                // Observer para reagir a mudancas de titulo pelo eProc.
+                                // infraAbrirFecharElementoHTML alterna entre "Expandir" e "Ocultar"
+                                // e muda .src (que em <span> nao reflete no atributo, entao
+                                // nao podemos observar src). Mas .title reflete no atributo
+                                // em todos os HTMLElement, entao observer funciona.
+                                var titleObserver = new MutationObserver(
+                                    function (mutations) {
+                                        for (
+                                            var mo = 0;
+                                            mo < mutations.length;
+                                            mo++
                                         ) {
-                                            return;
-                                        }
-
-                                        // ⚡ OTIMIZAÇÃO PERFORMANCE: Detecção simples de clicabilidade
-                                        const parentElement = img.parentNode;
-                                        const isClickableElement = !!(
-                                            img.onclick ||
-                                            img.getAttribute("onclick") ||
-                                            (parentElement &&
-                                                parentElement.tagName === "A")
-                                        );
-
-                                        // Preservar dimensões originais
-                                        const originalWidth =
-                                            img.style.width ||
-                                            img.getAttribute("width") ||
-                                            "1.1em";
-                                        const originalHeight =
-                                            img.style.height ||
-                                            img.getAttribute("height") ||
-                                            "1.1em";
-                                        const originalOpacity =
-                                            img.style.opacity || "1";
-
-                                        // Criar container SVG
-                                        const container =
-                                            document.createElement("span");
-                                        container.innerHTML = config.newSvg;
-
-                                        // 🎨 APLICAR ESTILOS PADRONIZADOS
-                                        applyStandardIconStyles(container);
-
-                                        // ⚡ OTIMIZAÇÃO PERFORMANCE: Aplicar pointer-events de forma eficiente
-                                        if (isClickableElement) {
-                                            // Elemento clicável: permitir eventos
-                                            container.style.pointerEvents =
-                                                "auto";
-                                        } else {
-                                            // Elemento não-clicável: bloquear eventos para performance
-                                            container.style.pointerEvents =
-                                                "none";
-                                        }
-
-                                        const svg = container.firstElementChild;
-                                        if (svg) {
-                                            // ⚡ OTIMIZAÇÃO PERFORMANCE: Configuração básica do SVG
-                                            svg.style.width = originalWidth;
-                                            svg.style.height = originalHeight;
-                                            svg.style.opacity = originalOpacity;
-                                            svg.style.pointerEvents =
-                                                isClickableElement
-                                                    ? "auto"
-                                                    : "none";
-
-                                            // ⚡ OTIMIZAÇÃO: Copiar apenas eventos essenciais
-                                            if (isClickableElement) {
-                                                if (img.onclick)
-                                                    svg.onclick = img.onclick;
-                                                const onclickAttr =
-                                                    img.getAttribute("onclick");
-                                                if (onclickAttr)
-                                                    svg.setAttribute(
-                                                        "onclick",
-                                                        onclickAttr,
-                                                    );
-                                                svg.style.cursor = "pointer";
-
-                                                // ⚡ CORREÇÃO CRÍTICA: Adicionar classe clickable-icon para escapar do CSS pointer-events: none
-                                                try {
-                                                    svg.classList.add(
-                                                        "clickable-icon",
-                                                    );
-                                                } catch (e) {
-                                                    // Fallback para SVGs que não suportam classList
-                                                    const currentClass =
-                                                        svg.getAttribute(
-                                                            "class",
-                                                        ) || "";
-                                                    svg.setAttribute(
-                                                        "class",
-                                                        currentClass +
-                                                            " clickable-icon",
-                                                    );
+                                            if (
+                                                mutations[mo].attributeName ===
+                                                "title"
+                                            ) {
+                                                var targetSpan =
+                                                    mutations[mo].target;
+                                                var newTitle =
+                                                    targetSpan.getAttribute(
+                                                        "title",
+                                                    ) || "";
+                                                var newSvgStr = null;
+                                                // "Expandir" -> precisa do icone ver_tudo (lista)
+                                                // "Ocultar"  -> precisa do icone ver_resumo (X)
+                                                for (
+                                                    var mi = 0;
+                                                    mi < EPROBE_ICON_MAP.length;
+                                                    mi++
+                                                ) {
+                                                    var sel =
+                                                        EPROBE_ICON_MAP[mi]
+                                                            .selector;
+                                                    if (
+                                                        newTitle ===
+                                                            "Expandir" &&
+                                                        sel.indexOf(
+                                                            "ver_tudo",
+                                                        ) !== -1
+                                                    ) {
+                                                        newSvgStr =
+                                                            EPROBE_ICON_MAP[mi]
+                                                                .svg;
+                                                        break;
+                                                    }
+                                                    if (
+                                                        newTitle ===
+                                                            "Ocultar" &&
+                                                        sel.indexOf(
+                                                            "ver_resumo",
+                                                        ) !== -1
+                                                    ) {
+                                                        newSvgStr =
+                                                            EPROBE_ICON_MAP[mi]
+                                                                .svg;
+                                                        break;
+                                                    }
                                                 }
-                                            }
-
-                                            // ⚡ OTIMIZAÇÃO: Marcar substituição sem processamento excessivo
-                                            svg.setAttribute(
-                                                "data-eprobe-icon-replaced",
-                                                "true",
-                                            );
-
-                                            // 📏 DIMENSIONAMENTO ESPECÍFICO: Verificar se está em divListaRecursosMinuta
-                                            aplicarDimensionamentoRecursosMinuta(
-                                                svg,
-                                            );
-
-                                            // ⚡ CORREÇÃO: SVG não pode ter className - usar classList.add
-                                            if (img.className) {
-                                                const classes = img.className
-                                                    .split(" ")
-                                                    .filter((cls) =>
-                                                        cls.trim(),
-                                                    );
-                                                classes.forEach((cls) => {
-                                                    try {
-                                                        svg.classList.add(cls);
-                                                    } catch (e) {
-                                                        // Fallback para SVGs que não suportam classList
-                                                        const currentClass =
-                                                            svg.getAttribute(
-                                                                "class",
-                                                            ) || "";
-                                                        svg.setAttribute(
-                                                            "class",
-                                                            currentClass +
-                                                                " " +
-                                                                cls,
+                                                if (newSvgStr) {
+                                                    targetSpan.innerHTML =
+                                                        newSvgStr;
+                                                    var newSvg =
+                                                        targetSpan.firstElementChild;
+                                                    if (newSvg) {
+                                                        newSvg.style.pointerEvents =
+                                                            "none";
+                                                        newSvg.setAttribute(
+                                                            "data-eprobe-icon-replaced",
+                                                            "true",
+                                                        );
+                                                        newSvg.classList.add(
+                                                            "infraImg",
+                                                            "substituted-icon",
                                                         );
                                                     }
-                                                });
-                                            }
-
-                                            try {
-                                                svg.classList.add(
-                                                    "substituted-icon",
-                                                );
-                                            } catch (e) {
-                                                // Fallback para SVGs que não suportam classList
-                                                const currentClass =
-                                                    svg.getAttribute("class") ||
-                                                    "";
-                                                svg.setAttribute(
-                                                    "class",
-                                                    currentClass +
-                                                        " substituted-icon",
-                                                );
-                                            }
-
-                                            // ⚡ CORREÇÃO: Definir ID de forma segura para SVG
-                                            if (img.id) {
-                                                try {
-                                                    svg.id = img.id;
-                                                } catch (e) {
-                                                    // Fallback para SVGs que não aceitam ID direto
-                                                    svg.setAttribute(
-                                                        "id",
-                                                        img.id,
-                                                    );
                                                 }
                                             }
-
-                                            // ⚡ OTIMIZAÇÃO: Substituição eficiente
-                                            img.parentNode.replaceChild(
-                                                container,
-                                                img,
-                                            );
-                                            substituicoesRealizadas++;
                                         }
-                                    });
+                                    },
+                                );
+                                titleObserver.observe(span, {
+                                    attributes: true,
+                                    attributeFilter: ["title"],
                                 });
-                            } catch (error) {
-                                const errorMsg = `Erro ao processar "${nome}": ${error.message}`;
-                                errosEncontrados.push(errorMsg);
-                                console.warn(`⚠️ ÍCONES: ${errorMsg}`);
                             }
-                        },
-                    );
 
-                    // ===============================
-                    // RELATÓRIO FINAL
-                    // ===============================
-                    log(
-                        `🎨 ÍCONES: Substituição de ferramentas concluída - ${substituicoesRealizadas} ícones substituídos`,
-                    );
+                            // Determinar se o img usa listeners programaticos AJAX do eProc
+                            // (name="imgRecursoMinutaAjax" indica listeners registrados via JS
+                            //  no mundo MAIN que usam atributos customizados como urlajax, acao, etc.
+                            //  Esses listeners se perdem se o img for removido do DOM.)
+                            // Para name="imgRecursoMinuta", a acao esta no <a> pai (href) ou
+                            // no onclick do img - ambos transferiveis, nao precisa manter img.
+                            var imgName = img.getAttribute("name") || "";
+                            var isAjaxManaged =
+                                imgName === "imgRecursoMinutaAjax";
 
-                    if (errosEncontrados.length > 0) {
-                        console.warn(
-                            `⚠️ ÍCONES: ${errosEncontrados.length} erros encontrados:`,
-                            errosEncontrados,
-                        );
+                            if (isAjaxManaged && img.parentNode) {
+                                // ESTRATEGIA AJAX: Esconder img e inserir SVG ao lado.
+                                // O img oculto mantem event listeners do eProc (mundo MAIN).
+                                // Click no span dispara click no img oculto.
+                                img.style.cssText =
+                                    "width:0 !important;height:0 !important;overflow:hidden !important;position:absolute !important;opacity:0 !important;pointer-events:none !important;";
+                                img.setAttribute(
+                                    "data-eprobe-icon-replaced",
+                                    "true",
+                                );
+                                img.parentNode.insertBefore(span, img);
+                                span.style.cursor = "pointer";
+                                span.style.pointerEvents = "auto";
+                                (function (originalImg) {
+                                    span.addEventListener(
+                                        "click",
+                                        function (ev) {
+                                            ev.stopPropagation();
+                                            ev.preventDefault();
+                                            originalImg.click();
+                                        },
+                                    );
+                                })(img);
+                                substituicoes++;
+                            } else {
+                                // Transferir onclick: usar CustomEvent bridge (ISOLATED -> MAIN)
+                                var imgOnclick = img.getAttribute("onclick");
+                                if (imgOnclick) {
+                                    span.style.cursor = "pointer";
+                                    (function (onclickCode) {
+                                        span.addEventListener(
+                                            "click",
+                                            function (ev) {
+                                                ev.stopPropagation();
+                                                document.dispatchEvent(
+                                                    new CustomEvent(
+                                                        "eprobe-executar-onclick",
+                                                        {
+                                                            detail: {
+                                                                onclick:
+                                                                    onclickCode,
+                                                            },
+                                                        },
+                                                    ),
+                                                );
+                                            },
+                                        );
+                                    })(imgOnclick);
+                                }
+
+                                if (
+                                    img.parentNode &&
+                                    img.parentNode.contains(img)
+                                ) {
+                                    img.parentNode.replaceChild(span, img);
+                                    substituicoes++;
+                                }
+                            }
+                        } catch (err) {
+                            console.warn(
+                                "ICONES: Erro ao substituir " +
+                                    entry.name +
+                                    ":",
+                                err,
+                            );
+                        }
                     }
-
-                    return substituicoesRealizadas > 0;
-                } catch (error) {
-                    console.error(
-                        "❌ ÍCONES: Erro crítico na substituição de ferramentas:",
-                        error,
-                    );
-                    return false;
-                } finally {
-                    // Sempre marcar como não executando
-                    executandoSubstituicao = false;
-                }
-            }
-
-            // Função de teste para verificar se as funções de ícones estão funcionando
-            function testarFuncoesIcones() {
-                log("🧪 TESTE: Verificando funções de ícones...");
-
-                const funcoes = [
-                    "substituirIconesFieldsetAcoes",
-                    "substituirIconesFerramentas",
-                    "inicializarSubstituicaoIcones",
-                    "debugIconesNaPagina",
-                ];
-
-                funcoes.forEach((funcao) => {
-                    if (typeof window.SENT1_AUTO[funcao] === "function") {
-                        log(`✅ TESTE: ${funcao} está definida`);
-                    } else {
-                        console.error(`❌ TESTE: ${funcao} NÃO está definida`);
-                    }
-                });
-
-                // Testar execução
-                try {
-                    substituirIconesFieldsetAcoes();
-                    log(
-                        "✅ TESTE: substituirIconesFieldsetAcoes executada com sucesso",
-                    );
-                } catch (error) {
-                    console.error(
-                        "❌ TESTE: Erro ao executar substituirIconesFieldsetAcoes:",
-                        error,
-                    );
-                }
-
-                try {
-                    substituirIconesFerramentas();
-                    log(
-                        "✅ TESTE: substituirIconesFerramentas executada com sucesso",
-                    );
-                } catch (error) {
-                    console.error(
-                        "❌ TESTE: Erro ao executar substituirIconesFerramentas:",
-                        error,
-                    );
-                }
-            }
-
-            // Função de debug para analisar ícones na página
-            function debugIconesNaPagina() {
-                log("🔍 DEBUG: Analisando ícones na página...");
-
-                // Analisar ícones no fieldset #fldAcoes
-                const fieldset = document.querySelector("#fldAcoes");
-                if (fieldset) {
-                    log("🔍 DEBUG: Fieldset #fldAcoes encontrado");
-                    const imagens = fieldset.querySelectorAll("img");
-                    log(
-                        `🔍 DEBUG: ${imagens.length} imagens encontradas no fieldset`,
-                    );
-
-                    imagens.forEach((img, index) => {
-                        log(`🔍 DEBUG: Imagem ${index + 1}:`, {
-                            src: img?.src || "N/A",
-                            alt: img?.alt || "N/A",
-                            className: img?.className || "N/A",
-                            width: img?.style?.width || "N/A",
-                            height: img?.style?.height || "N/A",
-                        });
-                    });
-                } else {
-                    logError("⚠️ DEBUG: Fieldset #fldAcoes não encontrado");
                 }
 
-                // Analisar ícones novo.gif na página
-                const iconesNovo = document.querySelectorAll(
-                    'img[src*="novo.gif"]',
-                );
-                log(
-                    `🔍 DEBUG: ${iconesNovo.length} ícones novo.gif encontrados`,
-                );
-                iconesNovo.forEach((img, index) => {
-                    log(`🔍 DEBUG: novo.gif ${index + 1}:`, {
-                        src: img?.src || "N/A",
-                        alt: img?.alt || "N/A",
-                        parentElement: img?.parentElement?.tagName || "N/A",
-                        parentText:
-                            img?.parentElement?.textContent
-                                ?.trim()
-                                .substring(0, 50) || "N/A",
-                    });
-                });
-
-                // Analisar todos os ícones GIF na página
-                const todosGifs = document.querySelectorAll('img[src*=".gif"]');
-                log(
-                    `🔍 DEBUG: ${todosGifs.length} ícones GIF encontrados na página`,
-                );
-
-                const gifsSumario = {};
-                todosGifs.forEach((img) => {
-                    // 🛡️ PROTEÇÃO: Verificar se img e img.src existem antes de acessar
-                    if (!img || !img.src) {
-                        console.warn(
-                            "⚠️ IMG SRC: Elemento img sem src encontrado:",
-                            img,
-                        );
-                        return;
-                    }
-
-                    const nomeArquivo = img.src.split("/").pop();
-                    if (!gifsSumario[nomeArquivo]) {
-                        gifsSumario[nomeArquivo] = 0;
-                    }
-                    gifsSumario[nomeArquivo]++;
-                });
-
-                log("🔍 DEBUG: Resumo de GIFs por arquivo:", gifsSumario);
-            }
-
-            // Expor função globalmente para debug (movidas para namespace principal)
-
-            // Função de debug para analisar elementos "Incluir em Pauta/Mesa"
-            function debugIncluirPautaMesa() {
-                log("🔍 DEBUG: Analisando elementos 'Incluir em Pauta/Mesa'");
-
-                const fieldset = document.querySelector(
+                // 2. Substituir icones por texto do link (EPROBE_ICON_TEXT_MAP)
+                var fieldset = document.querySelector(
                     "#fldAcoes.infraFieldset",
                 );
-                if (!fieldset) {
-                    logError("❌ DEBUG: Fieldset #fldAcoes não encontrado");
-                    return;
-                }
-
-                // Procurar especificamente por infraButton com texto "Incluir em Pauta/Mesa"
-                const infraButtons = fieldset.querySelectorAll("a.infraButton");
-                log(
-                    `🔍 DEBUG: Encontrados ${infraButtons.length} links com classe infraButton`,
-                );
-
-                let encontrados = 0;
-                infraButtons.forEach((button, index) => {
-                    const text = button.textContent.trim();
-                    if (
-                        text.includes("Incluir") ||
-                        text.includes("Pauta") ||
-                        text.includes("Mesa")
-                    ) {
-                        encontrados++;
-                        log(`🎯 DEBUG: InfraButton ${index + 1}:`, {
-                            text: text,
-                            textLength: text.length,
-                            endsWith: text.endsWith("Incluir em Pauta/Mesa"),
-                            includes: text.includes("Incluir em Pauta/Mesa"),
-                            hasImage: !!button.querySelector("img"),
-                            href: button.href.substring(0, 100) + "...", // Mostrar só início do href
-                            isProcessed:
-                                button.classList.contains("icon-processed"),
-                            outerHTML:
-                                button.outerHTML.substring(0, 200) + "...", // Mostrar estrutura
-                        });
-                    }
-                });
-
-                if (encontrados === 0) {
-                    log(
-                        "❌ DEBUG: Nenhum link relacionado a 'Incluir em Pauta/Mesa' encontrado",
-                    );
-
-                    // Procurar por qualquer link que contenha "Incluir"
-                    const linksIncluir = fieldset.querySelectorAll("a");
-                    linksIncluir.forEach((link, index) => {
-                        if (link.textContent.includes("Incluir")) {
-                            log(`📋 DEBUG: Link com 'Incluir' ${index + 1}:`, {
-                                text: link.textContent.trim(),
-                                classes: link.className,
-                                outerHTML:
-                                    link.outerHTML.substring(0, 150) + "...",
-                            });
+                if (fieldset) {
+                    var textKeys = Object.keys(EPROBE_ICON_TEXT_MAP);
+                    for (var t = 0; t < textKeys.length; t++) {
+                        var text = textKeys[t];
+                        var svgStr = EPROBE_ICON_TEXT_MAP[text];
+                        var links =
+                            fieldset.querySelectorAll("a.infraButton, a");
+                        for (var l = 0; l < links.length; l++) {
+                            var link = links[l];
+                            if (link.classList.contains("icon-processed"))
+                                continue;
+                            var linkText = link.textContent.trim();
+                            if (linkText.indexOf(text) !== -1) {
+                                var linkImg = link.querySelector("img");
+                                if (
+                                    linkImg &&
+                                    !linkImg.hasAttribute(
+                                        "data-eprobe-icon-replaced",
+                                    )
+                                ) {
+                                    try {
+                                        var tSpan =
+                                            document.createElement("span");
+                                        tSpan.setAttribute(
+                                            "data-eprobe-icon-container",
+                                            "true",
+                                        );
+                                        tSpan.style.display = "inline-flex";
+                                        tSpan.style.alignItems = "center";
+                                        tSpan.style.marginRight = "4px";
+                                        tSpan.style.verticalAlign = "middle";
+                                        tSpan.innerHTML = svgStr;
+                                        var tSvg = tSpan.firstElementChild;
+                                        if (tSvg) {
+                                            tSvg.setAttribute(
+                                                "data-eprobe-icon-replaced",
+                                                "true",
+                                            );
+                                            tSvg.classList.add(
+                                                "substituted-icon",
+                                            );
+                                            tSvg.style.pointerEvents = "none";
+                                            tSvg.style.width = "18px";
+                                            tSvg.style.height = "18px";
+                                        }
+                                        if (linkImg.parentNode) {
+                                            linkImg.parentNode.replaceChild(
+                                                tSpan,
+                                                linkImg,
+                                            );
+                                            link.classList.add(
+                                                "icon-processed",
+                                            );
+                                            substituicoes++;
+                                        }
+                                    } catch (err) {
+                                        console.warn(
+                                            "ICONES: Erro ao substituir icone por texto:",
+                                            err,
+                                        );
+                                    }
+                                } else if (
+                                    !linkImg &&
+                                    !link.classList.contains("icon-processed")
+                                ) {
+                                    // Link sem imagem - adicionar icone antes do texto
+                                    try {
+                                        var tSpan2 =
+                                            document.createElement("span");
+                                        tSpan2.setAttribute(
+                                            "data-eprobe-icon-container",
+                                            "true",
+                                        );
+                                        tSpan2.style.display = "inline-flex";
+                                        tSpan2.style.alignItems = "center";
+                                        tSpan2.style.marginRight = "4px";
+                                        tSpan2.style.verticalAlign = "middle";
+                                        tSpan2.innerHTML = svgStr;
+                                        var tSvg2 = tSpan2.firstElementChild;
+                                        if (tSvg2) {
+                                            tSvg2.setAttribute(
+                                                "data-eprobe-icon-replaced",
+                                                "true",
+                                            );
+                                            tSvg2.classList.add(
+                                                "substituted-icon",
+                                            );
+                                            tSvg2.style.pointerEvents = "none";
+                                            tSvg2.style.width = "18px";
+                                            tSvg2.style.height = "18px";
+                                        }
+                                        link.insertBefore(
+                                            tSpan2,
+                                            link.firstChild,
+                                        );
+                                        link.style.display = "inline-flex";
+                                        link.style.alignItems = "center";
+                                        link.classList.add("icon-processed");
+                                        substituicoes++;
+                                    } catch (err) {
+                                        console.warn(
+                                            "ICONES: Erro ao inserir icone no link:",
+                                            err,
+                                        );
+                                    }
+                                }
+                            }
                         }
-                    });
+                    }
                 }
 
-                return encontrados;
+                // 3. Substituir Material Icons de lembretes (edit -> ink_pen, delete -> delete)
+                try {
+                    var lembreteIcons = container.querySelectorAll(
+                        'span.material-icons:not([data-eprobe-icon-replaced="true"]), span.material-symbols-outlined:not([data-eprobe-icon-replaced="true"])',
+                    );
+                    for (var li = 0; li < lembreteIcons.length; li++) {
+                        var iconEl = lembreteIcons[li];
+                        var textoIcone = iconEl.textContent.trim();
+                        var parentLink = iconEl.closest("a");
+                        if (!parentLink) continue;
+
+                        var ariaLabel =
+                            parentLink.getAttribute("aria-label") || "";
+                        var linkHref = parentLink.href || "";
+
+                        if (textoIcone === "edit") {
+                            var isEditLembrete =
+                                ariaLabel.indexOf("Alterar Lembrete") !== -1 ||
+                                linkHref.indexOf(
+                                    "processo_lembrete_destino_alterar",
+                                ) !== -1;
+                            if (isEditLembrete) {
+                                try {
+                                    var eSpan = document.createElement("span");
+                                    eSpan.setAttribute(
+                                        "data-eprobe-icon-container",
+                                        "true",
+                                    );
+                                    eSpan.style.display = "inline-flex";
+                                    eSpan.style.alignItems = "center";
+                                    eSpan.innerHTML = LEMBRETE_EDIT_SVG;
+                                    var eSvg = eSpan.firstElementChild;
+                                    if (eSvg) {
+                                        eSvg.setAttribute(
+                                            "data-eprobe-icon-replaced",
+                                            "true",
+                                        );
+                                        eSvg.classList.add("substituted-icon");
+                                    }
+                                    if (iconEl.parentNode) {
+                                        iconEl.parentNode.replaceChild(
+                                            eSpan,
+                                            iconEl,
+                                        );
+                                        substituicoes++;
+                                    }
+                                } catch (err) {
+                                    console.warn(
+                                        "ICONES: Erro ao substituir edit de lembrete:",
+                                        err,
+                                    );
+                                }
+                            }
+                        }
+
+                        if (textoIcone === "delete") {
+                            var isDeleteLembrete =
+                                ariaLabel.indexOf("Desativar Lembrete") !==
+                                    -1 ||
+                                (parentLink.onclick
+                                    ? parentLink.onclick
+                                          .toString()
+                                          .indexOf("desativarLembrete") !== -1
+                                    : false);
+                            if (isDeleteLembrete) {
+                                try {
+                                    var dSpan = document.createElement("span");
+                                    dSpan.setAttribute(
+                                        "data-eprobe-icon-container",
+                                        "true",
+                                    );
+                                    dSpan.style.display = "inline-flex";
+                                    dSpan.style.alignItems = "center";
+                                    dSpan.innerHTML = LEMBRETE_DELETE_SVG;
+                                    var dSvg = dSpan.firstElementChild;
+                                    if (dSvg) {
+                                        dSvg.setAttribute(
+                                            "data-eprobe-icon-replaced",
+                                            "true",
+                                        );
+                                        dSvg.classList.add("substituted-icon");
+                                    }
+                                    if (iconEl.parentNode) {
+                                        iconEl.parentNode.replaceChild(
+                                            dSpan,
+                                            iconEl,
+                                        );
+                                        substituicoes++;
+                                    }
+                                } catch (err) {
+                                    console.warn(
+                                        "ICONES: Erro ao substituir delete de lembrete:",
+                                        err,
+                                    );
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn(
+                        "ICONES: Erro no processamento de Material Icons:",
+                        err,
+                    );
+                }
+
+                // 4. Corrigir alinhamento em divListaRecursosMinuta se houve substituicoes
+                if (
+                    substituicoes > 0 &&
+                    typeof corrigirAlinhamentoRecursosMinuta === "function"
+                ) {
+                    try {
+                        corrigirAlinhamentoRecursosMinuta();
+                    } catch (err) {
+                        console.warn(
+                            "ICONES: Erro ao corrigir alinhamento:",
+                            err,
+                        );
+                    }
+                }
+
+                if (substituicoes > 0) {
+                    log(
+                        "ICONES: " +
+                            substituicoes +
+                            " icones substituidos com sucesso",
+                    );
+                    // Corrigir pointer-events: links/botoes clicaveis, filhos transparentes
+                    if (typeof corrigirPointerEventsBotoes === "function") {
+                        corrigirPointerEventsBotoes();
+                    }
+                }
+                return substituicoes;
             }
 
-            // Expor função de debug globalmente (movida para namespace principal)
+            // Funcao de debug unificada para inspecao de icones
+            function debugIcones() {
+                log("DEBUG ICONES: Analisando estado dos icones na pagina...");
+
+                var resultado = {
+                    totalImgsOriginais: 0,
+                    totalSvgsSubstituidos: 0,
+                    iconesPorCategoria: {},
+                    naoSubstituidos: [],
+                };
+
+                // Contar SVGs substituidos
+                var svgsSubstituidos = document.querySelectorAll(
+                    '[data-eprobe-icon-replaced="true"]',
+                );
+                resultado.totalSvgsSubstituidos = svgsSubstituidos.length;
+
+                // Contar imagens originais restantes (que poderiam ser substituidas)
+                var imgsRestantes = document.querySelectorAll(
+                    "img.infraImg, img[src*='.gif'], img[src*='.png']",
+                );
+                for (var i = 0; i < imgsRestantes.length; i++) {
+                    var img = imgsRestantes[i];
+                    var src = img.src || "";
+                    // Verificar se existe no mapa
+                    var temMapeamento = false;
+                    for (var j = 0; j < EPROBE_ICON_MAP.length; j++) {
+                        var selectorMatch = EPROBE_ICON_MAP[j].selector;
+                        // Extrair o valor do src do seletor
+                        var srcMatch = selectorMatch.match(/src\*="([^"]+)"/);
+                        if (srcMatch && src.indexOf(srcMatch[1]) !== -1) {
+                            temMapeamento = true;
+                            resultado.naoSubstituidos.push({
+                                src: src,
+                                alt: img.alt || "",
+                                mapeamento: EPROBE_ICON_MAP[j].name,
+                                elemento: img,
+                            });
+                            break;
+                        }
+                    }
+                    if (!temMapeamento) {
+                        resultado.totalImgsOriginais++;
+                    }
+                }
+
+                // Categorizar SVGs substituidos
+                svgsSubstituidos.forEach(function (svg) {
+                    var containerSpan = svg.closest(
+                        "[data-eprobe-icon-container]",
+                    );
+                    var inRecursos = svg.closest("#divListaRecursosMinuta");
+                    var inFieldset = svg.closest("#fldAcoes");
+                    var categoria = inRecursos
+                        ? "recursosMinuta"
+                        : inFieldset
+                          ? "fieldsetAcoes"
+                          : "outro";
+                    resultado.iconesPorCategoria[categoria] =
+                        (resultado.iconesPorCategoria[categoria] || 0) + 1;
+                });
+
+                console.log("ICONES DEBUG:", resultado);
+                console.table(
+                    resultado.naoSubstituidos.map(function (item) {
+                        return {
+                            src: item.src.split("/").pop(),
+                            alt: item.alt,
+                            mapeamento: item.mapeamento,
+                        };
+                    }),
+                );
+
+                return resultado;
+            }
 
             // 🚀 EXECUÇÃO AUTOMÁTICA - Aguardar navbar estar pronta
             setTimeout(() => {
@@ -30566,8 +28482,7 @@ ${texto}`;
                             try {
                                 // ⛔ VERIFICAÇÃO: Só executar em páginas de capa do processo
                                 if (isCapaProcessoPage()) {
-                                    substituirIconesFieldsetAcoes();
-                                    substituirIconesFerramentas();
+                                    substituirTodosIcones();
                                 } else {
                                     log(
                                         "⛔ ROBUSTA: Correção de ícones bloqueada - página não é capa do processo",
@@ -31304,35 +29219,26 @@ ${texto}`;
                     {},
                 ),
 
-                // Funções de ícones
+                // Funcoes de icones - aliases para funcao unificada
                 substituirIconesFieldsetAcoes: createSafeFallback(
-                    "substituirIconesFieldsetAcoes",
+                    "substituirTodosIcones",
                     0,
                 ),
                 substituirIconesFerramentas: createSafeFallback(
-                    "substituirIconesFerramentas",
+                    "substituirTodosIcones",
                     0,
                 ),
                 substituirIconesGlobalmente: createSafeFallback(
-                    "substituirIconesGlobalmente",
+                    "substituirTodosIcones",
                     0,
                 ),
-                debugIconesSubstituicao: createSafeFallback(
-                    "debugIconesSubstituicao",
-                    {},
-                ),
+                debugIconesSubstituicao: createSafeFallback("debugIcones", {}),
                 testarFuncoesIcones: createSafeFallback(
-                    "testarFuncoesIcones",
+                    "substituirTodosIcones",
                     true,
                 ),
-                debugIconesNaPagina: createSafeFallback(
-                    "debugIconesNaPagina",
-                    {},
-                ),
-                debugIncluirPautaMesa: createSafeFallback(
-                    "debugIncluirPautaMesa",
-                    {},
-                ),
+                debugIconesNaPagina: createSafeFallback("debugIcones", {}),
+                debugIncluirPautaMesa: createSafeFallback("debugIcones", {}),
 
                 // Funções de card avançadas
                 forcarRecriacaoCardSessao: createSafeFallback(
@@ -33257,30 +31163,28 @@ ${texto}`;
                 getData: getData,
                 extrairDataSessaoNormalizada: extrairDataSessaoNormalizada,
 
-                // 🎨 FUNÇÕES DE ÍCONES
-                substituirIconesFieldsetAcoes:
-                    allMissingFunctions.substituirIconesFieldsetAcoes,
-                substituirIconesFerramentas:
-                    allMissingFunctions.substituirIconesFerramentas,
-                substituirIconesGlobalmente:
-                    allMissingFunctions.substituirIconesGlobalmente,
-                // ✨ NOVO: Funções específicas para ícones de lembretes
-                substituirIconesLembretes: substituirIconesLembretes,
+                // Funcoes de icones - aliases para funcao unificada
+                substituirTodosIcones: substituirTodosIcones,
+                debugIcones: debugIcones,
+                substituirIconesFieldsetAcoes: substituirTodosIcones,
+                substituirIconesFerramentas: substituirTodosIcones,
+                substituirIconesGlobalmente: substituirTodosIcones,
+                substituirIconesLembretes: substituirTodosIcones,
                 // 🔄 NOVO: Reaplicação forçada de ícones após atualização AJAX
                 reaplicarIconesAposAtualizacao: reaplicarIconesAposAtualizacao,
                 // ⚡ NOVO: Anti-flash crítico para ícones
                 aplicarAntiFlashIcones: aplicarAntiFlashIcones,
-                // 🔄 NOVO: Interceptor para múltiplos botões de atualizar minutas
+                // Interceptor para multiplos botoes de atualizar minutas
                 setupInterceptorTodosBotoesAtualizar:
                     setupInterceptorTodosBotoesAtualizar,
-                testarIconesLembretes: testarIconesLembretes,
-                // ⚡ NOVO: Funções para eliminar flash visual
+                setupInterceptorAtualizarMinutas:
+                    setupInterceptorAtualizarMinutas,
+                testarIconesLembretes: substituirTodosIcones,
+                // Funcoes para eliminar flash visual
                 aplicarEstilizacaoImediataLembretes:
                     aplicarEstilizacaoImediataLembretes,
-                substituirIconesLembretesImediato:
-                    substituirIconesLembretesImediato,
-                debugIconesSubstituicao:
-                    allMissingFunctions.debugIconesSubstituicao,
+                substituirIconesLembretesImediato: substituirTodosIcones,
+                debugIconesSubstituicao: debugIcones,
                 configurarAlternanciaEstrelas: function () {
                     log(
                         "⚠️ ESTRELAS: Função configurarAlternanciaEstrelas foi removida (prevenção de erros)",
@@ -33699,69 +31603,13 @@ ${texto}`;
                     let totalReaplicados = 0;
 
                     try {
-                        // 1. Reaplicar ícones de ferramentas
-                        if (typeof substituirIconesFerramentas === "function") {
-                            const antes = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            substituirIconesFerramentas();
-                            const depois = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            const novos = depois - antes;
-                            totalReaplicados += novos;
-                            console.log(
-                                `🔧 Ícones de ferramentas: +${novos} aplicados`,
-                            );
-                        }
-
-                        // 2. Reaplicar ícones de lembretes
-                        if (typeof substituirIconesLembretes === "function") {
-                            const antes = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            substituirIconesLembretes();
-                            const depois = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            const novos = depois - antes;
-                            totalReaplicados += novos;
-                            console.log(
-                                `📝 Ícones de lembretes: +${novos} aplicados`,
-                            );
-                        }
-
-                        // 3. Reaplicar ícones globais
-                        if (typeof substituirIconesGlobalmente === "function") {
-                            const antes = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            substituirIconesGlobalmente();
-                            const depois = legMinutas.querySelectorAll(
-                                '[data-eprobe-icon-replaced="true"]',
-                            ).length;
-                            const novos = depois - antes;
-                            totalReaplicados += novos;
-                            console.log(
-                                `🌐 Ícones globais: +${novos} aplicados`,
-                            );
-                        }
-
-                        // 4. Corrigir alinhamento se necessário
-                        if (
-                            divListaRecursos &&
-                            typeof corrigirAlinhamentoRecursosMinuta ===
-                                "function"
-                        ) {
-                            const resultado =
-                                corrigirAlinhamentoRecursosMinuta();
-                            console.log(
-                                "📏 Correção de alinhamento:",
-                                resultado,
-                            );
-                        }
+                        // Reaplicar todos os icones via funcao unificada
+                        totalReaplicados = substituirTodosIcones(legMinutas, {
+                            force: true,
+                        });
+                        console.log("Icones reaplicados:", totalReaplicados);
                     } catch (error) {
-                        console.error("❌ Erro durante reaplicação:", error);
+                        console.error("Erro durante reaplicacao:", error);
                     }
 
                     // Verificar estado final
