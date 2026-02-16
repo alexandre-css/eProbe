@@ -1,0 +1,384 @@
+/* =====================================================================
+   eProbe Anti-Flash CSS - Carregado via manifest.json ANTES do JS
+   Garante zero flash visual no carregamento da pagina
+   ===================================================================== */
+
+/* ===== NAVBAR: Gradiente e estabilidade visual ===== */
+#navbar.navbar.bg-instancia,
+.navbar.bg-instancia,
+nav.navbar.bg-instancia,
+.navbar.text-white.bg-instancia,
+.navbar.text-white.d-xl-flex.bg-instancia {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 50px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transition: none !important;
+    animation: none !important;
+}
+
+#navbar.navbar.bg-instancia > *,
+.navbar.bg-instancia > *,
+nav.navbar.bg-instancia > * {
+    display: flex !important;
+    align-items: center !important;
+    min-height: 50px !important;
+}
+
+.navbar,
+#navbar,
+.navbar-nav,
+.navbar-collapse,
+.navbar-brand {
+    transition: none !important;
+    will-change: auto !important;
+}
+
+/* .d-none.d-md-flex SEMPRE FLEX (Bootstrap override critico) */
+.d-none.d-md-flex,
+div.d-none.d-md-flex,
+.navbar .d-none.d-md-flex,
+#navbar .d-none.d-md-flex,
+.navbar-nav .d-none.d-md-flex,
+.navbar-collapse .d-none.d-md-flex {
+    display: flex !important;
+    align-items: center !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* ===== SISTEMA DE ESTADOS EPROBE ===== */
+.eprobe-loading,
+.eprobe-creating,
+[data-eprobe-state="loading"] {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+.eprobe-ready {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
+
+.eprobe-batch-pending {
+    opacity: 0 !important;
+}
+
+.eprobe-batch-ready {
+    opacity: 1 !important;
+}
+
+/* ===== CONTAINERS DE ICONES SVG EPROBE ===== */
+span[data-eprobe-icon-container] {
+    display: inline-flex !important;
+    align-items: center !important;
+    vertical-align: middle !important;
+    margin-right: 4px !important;
+}
+
+span[data-eprobe-icon-container] svg {
+    flex-shrink: 0 !important;
+    vertical-align: middle !important;
+    pointer-events: none !important;
+}
+
+/* ===== OCULTACAO PROATIVA DE ICONES (paginas de processo) =====
+   Escopo: html[data-eprobe-page-type="processo"]
+   Atributo aplicado ultra-cedo via document.write no main.js
+   Oculta imgs do eProc que serao substituidas por SVGs          */
+
+html[data-eprobe-page-type="processo"] img[src*="minuta_historico.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_versoes.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_alterar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_editar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_assinar2.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_conferir.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_paraconferir.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_lembrete.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_paraassinar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_devolver.gif"],
+html[data-eprobe-page-type="processo"]
+    img[src*="minuta_disponibilizar_verde.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_disponibilizar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_excluir.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_imprimir.gif"],
+html[data-eprobe-page-type="processo"]
+    img[src*="minuta_inserir_sessao_julgamento"],
+html[data-eprobe-page-type="processo"]
+    img[src*="minuta_atualizar_cabecalho.gif"],
+html[data-eprobe-page-type="processo"] img[src*="minuta_transferir.png"],
+html[data-eprobe-page-type="processo"] img[src*="configuracao.gif"],
+html[data-eprobe-page-type="processo"] img[src*="refresh.gif"],
+html[data-eprobe-page-type="processo"] img[src*="valores.gif"],
+html[data-eprobe-page-type="processo"] img[src*="remover.gif"],
+html[data-eprobe-page-type="processo"] img[src*="receber.gif"],
+html[data-eprobe-page-type="processo"] img[src*="mais.gif"],
+html[data-eprobe-page-type="processo"] img[src*="microphone.png"],
+html[data-eprobe-page-type="processo"] img[src*="pdf.gif"],
+html[data-eprobe-page-type="processo"] img[src*="anexos.gif"],
+html[data-eprobe-page-type="processo"] img[src*="email.gif"],
+html[data-eprobe-page-type="processo"] img[src*="marcar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="encaminhar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="assinar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="atualizar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="predio.png"],
+html[data-eprobe-page-type="processo"] img[src*="hierarquia.gif"],
+html[data-eprobe-page-type="processo"] img[src*="newspaper.png"],
+html[data-eprobe-page-type="processo"] img[src*="novo.gif"],
+html[data-eprobe-page-type="processo"] img[src*="alterar.gif"],
+html[data-eprobe-page-type="processo"] img[src*="balao.gif"],
+html[data-eprobe-page-type="processo"] img[src*="linkeditor.png"],
+html[data-eprobe-page-type="processo"] img[src*="html.gif"],
+html[data-eprobe-page-type="processo"] img[src*="tooltip.gif"],
+html[data-eprobe-page-type="processo"] img[src*="duvida.png"],
+html[data-eprobe-page-type="processo"] img[src*="lupa.gif"],
+html[data-eprobe-page-type="processo"] img[src*="oral_video.png"],
+html[data-eprobe-page-type="processo"] img[src*="menos.gif"],
+html[data-eprobe-page-type="processo"] img[src*="salvarcomomodelo.png"],
+html[data-eprobe-page-type="processo"] img[src*="brasao.png"],
+html[data-eprobe-page-type="processo"] img[src*="inteiro_teor.png"],
+html[data-eprobe-page-type="processo"] img[src*="evento_automatizado.png"],
+html[data-eprobe-page-type="processo"] img[src*="transferir_item.png"],
+html[data-eprobe-page-type="processo"] img[src*="ver_tudo.gif"],
+html[data-eprobe-page-type="processo"] img[src*="ver_resumo.gif"],
+html[data-eprobe-page-type="processo"] img[src*="seta_acima.gif"],
+html[data-eprobe-page-type="processo"] img[src*="seta_abaixo_selecionada.gif"],
+html[data-eprobe-page-type="processo"] img[src*="seta_abaixo.gif"],
+html[data-eprobe-page-type="processo"] img[alt="arvore documento_listar"],
+html[data-eprobe-page-type="processo"] img[alt="processo intimacao_bloco"],
+html[data-eprobe-page-type="processo"] img[alt="acoes preferenciais"],
+html[data-eprobe-page-type="processo"] img[id="refresh"],
+html[data-eprobe-page-type="processo"] img[alt="Nova Minuta"],
+html[data-eprobe-page-type="processo"]
+    img[src*="left.gif"][acao="minuta_retornar_rascunho"] {
+    visibility: hidden !important;
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    overflow: hidden !important;
+    pointer-events: none !important;
+}
+
+/* Imgs ja processadas devem permanecer ocultas (para Categoria A - AJAX) */
+html[data-eprobe-page-type="processo"] img[data-eprobe-icon-replaced="true"] {
+    width: 0 !important;
+    height: 0 !important;
+    position: absolute !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* EXCECAO: Nunca ocultar estrelas (EstrelaAcesa/EstrelaApagada) */
+html[data-eprobe-page-type="processo"] img[src*="EstrelaAcesa"],
+html[data-eprobe-page-type="processo"] img[src*="EstrelaApagada"] {
+    visibility: visible !important;
+    width: auto !important;
+    height: auto !important;
+    position: static !important;
+    overflow: visible !important;
+    pointer-events: auto !important;
+}
+
+/* ===== BOTOES LER MAIS: Ocultar antes da substituicao ===== */
+div.botaoLerMais:not([data-eprobe-expandir-replaced]):not(
+        [data-eprobe-processed]
+    ) {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    position: absolute !important;
+    left: -9999px !important;
+    pointer-events: none !important;
+}
+
+div.botaoLerMais[data-eprobe-will-replace="true"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ===== LEMBRETES: Gradientes proativos ===== */
+div.divLembrete[style*="background-color:#efef8f"],
+div.divLembrete[style*="background-color: #efef8f"] {
+    background: linear-gradient(#f9efaf, #f7e98d) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    min-width: 315px !important;
+    min-height: 140px !important;
+}
+
+div.divLembrete[style*="background-color:#db8080"],
+div.divLembrete[style*="background-color: #db8080"] {
+    background: linear-gradient(#faafaf, #f78d8d) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    min-width: 315px !important;
+    min-height: 140px !important;
+}
+
+div.divLembrete[style*="background-color:#87adcd"],
+div.divLembrete[style*="background-color: #87adcd"] {
+    background: linear-gradient(#afcffa, #8dc0f7) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    min-width: 315px !important;
+    min-height: 140px !important;
+}
+
+div.divLembrete[style*="background-color:#a7eda7"],
+div.divLembrete[style*="background-color: #a7eda7"] {
+    background: linear-gradient(#affab6, #8df792) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    min-width: 315px !important;
+    min-height: 140px !important;
+}
+
+div.divLembrete[style*="background-color:#f5b574"],
+div.divLembrete[style*="background-color: #f5b574"] {
+    background: linear-gradient(#fad3af, #f7c68d) !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    padding: 20px !important;
+    min-width: 315px !important;
+    min-height: 140px !important;
+}
+
+div.divLembrete:hover {
+    box-shadow: 0 5px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Spacing lembretes */
+.divLembretePara,
+.lblLembretePara {
+    margin-bottom: 15px !important;
+    justify-content: space-around !important;
+    font-size: small !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+.desLembrete {
+    margin: 15px !important;
+    align-items: baseline !important;
+}
+
+/* Lembretes anti-flash visual */
+.divLembrete {
+    will-change: auto !important;
+    transition: box-shadow 0.3s ease !important;
+    -webkit-font-smoothing: subpixel-antialiased !important;
+}
+
+/* Material icons em lembretes: ocultar nao-processados */
+.divLembrete .material-icons:not([data-eprobe-icon-replaced="true"]) {
+    display: none !important;
+}
+
+/* ===== ELEMENTOS EPROBE: Visibilidade garantida ===== */
+[data-eprobe-expandir-replaced],
+[data-eprobe-processed],
+[data-eprobe-personalized] {
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: static !important;
+    pointer-events: auto !important;
+}
+
+/* ===== FIELDSETS: Sem transicao para evitar flash ===== */
+.infraFieldset,
+.infraLegendObrigatorio {
+    transition: none !important;
+}
+
+/* ===== BOTOES: Sem transicao ao carregar ===== */
+.btn,
+button,
+input[type="button"],
+input[type="submit"] {
+    transition: none !important;
+    will-change: auto !important;
+}
+
+/* Excecao: preservar funcionalidade select2 */
+.select2-search-choice-close.btn,
+.select2-search-choice-close,
+.select2-container .btn,
+[class*="select2"] .btn,
+[class*="select2"] button {
+    transition: all 0.15s ease !important;
+    will-change: initial !important;
+}
+
+/* ===== BOTOES EPROBE: Fade-in suave ===== */
+@keyframes eprobe-fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+[id*="sent1"],
+[class*="eprobe"]:not(.eprobe-loading):not(.eprobe-batch-pending) {
+    animation: eprobe-fadeIn 0.4s ease-out 0.2s forwards;
+}
+
+#sent1-auto-button,
+.documento-relevante-button,
+.eprobe-button {
+    opacity: 0;
+    animation: eprobe-fadeIn 0.4s ease-out 0.2s forwards;
+    margin-right: 3px !important;
+}
+
+/* ===== NAVBAR EPROBE ELEMENT ===== */
+#eprobe-navbar-element {
+    display: flex !important;
+    align-items: center !important;
+    transition: all 0.3s ease !important;
+}
+
+#eprobe-navbar-element:hover {
+    background-color: rgba(255, 255, 255, 0.278) !important;
+    border-radius: 5px !important;
+}
+
+/* ===== TOOLTIPS ===== */
+.eprobe-tooltip {
+    opacity: 0;
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* ===== CARDS FIGMA ===== */
+.eprobe-figma-card-svg {
+    display: inline-block;
+    margin: 8px 0;
+    position: relative;
+    opacity: 0;
+    animation: eprobe-fadeIn 0.4s ease-out 0.3s forwards;
+}
+
+.eprobe-figma-svg-container {
+    position: relative;
+    display: inline-block;
+}
+
+.eprobe-figma-svg-container svg {
+    transition: all 0.2s ease;
+    display: block;
+}
+
+.eprobe-figma-card-svg:hover .eprobe-figma-svg-container svg {
+    transform: translateY(-1px);
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* ===== ESTRELA PERSONALIZADA ===== */
+.eprobe-estrela-personalizada:hover {
+    transform: scale(1.1) !important;
+    filter: brightness(1.5) contrast(1.3) drop-shadow(0 0 3px gold) !important;
+}

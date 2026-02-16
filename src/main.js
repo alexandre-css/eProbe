@@ -1,5 +1,20 @@
 // ⚡ ANTI-FLASH RADICAL - INJEÇÃO NO HTML ANTES DO RENDER
 (function antiFlashRadical() {
+    // Marcar <html> com tipo de pagina ANTES de qualquer renderizacao
+    // O CSS do manifest (anti-flash.css) usa html[data-eprobe-page-type="processo"]
+    // para ocultar imgs que serao substituidas por SVGs
+    var url = window.location.href;
+    var isPaginaProcesso =
+        url.includes("processo_selecionar") ||
+        url.includes("consultar_processo") ||
+        url.includes("acessar_documento");
+    if (isPaginaProcesso) {
+        document.documentElement.setAttribute(
+            "data-eprobe-page-type",
+            "processo",
+        );
+    }
+
     const navbarDesabilitada =
         localStorage.getItem("eprobe_navbar_enabled") === "false";
 
@@ -752,59 +767,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
 // ===== SISTEMA ANTI-FLASH UNIFICADO - SIMPLES E EFICIENTE =====
 (function sistemaAntiFlashUnificado() {
-    // Função única para aplicar personalizações sem flash
+    // Sistema simplificado - CSS critico migrado para anti-flash.css
     window.eprobeAntiFlash = {
         aplicado: false,
 
-        // Aplicar CSS crítico uma única vez
         aplicarCSS: function () {
             if (this.aplicado) return;
-
-            // CSS já está no ultraAntiFlash acima - apenas marcar como aplicado
             this.aplicado = true;
-            console.log("✅ ANTI-FLASH UNIFICADO: Sistema ativado");
         },
 
-        // DESABILITADO: Revelar ícone personalizado (pode interferir com IDs do eProc)
-        revelarIcone: function (elemento) {
-            // DESABILITADO: Não modificar elementos para preservar funcionalidade do eProc
-            /*
-            if (elemento && elemento.tagName) {
-                elemento.setAttribute("data-eprobe-icon-replaced", "true");
-                elemento.style.setProperty(
-                    "display",
-                    "inline-block",
-                    "important"
-                );
-                elemento.style.setProperty("opacity", "1", "important");
-                elemento.style.setProperty(
-                    "visibility",
-                    "visible",
-                    "important"
-                );
-            }
-            */
-            // FUNÇÃO DESABILITADA
-        },
-
-        // DESABILITADO: Ocultar ícone original (pode interferir com IDs do eProc)
-        ocultarIcone: function (elemento) {
-            // DESABILITADO: Não modificar elementos para preservar funcionalidade do eProc
-            /*
-            if (
-                elemento &&
-                elemento.classList &&
-                elemento.classList.contains("material-icons")
-            ) {
-                elemento.style.setProperty("display", "none", "important");
-                elemento.style.setProperty("opacity", "0", "important");
-                elemento.style.setProperty("visibility", "hidden", "important");
-            }
-            */
-            // FUNÇÃO DESABILITADA
-        },
-
-        // ⚡ NOVO: Revelar elemento personalizado (navbar, botões, etc.)
+        // Revelar elemento personalizado (navbar, botoes, etc.)
         revelarElemento: function (elemento) {
             if (elemento && elemento.tagName) {
                 elemento.setAttribute("data-eprobe-processed", "true");
@@ -818,7 +790,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
         },
 
-        // ⚡ NOVO: Ocultar elemento temporariamente
+        // Ocultar elemento temporariamente
         ocultarElemento: function (elemento) {
             if (elemento && elemento.tagName) {
                 elemento.style.setProperty("opacity", "0.5", "important");
@@ -826,44 +798,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             }
         },
 
-        // ⚡ NOVO: Aplicar anti-flash a navbar
-        stabilizarNavbar: function () {
-            const navbars = document.querySelectorAll(
-                ".navbar, #navbar, .navbar-nav, .navbar-collapse",
-            );
-            navbars.forEach((navbar) => {
-                navbar.style.setProperty("transition", "none", "important");
-                navbar.style.setProperty("will-change", "auto", "important");
-                navbar.style.setProperty(
-                    "backface-visibility",
-                    "hidden",
-                    "important",
-                );
-                navbar.style.setProperty(
-                    "transform",
-                    "translateZ(0)",
-                    "important",
-                );
-            });
-        },
-
-        // ⚡ NOVO: Aplicar anti-flash a botões (COM PROTEÇÃO PARA SELECT2)
-        stabilizarBotoes: function () {
-            const botoes = document.querySelectorAll(
-                '.btn, button, .botaoLerMais, input[type="button"], input[type="submit"]',
-            );
-            botoes.forEach((botao) => {
-                // 🚫 EXCEÇÃO: Não interferir em botões select2
-                if (botao.classList.contains("select2-search-choice-close")) {
-                    return; // Pular este botão
-                }
-
-                botao.style.setProperty("transition", "none", "important");
-                botao.style.setProperty("will-change", "auto", "important");
-            });
-        },
-
-        // ⚡ NOVO: Detectar página de processo e marcar body
+        // Detectar pagina de processo e marcar body
         detectarPaginaProcesso: function () {
             const url = window.location.href;
             const isPaginaProcesso =
@@ -875,43 +810,23 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
 
             if (isPaginaProcesso) {
                 document.body.setAttribute("data-eprobe-processo-page", "true");
-                console.log(
-                    "🎯 PÁGINA DE PROCESSO DETECTADA: Anti-flash aplicado",
+                // Garantir que html tambem tem a marcacao (redundancia com antiFlashRadical)
+                document.documentElement.setAttribute(
+                    "data-eprobe-page-type",
+                    "processo",
                 );
                 return true;
             } else {
                 document.body.removeAttribute("data-eprobe-processo-page");
-                console.log(
-                    "📄 Página não é de processo: Ícones normais preservados",
-                );
                 return false;
             }
         },
 
-        // ⚡ NOVO: Anti-flash total
+        // Anti-flash total - simplificado (CSS via manifest)
         aplicarAntiFlashTotal: function () {
-            // Detectar página de processo primeiro
             const isPaginaProcesso = this.detectarPaginaProcesso();
-
             if (isPaginaProcesso) {
                 this.aplicarCSS();
-                this.stabilizarNavbar();
-                this.stabilizarBotoes();
-
-                // Forçar estabilidade visual geral apenas em páginas de processo
-                document.documentElement.style.setProperty(
-                    "backface-visibility",
-                    "hidden",
-                    "important",
-                );
-
-                console.log(
-                    "🚀 ANTI-FLASH TOTAL: Aplicado apenas em página de processo",
-                );
-            } else {
-                console.log(
-                    "⏸️ ANTI-FLASH: Não aplicado - página não é de processo",
-                );
             }
         },
     };
@@ -920,78 +835,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
     window.eprobeAntiFlash.aplicarAntiFlashTotal();
 })();
 
-// ===== INTERCEPTAÇÃO PRECOCE DE FLASH - APLICAR ANTES DO DOM =====
-(function antiFlashPrecoce() {
-    // Executar no momento mais precoce possível
-    const aplicarAntiFlashImediato = () => {
-        // Verificar se é página de processo antes de aplicar
-        const url = window.location.href;
-        const isPaginaProcesso =
-            url.includes("consultar_processo") ||
-            url.includes("processo_selecionar") ||
-            url.includes("acessar_documento");
-
-        // Só aplicar anti-flash se for página de processo
-        if (!isPaginaProcesso) {
-            console.log(
-                "📄 Página não é de processo: Anti-flash precoce não aplicado",
-            );
-            return;
-        }
-
-        console.log(
-            "🎯 Página de processo detectada: Aplicando anti-flash precoce",
-        );
-
-        // 1. Ocultar elementos que podem causar flash APENAS em páginas de processo
-        const style = document.createElement("style");
-        style.id = "eprobe-precoce-anti-flash";
-        style.textContent = `
-            /* ANTI-FLASH PRECOCE - REMOVER regras problemáticas */
-            
-            .navbar, #navbar, .navbar-nav { 
-                transition: none !important; 
-                backface-visibility: hidden !important; 
-            }
-            
-            .btn, button, .botaoLerMais { 
-                transition: none !important; 
-                will-change: auto !important; 
-            }
-            
-            /* 🚫 EXCEÇÃO: Preservar funcionalidade dos elementos select2 */
-            .select2-search-choice-close.btn,
-            .select2-search-choice-close,
-            .select2-container .btn,
-            [class*="select2"] .btn,
-            [class*="select2"] button {
-                transition: all 0.15s ease !important;
-                will-change: initial !important;
-            }
-            
-            * { 
-                backface-visibility: hidden !important; 
-            }
-        `;
-
-        // Inserir no head como primeiro elemento
-        if (document.head) {
-            document.head.insertBefore(style, document.head.firstChild);
-        } else {
-            document.documentElement.appendChild(style);
-        }
-    };
-
-    // Aplicar imediatamente se DOM já existir
-    if (document.documentElement) {
-        aplicarAntiFlashImediato();
-    }
-
-    // Também aplicar quando DOM for criado
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", aplicarAntiFlashImediato);
-    }
-})();
+// ===== ANTI-FLASH PRECOCE REMOVIDO =====
+// CSS critico migrado para src/anti-flash.css (carregado via manifest antes do JS)
+// Regra agressiva '* { backface-visibility: hidden }' removida (causava blur de texto)
 
 // ===== ULTRA ANTI-FLASH - EXECUÇÃO IMEDIATA ANTES DE QUALQUER RENDERIZAÇÃO =====
 (function ultraAntiFlash() {
@@ -1740,24 +1586,9 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             
         }
         
-        /* Fontes críticas carregadas instantaneamente */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap');
+        /* Fontes carregadas via <link> nao-bloqueante (ver abaixo) */
         
-        /* 🎨 ALINHAMENTO PADRONIZADO DE ÍCONES SVG - eProbe */
-        span[data-eprobe-icon-container] {
-            display: inline-flex !important;
-            align-items: center !important;
-            vertical-align: middle !important;
-            margin-right: 4px !important;
-        }
-        
-        span[data-eprobe-icon-container] svg {
-            flex-shrink: 0 !important;
-            vertical-align: middle !important;
-            pointer-events: none !important;
-        }
+        /* Alinhamento de icones agora em anti-flash.css */
         
         /* Alinhamento específico para ícones de ação */
         .iconeAcao,
@@ -1917,6 +1748,36 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         head.insertBefore(cssInstantaneo, head.firstChild);
         logCritical("✅ INSTANT: CSS crítico aplicado no topo do head");
     }
+
+    // ===== CARREGAMENTO NAO-BLOQUEANTE DE GOOGLE FONTS =====
+    // Material Symbols: carregamento PRIORITARIO (usado em tooltips/cards)
+    // Demais fontes: async via media="print" -> "all" para nao bloquear render
+    var fontPrioritaria =
+        "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap";
+    var fontUrlsAsync = [
+        "https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap",
+        "https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&display=swap",
+    ];
+    // Material Symbols - carregamento direto (sem hack print)
+    var linkPrio = document.createElement("link");
+    linkPrio.rel = "stylesheet";
+    linkPrio.href = fontPrioritaria;
+    if (document.head) {
+        document.head.appendChild(linkPrio);
+    }
+    // Demais fontes - carregamento async
+    fontUrlsAsync.forEach(function (fontUrl) {
+        var link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = fontUrl;
+        link.media = "print";
+        link.onload = function () {
+            this.media = "all";
+        };
+        if (document.head) {
+            document.head.appendChild(link);
+        }
+    });
 
     // ===== FUNÇÃO OBRIGATÓRIA: FORÇAR FLEXBOX NA NAVBAR =====
     function forcarFlexboxNavbar() {
@@ -3946,6 +3807,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         gap: 12px;
                     ">
                         <span class="material-symbols-outlined" style="
+                            font-family: 'Material Symbols Outlined' !important;
                             font-size: 28px !important;
                             vertical-align: middle;
                             flex-shrink: 0;
@@ -4085,6 +3947,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             min-height: 24px;
                         ">
                             <span class="material-symbols-outlined" style="
+                                font-family: 'Material Symbols Outlined' !important;
                                 font-size: 16px;
                                 color: #64748B;
                                 vertical-align: middle;
@@ -4123,6 +3986,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             line-height: 1.4;
                         ">
                             <span class="material-symbols-outlined" style="
+                                font-family: 'Material Symbols Outlined' !important;
                                 font-size: 16px !important;
                                 vertical-align: middle;
                                 color: #64748B;
@@ -4152,6 +4016,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             line-height: 1.4;
                         ">
                             <span class="material-symbols-outlined" style="
+                                font-family: 'Material Symbols Outlined' !important;
                                 font-size: 16px !important;
                                 vertical-align: middle;
                                 color: #64748B;
@@ -4187,6 +4052,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                             line-height: 1.4;
                         ">
                             <span class="material-symbols-outlined" style="
+                                font-family: 'Material Symbols Outlined' !important;
                                 font-size: 16px !important;
                                 vertical-align: middle;
                                 color: #64748B;
@@ -4224,6 +4090,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         ">
                             <div style="display: flex; align-items: flex-start; gap: 8px;">
                                 <span class="material-symbols-outlined" style="
+                                    font-family: 'Material Symbols Outlined' !important;
                                     font-size: 16px;
                                     color: #6366F1;
                                     margin-top: 1px;
@@ -5740,6 +5607,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
             // que ja existe no DOM com o hash correto para julgamento_historico_listar
             // (cada acao no eProc tem seu proprio hash - nao podemos reusar o da URL)
             var urlHistorico = null;
+
+            // 1. Buscar em atributos onclick originais do DOM
             var elementosOnclick = document.querySelectorAll(
                 '[onclick*="julgamento_historico_listar"]',
             );
@@ -5756,6 +5625,52 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         "CARD CLICAVEL: URL do historico extraida do onclick do DOM",
                     );
                     break;
+                }
+            }
+
+            // 2. Buscar em data-original-onclick de spans substituidos pelo eProbe
+            if (!urlHistorico) {
+                var spansSubstituidos = document.querySelectorAll(
+                    'span[data-original-onclick*="julgamento_historico_listar"]',
+                );
+                for (var idx2 = 0; idx2 < spansSubstituidos.length; idx2++) {
+                    var dataOnclick =
+                        spansSubstituidos[idx2].getAttribute(
+                            "data-original-onclick",
+                        ) || "";
+                    var urlMatch2 = dataOnclick.match(
+                        /exibirSubFrm\s*\(\s*'([^']+julgamento_historico_listar[^']*)'/,
+                    );
+                    if (urlMatch2 && urlMatch2[1]) {
+                        urlHistorico = urlMatch2[1];
+                        urlHistorico = urlHistorico.replace(/&amp;/g, "&");
+                        logCritical(
+                            "CARD CLICAVEL: URL extraida do data-original-onclick de span substituido",
+                        );
+                        break;
+                    }
+                }
+            }
+
+            // 3. Buscar em imgs ocultos (Categoria A - hide+insertBefore)
+            if (!urlHistorico) {
+                var imgsOcultos = document.querySelectorAll(
+                    'img[data-eprobe-icon-replaced="true"][onclick*="julgamento_historico_listar"]',
+                );
+                for (var idx3 = 0; idx3 < imgsOcultos.length; idx3++) {
+                    var onclickOculto =
+                        imgsOcultos[idx3].getAttribute("onclick") || "";
+                    var urlMatch3 = onclickOculto.match(
+                        /exibirSubFrm\s*\(\s*'([^']+julgamento_historico_listar[^']*)'/,
+                    );
+                    if (urlMatch3 && urlMatch3[1]) {
+                        urlHistorico = urlMatch3[1];
+                        urlHistorico = urlHistorico.replace(/&amp;/g, "&");
+                        logCritical(
+                            "CARD CLICAVEL: URL extraida de img oculto (Categoria A)",
+                        );
+                        break;
+                    }
                 }
             }
 
@@ -6494,7 +6409,7 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
         // Injetar CSS apenas para elementos da extensão eProbe
         const extensionStyle = document.createElement("style");
         extensionStyle.textContent = `
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+        /* Roboto carregada via <link> nao-bloqueante */
         
         /* Padronização da fonte Roboto APENAS para elementos da extensão eProbe */
         [id*="sent1"], [id*="documento-relevante"], [class*="eprobe"], 
@@ -25239,8 +25154,9 @@ ${texto}`;
             // Auto-aplicar tema salvo quando a página carregar
             setTimeout(() => {
                 if (!window.restaurarTemaBotoesEproc()) {
-                    // Se não há tema salvo, aplicar tema padrão elegante
-                    // window.aplicarEstiloBotoesEproc('elegante');
+                    // Se nao ha tema salvo, aplicar tema padrao minimalista
+                    // Garante personalizacao em dominios sem localStorage prévio (ex: eproc1g)
+                    window.aplicarEstiloBotoesEproc("minimalista");
                 }
             }, 200); // ← REDUZIDO DE 1000ms PARA 200ms
 
@@ -25521,13 +25437,13 @@ ${texto}`;
                 },
                 {
                     selector: 'img[src*="minuta_alterar.gif"]',
-                    name: "Editar Minuta",
-                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+                    name: "Editar Dados Cadastrais",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
                 },
                 {
                     selector: 'img[src*="minuta_editar.gif"]',
-                    name: "Editar Minuta (editar)",
-                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+                    name: "Editar Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m18 5-2.414-2.414A2 2 0 0 0 14.172 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
                 },
                 {
                     selector: 'img[src*="minuta_assinar2.gif"]',
@@ -25719,6 +25635,12 @@ ${texto}`;
                     selector: 'img[src*="minuta_paraassinar.gif"]',
                     name: "Encaminhar para Assinatura",
                     svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="m18.226 5.226-2.52-2.52A2.4 2.4 0 0 0 14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-.351"/><path d="M21.378 12.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><path d="M8 18h1"/></svg>',
+                },
+                {
+                    selector:
+                        'img[src*="left.gif"][acao="minuta_retornar_rascunho"]',
+                    name: "Retornar Minuta para Rascunho",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>',
                 },
                 {
                     selector: 'img[src*="minuta_devolver.gif"]',
@@ -26129,15 +26051,14 @@ ${texto}`;
             function isCapaProcessoPage() {
                 const currentUrl = window.location.href;
 
-                // Verificar se a URL contém o padrão de capa do processo
-                const capaProcessoPatterns = [
-                    "eproc1g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&",
-                    "eproc2g.tjsc.jus.br/eproc/controlador.php?acao=processo_selecionar&",
-                ];
+                // Verificar dominio eProc + acao de capa de processo
+                // Unificado: mesma logica para eproc1g e eproc2g
+                var isEproc =
+                    currentUrl.includes("eproc1g.tjsc.jus.br") ||
+                    currentUrl.includes("eproc2g.tjsc.jus.br");
+                if (!isEproc) return false;
 
-                return capaProcessoPatterns.some((pattern) =>
-                    currentUrl.includes(pattern),
-                );
+                return currentUrl.includes("acao=processo_selecionar");
             }
 
             /**
@@ -26527,23 +26448,18 @@ ${texto}`;
                     }
                 }
 
-                // Múltiplas tentativas com delays otimizados para anti-flash
+                // Reaplicar com 1 retry (reduzido de 4 cascatas)
                 function reaplicarComBackoff() {
-                    reaplicarGradientesAntiFlash(); // Imediato
-                    setTimeout(reaplicarGradientesAntiFlash, 25);
-                    setTimeout(reaplicarGradientesAntiFlash, 75);
-                    setTimeout(reaplicarGradientesAntiFlash, 150);
+                    reaplicarGradientesAntiFlash();
+                    setTimeout(reaplicarGradientesAntiFlash, 100);
                 }
 
-                // Observer otimizado com debounce mínimo
+                // Observer com debounce razoavel (50ms em vez de 10ms)
                 const observer = new MutationObserver(
                     window.debounce(() => {
-                        log(
-                            "🔄 OBSERVER: Mudança detectada, reaplicando gradientes (anti-flash)...",
-                        );
                         reaplicarComBackoff();
-                    }, 10),
-                ); // Debounce mínimo
+                    }, 50),
+                );
 
                 // Observer agressivo
                 observer.observe(containerMinutas, {
@@ -26566,14 +26482,8 @@ ${texto}`;
                         e.target.closest('input[title*="Expandir"]') ||
                         e.target.closest('input[onclick*="atualizaMinutas"]')
                     ) {
-                        log(
-                            "🖱️ CLICK: Botão detectado, aplicação preventiva...",
-                        );
-                        reaplicarGradientesAntiFlash(); // Preventivo
-                        setTimeout(reaplicarGradientesAntiFlash, 10);
-                        setTimeout(reaplicarGradientesAntiFlash, 50);
+                        reaplicarGradientesAntiFlash();
                         setTimeout(reaplicarGradientesAntiFlash, 100);
-                        setTimeout(reaplicarGradientesAntiFlash, 200);
                     }
                 });
 
@@ -27454,36 +27364,33 @@ ${texto}`;
                 var container = containerEl || document;
                 var substituicoes = 0;
 
-                // Se force mode, limpar marcacoes para re-aplicar
+                // Se force mode, usar abordagem INCREMENTAL para evitar flash:
+                // - NAO remover spans existentes (evita frame vazio)
+                // - Apenas processar imgs NOVAS (sem data-eprobe-icon-replaced)
+                // - Remover spans orfaos cujo img original nao existe mais
                 if (forceMode) {
-                    // Remover spans SVG anteriores (imgs ocultos serao re-exibidos pelo eProc via AJAX)
-                    var spansAntigos = container.querySelectorAll(
+                    // Remover apenas spans orfaos (cujo img nao esta mais no DOM)
+                    var spansExistentes = container.querySelectorAll(
                         'span[data-eprobe-icon-container="true"]',
                     );
-                    for (var s = 0; s < spansAntigos.length; s++) {
-                        var spanAntigo = spansAntigos[s];
-                        if (spanAntigo.parentNode) {
-                            spanAntigo.parentNode.removeChild(spanAntigo);
+                    for (var s = 0; s < spansExistentes.length; s++) {
+                        var spanExistente = spansExistentes[s];
+                        // Verificar se o span tem um img irma oculta (Categoria A - AJAX)
+                        var imgIrma = spanExistente.nextElementSibling;
+                        var temImgAssociada =
+                            imgIrma &&
+                            imgIrma.tagName === "IMG" &&
+                            imgIrma.hasAttribute("data-eprobe-icon-replaced");
+                        // Para Categoria B/C, o img original ja foi removido (replaceChild)
+                        // entao o span nao tem img irma - isso e normal, manter o span
+                        if (!spanExistente.parentNode) {
+                            // Span orfao sem parent - ignorar
+                            continue;
                         }
-                    }
-                    // Re-exibir imgs que estavam ocultas
-                    var imgsOcultas = container.querySelectorAll(
-                        'img[data-eprobe-icon-replaced="true"]',
-                    );
-                    for (var h = 0; h < imgsOcultas.length; h++) {
-                        imgsOcultas[h].style.cssText = "";
-                        imgsOcultas[h].removeAttribute(
-                            "data-eprobe-icon-replaced",
-                        );
-                    }
-                    // Limpar marcacoes SVG restantes
-                    var marcados = container.querySelectorAll(
-                        'svg[data-eprobe-icon-replaced="true"]',
-                    );
-                    for (var m = 0; m < marcados.length; m++) {
-                        marcados[m].removeAttribute(
-                            "data-eprobe-icon-replaced",
-                        );
+                        // Se Categoria A, verificar se img irma ainda existe
+                        if (temImgAssociada && !imgIrma.parentNode) {
+                            spanExistente.parentNode.removeChild(spanExistente);
+                        }
                     }
                 }
 
@@ -27624,21 +27531,38 @@ ${texto}`;
                                                     }
                                                 }
                                                 if (newSvgStr) {
-                                                    targetSpan.innerHTML =
+                                                    // Criar novo SVG e inserir ANTES de remover o antigo
+                                                    // para evitar frame vazio (zero-flash swap)
+                                                    var tempDiv =
+                                                        document.createElement(
+                                                            "div",
+                                                        );
+                                                    tempDiv.innerHTML =
                                                         newSvgStr;
-                                                    var newSvg =
-                                                        targetSpan.firstElementChild;
-                                                    if (newSvg) {
-                                                        newSvg.style.pointerEvents =
+                                                    var novaSvg =
+                                                        tempDiv.firstElementChild;
+                                                    if (novaSvg) {
+                                                        novaSvg.style.pointerEvents =
                                                             "none";
-                                                        newSvg.setAttribute(
+                                                        novaSvg.setAttribute(
                                                             "data-eprobe-icon-replaced",
                                                             "true",
                                                         );
-                                                        newSvg.classList.add(
+                                                        novaSvg.classList.add(
                                                             "infraImg",
                                                             "substituted-icon",
                                                         );
+                                                        var svgAntigo =
+                                                            targetSpan.firstElementChild;
+                                                        targetSpan.insertBefore(
+                                                            novaSvg,
+                                                            svgAntigo,
+                                                        );
+                                                        if (svgAntigo) {
+                                                            targetSpan.removeChild(
+                                                                svgAntigo,
+                                                            );
+                                                        }
                                                     }
                                                 }
                                             }
@@ -27690,6 +27614,11 @@ ${texto}`;
                                 var imgOnclick = img.getAttribute("onclick");
                                 if (imgOnclick) {
                                     span.style.cursor = "pointer";
+                                    // Preservar onclick original como data attribute para consulta DOM
+                                    span.setAttribute(
+                                        "data-original-onclick",
+                                        imgOnclick,
+                                    );
                                     (function (onclickCode) {
                                         span.addEventListener(
                                             "click",
@@ -28095,7 +28024,7 @@ ${texto}`;
                 } catch (error) {
                     console.error("❌ ÍCONES: Erro na inicialização:", error);
                 }
-            }, 2000);
+            }, 500); // Reduzido de 2000ms - CSS proativo oculta imgs antes do JS
 
             // 🔍 EXECUÇÃO AUTOMÁTICA - Inicializar observer de interface
             setTimeout(() => {

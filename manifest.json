@@ -19,6 +19,7 @@
                 "https://eproc1g.tjsc.jus.br/*",
                 "https://eproc2g.tjsc.jus.br/*"
             ],
+            "css": ["src/anti-flash.css"],
             "js": ["src/main.js"],
             "run_at": "document_end"
         },
