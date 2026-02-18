@@ -2346,6 +2346,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
                     },
+                    {
+                        nome: "Adiado em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Adiado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Adiado",
+                    },
+                    {
+                        nome: "Adiado em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Adiado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Adiado",
+                    },
                 ];
 
                 padroesValidos.forEach((padrao) => {
