@@ -2346,6 +2346,16 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                         regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Retirado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
                         status: "Retirado",
                     },
+                    {
+                        nome: "Adiado em Pauta",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Adiado em Pauta em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Adiado",
+                    },
+                    {
+                        nome: "Adiado em Mesa",
+                        regex: /^([A-Za-zÀ-ÿ\s]+?)\s*\(Adiado em Mesa em (\d{1,2}\/\d{1,2}\/\d{4})(?:\s+a\s+\d{1,2}\/\d{1,2}\/\d{4})?\s*-\s*([A-Z0-9]+)\)/gi,
+                        status: "Adiado",
+                    },
                 ];
 
                 padroesValidos.forEach((padrao) => {
@@ -7009,7 +7019,8 @@ const DISABLE_STAR_REPLACEMENTS = true; // ⛔ PROTEÇÃO: Impede substituição
                 const url = window.location.href;
                 if (
                     url.includes("eproc") &&
-                    (url.includes("documento") || url.includes("processo"))
+                    (url.includes("documento") || url.includes("processo")) &&
+                    !url.includes("localizador_processos_lista")
                 ) {
                     log(
                         "Página válida detectada: URL contém eproc e documento/processo",
@@ -17584,31 +17595,42 @@ ${texto}`;
                     tabela.parentNode.insertBefore(container, tabela);
                 }
 
-                // Coletar todas as linhas de dados (exclui cabecalho e separadores eprobe)
-                var tbody = tabela.querySelector("tbody");
-                var linhasData = [];
-                if (tbody) {
-                    var todasLinhas = tbody.querySelectorAll("tr");
-                    for (var i = 0; i < todasLinhas.length; i++) {
-                        var tr = todasLinhas[i];
-                        if (
-                            tr.classList.contains("infraTrClara") ||
-                            tr.classList.contains("infraTrEscura")
-                        ) {
-                            linhasData.push(tr);
+                // Funcao para coletar linhas de dados dinamicamente
+                // (re-query a cada chamada para nao perder referencia se o DOM mudar)
+                function obterLinhasData() {
+                    var resultado = [];
+                    var tb = tabela.querySelector("tbody");
+                    if (tb) {
+                        var todasLinhas = tb.querySelectorAll("tr");
+                        for (var i = 0; i < todasLinhas.length; i++) {
+                            var tr = todasLinhas[i];
+                            if (
+                                tr.classList.contains("infraTrClara") ||
+                                tr.classList.contains("infraTrEscura")
+                            ) {
+                                resultado.push(tr);
+                            }
                         }
                     }
+                    return resultado;
                 }
 
-                var totalProcessos = linhasData.length;
-                var textoBase = totalProcessos + " processos";
-                if (totalRegistros > 0 && totalRegistros !== totalProcessos) {
-                    textoBase =
-                        totalProcessos +
-                        " nesta pagina | " +
-                        totalRegistros +
-                        " total";
+                function obterTextoBase() {
+                    var total = obterLinhasData().length;
+                    var texto = total + " processos";
+                    if (totalRegistros > 0 && totalRegistros !== total) {
+                        texto =
+                            total +
+                            " nesta pagina | " +
+                            totalRegistros +
+                            " total";
+                    }
+                    return texto;
                 }
+
+                var linhasData = obterLinhasData();
+                var totalProcessos = linhasData.length;
+                var textoBase = obterTextoBase();
                 contador.textContent = textoBase;
 
                 // Funcao para normalizar texto (remover acentos)
@@ -17626,6 +17648,11 @@ ${texto}`;
                 // Funcao de filtragem com debounce
                 var timerFiltro = null;
                 function filtrar() {
+                    // Re-query linhas a cada filtragem para garantir referencias validas
+                    linhasData = obterLinhasData();
+                    totalProcessos = linhasData.length;
+                    textoBase = obterTextoBase();
+
                     var termo = normalizar(input.value.trim());
 
                     if (!termo) {
@@ -17708,6 +17735,8 @@ ${texto}`;
 
                 // Funcao para selecionar apenas os processos filtrados (visiveis)
                 function selecionarFiltrados() {
+                    // Re-query linhas para garantir referencias validas
+                    linhasData = obterLinhasData();
                     // Primeiro desmarcar todos
                     for (var i = 0; i < linhasData.length; i++) {
                         var chk = linhasData[i].querySelector(
