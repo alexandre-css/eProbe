@@ -25450,8 +25450,23 @@ ${texto}`;
                     name: "Assinar Minuta",
                     svg: '<svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 -960 960 960" width="18px" fill="currentColor"><path d="m495.35-537.67 41.08 41.32 199-199-41.08-41.08-199 198.76ZM205.8-206.57h39.09l217.76-217-40.32-40.32L205.8-246.13v39.56Zm366.63-181.76L387.57-572.67l122.95-123.96-50.24-48.72-206.8 206.81-71.63-71.39 214.98-212.98q26.63-26.63 65.45-26.63 38.83 0 65.7 26.63l54.41 54.41L655-839.35q17.43-17.43 40.85-17.43 23.41 0 40.85 17.43L838.35-737.7q17.19 17.44 16.69 41.35-.5 23.92-16.69 42.35L572.43-388.33Zm-283.1 283.11H104.22v-183.35l283.35-284.1 184.86 184.34-283.1 283.11Z"/></svg>',
                 },
+                {
+                    selector: 'img[src*="minuta_reativar.gif"]',
+                    name: "Reativar Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>',
+                },
+                {
+                    selector: 'img[src*="minuta_desbloquear.gif"]',
+                    name: "Desbloquear Minuta",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>',
+                },
 
                 // --- Icones genericos por src ---
+                {
+                    selector: 'img[src*="desativar.gif"]',
+                    name: "Excluir Julgamento",
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>',
+                },
                 {
                     selector: 'img[src*="configuracao.gif"]',
                     name: "Configuracao",
@@ -25465,7 +25480,7 @@ ${texto}`;
                 {
                     selector: 'img[src*="valores.gif"]',
                     name: "Valores",
-                    svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>',
+                    svg: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4F83CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;"><rect width="7" height="7" x="3" y="3" rx="1"/><rect width="7" height="7" x="3" y="14" rx="1"/><path d="M14 4h7"/><path d="M14 9h7"/><path d="M14 15h7"/><path d="M14 20h7"/></svg>',
                 },
                 {
                     selector: 'img[src*="remover.gif"]',
@@ -26391,15 +26406,10 @@ ${texto}`;
                     return false;
                 }
 
-                // Função de reaplicação otimizada com anti-flash
+                // Funcao de reaplicacao otimizada com anti-flash
                 function reaplicarGradientesAntiFlash() {
-                    const elementos = document.querySelectorAll(
-                        'legend[aria-label="Histórico"]#legMinutas.infraLegendObrigatorio',
-                    );
-
-                    if (elementos.length === 0) return;
-
-                    const cores = {
+                    // Mapa de cores para legends (infraTrClara usa os mesmos valores)
+                    const coresLegendas = {
                         "rgb(152, 245, 255)":
                             "linear-gradient(#AFCFFA, #8DC0F7)",
                         "rgb(255, 160, 122)":
@@ -26422,28 +26432,104 @@ ${texto}`;
                             "linear-gradient(#AFFAB6, #8DF792)",
                     };
 
-                    let reaplicados = 0;
-                    elementos.forEach((el, i) => {
-                        const bgColor =
-                            window.getComputedStyle(el).backgroundColor;
+                    // Mapa de cores para infraTrEscura (cores escuras REAIS do DOM)
+                    var coresEscuras = {
+                        "rgb(122, 197, 205)":
+                            "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL #7AC5CD
+                        "rgb(205, 129, 98)":
+                            "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO #CD8162
+                        "rgb(205, 170, 125)":
+                            "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO #CDAA7D
+                        "rgb(205, 155, 29)":
+                            "linear-gradient(#FFA93A, #FF9520)", // DOURADO #CD9B1D
+                        "rgb(139, 123, 139)":
+                            "linear-gradient(#B593B5, #A082A0)", // LILAS #8B7B8B
+                        "rgb(169, 169, 169)":
+                            "linear-gradient(#8A9EA5, #778C93)", // CINZA #A9A9A9
+                        "rgb(205, 85, 85)": "linear-gradient(#F47A7A, #F15858)", // VERMELHA #CD5555
+                        "rgb(205, 205, 0)": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMAO #CDCD00
+                        "rgb(205, 150, 205)":
+                            "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO #CD96CD
+                        "rgb(205, 198, 115)":
+                            "linear-gradient(#F5DC7A, #F3D058)", // AMARELA #CDC673
+                        "rgb(124, 205, 124)":
+                            "linear-gradient(#7AF381, #58EF5F)", // VERDE #7CCD7C
+                    };
 
-                        // Aplicar gradiente se cor sólida detectada ou forçar padrão
+                    let reaplicados = 0;
+
+                    // 1. Reaplicar gradientes nos legMinutas
+                    var elementos = document.querySelectorAll(
+                        'legend[aria-label="Historico"]#legMinutas.infraLegendObrigatorio',
+                    );
+                    elementos.forEach(function (el) {
+                        var bgColor =
+                            window.getComputedStyle(el).backgroundColor;
                         if (bgColor !== "rgba(0, 0, 0, 0)") {
-                            const gradiente =
-                                cores[bgColor] ||
-                                "linear-gradient(#FFDE8F, #FFB84D)"; // Padrão dourado
-                            el.style.setProperty(
-                                "background",
-                                gradiente,
-                                "important",
-                            );
-                            reaplicados++;
+                            var gradiente = coresLegendas[bgColor];
+                            if (gradiente) {
+                                el.style.setProperty(
+                                    "background",
+                                    gradiente,
+                                    "important",
+                                );
+                                reaplicados++;
+                            }
                         }
+                    });
+
+                    // 2. Reaplicar gradientes nas linhas de tabela
+                    var containers = document.querySelectorAll(
+                        '[id^="conteudoInternoMinutas_"]',
+                    );
+                    containers.forEach(function (container) {
+                        // infraTrClara - mesmas cores das legends
+                        container
+                            .querySelectorAll("tr.infraTrClara")
+                            .forEach(function (linha) {
+                                var bgColor =
+                                    window.getComputedStyle(
+                                        linha,
+                                    ).backgroundColor;
+                                if (
+                                    bgColor !== "rgba(0, 0, 0, 0)" &&
+                                    coresLegendas[bgColor]
+                                ) {
+                                    linha.style.setProperty(
+                                        "background",
+                                        coresLegendas[bgColor],
+                                        "important",
+                                    );
+                                    reaplicados++;
+                                }
+                            });
+                        // infraTrEscura - cores escuras proprias
+                        container
+                            .querySelectorAll("tr.infraTrEscura")
+                            .forEach(function (linha) {
+                                var bgColor =
+                                    window.getComputedStyle(
+                                        linha,
+                                    ).backgroundColor;
+                                if (
+                                    bgColor !== "rgba(0, 0, 0, 0)" &&
+                                    coresEscuras[bgColor]
+                                ) {
+                                    linha.style.setProperty(
+                                        "background",
+                                        coresEscuras[bgColor],
+                                        "important",
+                                    );
+                                    reaplicados++;
+                                }
+                            });
                     });
 
                     if (reaplicados > 0) {
                         log(
-                            `🎨 OBSERVER: ${reaplicados} gradientes reaplicados (anti-flash)`,
+                            "OBSERVER: " +
+                                reaplicados +
+                                " gradientes reaplicados (anti-flash)",
                         );
                     }
                 }
@@ -27596,7 +27682,7 @@ ${texto}`;
                                     "true",
                                 );
                                 img.parentNode.insertBefore(span, img);
-                                span.style.cursor = "pointer";
+                                span.style.Ccursor = "pointer";
                                 span.style.pointerEvents = "auto";
                                 (function (originalImg) {
                                     span.addEventListener(
@@ -34672,18 +34758,19 @@ ${texto}`;
             };
 
             // Mapeamento de cores para tabelas - infraTrEscura (tons escuros)
+            // CHAVES sao as cores REAIS de infraTrEscura no DOM (conforme cores legMinutas.md)
             const mapeamentoCoresInfraEscura = {
-                "#98F5FF": "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL
-                "#FFA07A": "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO
-                "#FFD39B": "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO
-                "#FFC125": "linear-gradient(#FFA93A, #FF9520)", // DOURADO
-                "#CDB5CD": "linear-gradient(#B593B5, #A082A0)", // LILÁS
-                "#D3D3D3": "linear-gradient(#8A9EA5, #778C93)", // CINZA
-                "#EE6363": "linear-gradient(#F47A7A, #F15858)", // VERMELHA
-                "#FFFF00": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMÃO
-                "#FFBBFF": "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO
-                "#FFF68F": "linear-gradient(#F5DC7A, #F3D058)", // AMARELA
-                "#90EE90": "linear-gradient(#7AF381, #58EF5F)", // VERDE
+                "#7AC5CD": "linear-gradient(#7AB5F3, #5A9DEF)", // AZUL (infraTrEscura)
+                "#CD8162": "linear-gradient(#FF8D7A, #FF6B58)", // LARANJA INTENSO (infraTrEscura)
+                "#CDAA7D": "linear-gradient(#F5B87A, #F2A558)", // LARANJA CLARO (infraTrEscura)
+                "#CD9B1D": "linear-gradient(#FFA93A, #FF9520)", // DOURADO (infraTrEscura)
+                "#8B7B8B": "linear-gradient(#B593B5, #A082A0)", // LILAS (infraTrEscura)
+                "#A9A9A9": "linear-gradient(#8A9EA5, #778C93)", // CINZA (infraTrEscura)
+                "#CD5555": "linear-gradient(#F47A7A, #F15858)", // VERMELHA (infraTrEscura)
+                "#CDCD00": "linear-gradient(#E6E63A, #CCCC20)", // VERDE LIMAO (infraTrEscura)
+                "#CD96CD": "linear-gradient(#FF7AFF, #FF58FF)", // ROSA CLARO (infraTrEscura)
+                "#CDC673": "linear-gradient(#F5DC7A, #F3D058)", // AMARELA (infraTrEscura)
+                "#7CCD7C": "linear-gradient(#7AF381, #58EF5F)", // VERDE (infraTrEscura)
             };
 
             let processados = 0;
@@ -35085,6 +35172,14 @@ ${texto}`;
             }
         } catch (error) {
             console.error("Erro na correcao de pointer-events:", error);
+        }
+
+        // Aplicar gradientes nas minutas (versao completa com legends + tabelas infraTrClara/infraTrEscura)
+        // A versao interna (IIFE #10) so processa legends. Esta versao processa tudo.
+        try {
+            aplicarGradientesLegMinutasRobusta();
+        } catch (error) {
+            console.error("Erro ao aplicar gradientes nas minutas:", error);
         }
 
         logCritical(
